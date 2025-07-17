@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // @ts-ignore
+    // @ts-expect-error - Prisma client type issue
     const mealPlan = await prisma.mealPlan.findUnique({
       where: { id: params.id },
       include: {
@@ -32,7 +32,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const body = await request.json();
     const { name, startDate, endDate, notes, isActive } = body;
 
-    // @ts-ignore
+    // @ts-expect-error - Prisma client type issue
     const mealPlan = await prisma.mealPlan.update({
       where: { id: params.id },
       data: {
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // @ts-ignore
+    // @ts-expect-error - Prisma client type issue
     await prisma.mealPlan.delete({
       where: { id: params.id },
     });

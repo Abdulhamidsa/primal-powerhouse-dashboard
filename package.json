@@ -6,7 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "postinstall": "prisma generate",
+    "type-check": "tsc --noEmit",
+    "build:production": "npm run db:generate && next build",
+    "build:vercel": "prisma generate && next build"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",

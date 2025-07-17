@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
     }
 
-    // @ts-ignore
+    // @ts-expect-error - Prisma client type issue
     const mealPlans = await prisma.mealPlan.findMany({
       where: { clientId },
       include: {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create meal plan with assignments
-    // @ts-ignore
+    // @ts-expect-error - Prisma client type issue
     const mealPlan = await prisma.mealPlan.create({
       data: {
         clientId,
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         notes,
         mealAssignments: {
           create:
-            mealAssignments?.map((assignment: any) => ({
+            mealAssignments?.map((assignment: { mealId: string; dayOfWeek: number; mealType: string; portion?: number; notes?: string }) => ({
               mealId: assignment.mealId,
               dayOfWeek: assignment.dayOfWeek,
               mealType: assignment.mealType,
