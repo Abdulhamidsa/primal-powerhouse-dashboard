@@ -1,0 +1,95 @@
+{
+  "totalClients": 5,
+  "activeClients": 4,
+  "inactiveClients": 1,
+  "totalMeals": 6,
+  "totalWorkouts": 4,
+  "thisMonth": {
+    "newClients": 2,
+    "completedSessions": 12,
+    "averageRating": 4.5,
+    "totalRevenue": 2400
+  },
+  "lastMonth": {
+    "newClients": 1,
+    "completedSessions": 18,
+    "averageRating": 4.3,
+    "totalRevenue": 3200
+  },
+  "growth": {
+    "clientGrowth": 100,
+    "sessionGrowth": -33.3,
+    "ratingGrowth": 4.7,
+    "revenueGrowth": -25
+  },
+  "upcomingSessions": [
+    {
+      "id": "1",
+      "clientId": "2",
+      "clientName": "Michael Chen",
+      "date": "2024-07-19T10:00:00.000Z",
+      "type": "strength-training",
+      "duration": 75
+    },
+    {
+      "id": "2",
+      "clientId": "5",
+      "clientName": "Lisa Wang",
+      "date": "2024-07-20T14:00:00.000Z",
+      "type": "functional",
+      "duration": 50
+    },
+    {
+      "id": "3",
+      "clientId": "3",
+      "clientName": "Emily Rodriguez",
+      "date": "2024-07-21T09:00:00.000Z",
+      "type": "cardio",
+      "duration": 45
+    },
+    {
+      "id": "4",
+      "clientId": "1",
+      "clientName": "Sarah Johnson",
+      "date": "2024-07-22T16:00:00.000Z",
+      "type": "strength-training",
+      "duration": 60
+    }
+  ],
+  "recentActivity": [
+    {
+      "id": "1",
+      "type": "workout_completed",
+      "clientName": "Lisa Wang",
+      "description": "Completed functional training session",
+      "timestamp": "2024-07-17T15:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "type": "workout_completed",
+      "clientName": "Michael Chen",
+      "description": "Completed strength training session",
+      "timestamp": "2024-07-16T11:30:00.000Z"
+    },
+    {
+      "id": "3",
+      "type": "meal_added",
+      "description": "Added new meal: Chocolate Protein Smoothie",
+      "timestamp": "2024-07-16T09:15:00.000Z"
+    },
+    {
+      "id": "4",
+      "type": "workout_completed",
+      "clientName": "Sarah Johnson",
+      "description": "Completed strength training session",
+      "timestamp": "2024-07-15T17:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "type": "workout_completed",
+      "clientName": "Emily Rodriguez",
+      "description": "Completed cardio session",
+      "timestamp": "2024-07-14T10:30:00.000Z"
+    }
+  ]
+}

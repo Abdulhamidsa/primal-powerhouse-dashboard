@@ -1,0 +1,123 @@
+[
+  {
+    "id": "1",
+    "clientId": "1",
+    "date": "2024-07-15T00:00:00.000Z",
+    "type": "strength-training",
+    "duration": 60,
+    "exercises": [
+      {
+        "name": "Squats",
+        "sets": 3,
+        "reps": 12,
+        "weight": 65,
+        "restTime": 90
+      },
+      {
+        "name": "Deadlifts",
+        "sets": 3,
+        "reps": 10,
+        "weight": 80,
+        "restTime": 120
+      },
+      {
+        "name": "Bench Press",
+        "sets": 3,
+        "reps": 8,
+        "weight": 45,
+        "restTime": 90
+      }
+    ],
+    "notes": "Great form improvement on squats, increased weight by 5lbs",
+    "caloriesBurned": 280,
+    "rating": 4
+  },
+  {
+    "id": "2",
+    "clientId": "2",
+    "date": "2024-07-16T00:00:00.000Z",
+    "type": "strength-training",
+    "duration": 75,
+    "exercises": [
+      {
+        "name": "Squats",
+        "sets": 4,
+        "reps": 8,
+        "weight": 120,
+        "restTime": 120
+      },
+      {
+        "name": "Deadlifts",
+        "sets": 4,
+        "reps": 6,
+        "weight": 140,
+        "restTime": 180
+      },
+      {
+        "name": "Overhead Press",
+        "sets": 3,
+        "reps": 10,
+        "weight": 70,
+        "restTime": 90
+      }
+    ],
+    "notes": "Strong session, hitting personal records",
+    "caloriesBurned": 350,
+    "rating": 5
+  },
+  {
+    "id": "3",
+    "clientId": "3",
+    "date": "2024-07-14T00:00:00.000Z",
+    "type": "cardio",
+    "duration": 45,
+    "exercises": [
+      {
+        "name": "Treadmill Run",
+        "duration": 30,
+        "distance": 5.2,
+        "pace": "6:30/km"
+      },
+      {
+        "name": "Rowing Machine",
+        "duration": 15,
+        "distance": 2500,
+        "resistance": 5
+      }
+    ],
+    "notes": "Excellent endurance, maintaining target heart rate",
+    "caloriesBurned": 420,
+    "rating": 5
+  },
+  {
+    "id": "4",
+    "clientId": "5",
+    "date": "2024-07-17T00:00:00.000Z",
+    "type": "functional",
+    "duration": 50,
+    "exercises": [
+      {
+        "name": "Turkish Get-ups",
+        "sets": 3,
+        "reps": 5,
+        "weight": 12,
+        "restTime": 60
+      },
+      {
+        "name": "Kettlebell Swings",
+        "sets": 4,
+        "reps": 20,
+        "weight": 16,
+        "restTime": 45
+      },
+      {
+        "name": "Plank",
+        "duration": 180,
+        "progression": "standard"
+      }
+    ],
+    "notes": "Focusing on movement quality and core stability",
+    "caloriesBurned": 240,
+    "rating": 4
+  }
+]

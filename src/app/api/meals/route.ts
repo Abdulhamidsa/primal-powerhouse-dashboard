@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const coachId = searchParams.get("coachId");
+
+    // For demo purposes, if no coachId provided, create a default coach
+    let userId = coachId;
+    if (!userId) {
+      const defaultCoach = await prisma.user.upsert({
+        where: { email: "coach@example.com" },
+        update: {},
+        create: {
+          email: "coach@example.com",
+          name: "Default Coach",
+          password: "hashedpassword", // In real app, this would be properly hashed
+          role: "COACH",
+        },
+      });
+      userId = defaultCoach.id;
+    }
+
+    const meals = await prisma.meal.findMany({
+      where: { coachId: userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Parse JSON fields
+    const parsedMeals = meals.map((meal) => ({
+      ...meal,
+      ingredients: meal.ingredients ? JSON.parse(meal.ingredients) : [],
+      instructions: meal.instructions ? JSON.parse(meal.instructions) : [],
+      tags: meal.tags ? JSON.parse(meal.tags) : [],
+    }));
+
+    return NextResponse.json(parsedMeals);
+  } catch (error) {
+    console.error("Error fetching meals:", error);
+    return NextResponse.json({ error: "Failed to fetch meals" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { coachId, ...mealData } = body;
+
+    // Get or create default coach
+    let userId = coachId;
+    if (!userId) {
+      const defaultCoach = await prisma.user.upsert({
+        where: { email: "coach@example.com" },
+        update: {},
+        create: {
+          email: "coach@example.com",
+          name: "Default Coach",
+          password: "hashedpassword",
+          role: "COACH",
+        },
+      });
+      userId = defaultCoach.id;
+    }
+
+    const meal = await prisma.meal.create({
+      data: {
+        ...mealData,
+        coachId: userId,
+        ingredients: JSON.stringify(mealData.ingredients || []),
+        instructions: JSON.stringify(mealData.instructions || []),
+        tags: JSON.stringify(mealData.tags || []),
+      },
+    });
+
+    // Parse JSON fields for response
+    const parsedMeal = {
+      ...meal,
+      ingredients: meal.ingredients ? JSON.parse(meal.ingredients) : [],
+      instructions: meal.instructions ? JSON.parse(meal.instructions) : [],
+      tags: meal.tags ? JSON.parse(meal.tags) : [],
+    };
+
+    return NextResponse.json(parsedMeal, { status: 201 });
+  } catch (error) {
+    console.error("Error creating meal:", error);
+    return NextResponse.json({ error: "Failed to create meal" }, { status: 500 });
+  }
+}
