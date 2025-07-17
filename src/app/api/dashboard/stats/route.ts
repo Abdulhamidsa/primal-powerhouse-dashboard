@@ -3,15 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Dashboard Stats API: Starting GET request');
+    console.log("Dashboard Stats API: Starting GET request");
     const { searchParams } = new URL(request.url);
     const coachId = searchParams.get("coachId");
-    console.log('Dashboard Stats API: Coach ID:', coachId);
+    console.log("Dashboard Stats API: Coach ID:", coachId);
 
     // Get or create default coach
     let userId = coachId;
     if (!userId) {
-      console.log('Dashboard Stats API: Creating default coach');
+      console.log("Dashboard Stats API: Creating default coach");
       // @ts-expect-error - Prisma client type issue
       const defaultCoach = await prisma.user.upsert({
         where: { email: "coach@example.com" },
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         },
       });
       userId = defaultCoach.id;
-      console.log('Dashboard Stats API: Default coach ID:', userId);
+      console.log("Dashboard Stats API: Default coach ID:", userId);
     }
 
     // Get current date ranges
@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    console.log('Dashboard Stats API: Fetching data for user:', userId);
-    
+    console.log("Dashboard Stats API: Fetching data for user:", userId);
+
     // Fetch data
     const [totalClients, activeClients, totalMeals, totalWorkouts, thisMonthClients, lastMonthClients, thisMonthWorkouts, lastMonthWorkouts, upcomingSessions, recentWorkouts] = await Promise.all([
       // Total clients
@@ -170,14 +170,17 @@ export async function GET(request: NextRequest) {
       })),
     };
 
-    console.log('Dashboard Stats API: Successfully calculated stats');
+    console.log("Dashboard Stats API: Successfully calculated stats");
     return NextResponse.json(stats);
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
-    console.error("Error details:", error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json({ 
-      error: "Failed to fetch dashboard stats", 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error("Error details:", error instanceof Error ? error.message : "Unknown error");
+    return NextResponse.json(
+      {
+        error: "Failed to fetch dashboard stats",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
