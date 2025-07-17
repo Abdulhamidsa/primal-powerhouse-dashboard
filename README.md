@@ -1,22 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Primal Powerhouse Dashboard
 
-## Getting Started
+A comprehensive fitness coaching dashboard with meal planning, client management, and workout tracking.
 
-First, run the development server:
+## 🚀 Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Abdulhamidsa/primal-powerhouse-dashboard)
+
+## 📋 Environment Variables for Vercel
+
+Set these in your Vercel dashboard:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+DATABASE_URL="file:./prod.db"
+NEXTAUTH_SECRET="your-random-secret-key"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Local Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
+
+# Generate Prisma client
+npx prisma generate
+
+# Push database schema
+npx prisma db push
+
+# Seed sample data (optional)
+npm run db:seed
+
+# Start development server
+npm run dev
+```
+
+## 📱 Features
+
+- **Client Management**: Track client profiles, goals, and progress
+- **Meal Planning**: Assign meals with nutrition tracking
+- **Workout Library**: Manage exercise routines
+- **Dashboard Analytics**: View key performance metrics
+- **Responsive Design**: Mobile-friendly interface
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
