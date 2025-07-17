@@ -4,7 +4,6 @@ import { PrismaClient } from "@prisma/client";
 const createPrismaWrapper = () => {
   const client = new PrismaClient();
 
-  // @ts-expect-error - Prisma client type issues in production
   return client as any;
 };
 
