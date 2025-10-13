@@ -8,8 +8,23 @@
     "carbs": 28,
     "fat": 24,
     "fiber": 12,
-    "ingredients": ["2 slices whole grain bread", "1 ripe avocado", "2 organic eggs", "1 tsp extra virgin olive oil", "Sea salt and black pepper", "Red pepper flakes", "Fresh herbs (optional)"],
-    "instructions": ["Toast bread slices until golden brown", "Mash avocado with salt, pepper, and olive oil", "Poach eggs in simmering water for 3-4 minutes", "Spread avocado mixture on toast", "Top with poached eggs", "Garnish with red pepper flakes and herbs"],
+    "ingredients": [
+      "2 slices whole grain bread",
+      "1 ripe avocado",
+      "2 organic eggs",
+      "1 tsp extra virgin olive oil",
+      "Sea salt and black pepper",
+      "Red pepper flakes",
+      "Fresh herbs (optional)"
+    ],
+    "instructions": [
+      "Toast bread slices until golden brown",
+      "Mash avocado with salt, pepper, and olive oil",
+      "Poach eggs in simmering water for 3-4 minutes",
+      "Spread avocado mixture on toast",
+      "Top with poached eggs",
+      "Garnish with red pepper flakes and herbs"
+    ],
     "prepTime": 10,
     "cookTime": 8,
     "servings": 1,
@@ -27,8 +42,22 @@
     "carbs": 12,
     "fat": 22,
     "fiber": 6,
-    "ingredients": ["6 oz chicken breast", "4 cups romaine lettuce", "2 tbsp Caesar dressing", "2 tbsp parmesan cheese", "1/4 cup whole grain croutons", "Fresh black pepper"],
-    "instructions": ["Season chicken breast with salt and pepper", "Grill chicken for 6-7 minutes per side", "Chop romaine lettuce into bite-sized pieces", "Slice grilled chicken into strips", "Toss lettuce with Caesar dressing", "Top with chicken, cheese, and croutons"],
+    "ingredients": [
+      "6 oz chicken breast",
+      "4 cups romaine lettuce",
+      "2 tbsp Caesar dressing",
+      "2 tbsp parmesan cheese",
+      "1/4 cup whole grain croutons",
+      "Fresh black pepper"
+    ],
+    "instructions": [
+      "Season chicken breast with salt and pepper",
+      "Grill chicken for 6-7 minutes per side",
+      "Chop romaine lettuce into bite-sized pieces",
+      "Slice grilled chicken into strips",
+      "Toss lettuce with Caesar dressing",
+      "Top with chicken, cheese, and croutons"
+    ],
     "prepTime": 15,
     "cookTime": 12,
     "servings": 1,
@@ -46,7 +75,15 @@
     "carbs": 45,
     "fat": 18,
     "fiber": 8,
-    "ingredients": ["6 oz wild salmon fillet", "1/2 cup quinoa", "1 cup mixed vegetables (broccoli, carrots, bell peppers)", "1 tbsp olive oil", "Fresh herbs (dill, parsley)", "Lemon juice", "Garlic powder"],
+    "ingredients": [
+      "6 oz wild salmon fillet",
+      "1/2 cup quinoa",
+      "1 cup mixed vegetables (broccoli, carrots, bell peppers)",
+      "1 tbsp olive oil",
+      "Fresh herbs (dill, parsley)",
+      "Lemon juice",
+      "Garlic powder"
+    ],
     "instructions": [
       "Cook quinoa according to package instructions",
       "Season salmon with herbs, salt, and pepper",
@@ -73,8 +110,21 @@
     "carbs": 22,
     "fat": 4,
     "fiber": 5,
-    "ingredients": ["1 cup Greek yogurt (plain)", "1/2 cup mixed berries (blueberries, strawberries)", "2 tbsp granola", "1 tsp raw honey", "1 tbsp chopped almonds", "Cinnamon (pinch)"],
-    "instructions": ["Layer half the yogurt in a glass or bowl", "Add half the berries and granola", "Repeat layers with remaining ingredients", "Top with chopped almonds and honey", "Sprinkle with cinnamon"],
+    "ingredients": [
+      "1 cup Greek yogurt (plain)",
+      "1/2 cup mixed berries (blueberries, strawberries)",
+      "2 tbsp granola",
+      "1 tsp raw honey",
+      "1 tbsp chopped almonds",
+      "Cinnamon (pinch)"
+    ],
+    "instructions": [
+      "Layer half the yogurt in a glass or bowl",
+      "Add half the berries and granola",
+      "Repeat layers with remaining ingredients",
+      "Top with chopped almonds and honey",
+      "Sprinkle with cinnamon"
+    ],
     "prepTime": 5,
     "cookTime": 0,
     "servings": 1,
@@ -92,8 +142,22 @@
     "carbs": 35,
     "fat": 16,
     "fiber": 7,
-    "ingredients": ["5 oz ground turkey (93/7)", "1 medium roasted sweet potato", "2 cups spinach", "1/4 avocado", "2 tbsp tahini dressing", "1 tbsp pumpkin seeds"],
-    "instructions": ["Roast sweet potato at 400°F for 25-30 minutes", "Brown ground turkey with seasoning", "Massage spinach with a pinch of salt", "Cube roasted sweet potato", "Assemble bowl with all ingredients", "Drizzle with tahini dressing and top with seeds"],
+    "ingredients": [
+      "5 oz ground turkey (93/7)",
+      "1 medium roasted sweet potato",
+      "2 cups spinach",
+      "1/4 avocado",
+      "2 tbsp tahini dressing",
+      "1 tbsp pumpkin seeds"
+    ],
+    "instructions": [
+      "Roast sweet potato at 400°F for 25-30 minutes",
+      "Brown ground turkey with seasoning",
+      "Massage spinach with a pinch of salt",
+      "Cube roasted sweet potato",
+      "Assemble bowl with all ingredients",
+      "Drizzle with tahini dressing and top with seeds"
+    ],
     "prepTime": 10,
     "cookTime": 30,
     "servings": 1,
@@ -111,8 +175,20 @@
     "carbs": 18,
     "fat": 12,
     "fiber": 6,
-    "ingredients": ["1 scoop chocolate protein powder", "1 cup unsweetened almond milk", "1/2 frozen banana", "1 tbsp almond butter", "1 tsp cacao powder", "Handful of ice"],
-    "instructions": ["Add all ingredients to blender", "Blend on high for 60-90 seconds", "Check consistency and add more milk if needed", "Pour into glass and enjoy immediately"],
+    "ingredients": [
+      "1 scoop chocolate protein powder",
+      "1 cup unsweetened almond milk",
+      "1/2 frozen banana",
+      "1 tbsp almond butter",
+      "1 tsp cacao powder",
+      "Handful of ice"
+    ],
+    "instructions": [
+      "Add all ingredients to blender",
+      "Blend on high for 60-90 seconds",
+      "Check consistency and add more milk if needed",
+      "Pour into glass and enjoy immediately"
+    ],
     "prepTime": 3,
     "cookTime": 0,
     "servings": 1,

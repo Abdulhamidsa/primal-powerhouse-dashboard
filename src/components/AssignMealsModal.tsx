@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { DataService, Meal, MealPlan } from "@/services/dataService";
+import { useState, useEffect } from 'react';
+import { DataService, Meal, MealPlan } from '@/services/dataService';
 
 interface AssignMealsModalProps {
   isOpen: boolean;
@@ -12,32 +12,38 @@ interface AssignMealsModalProps {
 }
 
 const daysOfWeek = [
-  { value: 0, label: "Sunday" },
-  { value: 1, label: "Monday" },
-  { value: 2, label: "Tuesday" },
-  { value: 3, label: "Wednesday" },
-  { value: 4, label: "Thursday" },
-  { value: 5, label: "Friday" },
-  { value: 6, label: "Saturday" },
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
 ];
 
 const mealTypes = [
-  { value: "BREAKFAST", label: "Breakfast", icon: "🌅" },
-  { value: "LUNCH", label: "Lunch", icon: "☀️" },
-  { value: "DINNER", label: "Dinner", icon: "🌙" },
-  { value: "SNACK", label: "Snack", icon: "🍎" },
+  { value: 'BREAKFAST', label: 'Breakfast', icon: '🌅' },
+  { value: 'LUNCH', label: 'Lunch', icon: '☀️' },
+  { value: 'DINNER', label: 'Dinner', icon: '🌙' },
+  { value: 'SNACK', label: 'Snack', icon: '🍎' },
 ] as const;
 
-export default function AssignMealsModal({ isOpen, onClose, clientId, clientName, onMealPlanCreated }: AssignMealsModalProps) {
+export default function AssignMealsModal({
+  isOpen,
+  onClose,
+  clientId,
+  clientName,
+  onMealPlanCreated,
+}: AssignMealsModalProps) {
   const [loading, setLoading] = useState(false);
   const [meals, setMeals] = useState<Meal[]>([]);
   const [selectedMeals, setSelectedMeals] = useState<{
     [key: string]: string; // dayOfWeek_mealType -> mealId
   }>({});
-  const [planName, setPlanName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [notes, setNotes] = useState("");
+  const [planName, setPlanName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -45,10 +51,10 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
       // Set default plan name and dates
       setPlanName(`${clientName}'s Meal Plan`);
       const today = new Date();
-      setStartDate(today.toISOString().split("T")[0]);
+      setStartDate(today.toISOString().split('T')[0]);
       const nextWeek = new Date(today);
       nextWeek.setDate(today.getDate() + 7);
-      setEndDate(nextWeek.toISOString().split("T")[0]);
+      setEndDate(nextWeek.toISOString().split('T')[0]);
     }
   }, [isOpen, clientName]);
 
@@ -57,13 +63,13 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
       const mealsData = await DataService.getMeals();
       setMeals(mealsData);
     } catch (error) {
-      console.error("Error fetching meals:", error);
+      console.error('Error fetching meals:', error);
     }
   };
 
   const handleMealSelect = (dayOfWeek: number, mealType: string, mealId: string) => {
     const key = `${dayOfWeek}_${mealType}`;
-    setSelectedMeals((prev) => ({
+    setSelectedMeals(prev => ({
       ...prev,
       [key]: mealId,
     }));
@@ -72,12 +78,12 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
   const getMealForSlot = (dayOfWeek: number, mealType: string) => {
     const key = `${dayOfWeek}_${mealType}`;
     const mealId = selectedMeals[key];
-    return meals.find((meal) => meal.id === mealId);
+    return meals.find(meal => meal.id === mealId);
   };
 
   const handleSubmit = async () => {
     if (!planName || !startDate) {
-      alert("Please fill in plan name and start date");
+      alert('Please fill in plan name and start date');
       return;
     }
 
@@ -86,11 +92,11 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
 
       // Convert selected meals to assignments
       const mealAssignments = Object.entries(selectedMeals).map(([key, mealId]) => {
-        const [dayOfWeek, mealType] = key.split("_");
+        const [dayOfWeek, mealType] = key.split('_');
         return {
           mealId,
           dayOfWeek: parseInt(dayOfWeek),
-          mealType: mealType as "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK",
+          mealType: mealType as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
           portion: 1.0,
         };
       });
@@ -108,13 +114,13 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
       onClose();
       // Reset form
       setSelectedMeals({});
-      setPlanName("");
-      setStartDate("");
-      setEndDate("");
-      setNotes("");
+      setPlanName('');
+      setStartDate('');
+      setEndDate('');
+      setNotes('');
     } catch (error) {
-      console.error("Error creating meal plan:", error);
-      alert("Failed to create meal plan");
+      console.error('Error creating meal plan:', error);
+      alert('Failed to create meal plan');
     } finally {
       setLoading(false);
     }
@@ -132,7 +138,10 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
               <h2 className="text-2xl font-bold text-gray-900">Assign Meals</h2>
               <p className="text-gray-600">Create a meal plan for {clientName}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
               <span className="text-2xl text-gray-500">×</span>
             </button>
           </div>
@@ -144,19 +153,45 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
             <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Plan Name</label>
-                <input type="text" value={planName} onChange={(e) => setPlanName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter meal plan name" />
+                <input
+                  type="text"
+                  value={planName}
+                  onChange={e => setPlanName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter meal plan name"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End Date (Optional)</label>
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  End Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={e => setEndDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows={2} placeholder="Add any notes about this meal plan" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Notes (Optional)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={2}
+                  placeholder="Add any notes about this meal plan"
+                />
               </div>
             </div>
 
@@ -167,9 +202,14 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
                 <table className="w-full border-collapse">
                   <thead>
                     <tr>
-                      <th className="p-3 text-left font-medium text-gray-700 border border-gray-200 bg-gray-50">Day</th>
-                      {mealTypes.map((mealType) => (
-                        <th key={mealType.value} className="p-3 text-center font-medium text-gray-700 border border-gray-200 bg-gray-50 min-w-[200px]">
+                      <th className="p-3 text-left font-medium text-gray-700 border border-gray-200 bg-gray-50">
+                        Day
+                      </th>
+                      {mealTypes.map(mealType => (
+                        <th
+                          key={mealType.value}
+                          className="p-3 text-center font-medium text-gray-700 border border-gray-200 bg-gray-50 min-w-[200px]"
+                        >
                           <div className="flex items-center justify-center gap-2">
                             <span>{mealType.icon}</span>
                             <span>{mealType.label}</span>
@@ -179,22 +219,29 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
                     </tr>
                   </thead>
                   <tbody>
-                    {daysOfWeek.map((day) => (
+                    {daysOfWeek.map(day => (
                       <tr key={day.value}>
-                        <td className="p-3 font-medium text-gray-900 border border-gray-200 bg-gray-50">{day.label}</td>
-                        {mealTypes.map((mealType) => {
+                        <td className="p-3 font-medium text-gray-900 border border-gray-200 bg-gray-50">
+                          {day.label}
+                        </td>
+                        {mealTypes.map(mealType => {
                           const selectedMeal = getMealForSlot(day.value, mealType.value);
                           return (
-                            <td key={`${day.value}_${mealType.value}`} className="p-2 border border-gray-200">
+                            <td
+                              key={`${day.value}_${mealType.value}`}
+                              className="p-2 border border-gray-200"
+                            >
                               <select
-                                value={selectedMeals[`${day.value}_${mealType.value}`] || ""}
-                                onChange={(e) => handleMealSelect(day.value, mealType.value, e.target.value)}
+                                value={selectedMeals[`${day.value}_${mealType.value}`] || ''}
+                                onChange={e =>
+                                  handleMealSelect(day.value, mealType.value, e.target.value)
+                                }
                                 className="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               >
                                 <option value="">Select meal...</option>
                                 {meals
-                                  .filter((meal) => meal.type === mealType.value)
-                                  .map((meal) => (
+                                  .filter(meal => meal.type === mealType.value)
+                                  .map(meal => (
                                     <option key={meal.id} value={meal.id}>
                                       {meal.name} ({meal.calories} cal)
                                     </option>
@@ -234,7 +281,7 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
                     {Object.values(selectedMeals).length > 0
                       ? Math.round(
                           Object.values(selectedMeals).reduce((total, mealId) => {
-                            const meal = meals.find((m) => m.id === mealId);
+                            const meal = meals.find(m => m.id === mealId);
                             return total + (meal?.calories || 0);
                           }, 0) / 7
                         )
@@ -243,11 +290,18 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
                 </div>
                 <div>
                   <span className="text-gray-600">Duration:</span>
-                  <span className="ml-2 font-medium">{startDate && endDate ? `${Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} days` : "Ongoing"}</span>
+                  <span className="ml-2 font-medium">
+                    {startDate && endDate
+                      ? `${Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} days`
+                      : 'Ongoing'}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Meal Types:</span>
-                  <span className="ml-2 font-medium">{new Set(Object.entries(selectedMeals).map(([key]) => key.split("_")[1])).size} types</span>
+                  <span className="ml-2 font-medium">
+                    {new Set(Object.entries(selectedMeals).map(([key]) => key.split('_')[1])).size}{' '}
+                    types
+                  </span>
                 </div>
               </div>
             </div>
@@ -257,15 +311,22 @@ export default function AssignMealsModal({ isOpen, onClose, clientId, clientName
         {/* Footer */}
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              disabled={loading || !planName || !startDate || Object.keys(selectedMeals).length === 0}
+              disabled={
+                loading || !planName || !startDate || Object.keys(selectedMeals).length === 0
+              }
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {loading && (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              )}
               Create Meal Plan
             </button>
           </div>

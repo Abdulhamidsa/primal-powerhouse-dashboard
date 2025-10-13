@@ -1,0 +1,42 @@
+/* Dark mode classy theme with red accent - FORCED DARK MODE */
+:root {
+  /* Background colors */
+  --color-bg: #0f0f13;
+  --color-bg-alt: #16161a;
+  --color-surface: #1c1c21;
+  --color-card: #1e1e24;
+  --color-modal-bg: #1e1e24;
+
+  /* Border & dividers */
+  --color-border: #2a2a31;
+
+  /* Text colors */
+  --color-text: #f2f2f5;
+  --color-text-muted: #a0a0a8;
+
+  /* Accent colors */
+  --color-accent: #e53939;
+  --color-accent-hover: #ff4d4d;
+  --color-accent-muted: rgba(229, 57, 57, 0.15);
+
+  /* Status colors */
+  --color-success: #2ecc71;
+  --color-warning: #f39c12;
+  --color-danger: #e74c3c;
+  --color-info: #3498db;
+
+  /* Effects */
+  --color-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.5);
+  --color-shadow-sm: 0 2px 8px 0 rgba(0, 0, 0, 0.4);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+
+  /* Rounded corners */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Remove light mode - DARK MODE ONLY as requested */

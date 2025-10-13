@@ -7,14 +7,14 @@ export interface Client {
   email: string;
   phone: string;
   avatar: string;
-  status: "ACTIVE" | "INACTIVE";
+  status: 'ACTIVE' | 'INACTIVE';
   joinDate: string;
   goals: string[];
   currentWeight: number;
   targetWeight: number;
   height: number;
   age: number;
-  activityLevel: "LOW" | "MODERATE" | "HIGH";
+  activityLevel: 'LOW' | 'MODERATE' | 'HIGH';
   dietaryRestrictions: string[];
   notes: string;
   lastSession: string | null;
@@ -26,7 +26,7 @@ export interface Client {
 export interface Meal {
   id: string;
   name: string;
-  type: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  type: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
   calories: number;
   protein: number;
   carbs: number;
@@ -55,7 +55,7 @@ export interface MealPlan {
 export interface MealAssignment {
   id: string;
   dayOfWeek: number;
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
   portion: number;
   notes: string | null;
   meal: Meal;
@@ -132,59 +132,73 @@ export interface DashboardStats {
 }
 
 export class DataService {
-  private static baseUrl = "/api";
+  private static baseUrl = '/api';
 
   // Meals
-  static async getMeals() {
-    const response = await fetch(`${this.baseUrl}/meals`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch meals");
+  static async getMeals(clientId?: string) {
+    try {
+      console.log('DataService: Fetching meals', clientId ? `for client ${clientId}` : '');
+      
+      // If clientId is provided, include it in the request to get personalized meals
+      const url = clientId ? `/api/meals?clientId=${clientId}` : '/api/meals';
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error('DataService: Failed to fetch meals', response.status, response.statusText);
+        throw new Error(`Failed to fetch meals: ${response.status}`);
+      }
+      
+      const meals = await response.json();
+      console.log('DataService: Successfully fetched meals:', meals.length);
+      return meals;
+    } catch (error) {
+      console.error('DataService: Error fetching meals:', error);
+      throw error;
     }
-    return response.json();
   }
 
   static async getMealById(id: string) {
     const response = await fetch(`${this.baseUrl}/meals/${id}`);
     if (!response.ok) {
-      throw new Error("Meal not found");
+      throw new Error('Meal not found');
     }
     return response.json();
   }
 
   static async createMeal(mealData: any) {
     const response = await fetch(`${this.baseUrl}/meals`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(mealData),
     });
     if (!response.ok) {
-      throw new Error("Failed to create meal");
+      throw new Error('Failed to create meal');
     }
     return response.json();
   }
 
   static async updateMeal(id: string, mealData: any) {
     const response = await fetch(`${this.baseUrl}/meals/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(mealData),
     });
     if (!response.ok) {
-      throw new Error("Failed to update meal");
+      throw new Error('Failed to update meal');
     }
     return response.json();
   }
 
   static async deleteMeal(id: string) {
     const response = await fetch(`${this.baseUrl}/meals/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
     if (!response.ok) {
-      throw new Error("Failed to delete meal");
+      throw new Error('Failed to delete meal');
     }
     return response.json();
   }
@@ -193,43 +207,80 @@ export class DataService {
   static async getClients(): Promise<Client[]> {
     const response = await fetch(`${this.baseUrl}/clients`);
     if (!response.ok) {
-      throw new Error("Failed to fetch clients");
+      throw new Error('Failed to fetch clients');
     }
     return response.json();
   }
 
   static async getClientById(id: string): Promise<Client> {
+    console.log(`DataService: Fetching client with ID: ${id}`);
     const response = await fetch(`${this.baseUrl}/clients/${id}`);
+    
     if (!response.ok) {
-      throw new Error("Client not found");
+      // Get the error message from the response
+      let errorText;
+      try {
+        const errorData = await response.json();
+        errorText = errorData.error || 'Client not found';
+      } catch (e) {
+        errorText = 'Client not found';
+      }
+      
+      console.error(`DataService: Failed to fetch client ${id}. Status: ${response.status}. Message: ${errorText}`);
+      throw new Error(errorText);
     }
-    return response.json();
+    
+    const client = await response.json();
+    console.log(`DataService: Successfully fetched client: ${client.name}`);
+    return client;
   }
 
   static async getActiveClients(): Promise<Client[]> {
     const clients = await this.getClients();
-    return clients.filter((client) => client.status === "ACTIVE");
+    return clients.filter(client => client.status === 'ACTIVE');
   }
 
   static async createClient(clientData: any) {
+    console.log('Sending client data:', JSON.stringify(clientData, null, 2));
     const response = await fetch(`${this.baseUrl}/clients`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(clientData),
     });
+
+    // Get response as text first for debugging
+    const responseText = await response.text();
+    console.log('API Response:', responseText);
+
     if (!response.ok) {
-      throw new Error("Failed to create client");
+      let errorMessage = 'Failed to create client';
+      try {
+        // Try to parse the response as JSON if possible
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.error || errorMessage;
+      } catch (e) {
+        // If not JSON, use the raw text
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
-    return response.json();
+
+    // Parse the successful response
+    try {
+      return JSON.parse(responseText);
+    } catch (e) {
+      console.error('Error parsing response JSON:', e);
+      throw new Error('Invalid response format from server');
+    }
   }
 
   // Meal Plans
   static async getMealPlans(clientId: string): Promise<MealPlan[]> {
     const response = await fetch(`${this.baseUrl}/meal-plans?clientId=${clientId}`);
     if (!response.ok) {
-      throw new Error("Failed to fetch meal plans");
+      throw new Error('Failed to fetch meal plans');
     }
     return response.json();
   }
@@ -243,44 +294,74 @@ export class DataService {
     mealAssignments: {
       mealId: string;
       dayOfWeek: number;
-      mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+      mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
       portion?: number;
       notes?: string;
     }[];
   }): Promise<MealPlan> {
-    const response = await fetch(`${this.baseUrl}/meal-plans`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mealPlanData),
+    console.log('DataService.createMealPlan - Starting', { 
+      clientId: mealPlanData.clientId,
+      name: mealPlanData.name,
+      assignments: mealPlanData.mealAssignments.length
     });
-    if (!response.ok) {
-      throw new Error("Failed to create meal plan");
+    
+    try {
+      console.log('Making API request to /api/meal-plans');
+      console.log('Request payload:', JSON.stringify(mealPlanData, null, 2));
+      
+      const response = await fetch(`${this.baseUrl}/meal-plans`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mealPlanData),
+      });
+      
+      console.log('API response status:', response.status);
+      
+      // Get response text first for debugging
+      const responseText = await response.text();
+      console.log('API response text:', responseText);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to create meal plan: ${responseText}`);
+      }
+      
+      // Parse the JSON response if it's valid JSON
+      try {
+        const mealPlan = JSON.parse(responseText);
+        console.log('Meal plan created successfully:', mealPlan);
+        return mealPlan;
+      } catch (parseError) {
+        console.error('Error parsing API response:', parseError);
+        throw new Error('Invalid response format from server');
+      }
+    } catch (error) {
+      console.error('Error in createMealPlan:', error);
+      throw error;
     }
-    return response.json();
   }
 
   static async updateMealPlan(id: string, mealPlanData: any): Promise<MealPlan> {
     const response = await fetch(`${this.baseUrl}/meal-plans/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(mealPlanData),
     });
     if (!response.ok) {
-      throw new Error("Failed to update meal plan");
+      throw new Error('Failed to update meal plan');
     }
     return response.json();
   }
 
   static async deleteMealPlan(id: string) {
     const response = await fetch(`${this.baseUrl}/meal-plans/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
     if (!response.ok) {
-      throw new Error("Failed to delete meal plan");
+      throw new Error('Failed to delete meal plan');
     }
     return response.json();
   }
@@ -289,7 +370,7 @@ export class DataService {
   static async getWorkouts(): Promise<Workout[]> {
     const response = await fetch(`${this.baseUrl}/workouts`);
     if (!response.ok) {
-      throw new Error("Failed to fetch workouts");
+      throw new Error('Failed to fetch workouts');
     }
     return response.json();
   }
@@ -297,21 +378,21 @@ export class DataService {
   static async getWorkoutsByClientId(clientId: string): Promise<Workout[]> {
     const response = await fetch(`${this.baseUrl}/workouts?clientId=${clientId}`);
     if (!response.ok) {
-      throw new Error("Failed to fetch workouts");
+      throw new Error('Failed to fetch workouts');
     }
     return response.json();
   }
 
   static async createWorkout(workoutData: any) {
     const response = await fetch(`${this.baseUrl}/workouts`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(workoutData),
     });
     if (!response.ok) {
-      throw new Error("Failed to create workout");
+      throw new Error('Failed to create workout');
     }
     return response.json();
   }
@@ -320,7 +401,7 @@ export class DataService {
   static async getDashboardStats(): Promise<DashboardStats> {
     const response = await fetch(`${this.baseUrl}/dashboard/stats`);
     if (!response.ok) {
-      throw new Error("Failed to fetch dashboard stats");
+      throw new Error('Failed to fetch dashboard stats');
     }
     return response.json();
   }
@@ -338,10 +419,10 @@ export class DataService {
   // Database seeding
   static async seedDatabase() {
     const response = await fetch(`${this.baseUrl}/seed`, {
-      method: "POST",
+      method: 'POST',
     });
     if (!response.ok) {
-      throw new Error("Failed to seed database");
+      throw new Error('Failed to seed database');
     }
     return response.json();
   }
@@ -349,8 +430,8 @@ export class DataService {
   // Utility methods for stats calculations
   static async getClientStats() {
     const clients = await this.getClients();
-    const activeClients = clients.filter((c) => c.status === "ACTIVE").length;
-    const inactiveClients = clients.filter((c) => c.status === "INACTIVE").length;
+    const activeClients = clients.filter(c => c.status === 'ACTIVE').length;
+    const inactiveClients = clients.filter(c => c.status === 'INACTIVE').length;
 
     return {
       total: clients.length,
@@ -374,10 +455,10 @@ export class DataService {
       totalProtein,
       avgProtein,
       mealTypes: {
-        breakfast: meals.filter((m: any) => m.type === "BREAKFAST").length,
-        lunch: meals.filter((m: any) => m.type === "LUNCH").length,
-        dinner: meals.filter((m: any) => m.type === "DINNER").length,
-        snack: meals.filter((m: any) => m.type === "SNACK").length,
+        breakfast: meals.filter((m: any) => m.type === 'BREAKFAST').length,
+        lunch: meals.filter((m: any) => m.type === 'LUNCH').length,
+        dinner: meals.filter((m: any) => m.type === 'DINNER').length,
+        snack: meals.filter((m: any) => m.type === 'SNACK').length,
       },
     };
   }
@@ -387,7 +468,8 @@ export class DataService {
     const totalDuration = workouts.reduce((sum, workout) => sum + workout.duration, 0);
     const avgDuration = workouts.length > 0 ? Math.round(totalDuration / workouts.length) : 0;
     const totalCaloriesBurned = workouts.reduce((sum, workout) => sum + (workout.caloriesBurned || 0), 0);
-    const avgRating = workouts.length > 0 ? workouts.reduce((sum, workout) => sum + (workout.rating || 0), 0) / workouts.length : 0;
+    const avgRating =
+      workouts.length > 0 ? workouts.reduce((sum, workout) => sum + (workout.rating || 0), 0) / workouts.length : 0;
 
     return {
       total: workouts.length,
@@ -396,9 +478,9 @@ export class DataService {
       totalCaloriesBurned,
       avgRating: Math.round(avgRating * 10) / 10,
       workoutTypes: {
-        STRENGTH_TRAINING: workouts.filter((w) => w.type === "STRENGTH_TRAINING").length,
-        CARDIO: workouts.filter((w) => w.type === "CARDIO").length,
-        FUNCTIONAL: workouts.filter((w) => w.type === "FUNCTIONAL").length,
+        STRENGTH_TRAINING: workouts.filter(w => w.type === 'STRENGTH_TRAINING').length,
+        CARDIO: workouts.filter(w => w.type === 'CARDIO').length,
+        FUNCTIONAL: workouts.filter(w => w.type === 'FUNCTIONAL').length,
       },
     };
   }

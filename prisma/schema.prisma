@@ -28,6 +28,7 @@ model User {
   meals    Meal[]
   clients  Client[]
   workouts Workout[]
+  videos   Video[]
 
   @@map("users")
 }
@@ -36,6 +37,7 @@ model Client {
   id                   String   @id @default(cuid())
   name                 String
   email                String   @unique
+  password             String?  // Optional for backward compatibility
   phone                String?
   avatar               String?
   status               ClientStatus @default(ACTIVE)
@@ -60,6 +62,8 @@ model Client {
   coach    User     @relation(fields: [coachId], references: [id], onDelete: Cascade)
   workouts Workout[]
   mealPlans MealPlan[]
+  videoAssignments VideoAssignment[]
+  meals    Meal[] // Relation to personalized meals for this client
 
   @@map("clients")
 }
@@ -80,15 +84,47 @@ model Meal {
   servings     Int      @default(1)
   tags         String? // JSON string
   imageUrl     String?
+  isPersonalized Boolean @default(false)
+  originalMealId String? // Reference to the original meal if this is a personalized copy
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relations
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  // Add relation to Client for personalized meals
+  clientId String? // Optional client ID for personalized meals
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
   mealAssignments MealAssignment[]
 
   @@map("meals")
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    VideoCategory
+  difficulty  DifficultyLevel
+  duration    Int      // duration in seconds
+  videoUrl    String   // URL to video file or YouTube/Vimeo URL
+  thumbnailUrl String?
+  equipment   String? // JSON string for required equipment
+  muscleGroups String? // JSON string for target muscle groups
+  tags        String? // JSON string for tags
+  instructions String? // JSON string for exercise instructions
+  tips        String? // JSON string for tips and form cues
+  isPublic    Boolean @default(true)
+  viewCount   Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  coachId String
+  coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  videoAssignments VideoAssignment[]
+
+  @@map("videos")
 }
 
 model Workout {
@@ -132,13 +168,14 @@ model MealPlan {
 }
 
 model MealAssignment {
-  id        String   @id @default(cuid())
-  dayOfWeek Int      // 0 = Sunday, 1 = Monday, etc.
-  mealType  MealType
-  portion   Float    @default(1.0) // serving size multiplier
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  dayOfWeek    Int      // 0 = Sunday, 1 = Monday, etc.
+  mealType     MealType
+  portion      Float    @default(1.0) // serving size multiplier
+  scheduledTime String?  // Time in HH:MM format
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   mealPlanId String
@@ -148,6 +185,28 @@ model MealAssignment {
   meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
 
   @@map("meal_assignments")
+}
+
+model VideoAssignment {
+  id            String   @id @default(cuid())
+  assignedDate  DateTime @default(now())
+  dueDate       DateTime?
+  scheduledTime String?  // Time in HH:MM format
+  isCompleted   Boolean  @default(false)
+  completedAt   DateTime?
+  notes         String?
+  progress      Float    @default(0.0) // 0.0 to 100.0 percentage
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  videoId String
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@map("video_assignments")
 }
 
 // Enums
@@ -206,4 +265,24 @@ enum SessionStatus {
   COMPLETED
   CANCELLED
   NO_SHOW
+}
+
+enum VideoCategory {
+  STRENGTH_TRAINING
+  CARDIO
+  MOBILITY
+  FUNCTIONAL
+  YOGA
+  PILATES
+  WARM_UP
+  COOL_DOWN
+  REHABILITATION
+  SPORTS_SPECIFIC
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
 }

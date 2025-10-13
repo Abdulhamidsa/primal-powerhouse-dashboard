@@ -1,26 +1,248 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/* Gym-inspired primal theme - Mobile First! */
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* CSS Variables for backward compatibility with admin pages */
+    --color-bg: #000000;
+    --color-surface: #0a0a0a;
+    --color-bg-alt: #1a1a1a;
+    --color-text: #ffffff;
+    --color-text-muted: #888888;
+    --color-border: #1a1a1a;
+    --color-accent: #ffffff;
+    --color-accent-muted: rgba(255, 255, 255, 0.1);
+    --color-accent-translucent: rgba(255, 255, 255, 0.1);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+    /* Mobile-first: ensure full height on mobile */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+
+  /* Mobile-first responsive typography */
+  h1 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  h3 {
+    @apply text-lg font-medium;
+  }
+
+  /* Tablet and desktop typography */
+  @media (min-width: 768px) {
+    h1 {
+      @apply text-4xl;
+    }
+
+    h2 {
+      @apply text-2xl;
+    }
+
+    h3 {
+      @apply text-xl;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Custom scrollbar - gym aesthetic */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-card;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-sm;
+    transition: background-color 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+
+  /* Mobile-optimized button styles */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-primary-foreground;
+    @apply px-4 py-3 rounded-lg font-medium; /* Larger touch targets */
+    @apply transition-all duration-200 ease-out;
+    @apply shadow-lg hover:shadow-xl;
+    @apply active:scale-95; /* Touch feedback */
+
+    /* Ensure minimum touch target size (44px) */
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground;
+    @apply px-4 py-3 rounded-lg font-medium;
+    @apply transition-all duration-200 ease-out;
+    @apply border border-border;
+    @apply active:scale-95;
+
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .btn-highlight {
+    @apply bg-highlight hover:bg-highlight/90 text-background;
+    @apply px-4 py-3 rounded-lg font-medium;
+    @apply transition-all duration-200 ease-out;
+    @apply shadow-lg hover:shadow-xl;
+    @apply active:scale-95;
+    /* Subtle glow effect for highlight buttons */
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Card components - mobile optimized */
+  .card-base {
+    @apply bg-card border border-border rounded-lg;
+    @apply shadow-lg;
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .card-interactive {
+    @apply card-base hover:bg-card-hover;
+    @apply hover:shadow-xl hover:border-primary/20;
+    @apply active:scale-[0.98]; /* Subtle press feedback */
+    @apply cursor-pointer;
+  }
+
+  /* Input styling - mobile friendly */
+  .input-base {
+    @apply bg-input border border-border rounded-lg;
+    @apply px-4 py-3 text-foreground placeholder:text-muted; /* Larger padding for mobile */
+    @apply transition-all duration-200 ease-out;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply focus:outline-none;
+
+    /* Ensure good mobile experience */
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin-slow text-primary;
+  }
+
+  /* Mobile-first modal */
+  .modal-overlay {
+    @apply fixed inset-0 bg-background/80 backdrop-blur-sm;
+    @apply flex items-end justify-center p-4; /* Bottom-aligned on mobile */
+    @apply z-50;
+  }
+
+  .modal-content {
+    @apply bg-card border border-border rounded-t-2xl; /* Rounded top on mobile */
+    @apply w-full max-w-lg max-h-[90vh];
+    @apply overflow-y-auto custom-scrollbar;
+    @apply animate-slide-up;
+  }
+
+  /* Desktop modal adjustments */
+  @media (min-width: 768px) {
+    .modal-overlay {
+      @apply items-center; /* Center on desktop */
+    }
+
+    .modal-content {
+      @apply rounded-xl; /* Rounded all corners on desktop */
+    }
+  }
+
+  /* Status indicators */
+  .status-success {
+    @apply bg-green-500/20 text-green-400 border-green-500/30;
+  }
+
+  .status-warning {
+    @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30;
+  }
+
+  .status-error {
+    @apply bg-red-500/20 text-red-400 border-red-500/30;
+  }
+
+  .status-info {
+    @apply bg-blue-500/20 text-blue-400 border-blue-500/30;
+  }
+}
+
+@layer utilities {
+  /* Mobile-first utilities */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Text truncation utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* Gradient backgrounds */
+  .bg-gym-gradient {
+    background: linear-gradient(135deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%);
+  }
+
+  .bg-primary-gradient {
+    background: linear-gradient(135deg, #b22222 0%, #8b0000 100%);
+  }
+
+  .bg-highlight-gradient {
+    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  }
 }

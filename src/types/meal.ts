@@ -1,7 +1,7 @@
 export interface Meal {
   id: string;
   name: string;
-  type: "breakfast" | "lunch" | "dinner" | "snack";
+  type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   description: string; // Detailed description of the meal
   calories: number;
   protein: number;
@@ -18,7 +18,7 @@ export interface Meal {
   servings: number;
   tags: string[];
   images: string[]; // Multiple images array
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: 'easy' | 'medium' | 'hard';
   equipment: string[]; // Required cooking equipment
   tips: string[]; // Cooking tips and notes
   nutritionNotes?: string; // Special nutrition information
@@ -86,10 +86,15 @@ export interface Client {
   phone?: string;
   avatar?: string;
   dateOfBirth?: Date;
-  gender?: "male" | "female" | "other";
+  gender?: 'male' | 'female' | 'other';
   height?: number; // in cm
   weight?: number; // in kg
-  activityLevel: "sedentary" | "lightly_active" | "moderately_active" | "very_active" | "extremely_active";
+  activityLevel:
+    | 'sedentary'
+    | 'lightly_active'
+    | 'moderately_active'
+    | 'very_active'
+    | 'extremely_active';
   goals: string[]; // weight loss, muscle gain, maintenance, etc.
   dietaryRestrictions: string[];
   allergies: string[];
@@ -98,10 +103,10 @@ export interface Client {
   mealHistory: MealPlan[];
   joinDate: Date;
   lastActive?: Date;
-  status: "active" | "inactive" | "paused";
+  status: 'active' | 'inactive' | 'paused';
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 // Create a wrapper to handle TypeScript issues
 const createPrismaWrapper = () => {
