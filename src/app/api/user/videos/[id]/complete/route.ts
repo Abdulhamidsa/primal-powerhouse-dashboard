@@ -1,0 +1,38 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    console.log('Mark video completed API called for assignment:', params.id);
+
+    // Use the existing auth system
+    const { error, user } = await requireAuth(request);
+
+    console.log('Auth result for video completion:', { error, user });
+
+    if (error || !user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    // Verify the assignment belongs to the user and update it
+    const updatedAssignment = await prisma.videoAssignment.updateMany({
+      where: {
+        id: params.id,
+        clientId: user.userId,
+      },
+      data: {
+        isCompleted: true,
+      },
+    });
+
+    if (updatedAssignment.count === 0) {
+      return NextResponse.json({ error: 'Video assignment not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error marking video as completed:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

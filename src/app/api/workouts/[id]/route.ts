@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '../../../../lib/prisma';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     });
 
     if (!workout) {
-      return NextResponse.json({ error: "Workout not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Workout not found' }, { status: 404 });
     }
 
     // Parse JSON fields
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(workoutData);
   } catch (error) {
-    console.error("Error fetching workout:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Error fetching workout:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -67,8 +67,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(workoutData);
   } catch (error) {
-    console.error("Error updating workout:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Error updating workout:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -80,9 +80,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       where: { id },
     });
 
-    return NextResponse.json({ message: "Workout deleted successfully" });
+    return NextResponse.json({ message: 'Workout deleted successfully' });
   } catch (error) {
-    console.error("Error deleting workout:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Error deleting workout:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

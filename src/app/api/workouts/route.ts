@@ -1,25 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get("coachId");
-    const clientId = searchParams.get("clientId");
+    const coachId = searchParams.get('coachId');
+    const clientId = searchParams.get('clientId');
 
     // Get or create default coach
     let userId = coachId;
     if (!userId) {
-      const defaultCoach = await prisma.user.upsert({
-        where: { email: "coach@example.com" },
-        update: {},
-        create: {
-          email: "coach@example.com",
-          name: "Default Coach",
-          password: "hashedpassword",
-          role: "COACH",
+      // First try to get the real coach (not the placeholder)
+      let defaultCoach = await prisma.user.findFirst({
+        where: {
+          AND: [
+            { role: 'COACH' },
+            { email: { not: 'coach@example.com' } }, // Skip the placeholder coach
+          ],
         },
       });
+
+      // If no real coach found, create/get the default one
+      if (!defaultCoach) {
+        defaultCoach = await prisma.user.upsert({
+          where: { email: 'coach@fitness.com' },
+          update: {},
+          create: {
+            email: 'coach@fitness.com',
+            name: 'Mike Johnson',
+            password: 'hashedpassword',
+            role: 'COACH',
+          },
+        });
+      }
+
       userId = defaultCoach.id;
     }
 
@@ -33,19 +47,19 @@ export async function GET(request: NextRequest) {
       include: {
         client: true,
       },
-      orderBy: { date: "desc" },
+      orderBy: { date: 'desc' },
     });
 
     // Parse JSON exercises field
-    const parsedWorkouts = workouts.map((workout) => ({
+    const parsedWorkouts = workouts.map(workout => ({
       ...workout,
       exercises: workout.exercises ? JSON.parse(workout.exercises) : [],
     }));
 
     return NextResponse.json(parsedWorkouts);
   } catch (error) {
-    console.error("Error fetching workouts:", error);
-    return NextResponse.json({ error: "Failed to fetch workouts" }, { status: 500 });
+    console.error('Error fetching workouts:', error);
+    return NextResponse.json({ error: 'Failed to fetch workouts' }, { status: 500 });
   }
 }
 
@@ -57,16 +71,30 @@ export async function POST(request: NextRequest) {
     // Get or create default coach
     let userId = coachId;
     if (!userId) {
-      const defaultCoach = await prisma.user.upsert({
-        where: { email: "coach@example.com" },
-        update: {},
-        create: {
-          email: "coach@example.com",
-          name: "Default Coach",
-          password: "hashedpassword",
-          role: "COACH",
+      // First try to get the real coach (not the placeholder)
+      let defaultCoach = await prisma.user.findFirst({
+        where: {
+          AND: [
+            { role: 'COACH' },
+            { email: { not: 'coach@example.com' } }, // Skip the placeholder coach
+          ],
         },
       });
+
+      // If no real coach found, create/get the default one
+      if (!defaultCoach) {
+        defaultCoach = await prisma.user.upsert({
+          where: { email: 'coach@fitness.com' },
+          update: {},
+          create: {
+            email: 'coach@fitness.com',
+            name: 'Mike Johnson',
+            password: 'hashedpassword',
+            role: 'COACH',
+          },
+        });
+      }
+
       userId = defaultCoach.id;
     }
 
@@ -89,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(parsedWorkout, { status: 201 });
   } catch (error) {
-    console.error("Error creating workout:", error);
-    return NextResponse.json({ error: "Failed to create workout" }, { status: 500 });
+    console.error('Error creating workout:', error);
+    return NextResponse.json({ error: 'Failed to create workout' }, { status: 500 });
   }
 }
