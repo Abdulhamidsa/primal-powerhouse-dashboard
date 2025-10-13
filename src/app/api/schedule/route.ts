@@ -12,14 +12,11 @@ export async function GET(request: NextRequest) {
     let userId = coachId;
     if (!userId) {
       let defaultCoach = await prisma.user.findFirst({
-        where: { 
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }
-          ]
-        }
+        where: {
+          AND: [{ role: 'COACH' }, { email: { not: 'coach@example.com' } }],
+        },
       });
-      
+
       if (!defaultCoach) {
         defaultCoach = await prisma.user.upsert({
           where: { email: 'coach@fitness.com' },
@@ -32,20 +29,20 @@ export async function GET(request: NextRequest) {
           },
         });
       }
-      
+
       userId = defaultCoach.id;
     }
 
     // Build where clause for schedule items
     const whereClause: any = {};
-    
+
     if (clientId) {
       whereClause.clientId = clientId;
     } else {
       // Get all clients for this coach
       const clients = await prisma.client.findMany({
         where: { coachId: userId },
-        select: { id: true }
+        select: { id: true },
       });
       whereClause.clientId = { in: clients.map(c => c.id) };
     }
@@ -54,10 +51,10 @@ export async function GET(request: NextRequest) {
       const startDate = new Date(date);
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
-      
+
       whereClause.scheduledTime = {
         gte: startDate,
-        lt: endDate
+        lt: endDate,
       };
     }
 
@@ -65,30 +62,30 @@ export async function GET(request: NextRequest) {
     const videoAssignments = await prisma.videoAssignment.findMany({
       where: {
         ...whereClause,
-        scheduledTime: whereClause.scheduledTime || { not: null }
+        scheduledTime: whereClause.scheduledTime || { not: null },
       },
       include: {
         client: { select: { id: true, name: true, email: true } },
-        video: { select: { id: true, title: true, duration: true, difficulty: true } }
+        video: { select: { id: true, title: true, duration: true, difficulty: true } },
       },
-      orderBy: { scheduledTime: 'asc' }
+      orderBy: { scheduledTime: 'asc' },
     });
 
     // Get meal assignments
     const mealAssignments = await prisma.mealAssignment.findMany({
       where: {
         mealPlan: {
-          clientId: whereClause.clientId
-        }
+          clientId: whereClause.clientId,
+        },
       },
       include: {
         meal: { select: { id: true, name: true, type: true, calories: true } },
         mealPlan: {
           include: {
-            client: { select: { id: true, name: true, email: true } }
-          }
-        }
-      }
+            client: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
     });
 
     // Format schedule items
@@ -103,8 +100,8 @@ export async function GET(request: NextRequest) {
         details: {
           difficulty: assignment.video.difficulty,
           isCompleted: assignment.isCompleted,
-          progress: assignment.progress
-        }
+          progress: assignment.progress,
+        },
       })),
       ...mealAssignments.map(assignment => ({
         id: assignment.id,
@@ -116,9 +113,9 @@ export async function GET(request: NextRequest) {
         details: {
           mealType: assignment.meal.type,
           calories: assignment.meal.calories,
-          portion: assignment.portion
-        }
-      }))
+          portion: assignment.portion,
+        },
+      })),
     ];
 
     // Sort by scheduled time

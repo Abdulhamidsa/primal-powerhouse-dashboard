@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-// Using inline SVGs for carousel navigation
+import { ChevronLeft, ChevronRight, Clock, Users, X, Flame, Beef, Wheat, Droplet } from 'lucide-react';
 
 interface Meal {
   id: string;
@@ -121,148 +121,134 @@ export default function UserMeals({ userId }: UserMealsProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-        <span className="ml-3 text-muted-foreground">Loading nutrition plan...</span>
+      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400">Loading your meals...</p>
+        </div>
       </div>
     );
   }
 
   if (mealPlans.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
+      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Utensils className="w-10 h-10 text-green-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-3">No Meals Yet</h3>
+          <p className="text-slate-400 max-w-sm">
+            Your coach will assign your personalized meal plan soon. Check back later!
+          </p>
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">No Nutrition Plan Yet</h3>
-        <p className="text-muted-foreground">Your coach will assign your personalized meal plan soon.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-foreground">Nutrition Plan</h2>
-        <div className="text-sm text-muted-foreground">Choose from available options</div>
-      </div>
+    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-y-auto">
+      <div className="p-4 space-y-6">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-white mb-2">Your Meals</h2>
+          <p className="text-slate-400">Nutritious meals crafted for your goals</p>
+        </div>
 
-      {/* Meal Type Carousels */}
-      {mealTypes.map(type => {
-        const meals = getMealsByType(type);
-        if (meals.length === 0) return null;
+        {/* Meal Type Sections */}
+        {mealTypes.map(type => {
+          const meals = getMealsByType(type);
+          if (meals.length === 0) return null;
 
-        const position = carouselPositions[type] || 0;
-        const canScrollLeft = position > 0;
-        const canScrollRight = position < Math.max(0, meals.length - 1); // Always allow scrolling through all meals
+          const position = carouselPositions[type] || 0;
+          const canScrollLeft = position > 0;
+          const canScrollRight = position < Math.max(0, meals.length - 1);
 
-        return (
-          <div key={type} className="space-y-4">
-            {/* Section Header */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-foreground capitalize">{type}</h3>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => scrollCarousel(type, 'left')}
-                  disabled={!canScrollLeft}
-                  className="p-2 rounded-lg bg-secondary text-secondary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:bg-secondary/80 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => scrollCarousel(type, 'right')}
-                  disabled={!canScrollRight}
-                  className="p-2 rounded-lg bg-secondary text-secondary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:bg-secondary/80 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+          const typeColors = {
+            breakfast: 'from-orange-500/20 to-amber-600/20 border-orange-500/30',
+            lunch: 'from-green-500/20 to-emerald-600/20 border-green-500/30',
+            dinner: 'from-purple-500/20 to-indigo-600/20 border-purple-500/30',
+            snack: 'from-pink-500/20 to-rose-600/20 border-pink-500/30',
+          };
 
-            {/* Mobile-First Carousel */}
-            <div className="relative">
-              {/* Mobile: Single card view */}
-              <div className="block md:hidden">
-                <div className="overflow-hidden rounded-lg">
-                  <div
-                    className="flex transition-transform duration-300 ease-out"
-                    style={{ transform: `translateX(-${position * 100}%)` }}
-                  >
-                    {meals.map(meal => (
-                      <div key={meal.id} className="w-full flex-shrink-0 px-1">
-                        <div
-                          className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:bg-card-hover transition-colors"
-                          onClick={() => setSelectedMeal(meal)}
-                        >
-                          {meal.imageUrl && (
-                            <img
-                              src={meal.imageUrl}
-                              alt={meal.name}
-                              className="w-full h-40 object-cover rounded-lg mb-3"
-                            />
-                          )}
-                          <h4 className="font-medium text-foreground mb-3 text-base">{meal.name}</h4>
-                          <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-foreground">{meal.calories}</span>
-                              <span className="text-xs">calories</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-medium text-foreground">{meal.protein}g</span>
-                              <span className="text-xs">protein</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-medium text-foreground">{meal.carbs}g</span>
-                              <span className="text-xs">carbs</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-medium text-foreground">{meal.fat}g</span>
-                              <span className="text-xs">fat</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+          const typeIcons = {
+            breakfast: '🌅',
+            lunch: '☀️',
+            dinner: '🌙',
+            snack: '🍎',
+          };
+
+          return (
+            <div key={type} className="space-y-3">
+              {/* Section Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{typeIcons[type as keyof typeof typeIcons]}</span>
+                  <h3 className="text-xl font-semibold text-white capitalize">{type}</h3>
                 </div>
+                {meals.length > 1 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => scrollCarousel(type, 'left')}
+                      disabled={!canScrollLeft}
+                      className="p-2 rounded-full bg-slate-700/50 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-600/50 transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      onClick={() => scrollCarousel(type, 'right')}
+                      disabled={!canScrollRight}
+                      className="p-2 rounded-full bg-slate-700/50 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-600/50 transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Desktop: Multi-card view */}
-              <div className="hidden md:block overflow-hidden">
+              {/* Carousel */}
+              <div className="overflow-hidden">
                 <div
-                  className="flex transition-transform duration-300 ease-out"
-                  style={{ transform: `translateX(-${position * 33.333}%)` }}
+                  className="flex transition-transform duration-300 ease-out gap-4"
+                  style={{ transform: `translateX(-${position * 100}%)` }}
                 >
                   {meals.map(meal => (
-                    <div key={meal.id} className="w-1/3 flex-shrink-0 px-2">
+                    <div key={meal.id} className="w-full flex-shrink-0">
                       <div
-                        className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:bg-card-hover transition-colors"
+                        className={`bg-gradient-to-br ${typeColors[type as keyof typeof typeColors]} backdrop-blur-sm border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-all duration-300`}
                         onClick={() => setSelectedMeal(meal)}
                       >
                         {meal.imageUrl && (
                           <img
                             src={meal.imageUrl}
                             alt={meal.name}
-                            className="w-full h-32 object-cover rounded-lg mb-3"
+                            className="w-full h-32 object-cover rounded-xl mb-3"
                           />
                         )}
-                        <h4 className="font-medium text-foreground mb-2 line-clamp-2">{meal.name}</h4>
-                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                          <div>{meal.calories} cal</div>
-                          <div>{meal.protein}g protein</div>
-                          <div>{meal.carbs}g carbs</div>
-                          <div>{meal.fat}g fat</div>
+                        <h4 className="font-semibold text-white mb-3 text-lg">{meal.name}</h4>
+
+                        {/* Nutrition Grid */}
+                        <div className="grid grid-cols-4 gap-2">
+                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                            <Flame className="text-orange-400 w-4 h-4 mx-auto mb-1" />
+                            <div className="text-white font-semibold text-sm">{meal.calories}</div>
+                            <div className="text-slate-400 text-xs">cal</div>
+                          </div>
+                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                            <Beef className="text-red-400 w-4 h-4 mx-auto mb-1" />
+                            <div className="text-white font-semibold text-sm">{meal.protein}g</div>
+                            <div className="text-slate-400 text-xs">protein</div>
+                          </div>
+                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                            <Wheat className="text-yellow-400 w-4 h-4 mx-auto mb-1" />
+                            <div className="text-white font-semibold text-sm">{meal.carbs}g</div>
+                            <div className="text-slate-400 text-xs">carbs</div>
+                          </div>
+                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                            <Droplet className="text-blue-400 w-4 h-4 mx-auto mb-1" />
+                            <div className="text-white font-semibold text-sm">{meal.fat}g</div>
+                            <div className="text-slate-400 text-xs">fat</div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -270,24 +256,22 @@ export default function UserMeals({ userId }: UserMealsProps) {
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {/* Meal Detail Modal */}
       {selectedMeal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <h3 className="text-xl font-semibold text-foreground">{selectedMeal.name}</h3>
+                <h3 className="text-2xl font-bold text-white">{selectedMeal.name}</h3>
                 <button
                   onClick={() => setSelectedMeal(null)}
-                  className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X size={20} />
                 </button>
               </div>
 
@@ -295,43 +279,58 @@ export default function UserMeals({ userId }: UserMealsProps) {
                 <img
                   src={selectedMeal.imageUrl}
                   alt={selectedMeal.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
+                  className="w-full h-48 object-cover rounded-xl mb-6"
                 />
               )}
 
               {/* Nutrition Info */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div className="bg-secondary rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-foreground">{selectedMeal.calories}</div>
-                  <div className="text-xs text-muted-foreground">Calories</div>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
+                  <Flame className="text-orange-400 w-6 h-6 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-white">{selectedMeal.calories}</div>
+                  <div className="text-sm text-slate-400">Calories</div>
                 </div>
-                <div className="bg-secondary rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-foreground">{selectedMeal.protein}g</div>
-                  <div className="text-xs text-muted-foreground">Protein</div>
+                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
+                  <Beef className="text-red-400 w-6 h-6 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-white">{selectedMeal.protein}g</div>
+                  <div className="text-sm text-slate-400">Protein</div>
                 </div>
-                <div className="bg-secondary rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-foreground">{selectedMeal.carbs}g</div>
-                  <div className="text-xs text-muted-foreground">Carbs</div>
+                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
+                  <Wheat className="text-yellow-400 w-6 h-6 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-white">{selectedMeal.carbs}g</div>
+                  <div className="text-sm text-slate-400">Carbs</div>
                 </div>
-                <div className="bg-secondary rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-foreground">{selectedMeal.fat}g</div>
-                  <div className="text-xs text-muted-foreground">Fat</div>
+                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
+                  <Droplet className="text-blue-400 w-6 h-6 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-white">{selectedMeal.fat}g</div>
+                  <div className="text-sm text-slate-400">Fat</div>
                 </div>
               </div>
 
               {/* Meal Details */}
               <div className="space-y-4">
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <span>Prep: {formatDuration(selectedMeal.prepTime)}</span>
-                  <span>Cook: {formatDuration(selectedMeal.cookTime)}</span>
-                  <span>Servings: {selectedMeal.servings}</span>
+                <div className="flex items-center justify-center gap-6 text-sm text-slate-400 bg-slate-700/30 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <Clock size={16} />
+                    <span>Prep: {formatDuration(selectedMeal.prepTime)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock size={16} />
+                    <span>Cook: {formatDuration(selectedMeal.cookTime)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users size={16} />
+                    <span>
+                      {selectedMeal.servings} serving{selectedMeal.servings > 1 ? 's' : ''}
+                    </span>
+                  </div>
                 </div>
 
                 {selectedMeal.ingredients && (
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">Ingredients</h4>
-                    <div className="bg-secondary rounded-lg p-4">
-                      <pre className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    <h4 className="font-semibold text-white mb-3 text-lg">Ingredients</h4>
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <pre className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
                         {selectedMeal.ingredients}
                       </pre>
                     </div>
@@ -340,9 +339,9 @@ export default function UserMeals({ userId }: UserMealsProps) {
 
                 {selectedMeal.instructions && (
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">Instructions</h4>
-                    <div className="bg-secondary rounded-lg p-4">
-                      <pre className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    <h4 className="font-semibold text-white mb-3 text-lg">Instructions</h4>
+                    <div className="bg-slate-700/30 rounded-xl p-4">
+                      <pre className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
                         {selectedMeal.instructions}
                       </pre>
                     </div>

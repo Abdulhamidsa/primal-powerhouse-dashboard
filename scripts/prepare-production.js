@@ -13,10 +13,11 @@ const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
 let schemaContent = fs.readFileSync(schemaPath, 'utf8');
 
 // Check if we're in production environment
-const isProduction = process.env.NODE_ENV === 'production' || 
-                     process.env.VERCEL === '1' || 
-                     process.env.VERCEL_ENV || 
-                     process.env.DATABASE_URL?.includes('postgres');
+const isProduction =
+  process.env.NODE_ENV === 'production' ||
+  process.env.VERCEL === '1' ||
+  process.env.VERCEL_ENV ||
+  process.env.DATABASE_URL?.includes('postgres');
 
 if (isProduction) {
   console.log('📦 Setting up PostgreSQL for production...');

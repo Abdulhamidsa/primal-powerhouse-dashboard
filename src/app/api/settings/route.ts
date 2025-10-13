@@ -10,14 +10,11 @@ export async function GET(request: NextRequest) {
     let userId = coachId;
     if (!userId) {
       let defaultCoach = await prisma.user.findFirst({
-        where: { 
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }
-          ]
-        }
+        where: {
+          AND: [{ role: 'COACH' }, { email: { not: 'coach@example.com' } }],
+        },
       });
-      
+
       if (!defaultCoach) {
         defaultCoach = await prisma.user.upsert({
           where: { email: 'coach@fitness.com' },
@@ -30,7 +27,7 @@ export async function GET(request: NextRequest) {
           },
         });
       }
-      
+
       userId = defaultCoach.id;
     }
 
@@ -43,8 +40,8 @@ export async function GET(request: NextRequest) {
         email: true,
         role: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     });
 
     if (!coach) {
@@ -55,7 +52,7 @@ export async function GET(request: NextRequest) {
     const [clientCount, mealCount, videoCount] = await Promise.all([
       prisma.client.count({ where: { coachId: userId } }),
       prisma.meal.count({ where: { coachId: userId } }),
-      prisma.video.count()
+      prisma.video.count(),
     ]);
 
     const settings = {
@@ -64,20 +61,20 @@ export async function GET(request: NextRequest) {
         totalClients: clientCount,
         totalMeals: mealCount,
         totalVideos: videoCount,
-        accountAge: Math.floor((Date.now() - coach.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+        accountAge: Math.floor((Date.now() - coach.createdAt.getTime()) / (1000 * 60 * 60 * 24)),
       },
       preferences: {
         theme: 'light',
         notifications: true,
         emailUpdates: true,
         timezone: 'UTC',
-        language: 'en'
+        language: 'en',
       },
       limits: {
         maxClients: 100,
         maxMeals: 500,
-        maxVideoAssignments: 1000
-      }
+        maxVideoAssignments: 1000,
+      },
     };
 
     return NextResponse.json(settings);
@@ -96,18 +93,15 @@ export async function PUT(request: NextRequest) {
     let userId = coachId;
     if (!userId) {
       let defaultCoach = await prisma.user.findFirst({
-        where: { 
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }
-          ]
-        }
+        where: {
+          AND: [{ role: 'COACH' }, { email: { not: 'coach@example.com' } }],
+        },
       });
-      
+
       if (!defaultCoach) {
         return NextResponse.json({ error: 'Coach not found' }, { status: 404 });
       }
-      
+
       userId = defaultCoach.id;
     }
 
@@ -125,13 +119,13 @@ export async function PUT(request: NextRequest) {
         name: true,
         email: true,
         role: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json({
       message: 'Settings updated successfully',
-      profile: updatedCoach
+      profile: updatedCoach,
     });
   } catch (error) {
     console.error('Error updating settings:', error);
