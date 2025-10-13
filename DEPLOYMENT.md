@@ -97,7 +97,7 @@ DATABASE_URL="mysql://user:password@host:3306/database"
 2. **Install dependencies**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Set up environment**
@@ -110,15 +110,15 @@ DATABASE_URL="mysql://user:password@host:3306/database"
 4. **Database setup**
 
    ```bash
-   npm run db:generate
-   npm run db:push
-   npm run db:seed  # Optional: Add sample data
+   pnpm run db:generate
+   pnpm run db:push
+   pnpm run db:seed  # Optional: Add sample data
    ```
 
 5. **Build and start**
    ```bash
-   npm run build:production
-   npm start
+   pnpm run build:production
+   pnpm start
    ```
 
 ## 🔒 Security Checklist
@@ -187,20 +187,20 @@ The app includes a health check at `/api/health`
 rm -rf .next
 
 # Regenerate Prisma client
-npm run db:generate
+pnpm run db:generate
 
 # Try building again
-npm run build
+pnpm run build
 ```
 
 ### Database Issues
 
 ```bash
 # Reset database
-npm run db:push --force-reset
+pnpm run db:push --force-reset
 
 # Reseed data
-npm run db:seed
+pnpm run db:seed
 ```
 
 ### Environment Issues

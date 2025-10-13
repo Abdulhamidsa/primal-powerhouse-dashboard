@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "npm run prepare:prod && next build",
+    "build": "pnpm run prepare:prod && next build",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "prisma generate",
@@ -14,7 +14,7 @@
     "postinstall": "prisma generate",
     "type-check": "tsc --noEmit",
     "build:local": "next build",
-    "build:production": "npm run prepare:prod && next build",
+    "build:production": "pnpm run prepare:prod && next build",
     "prepare:prod": "node scripts/prepare-production.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -23,7 +23,7 @@
     "deploy:docker": "docker build -t primal-powerhouse-dashboard . && docker run -d -p 3000:3000 primal-powerhouse-dashboard",
     "deploy:docker-compose": "docker-compose -f docker-compose.prod.yml up -d --build",
     "health-check": "curl http://localhost:3000/api/health",
-    "production-setup": "npm run db:generate && npm run db:migrate && npm run build"
+    "production-setup": "pnpm run db:generate && pnpm run db:migrate && pnpm run build"
   },
   "dependencies": {
     "@prisma/client": "6.17.1",
