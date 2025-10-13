@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     });
 
     if (!meal) {
-      return NextResponse.json({ error: "Meal not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
     }
 
     // Parse JSON fields
@@ -21,8 +21,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(parsedMeal);
   } catch (error) {
-    console.error("Error fetching meal:", error);
-    return NextResponse.json({ error: "Failed to fetch meal" }, { status: 500 });
+    console.error('Error fetching meal:', error);
+    return NextResponse.json({ error: 'Failed to fetch meal' }, { status: 500 });
   }
 }
 
@@ -51,8 +51,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(parsedMeal);
   } catch (error) {
-    console.error("Error updating meal:", error);
-    return NextResponse.json({ error: "Failed to update meal" }, { status: 500 });
+    console.error('Error updating meal:', error);
+    return NextResponse.json({ error: 'Failed to update meal' }, { status: 500 });
   }
 }
 
@@ -62,9 +62,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       where: { id: params.id },
     });
 
-    return NextResponse.json({ message: "Meal deleted successfully" });
+    return NextResponse.json({ message: 'Meal deleted successfully' });
   } catch (error) {
-    console.error("Error deleting meal:", error);
-    return NextResponse.json({ error: "Failed to delete meal" }, { status: 500 });
+    console.error('Error deleting meal:', error);
+    return NextResponse.json({ error: 'Failed to delete meal' }, { status: 500 });
   }
 }
