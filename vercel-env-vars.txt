@@ -1,0 +1,22 @@
+# Vercel Environment Variables - COMPLETE LIST
+# Add these to: Vercel Dashboard > Your Project > Settings > Environment Variables
+
+# REQUIRED - Database Configuration:
+DATABASE_PROVIDER="postgresql"
+DATABASE_URL="postgres://postgres.ggexaunrsqhtvtfdhlfz:nRatIwFmzmkYXLV0@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true"
+
+# REQUIRED - Authentication (generate random 32+ character strings):
+NEXTAUTH_SECRET="k8Hn2mP9xQ4vR7wT3nL6sA1cF5bE8jM2pX9qW3eT7uY5zC8vB1nK4sD6fG9hJ2mL"
+JWT_SECRET="xY9mK2pL7qW3eR6tU4nS8aD1fG5hJ9vCzB8nM5pQ2wE3rT6yI1oP4aS7dF0gH3jK"
+
+# REQUIRED - Update with your actual Vercel URL:
+NEXTAUTH_URL="https://primal-powerhouse-dashboard-4vph.vercel.app"
+
+# PRODUCTION ENVIRONMENT:
+NODE_ENV="production"
+
+# ⚡ QUICK SETUP:
+# 1. Copy each variable name and value above
+# 2. Paste into Vercel environment variables
+# 3. Set Environment: Production
+# 4. Save and redeploy

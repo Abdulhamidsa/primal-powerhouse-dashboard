@@ -6,12 +6,20 @@
 
 1. Push code to GitHub
 2. Import project in Vercel
-3. Set environment variables:
+3. **IMPORTANT: Add PostgreSQL Integration**
+   - Go to Vercel Dashboard → Your Project → Settings → Integrations
+   - Add "Vercel Postgres" integration
+   - Create a new database (DATABASE_URL will be auto-added)
+4. Set additional environment variables:
    ```
-   DATABASE_URL=file:./prod.db
-   NEXTAUTH_SECRET=your-secret-key
+   NEXTAUTH_SECRET=your-secret-key-make-it-long-and-random
+   JWT_SECRET=your-jwt-secret-key
    ```
-4. Deploy automatically
+5. Deploy automatically
+
+**🚨 FIXING "DATABASE_URL not found" ERROR:**
+- Run: `.\setup-vercel-db.ps1` (Windows) or `./setup-vercel-db.sh` (Linux/Mac)
+- Or manually add PostgreSQL integration in Vercel dashboard
 
 ### Option 2: Docker
 
@@ -55,17 +63,21 @@ npm start
 
 ## 🗄️ Database Options
 
-### SQLite (Default)
-
-```
-DATABASE_URL="file:./prod.db"
-```
-
-### PostgreSQL
+### PostgreSQL (Production Recommended)
 
 ```
 DATABASE_URL="postgresql://user:password@host:5432/database"
 ```
+
+**For Vercel:** Automatically provided when you add PostgreSQL integration
+
+### SQLite (Development Only)
+
+```
+DATABASE_URL="file:./dev.db"
+```
+
+**Note:** SQLite is not supported on Vercel. Use PostgreSQL for production.
 
 ### MySQL
 

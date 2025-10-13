@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run prepare:prod && next build",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "prisma generate",
@@ -13,8 +13,8 @@
     "db:seed": "npx tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "type-check": "tsc --noEmit",
+    "build:local": "next build",
     "build:production": "npm run prepare:prod && next build",
-    "build:vercel": "npm run prepare:prod && next build",
     "prepare:prod": "node scripts/prepare-production.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
