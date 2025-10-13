@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { requireAuth } from '@/lib/auth';
+
+const prisma = new PrismaClient();
+
+export async function GET(request: NextRequest) {
+  try {
+    const { error, user } = await requireAuth(request);
+
+    if (error || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get client details
+    const client = await prisma.client.findUnique({
+      where: { id: user.userId },
+      include: {
+        coach: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      user: {
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        coach: client.coach,
+      },
+    });
+  } catch (error) {
+    console.error('Me route error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
