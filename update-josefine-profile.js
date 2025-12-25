@@ -21,11 +21,12 @@ async function updateJosefineProfile() {
         currentWeight: 48.0, // kg
         activityLevel: 'LOW', // Beginner level
         goals: JSON.stringify(['lean-build', 'ab-lines', 'bikini-confidence']),
-        notes: 'Health: No major conditions, takes vitamins. Feels cold and sometimes dizzy, irregular menstrual cycle, not on birth control. Nutrition: Currently 1.5–2 meals/day, sometimes skips or binges. Loves veggie-based foods and oatmeal. Low budget, needs protein and meal structure. Plan: Focus on three balanced meals/day until Jan 6, no restriction. After Jan 6, add a beginner-friendly gym routine.',
+        notes:
+          'Health: No major conditions, takes vitamins. Feels cold and sometimes dizzy, irregular menstrual cycle, not on birth control. Nutrition: Currently 1.5–2 meals/day, sometimes skips or binges. Loves veggie-based foods and oatmeal. Low budget, needs protein and meal structure. Plan: Focus on three balanced meals/day until Jan 6, no restriction. After Jan 6, add a beginner-friendly gym routine.',
       },
     });
 
-    console.log('✅ Josefine\'s profile updated successfully!');
+    console.log("✅ Josefine's profile updated successfully!");
     console.log('Updated fields:');
     console.log(`- Age: ${updatedClient.age}`);
     console.log(`- Height: ${updatedClient.height} cm`);
@@ -34,7 +35,7 @@ async function updateJosefineProfile() {
     console.log(`- Goals: ${updatedClient.goals}`);
     console.log(`- Notes: ${updatedClient.notes}`);
   } catch (error) {
-    console.error('Error updating Josefine\'s profile:', error);
+    console.error("Error updating Josefine's profile:", error);
   } finally {
     await prisma.$disconnect();
   }

@@ -103,11 +103,7 @@ export default function MealDetailPage() {
             {/* Meal Image */}
             {meal.imageUrl && (
               <div className="lg:w-1/2">
-                <img
-                  src={meal.imageUrl}
-                  alt={meal.name}
-                  className="w-full h-64 lg:h-80 object-cover rounded-xl"
-                />
+                <img src={meal.imageUrl} alt={meal.name} className="w-full h-64 lg:h-80 object-cover rounded-xl" />
               </div>
             )}
 
@@ -127,7 +123,9 @@ export default function MealDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Users size={18} />
-                  <span>{meal.servings} serving{meal.servings > 1 ? 's' : ''}</span>
+                  <span>
+                    {meal.servings} serving{meal.servings > 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
 
@@ -175,9 +173,7 @@ export default function MealDetailPage() {
                     ))}
                   </ul>
                 ) : (
-                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed font-sans">
-                    {meal.ingredients}
-                  </pre>
+                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed font-sans">{meal.ingredients}</pre>
                 )}
               </div>
             </div>

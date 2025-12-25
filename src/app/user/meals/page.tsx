@@ -265,7 +265,7 @@ export default function UserMealsPage() {
                   <div className="flex space-x-2">
                     <button
                       className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90 transition-colors"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         router.push(`/user/meals/${assignment.meal.id}`);
                       }}
