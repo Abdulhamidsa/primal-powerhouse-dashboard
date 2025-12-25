@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Users, ChefHat } from 'lucide-react';
+import { Clock, Users, ChefHat } from '../../../../node_modules/lucide-react';
 
 interface Meal {
   id: string;
@@ -55,10 +55,6 @@ interface MealAssignment {
 
 export default function UserMealsPage() {
   const router = useRouter();
-  const [todaysMeals, setTodaysMeals] = useState<TodaysMeals>({});
-  const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'today' | 'all'>('today');
   const [todaysMeals, setTodaysMeals] = useState<TodaysMeals>({});
   const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,33 +128,6 @@ export default function UserMealsPage() {
         </div>
       </div>
 
-      {/* Nutrition Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card p-4 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Total Calories</h3>
-          <p className="text-2xl font-bold text-primary">{Math.round(totalNutrition.calories)}</p>
-          <p className="text-sm text-muted-foreground">From all assigned meals</p>
-        </div>
-
-        <div className="bg-card p-4 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Total Protein</h3>
-          <p className="text-2xl font-bold text-primary">{Math.round(totalNutrition.protein)}g</p>
-          <p className="text-sm text-muted-foreground">From all assigned meals</p>
-        </div>
-
-        <div className="bg-card p-4 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Total Carbs</h3>
-          <p className="text-2xl font-bold text-primary">{Math.round(totalNutrition.carbs)}g</p>
-          <p className="text-sm text-muted-foreground">From all assigned meals</p>
-        </div>
-
-        <div className="bg-card p-4 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Total Fat</h3>
-          <p className="text-2xl font-bold text-primary">{Math.round(totalNutrition.fat)}g</p>
-          <p className="text-sm text-muted-foreground">From all assigned meals</p>
-        </div>
-      </div>
-
       {/* Meal Sections */}
       {['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'].map(mealType => {
         const mealsForType = allMealAssignments.filter(assignment => assignment.mealType.toUpperCase() === mealType);
@@ -193,14 +162,6 @@ export default function UserMealsPage() {
                         {getDayName(assignment.dayOfWeek)} • {assignment.mealPlan.name}
                       </p>
                     </div>
-                    <div className="text-right ml-2">
-                      <p className="text-sm font-medium text-primary">
-                        {Math.round(assignment.meal.calories * assignment.portion)} cal
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {Math.round(assignment.meal.protein * assignment.portion)}g protein
-                      </p>
-                    </div>
                   </div>
 
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{assignment.meal.description}</p>
@@ -217,27 +178,6 @@ export default function UserMealsPage() {
                     <div className="flex items-center gap-1">
                       <ChefHat className="w-3 h-3" />
                       <span>{assignment.meal.difficulty}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
-                    <div className="text-center">
-                      <p className="font-medium text-foreground">
-                        {Math.round(assignment.meal.carbs * assignment.portion)}g
-                      </p>
-                      <p className="text-muted-foreground">Carbs</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-medium text-foreground">
-                        {Math.round(assignment.meal.protein * assignment.portion)}g
-                      </p>
-                      <p className="text-muted-foreground">Protein</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-medium text-foreground">
-                        {Math.round(assignment.meal.fat * assignment.portion)}g
-                      </p>
-                      <p className="text-muted-foreground">Fat</p>
                     </div>
                   </div>
 

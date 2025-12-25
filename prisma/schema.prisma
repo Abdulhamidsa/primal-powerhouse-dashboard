@@ -46,6 +46,7 @@ model Client {
   dietaryRestrictions  String? // JSON string
   goals                String? // JSON string
   notes                String?
+  motivationalMessage  String? // Custom motivational message for client dashboard
   lastSession          DateTime?
   nextSession          DateTime?
   sessionsCompleted    Int      @default(0)

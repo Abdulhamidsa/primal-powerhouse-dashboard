@@ -147,7 +147,9 @@ export default function UserVideos({ userId }: UserVideosProps) {
             <Play className="w-10 h-10 text-purple-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-3">No Workouts Yet</h3>
-          <p className="text-slate-400 max-w-sm">Your coach will assign your training videos soon. Get ready to sweat!</p>
+          <p className="text-slate-400 max-w-sm">
+            Your coach will assign your training videos soon. Get ready to sweat!
+          </p>
         </div>
       </div>
     );
@@ -224,12 +226,12 @@ export default function UserVideos({ userId }: UserVideosProps) {
                       <Play className="w-8 h-8 text-slate-400" />
                     </div>
                   )}
-                  
+
                   {/* Play overlay */}
                   <div className="absolute inset-0 bg-black/30 rounded-xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                     <Play className="w-6 h-6 text-white" />
                   </div>
-                  
+
                   {/* Completion badge */}
                   {assignment.isCompleted && (
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -242,7 +244,9 @@ export default function UserVideos({ userId }: UserVideosProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="text-purple-400">{getCategoryIcon(assignment.video.category)}</div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(assignment.video.difficulty)}`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(assignment.video.difficulty)}`}
+                    >
                       {assignment.video.difficulty}
                     </span>
                     <div className="flex items-center gap-1 text-xs text-slate-400">
@@ -252,7 +256,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
                   </div>
 
                   <h3 className="text-white font-semibold mb-1 truncate">{assignment.video.title}</h3>
-                  
+
                   {assignment.video.description && (
                     <p className="text-slate-400 text-sm truncate mb-2">{assignment.video.description}</p>
                   )}
@@ -284,7 +288,6 @@ export default function UserVideos({ userId }: UserVideosProps) {
           ))}
         </div>
       </div>
-    </div>
 
       {/* Video Detail Modal */}
       {selectedVideo && (
@@ -323,17 +326,23 @@ export default function UserVideos({ userId }: UserVideosProps) {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-slate-700/50 rounded-xl p-3 text-center">
                     <Clock className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-                    <div className="text-white font-semibold text-sm">{formatDuration(selectedVideo.video.duration)}</div>
+                    <div className="text-white font-semibold text-sm">
+                      {formatDuration(selectedVideo.video.duration)}
+                    </div>
                     <div className="text-slate-400 text-xs">Duration</div>
                   </div>
                   <div className="bg-slate-700/50 rounded-xl p-3 text-center">
                     <div className="text-purple-400 mb-1">{getCategoryIcon(selectedVideo.video.category)}</div>
-                    <div className="text-white font-semibold text-sm capitalize">{selectedVideo.video.category.replace('_', ' ')}</div>
+                    <div className="text-white font-semibold text-sm capitalize">
+                      {selectedVideo.video.category.replace('_', ' ')}
+                    </div>
                     <div className="text-slate-400 text-xs">Type</div>
                   </div>
                   <div className="bg-slate-700/50 rounded-xl p-3 text-center">
                     <Zap className="w-5 h-5 text-orange-400 mx-auto mb-1" />
-                    <div className={`font-semibold text-sm capitalize ${getDifficultyColor(selectedVideo.video.difficulty)}`}>
+                    <div
+                      className={`font-semibold text-sm capitalize ${getDifficultyColor(selectedVideo.video.difficulty)}`}
+                    >
                       {selectedVideo.video.difficulty}
                     </div>
                     <div className="text-slate-400 text-xs">Level</div>
@@ -353,7 +362,9 @@ export default function UserVideos({ userId }: UserVideosProps) {
                   <div>
                     <h4 className="font-semibold text-white mb-2">Instructions</h4>
                     <div className="bg-slate-700/30 rounded-xl p-4">
-                      <pre className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{selectedVideo.video.instructions}</pre>
+                      <pre className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedVideo.video.instructions}
+                      </pre>
                     </div>
                   </div>
                 )}
@@ -367,7 +378,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
                     Mark as Completed
                   </button>
                 )}
-                
+
                 {selectedVideo.isCompleted && (
                   <div className="w-full py-3 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold rounded-xl text-center flex items-center justify-center gap-2">
                     <CheckCircle size={20} />

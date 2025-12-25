@@ -10,7 +10,7 @@ NEXTAUTH_SECRET="k8Hn2mP9xQ4vR7wT3nL6sA1cF5bE8jM2pX9qW3eT7uY5zC8vB1nK4sD6fG9hJ2m
 JWT_SECRET="xY9mK2pL7qW3eR6tU4nS8aD1fG5hJ9vCzB8nM5pQ2wE3rT6yI1oP4aS7dF0gH3jK"
 
 # REQUIRED - Update with your actual Vercel URL:
-NEXTAUTH_URL="https://primal-powerhouse-dashboard-4vph.vercel.app"
+NEXTAUTH_URL="https://app.primalpowerhouse.com"
 
 # PRODUCTION ENVIRONMENT:
 NODE_ENV="production"
