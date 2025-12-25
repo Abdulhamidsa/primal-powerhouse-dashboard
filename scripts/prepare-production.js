@@ -38,18 +38,36 @@ try {
   execSync('npx prisma generate', { stdio: 'inherit' });
   console.log('✅ Prisma client generated');
 
-  // Run migrations in production
+  // Run migrations in production with timeout
   if (isProduction && process.env.DATABASE_URL) {
     console.log('🔄 Running database migrations...');
     try {
-      execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+      // Use direct connection for migrations (not pooled)
+      let migrationUrl = process.env.DATABASE_URL;
+
+      // If using pgbouncer, switch to direct connection for migrations
+      if (migrationUrl.includes('pgbouncer=true') || migrationUrl.includes(':6543')) {
+        console.log('⚠️  Detected connection pooler - switching to direct connection for migrations');
+        migrationUrl = migrationUrl
+          .replace(':6543', ':5432') // Use direct port instead of pgbouncer
+          .replace('?pgbouncer=true', '')
+          .replace('&pgbouncer=true', '');
+      }
+
+      // Set timeout of 30 seconds for migrations
+      execSync('npx prisma migrate deploy', {
+        stdio: 'inherit',
+        timeout: 30000,
+        env: { ...process.env, DATABASE_URL: migrationUrl },
+      });
       console.log('✅ Database migrations applied');
     } catch (migrateError) {
-      console.warn('⚠️ Migration warning:', migrateError.message);
-      console.log('Note: If this is the first deploy, migrations may not be needed yet.');
+      console.warn('⚠️  Migration failed or timed out:', migrateError.message);
+      console.log('Note: Continuing with build. You may need to run migrations manually.');
+      console.log('Run: npx prisma migrate deploy');
     }
   }
 } catch (error) {
-  console.error('❌ Failed to generate Prisma client:', error.message);
+  console.error('❌ Error during preparation:', error.message);
   process.exit(1);
 }
