@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import VideoPlayerModal from '@/components/VideoPlayerModal';
+import { format } from 'date-fns';
 
 interface Video {
   id: string;
@@ -9,28 +10,50 @@ interface Video {
   description: string;
   duration: number;
   difficulty: string;
+  category: string;
   tags: string[];
   thumbnailUrl?: string;
   videoUrl: string;
+  muscleGroups?: string;
 }
 
 interface VideoAssignment {
   id: string;
   assignedDate: Date;
+  scheduledTime?: Date;
   isCompleted: boolean;
   video: Video;
+}
+
+interface CoachInfo {
+  name: string;
+  email: string;
 }
 
 export default function UserTrainingPage() {
   const [assignments, setAssignments] = useState<VideoAssignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [selectedVideo, setSelectedVideo] = useState<VideoAssignment | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string>('all');
+  const [coachInfo, setCoachInfo] = useState<CoachInfo | null>(null);
 
   useEffect(() => {
     fetchUserVideos();
+    fetchCoachInfo();
   }, []);
+
+  const fetchCoachInfo = async () => {
+    try {
+      const response = await fetch('/api/user/coach');
+      if (response.ok) {
+        const data = await response.json();
+        setCoachInfo(data.coach);
+      }
+    } catch (error) {
+      console.error('Error fetching coach info:', error);
+    }
+  };
 
   const fetchUserVideos = async () => {
     try {
@@ -85,69 +108,166 @@ export default function UserTrainingPage() {
     }
   };
 
-  const filteredAssignments = assignments.filter(assignment => {
-    if (filter === 'completed') return assignment.isCompleted;
-    if (filter === 'pending') return !assignment.isCompleted;
-    return true;
-  });
+  // Get all unique tags
+  const allTags = Array.from(
+    new Set(
+      assignments.flatMap(a => 
+        Array.isArray(a.video.tags) ? a.video.tags : []
+      )
+    )
+  );
 
-  // Group videos by muscle groups
-  const getVideosByMuscleGroup = () => {
-    const muscleGroups: { [key: string]: VideoAssignment[] } = {};
+  const filteredAssignments = selectedTag === 'all' 
+    ? assignments 
+    : assignments.filter(a => 
+        Array.isArray(a.video.tags) && a.video.tags.includes(selectedTag)
+      );
 
-    filteredAssignments.forEach(assignment => {
-      const tags = Array.isArray(assignment.video.tags)
-        ? assignment.video.tags
-        : assignment.video.tags.split(',').map(tag => tag.trim());
-
-      let muscleGroup = 'General Fitness';
-
-      // Determine muscle group based on tags
-      if (tags.some(tag => ['chest', 'push', 'bench'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Chest';
-      } else if (tags.some(tag => ['back', 'pull', 'lat', 'row'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Back';
-      } else if (tags.some(tag => ['leg', 'squat', 'glute', 'quad', 'hamstring'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Legs';
-      } else if (tags.some(tag => ['shoulder', 'deltoid', 'press'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Shoulders';
-      } else if (tags.some(tag => ['arm', 'bicep', 'tricep', 'curl'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Arms';
-      } else if (tags.some(tag => ['core', 'abs', 'plank', 'crunch'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Core';
-      } else if (tags.some(tag => ['cardio', 'hiit', 'running', 'cycling'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Cardio';
-      } else if (tags.some(tag => ['stretch', 'flexibility', 'yoga', 'mobility'].includes(tag.toLowerCase()))) {
-        muscleGroup = 'Flexibility';
-      }
-
-      if (!muscleGroups[muscleGroup]) {
-        muscleGroups[muscleGroup] = [];
-      }
-      muscleGroups[muscleGroup].push(assignment);
-    });
-
-    return muscleGroups;
-  };
-
-  const muscleGroups = getVideosByMuscleGroup();
-
-  const getMuscleGroupIcon = (muscleGroup: string) => {
-    const icons: { [key: string]: string } = {
-      Chest: '💪',
-      Back: '🔙',
-      Legs: '🦵',
-      Shoulders: '🏋️',
-      Arms: '💥',
-      Core: '🎯',
-      Cardio: '❤️',
-      Flexibility: '🧘',
-      'General Fitness': '⚡',
-    };
-    return icons[muscleGroup] || '💪';
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    return `${mins} min`;
   };
 
   if (loading) {
+    return (
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center py-20">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Training Videos</h1>
+            {coachInfo && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Coach: {coachInfo.name}
+              </p>
+            )}
+          </div>
+          
+          {allTags.length > 0 && (
+            <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="px-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            >
+              <option value="all">All Categories</option>
+              {allTags.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Videos List */}
+        {filteredAssignments.length === 0 ? (
+          <div className="bg-card p-12 rounded-lg border border-border text-center">
+            <p className="text-muted-foreground">No videos assigned yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredAssignments.map(assignment => (
+              <div
+                key={assignment.id}
+                className="bg-card p-4 rounded-lg border border-border hover:border-primary/50 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  {/* Timeline Date */}
+                  <div className="text-sm text-muted-foreground min-w-[80px]">
+                    {format(new Date(assignment.assignedDate), 'MMM dd')}
+                    {assignment.scheduledTime && (
+                      <div className="text-xs">{format(new Date(assignment.scheduledTime), 'HH:mm')}</div>
+                    )}
+                  </div>
+
+                  {/* Video Info */}
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground mb-1">{assignment.video.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">{assignment.video.description}</p>
+                        
+                        {/* Tags */}
+                        {Array.isArray(assignment.video.tags) && assignment.video.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {assignment.video.tags.map((tag, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Duration & Status */}
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-foreground mb-1">
+                          {formatDuration(assignment.video.duration)}
+                        </div>
+                        <div className="text-xs text-muted-foreground mb-2">
+                          {assignment.video.difficulty}
+                        </div>
+                        {assignment.isCompleted && (
+                          <span className="inline-flex items-center text-xs text-green-600">
+                            ✓ Done
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => openVideoModal(assignment)}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                      >
+                        Watch Video
+                      </button>
+                      {!assignment.isCompleted && (
+                        <button
+                          onClick={() => markVideoCompleted(assignment.id)}
+                          className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm"
+                        >
+                          Mark Complete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Video Player Modal */}
+        {selectedVideo && (
+          <VideoPlayerModal
+            isOpen={isVideoModalOpen}
+            onClose={closeVideoModal}
+            video={{
+              title: selectedVideo.video.title,
+              description: selectedVideo.video.description,
+              videoUrl: selectedVideo.video.videoUrl,
+              duration: selectedVideo.video.duration,
+              difficulty: selectedVideo.video.difficulty,
+            }}
+            onComplete={selectedVideo.isCompleted ? undefined : handleVideoComplete}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>

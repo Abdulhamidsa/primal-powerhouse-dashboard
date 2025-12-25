@@ -197,29 +197,6 @@ export default function Navigation({
 
           {/* Bottom Actions */}
           <div className="border-t border-border p-4 space-y-2">
-            <Link
-              href="/settings"
-              className={`flex items-center ${collapsed ? 'justify-center' : ''} px-2 py-2 rounded-lg hover:bg-muted text-foreground`}
-            >
-              <Flame size={20} className="text-muted-foreground" />
-              {!collapsed && <span className="ml-3 font-medium">Settings</span>}
-            </Link>
-
-            <div className={`flex items-center ${!collapsed ? 'p-2' : 'justify-center p-2'}`}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/20">
-                <Users size={16} className="text-primary" />
-              </div>
-
-              {!collapsed && (
-                <div className="ml-3">
-                  <div className="font-medium text-sm text-foreground">{userType === 'admin' ? 'Coach' : 'Member'}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {userType === 'admin' ? 'Primal Powerhouse' : 'Fitness Journey'}
-                  </div>
-                </div>
-              )}
-            </div>
-
             <button
               onClick={handleSignOut}
               className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} px-2 py-2 rounded-lg text-destructive hover:bg-destructive/10`}
