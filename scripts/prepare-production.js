@@ -37,6 +37,18 @@ const { execSync } = require('child_process');
 try {
   execSync('npx prisma generate', { stdio: 'inherit' });
   console.log('✅ Prisma client generated');
+  
+  // Run migrations in production
+  if (isProduction && process.env.DATABASE_URL) {
+    console.log('🔄 Running database migrations...');
+    try {
+      execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+      console.log('✅ Database migrations applied');
+    } catch (migrateError) {
+      console.warn('⚠️ Migration warning:', migrateError.message);
+      console.log('Note: If this is the first deploy, migrations may not be needed yet.');
+    }
+  }
 } catch (error) {
   console.error('❌ Failed to generate Prisma client:', error.message);
   process.exit(1);

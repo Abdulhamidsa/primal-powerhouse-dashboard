@@ -28,13 +28,19 @@ export default function UserLogin() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        // Show more detailed error information
+        const errorMessage = data.details 
+          ? `${data.error}: ${data.details}`
+          : data.error || 'Login failed';
+        throw new Error(errorMessage);
       }
 
       // Redirect to user dashboard
       router.push('/user/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
