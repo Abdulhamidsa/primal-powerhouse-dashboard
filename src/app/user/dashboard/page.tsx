@@ -74,17 +74,6 @@ export default function UserDashboardPage() {
     );
   }
 
-  const weightDifference =
-    userData?.currentWeight && userData?.goalWeight ? userData.currentWeight - userData.goalWeight : 0;
-  const weightProgress =
-    weightDifference > 0
-      ? `${Math.abs(weightDifference).toFixed(1)} kg to lose`
-      : weightDifference < 0
-        ? `${Math.abs(weightDifference).toFixed(1)} kg to gain`
-        : userData?.currentWeight && userData?.goalWeight
-          ? 'Goal reached!'
-          : 'Set your goals';
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -96,26 +85,26 @@ export default function UserDashboardPage() {
         </div>
       </div>
 
-      {/* User stats */}
+      {/* User stats - Removed sensitive information */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-card p-6 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Current Weight</h3>
-          <p className="text-2xl font-bold text-primary">{userData?.currentWeight || '--'} kg</p>
+          <h3 className="font-semibold mb-2 text-foreground">Today's Focus</h3>
+          <p className="text-2xl font-bold text-primary">Stay Consistent</p>
         </div>
 
         <div className="bg-card p-6 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Goal Weight</h3>
-          <p className="text-2xl font-bold text-primary">{userData?.goalWeight || '--'} kg</p>
+          <h3 className="font-semibold mb-2 text-foreground">Motivation</h3>
+          <p className="text-2xl font-bold text-primary">You've Got This!</p>
         </div>
 
         <div className="bg-card p-6 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Progress</h3>
-          <p className="text-xl font-bold text-primary">{weightProgress}</p>
+          <h3 className="font-semibold mb-2 text-foreground">Next Step</h3>
+          <p className="text-xl font-bold text-primary">Check Your Meals</p>
         </div>
 
         <div className="bg-card p-6 rounded-lg border border-border">
-          <h3 className="font-semibold mb-2 text-foreground">Fitness Level</h3>
-          <p className="text-2xl font-bold text-primary">{userData?.fitnessLevel || 'Not set'}</p>
+          <h3 className="font-semibold mb-2 text-foreground">Keep Going</h3>
+          <p className="text-2xl font-bold text-primary">One Day at a Time</p>
         </div>
       </div>
 
@@ -175,21 +164,16 @@ export default function UserDashboardPage() {
         </div>
 
         <div className="bg-card p-6 rounded-lg border border-border">
-          <h3 className="font-semibold mb-4 text-foreground">My Goals</h3>
-          <div className="space-y-2">
-            {userData?.goals && userData.goals.length > 0 ? (
-              userData.goals.map((goal, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <span className="text-primary">🎯</span>
-                  <span className="text-foreground">{goal}</span>
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground">No goals set yet</p>
-            )}
-            <button className="mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
-              Update Goals
-            </button>
+          <h3 className="font-semibold mb-4 text-foreground">Daily Inspiration</h3>
+          <div className="space-y-3">
+            <blockquote className="text-foreground italic">
+              "The only bad workout is the one that didn't happen."
+            </blockquote>
+            <p className="text-muted-foreground text-sm">- Unknown</p>
+            <div className="pt-2">
+              <p className="text-primary font-medium">💪 Keep pushing forward!</p>
+              <p className="text-muted-foreground text-sm">Your coach has personalized everything for you.</p>
+            </div>
           </div>
         </div>
       </div>

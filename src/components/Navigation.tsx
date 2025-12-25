@@ -49,25 +49,19 @@ const userNavItems = [
     name: 'Dashboard',
     href: '/user/dashboard',
     icon: <BarChart2 size={20} />,
-    description: 'My overview',
+    description: 'Overview',
   },
   {
-    name: 'My Meals',
+    name: 'Meals',
     href: '/user/meals',
     icon: <Utensils size={20} />,
-    description: 'My meal plans',
+    description: 'Meal plans',
   },
   {
     name: 'Training',
     href: '/user/training',
     icon: <Flame size={20} />,
     description: 'Workout videos',
-  },
-  {
-    name: 'Profile',
-    href: '/user/profile',
-    icon: <Users size={20} />,
-    description: 'My profile',
   },
 ];
 

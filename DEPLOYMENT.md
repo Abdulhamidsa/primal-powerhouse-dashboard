@@ -18,6 +18,7 @@
 5. Deploy automatically
 
 **🚨 FIXING "DATABASE_URL not found" ERROR:**
+
 - Run: `.\setup-vercel-db.ps1` (Windows) or `./setup-vercel-db.sh` (Linux/Mac)
 - Or manually add PostgreSQL integration in Vercel dashboard
 

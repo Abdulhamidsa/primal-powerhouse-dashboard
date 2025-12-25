@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Clock, Users, ChefHat } from 'lucide-react';
 
 interface Meal {
   id: string;
@@ -52,6 +54,11 @@ interface MealAssignment {
 }
 
 export default function UserMealsPage() {
+  const router = useRouter();
+  const [todaysMeals, setTodaysMeals] = useState<TodaysMeals>({});
+  const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'today' | 'all'>('today');
   const [todaysMeals, setTodaysMeals] = useState<TodaysMeals>({});
   const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,21 +111,6 @@ export default function UserMealsPage() {
   const getDayName = (dayOfWeek: number) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[dayOfWeek];
-  };
-
-  const getMealTypeIcon = (mealType: string) => {
-    switch (mealType.toLowerCase()) {
-      case 'breakfast':
-        return '🌅';
-      case 'lunch':
-        return '☀️';
-      case 'dinner':
-        return '🌙';
-      case 'snack':
-        return '🍎';
-      default:
-        return '🍽️';
-    }
   };
 
   const totalNutrition = calculateTotalNutrition();
@@ -177,7 +169,8 @@ export default function UserMealsPage() {
           <div key={mealType} className="bg-card p-6 rounded-lg border border-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-foreground flex items-center">
-                {getMealTypeIcon(mealType)} {mealType.charAt(0) + mealType.slice(1).toLowerCase()} Options
+                <ChefHat className="w-5 h-5 mr-2 text-primary" />
+                {mealType.charAt(0) + mealType.slice(1).toLowerCase()} Options
               </h2>
               <span className="text-sm text-muted-foreground">
                 {mealsForType.length} meal{mealsForType.length !== 1 ? 's' : ''} assigned
@@ -188,7 +181,8 @@ export default function UserMealsPage() {
               {mealsForType.map(assignment => (
                 <div
                   key={assignment.id}
-                  className="bg-background p-4 rounded-lg border border-border hover:shadow-md transition-shadow cursor-pointer group"
+                  className="bg-background p-4 rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
+                  onClick={() => router.push(`/user/meals/${assignment.meal.id}`)}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -212,9 +206,18 @@ export default function UserMealsPage() {
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{assignment.meal.description}</p>
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                    <span>⏱️ {assignment.meal.prepTime + assignment.meal.cookTime} min</span>
-                    <span>👥 {assignment.meal.servings} servings</span>
-                    <span>📊 {assignment.meal.difficulty}</span>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{assignment.meal.prepTime + assignment.meal.cookTime} min</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      <span>{assignment.meal.servings} servings</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ChefHat className="w-3 h-3" />
+                      <span>{assignment.meal.difficulty}</span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
@@ -260,17 +263,20 @@ export default function UserMealsPage() {
                   )}
 
                   <div className="flex space-x-2">
-                    <button className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90 transition-colors">
-                      Select This Meal
-                    </button>
-                    <button className="px-3 py-2 bg-muted text-foreground rounded text-sm hover:bg-muted/80 transition-colors">
-                      📋
+                    <button
+                      className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/user/meals/${assignment.meal.id}`);
+                      }}
+                    >
+                      View Details
                     </button>
                   </div>
 
                   {assignment.scheduledTime && (
                     <p className="text-xs text-muted-foreground mt-2 text-center">
-                      ⏰ Recommended: {assignment.scheduledTime}
+                      Recommended time: {assignment.scheduledTime}
                     </p>
                   )}
                 </div>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, Users, X, Flame, Beef, Wheat, Droplet } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight, Clock, Users } from 'lucide-react';
 
 interface Meal {
   id: string;
@@ -46,9 +47,9 @@ interface UserMealsProps {
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function UserMeals({ userId }: UserMealsProps) {
+  const router = useRouter();
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [carouselPositions, setCarouselPositions] = useState<{ [key: string]: number }>({
     breakfast: 0,
     lunch: 0,
@@ -171,19 +172,11 @@ export default function UserMeals({ userId }: UserMealsProps) {
             snack: 'from-pink-500/20 to-rose-600/20 border-pink-500/30',
           };
 
-          const typeIcons = {
-            breakfast: '🌅',
-            lunch: '☀️',
-            dinner: '🌙',
-            snack: '🍎',
-          };
-
           return (
             <div key={type} className="space-y-3">
               {/* Section Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{typeIcons[type as keyof typeof typeIcons]}</span>
                   <h3 className="text-xl font-semibold text-white capitalize">{type}</h3>
                 </div>
                 {meals.length > 1 && (
@@ -216,7 +209,7 @@ export default function UserMeals({ userId }: UserMealsProps) {
                     <div key={meal.id} className="w-full flex-shrink-0">
                       <div
                         className={`bg-gradient-to-br ${typeColors[type as keyof typeof typeColors]} backdrop-blur-sm border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-all duration-300`}
-                        onClick={() => setSelectedMeal(meal)}
+                        onClick={() => router.push(`/user/meals/${meal.id}`)}
                       >
                         {meal.imageUrl && (
                           <img
@@ -227,27 +220,23 @@ export default function UserMeals({ userId }: UserMealsProps) {
                         )}
                         <h4 className="font-semibold text-white mb-3 text-lg">{meal.name}</h4>
 
-                        {/* Nutrition Grid */}
-                        <div className="grid grid-cols-4 gap-2">
-                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                            <Flame className="text-orange-400 w-4 h-4 mx-auto mb-1" />
-                            <div className="text-white font-semibold text-sm">{meal.calories}</div>
-                            <div className="text-slate-400 text-xs">cal</div>
+                        {/* Key Nutrition Info */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 text-sm">Calories</span>
+                            <span className="text-white font-semibold">{meal.calories}</span>
                           </div>
-                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                            <Beef className="text-red-400 w-4 h-4 mx-auto mb-1" />
-                            <div className="text-white font-semibold text-sm">{meal.protein}g</div>
-                            <div className="text-slate-400 text-xs">protein</div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 text-sm">Protein</span>
+                            <span className="text-white font-semibold">{meal.protein}g</span>
                           </div>
-                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                            <Wheat className="text-yellow-400 w-4 h-4 mx-auto mb-1" />
-                            <div className="text-white font-semibold text-sm">{meal.carbs}g</div>
-                            <div className="text-slate-400 text-xs">carbs</div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 text-sm">Carbs</span>
+                            <span className="text-white font-semibold">{meal.carbs}g</span>
                           </div>
-                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                            <Droplet className="text-blue-400 w-4 h-4 mx-auto mb-1" />
-                            <div className="text-white font-semibold text-sm">{meal.fat}g</div>
-                            <div className="text-slate-400 text-xs">fat</div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 text-sm">Fat</span>
+                            <span className="text-white font-semibold">{meal.fat}g</span>
                           </div>
                         </div>
                       </div>
@@ -259,99 +248,6 @@ export default function UserMeals({ userId }: UserMealsProps) {
           );
         })}
       </div>
-
-      {/* Meal Detail Modal */}
-      {selectedMeal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <h3 className="text-2xl font-bold text-white">{selectedMeal.name}</h3>
-                <button
-                  onClick={() => setSelectedMeal(null)}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {selectedMeal.imageUrl && (
-                <img
-                  src={selectedMeal.imageUrl}
-                  alt={selectedMeal.name}
-                  className="w-full h-48 object-cover rounded-xl mb-6"
-                />
-              )}
-
-              {/* Nutrition Info */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
-                  <Flame className="text-orange-400 w-6 h-6 mx-auto mb-2" />
-                  <div className="text-xl font-bold text-white">{selectedMeal.calories}</div>
-                  <div className="text-sm text-slate-400">Calories</div>
-                </div>
-                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
-                  <Beef className="text-red-400 w-6 h-6 mx-auto mb-2" />
-                  <div className="text-xl font-bold text-white">{selectedMeal.protein}g</div>
-                  <div className="text-sm text-slate-400">Protein</div>
-                </div>
-                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
-                  <Wheat className="text-yellow-400 w-6 h-6 mx-auto mb-2" />
-                  <div className="text-xl font-bold text-white">{selectedMeal.carbs}g</div>
-                  <div className="text-sm text-slate-400">Carbs</div>
-                </div>
-                <div className="bg-slate-700/50 rounded-xl p-4 text-center">
-                  <Droplet className="text-blue-400 w-6 h-6 mx-auto mb-2" />
-                  <div className="text-xl font-bold text-white">{selectedMeal.fat}g</div>
-                  <div className="text-sm text-slate-400">Fat</div>
-                </div>
-              </div>
-
-              {/* Meal Details */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-6 text-sm text-slate-400 bg-slate-700/30 rounded-xl p-3">
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} />
-                    <span>Prep: {formatDuration(selectedMeal.prepTime)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} />
-                    <span>Cook: {formatDuration(selectedMeal.cookTime)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users size={16} />
-                    <span>
-                      {selectedMeal.servings} serving{selectedMeal.servings > 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
-
-                {selectedMeal.ingredients && (
-                  <div>
-                    <h4 className="font-semibold text-white mb-3 text-lg">Ingredients</h4>
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <pre className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
-                        {selectedMeal.ingredients}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-
-                {selectedMeal.instructions && (
-                  <div>
-                    <h4 className="font-semibold text-white mb-3 text-lg">Instructions</h4>
-                    <div className="bg-slate-700/30 rounded-xl p-4">
-                      <pre className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
-                        {selectedMeal.instructions}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
