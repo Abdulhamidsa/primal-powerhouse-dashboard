@@ -9,7 +9,11 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+
+# Package manager lock files (uncomment the one you use)
+# package-lock.json
 pnpm-lock.yaml
+# yarn.lock
 
 # Testing
 /coverage
@@ -17,13 +21,16 @@ pnpm-lock.yaml
 *.test.ts
 *.spec.js
 *.spec.ts
-test-*.js
-test-*.ts
-/__tests__/
+__tests__/
+.nyc_output
+coverage/
+*.lcov
 
 # Next.js
 /.next/
 /out/
+/.next
+.next/
 .next
 
 # Production builds
@@ -34,6 +41,7 @@ test-*.ts
 # Environment files
 .env*
 !.env.example
+!.env.production.example
 
 # Database files
 *.db
@@ -41,6 +49,9 @@ test-*.ts
 *.sqlite3
 /prisma/dev.db*
 prisma/migrations/
+*.db-journal
+*.db-shm
+*.db-wal
 
 # Logs
 *.log
@@ -49,12 +60,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 logs/
+lerna-debug.log*
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
 .temp/
+.tmp/
 
 # OS generated files
 .DS_Store
@@ -74,6 +87,8 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 .vs/
+.history/
+.ionide/
 
 # Credentials and sensitive files
 LOGIN_CREDENTIALS.txt
@@ -82,8 +97,10 @@ QUICK_LOGIN.txt
 *password*
 *secret*
 *private*
+*token*
+*key*
 
-# Development scripts
+# Development and utility scripts
 check-*.js
 test-*.js
 fix-*.js
@@ -94,36 +111,55 @@ cleanup-*.js
 add-*.js
 get-*.js
 set-*.js
+migrate-*.js
+update-*.js
+assign-*.js
+clear-*.js
+deploy-*.js
+setup-*.js
+scripts/
+!scripts/prepare-production.js
 
-# Documentation that's not needed in production
+# Documentation (keep only essential ones)
 *.md
 !README.md
 DEPLOYMENT.md
+DEPLOYMENT_GUIDE.md
 VIDEO_SYSTEM_READY.md
+MULTI_DOMAIN_SETUP.md
+VERCEL_CHECKLIST.md
 
-# Certificates
+# Certificates and keys
 *.pem
 *.key
 *.crt
 *.p12
+*.pfx
 
 # Backup files
 *.backup
 *.bak
 *.old
+*.orig
 
-# Debug
+# Debug and profiling
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+next-env.d.ts
 
 # Vercel
+.vercel/
 .vercel
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts
-/src/generated/prisma
+/src/generated/
+/generated/
 
 # Miscellaneous
 .nyc_output
@@ -131,3 +167,120 @@ coverage/
 *.lcov
 .eslintcache
 .stylelintcache
+.parcel-cache/
+.turbo/
+
+# Local development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+.docker/
+
+# Local Netlify folder
+.netlify
+
+# Sentry Config File
+.sentryclirc
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
