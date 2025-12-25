@@ -12,7 +12,7 @@
 
 # Package manager lock files (uncomment the one you use)
 # package-lock.json
-pnpm-lock.yaml
+# pnpm-lock.yaml
 # yarn.lock
 
 # Testing
