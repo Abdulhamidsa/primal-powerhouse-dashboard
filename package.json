@@ -2,6 +2,7 @@
   "name": "primal-powerhouse-dashboard",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@8.15.6",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "pnpm run prepare:prod && next build",
