@@ -29,9 +29,7 @@ export default function UserLogin() {
 
       if (!response.ok) {
         // Show more detailed error information
-        const errorMessage = data.details 
-          ? `${data.error}: ${data.details}`
-          : data.error || 'Login failed';
+        const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error || 'Login failed';
         throw new Error(errorMessage);
       }
 

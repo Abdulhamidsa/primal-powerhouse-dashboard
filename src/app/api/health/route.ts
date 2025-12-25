@@ -20,7 +20,7 @@ export async function GET() {
     const result = await prisma.$queryRaw`SELECT 1 as test`;
     checks.database.status = 'connected';
     checks.database.details = 'Database connection successful';
-    
+
     return NextResponse.json({
       status: 'healthy',
       ...checks,
@@ -28,12 +28,12 @@ export async function GET() {
   } catch (error) {
     checks.database.status = 'error';
     checks.database.details = error instanceof Error ? error.message : String(error);
-    
+
     console.error('[HEALTH] Database health check failed:', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    
+
     return NextResponse.json(
       {
         status: 'unhealthy',

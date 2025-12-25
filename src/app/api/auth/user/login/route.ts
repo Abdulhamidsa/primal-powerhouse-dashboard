@@ -139,7 +139,10 @@ export async function POST(request: NextRequest) {
         stack: cookieError instanceof Error ? cookieError.stack : undefined,
       });
       return NextResponse.json(
-        { error: 'Failed to create session', details: cookieError instanceof Error ? cookieError.message : 'Unknown error' },
+        {
+          error: 'Failed to create session',
+          details: cookieError instanceof Error ? cookieError.message : 'Unknown error',
+        },
         { status: 500 }
       );
     }
@@ -162,13 +165,16 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
       type: error instanceof Error ? error.constructor.name : typeof error,
     });
-    
+
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'production' 
-          ? 'An unexpected error occurred' 
-          : error instanceof Error ? error.message : String(error),
+        details:
+          process.env.NODE_ENV === 'production'
+            ? 'An unexpected error occurred'
+            : error instanceof Error
+              ? error.message
+              : String(error),
       },
       { status: 500 }
     );
