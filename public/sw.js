@@ -9,9 +9,9 @@ const urlsToCache = [
 ];
 
 // Install service worker
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
     })
   );
@@ -19,11 +19,11 @@ self.addEventListener('install', (event) => {
 });
 
 // Activate service worker
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
@@ -35,7 +35,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch with network-first strategy for API calls, cache-first for static assets
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) {
     return;
@@ -45,10 +45,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request)
-        .then((response) => {
+        .then(response => {
           // Clone the response before caching
           const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
+          caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
           });
           return response;
@@ -62,16 +62,16 @@ self.addEventListener('fetch', (event) => {
 
   // Cache-first for everything else
   event.respondWith(
-    caches.match(event.request).then((response) => {
+    caches.match(event.request).then(response => {
       if (response) {
         return response;
       }
-      return fetch(event.request).then((response) => {
+      return fetch(event.request).then(response => {
         if (!response || response.status !== 200 || response.type === 'error') {
           return response;
         }
         const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
+        caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, responseToCache);
         });
         return response;
@@ -81,7 +81,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Push notification handler
-self.addEventListener('push', (event) => {
+self.addEventListener('push', event => {
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'Primal Powerhouse';
   const options = {
@@ -96,9 +96,7 @@ self.addEventListener('push', (event) => {
 });
 
 // Notification click handler
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow('/user/dashboard')
-  );
+  event.waitUntil(clients.openWindow('/user/dashboard'));
 });
