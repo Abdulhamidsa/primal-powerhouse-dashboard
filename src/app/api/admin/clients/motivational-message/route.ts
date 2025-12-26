@@ -13,10 +13,7 @@ export async function POST(request: NextRequest) {
     const { clientId, motivationalMessage } = await request.json();
 
     if (!clientId || !motivationalMessage) {
-      return NextResponse.json(
-        { error: 'Client ID and motivational message are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Client ID and motivational message are required' }, { status: 400 });
     }
 
     // Update client's motivational message
@@ -43,6 +40,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error updating motivational message:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 }); 
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

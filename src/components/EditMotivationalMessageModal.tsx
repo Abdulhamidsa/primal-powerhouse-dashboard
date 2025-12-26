@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '../../node_modules/lucide-react';
 
 interface EditMotivationalMessageModalProps {
   isOpen: boolean;
@@ -60,24 +60,18 @@ export default function EditMotivationalMessageModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-2xl font-bold text-foreground">
-            Edit Motivational Message
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <h2 className="text-2xl font-bold text-foreground">Edit Motivational Message</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X size={24} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Client: {client.name}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">Client: {client.name}</label>
             <p className="text-sm text-muted-foreground mb-4">
-              This message will appear on the client's dashboard and they'll receive a browser notification when you update it.
+              This message will appear on the client's dashboard and they'll receive a browser notification when you
+              update it.
             </p>
           </div>
 
@@ -88,22 +82,16 @@ export default function EditMotivationalMessageModal({
             <textarea
               id="message"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               rows={6}
               className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Enter a motivational message for your client..."
               required
             />
-            <p className="text-xs text-muted-foreground mt-2">
-              {message.length} characters
-            </p>
+            <p className="text-xs text-muted-foreground mt-2">{message.length} characters</p>
           </div>
 
-          {error && (
-            <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          {error && <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-lg text-sm">{error}</div>}
 
           <div className="flex gap-3 justify-end pt-4">
             <button

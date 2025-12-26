@@ -19,7 +19,7 @@ import {
   ChevronRight,
   Calendar,
   MessageCircle,
-} from 'lucide-react';
+} from '../../../../node_modules/lucide-react';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -73,7 +73,7 @@ export default function ClientsPage() {
               onClick={() => setShowAddModal(true)}
               className="mt-4 sm:mt-0 px-6 py-3 rounded-lg flex items-center gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              <Users className="w-5 h-5" />
+              <Users size={20} />
               Add New Client
             </button>
           </div>
@@ -119,7 +119,7 @@ export default function ClientsPage() {
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ background: 'var(--color-bg-alt)' }}
               >
-                <Users size={24} style={{ color: 'var(--color-accent)' }} />
+                <Users size={24} />
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function ClientsPage() {
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ background: 'var(--color-bg-alt)' }}
               >
-                <Flame size={24} style={{ color: 'var(--color-accent)' }} />
+                <Flame size={24} />
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function ClientsPage() {
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ background: 'var(--color-bg-alt)' }}
               >
-                <BarChart size={24} style={{ color: 'var(--color-accent)' }} />
+                <BarChart size={24} />
               </div>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function ClientsPage() {
                 className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ background: 'var(--color-bg-alt)' }}
               >
-                <Target size={24} style={{ color: 'var(--color-accent)' }} />
+                <Target size={24} />
               </div>
             </div>
           </div>
@@ -263,11 +263,11 @@ export default function ClientsPage() {
                           {client.name}
                         </h3>
                         <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                          <Mail className="w-3 h-3" />
+                          <Mail size={16} />
                           {client.email}
                         </div>
                         <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                          <Phone className="w-3 h-3" />
+                          <Phone size={16} />
                           {client.phone}
                         </div>
                       </div>
@@ -290,7 +290,7 @@ export default function ClientsPage() {
                         className="flex items-center justify-center gap-1 text-sm"
                         style={{ color: 'var(--color-text-muted)' }}
                       >
-                        <Clock className="w-3 h-3" />
+                        <Clock size={16} />
                         Age
                       </div>
                       <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -302,7 +302,7 @@ export default function ClientsPage() {
                         className="flex items-center justify-center gap-1 text-sm"
                         style={{ color: 'var(--color-text-muted)' }}
                       >
-                        <Scale className="w-3 h-3" />
+                        <Scale size={16} />
                         BMI
                       </div>
                       <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -340,7 +340,7 @@ export default function ClientsPage() {
                         color: 'var(--color-accent)',
                       }}
                     >
-                      <Activity className="w-3 h-3" />
+                      <Activity size={16} />
                       {client.activityLevel} Activity
                     </span>
                   </div>
@@ -348,7 +348,7 @@ export default function ClientsPage() {
                   {/* Goals */}
                   <div className="mb-4">
                     <div className="flex items-center gap-1 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
-                      <Target className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
+                      <Target size={16} />
                       Goals:
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -384,11 +384,11 @@ export default function ClientsPage() {
                     style={{ color: 'var(--color-text-muted)' }}
                   >
                     <div className="flex items-center gap-1">
-                      <Activity className="w-3 h-3" />
+                      <Activity size={16} />
                       Sessions: {client.sessionsCompleted}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
+                      <Calendar size={16} />
                       Joined: {new Date(client.joinDate).toLocaleDateString()}
                     </div>
                   </div>
@@ -402,7 +402,7 @@ export default function ClientsPage() {
                       }}
                       className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 border border-border hover:bg-muted transition-colors"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle size={16} />
                       Message
                     </button>
                     <Link
@@ -411,7 +411,7 @@ export default function ClientsPage() {
                       style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
                     >
                       View Profile
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight size={16} />
                     </Link>
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export default function ClientsPage() {
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
             <div className="mb-4">
-              <Users size={48} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} />
+              <Users size={48} />
             </div>
             <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
               No clients found
@@ -439,7 +439,7 @@ export default function ClientsPage() {
               className="px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
               style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
             >
-              <Users className="w-4 h-4" />
+              <Users size={16} />
               Add Your First Client
             </button>
           </div>

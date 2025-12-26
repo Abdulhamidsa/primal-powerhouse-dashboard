@@ -9,10 +9,7 @@ export async function POST(request: NextRequest) {
     // Validate environment
     if (!process.env.DATABASE_URL) {
       console.error('[ADMIN LOGIN] DATABASE_URL not configured');
-      return NextResponse.json(
-        { error: 'Database configuration error' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Database configuration error' }, { status: 500 });
     }
 
     // Parse request body
@@ -21,10 +18,7 @@ export async function POST(request: NextRequest) {
       body = await request.json();
     } catch (parseError) {
       console.error('[ADMIN LOGIN] Failed to parse request body:', parseError);
-      return NextResponse.json(
-        { error: 'Invalid request format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
     }
 
     const { email, password } = body;
@@ -45,10 +39,7 @@ export async function POST(request: NextRequest) {
       console.error('[ADMIN LOGIN] Database query error:', {
         error: queryError instanceof Error ? queryError.message : String(queryError),
       });
-      return NextResponse.json(
-        { error: 'Database query failed' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
     }
 
     if (!user) {
@@ -71,10 +62,7 @@ export async function POST(request: NextRequest) {
       console.error('[ADMIN LOGIN] Password verification error:', {
         error: authError instanceof Error ? authError.message : String(authError),
       });
-      return NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
     }
 
     if (!isValidPassword) {
@@ -94,10 +82,7 @@ export async function POST(request: NextRequest) {
       console.error('[ADMIN LOGIN] Failed to set auth cookie:', {
         error: cookieError instanceof Error ? cookieError.message : String(cookieError),
       });
-      return NextResponse.json(
-        { error: 'Failed to create session' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
     }
 
     console.log('[ADMIN LOGIN] Login successful for:', user.email);
@@ -117,13 +102,16 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    
+
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'production' 
-          ? 'An unexpected error occurred' 
-          : error instanceof Error ? error.message : String(error),
+        details:
+          process.env.NODE_ENV === 'production'
+            ? 'An unexpected error occurred'
+            : error instanceof Error
+              ? error.message
+              : String(error),
       },
       { status: 500 }
     );
