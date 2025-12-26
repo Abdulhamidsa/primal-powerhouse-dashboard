@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Quote, Dumbbell } from 'lucide-react';
+import { Quote, Dumbbell } from '../../../../node_modules/lucide-react';
 
 interface UserData {
   name: string;
@@ -23,14 +23,16 @@ export default function UserDashboardPage() {
       const response = await fetch('/api/user/data');
       if (response.ok) {
         const data = await response.json();
-        
+
         // Check if message changed and show notification
-        if (previousMessageRef.current !== null && 
-            previousMessageRef.current !== data.motivationalMessage &&
-            data.motivationalMessage) {
+        if (
+          previousMessageRef.current !== null &&
+          previousMessageRef.current !== data.motivationalMessage &&
+          data.motivationalMessage
+        ) {
           showNotification(data.motivationalMessage);
         }
-        
+
         previousMessageRef.current = data.motivationalMessage || null;
         setUserData(data);
       }
@@ -92,7 +94,7 @@ export default function UserDashboardPage() {
       <div className="bg-card p-8 rounded-lg border border-border">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-            <Dumbbell className="w-8 h-8 text-primary" />
+            <Dumbbell size={20} />
           </div>
           <div className="space-y-2">
             {userData?.motivationalMessage ? (
