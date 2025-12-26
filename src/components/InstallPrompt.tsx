@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Download } from 'lucide-react';
+import { X, Download } from '../../node_modules/lucide-react';
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -24,7 +24,7 @@ export default function InstallPrompt() {
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     console.log(`User response: ${outcome}`);
     setDeferredPrompt(null);
     setShowPrompt(false);
@@ -55,13 +55,11 @@ export default function InstallPrompt() {
       <div className="bg-card border-2 border-primary rounded-lg shadow-2xl p-4">
         <div className="flex items-start gap-3">
           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Download className="w-6 h-6 text-primary" />
+            <Download size={20} />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground text-sm">Install Primal Powerhouse</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Get faster access and work offline
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Get faster access and work offline</p>
             <div className="flex gap-2 mt-3">
               <button
                 onClick={handleInstall}
@@ -82,7 +80,7 @@ export default function InstallPrompt() {
             className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X size={20} />
           </button>
         </div>
       </div>
