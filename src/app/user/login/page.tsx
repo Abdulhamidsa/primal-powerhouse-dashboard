@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function UserLogin() {
@@ -9,6 +9,22 @@ export default function UserLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/user/data');
+        if (response.ok) {
+          // User is already logged in, redirect to dashboard
+          router.push('/user/dashboard');
+        }
+      } catch (error) {
+        // Not logged in, stay on login page
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
