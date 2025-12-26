@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Quote, Dumbbell } from 'lucide-react';
 
@@ -12,6 +12,7 @@ interface UserData {
 export default function UserDashboardPage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const previousMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetchUserData();
@@ -22,6 +23,15 @@ export default function UserDashboardPage() {
       const response = await fetch('/api/user/data');
       if (response.ok) {
         const data = await response.json();
+        
+        // Check if message changed and show notification
+        if (previousMessageRef.current !== null && 
+            previousMessageRef.current !== data.motivationalMessage &&
+            data.motivationalMessage) {
+          showNotification(data.motivationalMessage);
+        }
+        
+        previousMessageRef.current = data.motivationalMessage || null;
         setUserData(data);
       }
     } catch (error) {
@@ -31,11 +41,32 @@ export default function UserDashboardPage() {
     }
   };
 
+  const showNotification = (message: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('New Message from Your Coach! 💪', {
+        body: message,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        tag: 'motivational-message',
+        requireInteraction: false,
+      });
+    }
+  };
+
   // Request notification permission on load
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+  }, []);
+
+  // Poll for updates every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUserData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
