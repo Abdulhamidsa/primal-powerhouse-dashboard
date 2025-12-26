@@ -125,7 +125,7 @@ export default function Navigation({
         <div className="flex flex-col h-full">
           {/* Logo & Toggle */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <Link href="/" className="flex items-center">
+            <Link href={userType === 'admin' ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary text-primary-foreground">
                 <span className="text-lg font-bold">PP</span>
               </div>

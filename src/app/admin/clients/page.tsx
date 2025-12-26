@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import NewAddClientModal from '@/components/NewAddClientModal';
+import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { DataService, Client } from '@/services/dataService';
 import {
   Users,
@@ -17,12 +18,15 @@ import {
   Scale,
   ChevronRight,
   Calendar,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const fetchClients = async () => {
@@ -389,11 +393,21 @@ export default function ClientsPage() {
                     </div>
                   </div>
 
-                  {/* Action Button */}
-                  <div className="flex">
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedClient(client);
+                        setShowMessageModal(true);
+                      }}
+                      className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 border border-border hover:bg-muted transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Message
+                    </button>
                     <Link
                       href={`/admin/clients/${client.id}`}
-                      className="w-full px-4 py-3 rounded-lg text-center font-medium flex items-center justify-center gap-1"
+                      className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1"
                       style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
                     >
                       View Profile
@@ -434,6 +448,22 @@ export default function ClientsPage() {
 
       {/* Add Client Modal */}
       <NewAddClientModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onClientAdded={fetchClients} />
+
+      {/* Edit Motivational Message Modal */}
+      {selectedClient && (
+        <EditMotivationalMessageModal
+          isOpen={showMessageModal}
+          onClose={() => {
+            setShowMessageModal(false);
+            setSelectedClient(null);
+          }}
+          client={selectedClient}
+          onSuccess={() => {
+            fetchClients();
+            // You could add a toast notification here
+          }}
+        />
+      )}
     </div>
   );
 }
