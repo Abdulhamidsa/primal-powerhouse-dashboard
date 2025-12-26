@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
       dietaryRestrictions,
       fitnessLevel: client.activityLevel,
       coach: client.coach,
+      motivationalMessage: client.motivationalMessage,
       stats: {
         totalMealAssignments,
         totalVideoAssignments,
