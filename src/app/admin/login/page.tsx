@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -98,11 +97,11 @@ export default function AdminLogin() {
             </button>
           </div>
 
-          <div className="text-center">
+          {/* <div className="text-center">
             <Link href="/user/login" className="text-primary hover:underline">
               Are you a client? Sign in here
             </Link>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>
