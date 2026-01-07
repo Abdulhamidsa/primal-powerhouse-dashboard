@@ -147,25 +147,6 @@ export default function Navigation({
           </div>
 
           {/* Quick Search */}
-          <div className="p-4">
-            {!collapsed ? (
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full pl-9 pr-3 py-2 rounded-lg text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground"
-                />
-                {/* <Flame size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" /> */}
-              </div>
-            ) : (
-              <button
-                className="w-full flex items-center justify-center p-2 rounded-lg"
-                style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}
-              >
-                <Flame size={16} className="text-gray-400" />
-              </button>
-            )}
-          </div>
 
           {/* Navigation Items */}
           <div className="flex-1 overflow-y-auto py-2">
@@ -226,9 +207,9 @@ export default function Navigation({
           </button>
 
           <div className="flex items-center space-x-1">
-            <div className="font-bold text-lg text-foreground">Primal Powerhouse</div>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center ml-2 bg-primary text-primary-foreground">
-              <span className="text-sm font-bold">PP</span>
+            {/* <div className="font-bold text-lg text-foreground">Primal Powerhouse</div> */}
+            <div className="w-16 h-10 rounded-lg flex items-center justify-center ml-2 text-primary-foreground">
+              <Image src="/logo.png" alt="Logo" width={80} height={80} />
             </div>
           </div>
 
