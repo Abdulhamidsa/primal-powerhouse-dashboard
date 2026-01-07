@@ -7,6 +7,7 @@ import NewMealDetailModal from '@/components/NewMealDetailModal';
 import { DataService } from '@/services/dataService';
 import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users } from 'lucide-react';
 import { Meal as MealType, MealIngredient, MealInstruction } from '@/types/meal';
+import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
 interface Meal {
   id: string;
@@ -273,7 +274,14 @@ export default function MealsPage() {
                 <div className="relative h-48 w-full">
                   {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
                     <Image
-                      src={meal.imageUrl}
+                      src={
+                        meal.imageUrl.includes('cloudinary.com')
+                          ? getOptimizedImageUrl(
+                              meal.imageUrl.split('/upload/')[1] || meal.imageUrl,
+                              'card'
+                            )
+                          : meal.imageUrl
+                      }
                       alt={meal.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { DataService } from '@/services/dataService';
+import ImageUpload from '@/components/ImageUpload';
 
 interface AddMealModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface AddMealModalProps {
 
 export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealModalProps) {
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>('');
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: 'BREAKFAST',
@@ -25,7 +28,6 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
     cookTime: '',
     servings: '1',
     tags: [''],
-    imageUrl: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,11 +65,33 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
 
     setLoading(true);
     try {
-      // Log the data being submitted
       console.log('Submitting meal form with data:', formData);
       
-      // Create a clean meal data object that matches the database schema
-      // Only include fields that exist in your Prisma schema
+      let imageUrl = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500';
+      
+      // Upload image to Cloudinary if selected
+      if (selectedImageFile) {
+        console.log('Uploading image to Cloudinary...');
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', selectedImageFile);
+        uploadFormData.append('folder', 'meals');
+
+        const uploadResponse = await fetch('/api/cloudinary/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse.json();
+          throw new Error(error.details || error.error || 'Failed to upload image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.data.url;
+        console.log('Image uploaded successfully:', imageUrl);
+      }
+      
+      // Create meal data with uploaded image URL
       const mealData = {
         name: formData.name.trim(),
         type: formData.type,
@@ -82,8 +106,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
         cookTime: Number(formData.cookTime),
         servings: Number(formData.servings),
         tags: formData.tags.filter(tag => tag.trim()),
-        imageUrl:
-          formData.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500',
+        imageUrl,
       };
 
       console.log('Creating meal with processed data:', mealData);
@@ -116,9 +139,10 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
       cookTime: '',
       servings: '1',
       tags: [''],
-      imageUrl: '',
     });
+    setSelectedImageFile(null);
     setErrors({});
+    setUploadError('');
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -153,6 +177,15 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
         [field]: prev[field].filter((_, i) => i !== index),
       }));
     }
+  };
+
+  const handleImageSelect = (file: File | null) => {
+    setSelectedImageFile(file);
+    setUploadError('');
+  };
+
+  const handleImageError = (error: string) => {
+    setUploadError(error);
   };
 
   return (
@@ -433,18 +466,22 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
             </div>
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Image URL (optional)
+              Meal Image
             </label>
-            <input
-              type="url"
-              value={formData.imageUrl}
-              onChange={e => handleInputChange('imageUrl', e.target.value)}
-              className="w-full px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="https://images.unsplash.com/photo-..."
+            <ImageUpload
+              onFileSelect={handleImageSelect}
+              onError={handleImageError}
+              disabled={loading}
             />
+            {uploadError && (
+              <p className="text-red-500 text-sm mt-2">{uploadError}</p>
+            )}
+            <p className="text-xs text-zinc-500 mt-2">
+              Image will be uploaded to Cloudinary when you create the meal
+            </p>
           </div>
 
           {/* Form Actions */}
