@@ -5,7 +5,7 @@ import Image from 'next/image';
 import AddMealModal from '@/components/AddMealModal';
 import NewMealDetailModal from '@/components/NewMealDetailModal';
 import { DataService } from '@/services/dataService';
-import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users } from 'lucide-react';
+import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users, Trash2 } from 'lucide-react';
 import { Meal as MealType, MealIngredient, MealInstruction } from '@/types/meal';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
@@ -36,6 +36,8 @@ export default function MealsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [mealToDelete, setMealToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchMeals = async () => {
     try {
@@ -109,6 +111,27 @@ export default function MealsPage() {
     const convertedMeal = convertToMealType(meal);
     setSelectedMeal(convertedMeal);
     setShowDetailModal(true);
+  };
+
+  const handleDeleteMeal = async (mealId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMealToDelete(mealId);
+  };
+
+  const confirmDelete = async () => {
+    if (!mealToDelete) return;
+
+    setDeleting(true);
+    try {
+      await DataService.deleteMeal(mealToDelete);
+      setMeals(meals.filter(meal => meal.id !== mealToDelete));
+      setMealToDelete(null);
+    } catch (error) {
+      console.error('Error deleting meal:', error);
+      alert('Failed to delete meal');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -379,6 +402,17 @@ export default function MealsPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Delete Button */}
+                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                    <button
+                      onClick={e => handleDeleteMeal(meal.id, e)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600/10 text-red-500 hover:bg-red-600/20 border border-red-600/30 rounded-lg transition-colors font-medium text-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete Meal
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -405,6 +439,44 @@ export default function MealsPage() {
 
       {/* Meal Detail Modal */}
       <NewMealDetailModal meal={selectedMeal} isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} />
+
+      {/* Delete Confirmation Modal */}
+      {mealToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 rounded-2xl max-w-sm w-full p-6 border border-zinc-700">
+            <h2 className="text-2xl font-bold text-zinc-100 mb-4">Delete Meal?</h2>
+            <p className="text-zinc-400 mb-6">
+              Are you sure you want to delete this meal? This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setMealToDelete(null)}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

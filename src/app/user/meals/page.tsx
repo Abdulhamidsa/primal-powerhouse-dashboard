@@ -138,7 +138,7 @@ export default function UserMealsPage() {
           <div key={mealType} className="bg-card p-6 rounded-lg border border-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-foreground flex items-center">
-                <ChefHat className="w-5 h-5 mr-2 text-primary" />
+                <ChefHat size={20} />
                 {mealType.charAt(0) + mealType.slice(1).toLowerCase()} Options
               </h2>
               <span className="text-sm text-muted-foreground">
@@ -168,15 +168,15 @@ export default function UserMealsPage() {
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
                     <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                      <Clock size={12} />
                       <span>{assignment.meal.prepTime + assignment.meal.cookTime} min</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
+                      <Users size={12} />
                       <span>{assignment.meal.servings} servings</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <ChefHat className="w-3 h-3" />
+                      <ChefHat size={12} />
                       <span>{assignment.meal.difficulty}</span>
                     </div>
                   </div>
