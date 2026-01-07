@@ -203,6 +203,20 @@ export class DataService {
     return response.json();
   }
 
+  static async assignMealToClient(mealId: string, clientId: string) {
+    const response = await fetch(`${this.baseUrl}/meals/${mealId}/assign`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ clientId }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to assign meal');
+    }
+    return response.json();
+  }
+
   // Clients
   static async getClients(): Promise<Client[]> {
     const response = await fetch(`${this.baseUrl}/clients`);

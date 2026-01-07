@@ -154,7 +154,7 @@ export default function Navigation({
                   placeholder="Search..."
                   className="w-full pl-9 pr-3 py-2 rounded-lg text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground"
                 />
-                <Flame size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                {/* <Flame size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" /> */}
               </div>
             ) : (
               <button
@@ -201,7 +201,7 @@ export default function Navigation({
               onClick={handleSignOut}
               className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} px-2 py-2 rounded-lg text-destructive hover:bg-destructive/10`}
             >
-              <Flame size={20} />
+              {/* <Flame size={20} /> */}
               {!collapsed && <span className="ml-3 font-medium">Sign Out</span>}
             </button>
           </div>
@@ -231,10 +231,10 @@ export default function Navigation({
             </div>
           </div>
 
-          <button className="relative p-2 text-foreground">
+          {/* <button className="relative p-2 text-foreground">
             <Flame size={20} />
             <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
-          </button>
+          </button> */}
         </header>
 
         {/* Content Area */}

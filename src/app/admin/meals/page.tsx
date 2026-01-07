@@ -5,7 +5,7 @@ import Image from 'next/image';
 import AddMealModal from '@/components/AddMealModal';
 import NewMealDetailModal from '@/components/NewMealDetailModal';
 import { DataService } from '@/services/dataService';
-import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users, Trash2 } from 'lucide-react';
+import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users } from 'lucide-react';
 import { Meal as MealType, MealIngredient, MealInstruction } from '@/types/meal';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
@@ -409,7 +409,20 @@ export default function MealsPage() {
                       onClick={e => handleDeleteMeal(meal.id, e)}
                       className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600/10 text-red-500 hover:bg-red-600/20 border border-red-600/30 rounded-lg transition-colors font-medium text-sm"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <svg
+                        className="w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
                       Delete Meal
                     </button>
                   </div>
@@ -468,7 +481,20 @@ export default function MealsPage() {
                   </>
                 ) : (
                   <>
-                    <Trash2 className="w-4 h-4" />
+                    <svg
+                      className="w-4 h-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
                     Delete
                   </>
                 )}

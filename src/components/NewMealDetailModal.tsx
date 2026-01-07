@@ -13,6 +13,7 @@ import { Clock, Users, Utensils, Sunrise, Sun, Moon, Apple } from 'lucide-react'
 import Image from 'next/image';
 import { useState } from 'react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
+import AssignMealModal from './AssignMealModal';
 
 interface MealDetailModalProps {
   meal: Meal | null;
@@ -24,6 +25,7 @@ interface MealDetailModalProps {
 
 export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDelete }: MealDetailModalProps) {
   const [personalizeModalOpen, setPersonalizeModalOpen] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
 
   const handleSavePersonalizedMeal = (personalizedMeal: any, clientId?: string) => {
@@ -308,6 +310,31 @@ export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDe
                   Personalize
                 </button>
 
+                <button
+                  onClick={() => setAssignModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                  style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  Assign
+                </button>
+
                 {onEdit && (
                   <button
                     onClick={() => onEdit(meal)}
@@ -373,6 +400,17 @@ export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDe
         isOpen={personalizeModalOpen}
         onClose={() => setPersonalizeModalOpen(false)}
         onSave={handleSavePersonalizedMeal}
+      />
+
+      <AssignMealModal
+        isOpen={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        mealId={meal.id}
+        mealName={meal.name}
+        onAssignSuccess={() => {
+          setAssignModalOpen(false);
+          // Optional: Show success message or refresh data
+        }}
       />
     </>
   );
