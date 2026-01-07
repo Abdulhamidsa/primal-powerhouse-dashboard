@@ -18,18 +18,12 @@ export async function POST(request: NextRequest) {
     const { publicId } = await request.json();
 
     if (!publicId) {
-      return NextResponse.json(
-        { error: 'Public ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Public ID is required' }, { status: 400 });
     }
 
     // Verify credentials are configured
     if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      return NextResponse.json(
-        { error: 'Cloudinary API credentials not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Cloudinary API credentials not configured' }, { status: 500 });
     }
 
     // Delete from Cloudinary
@@ -41,10 +35,7 @@ export async function POST(request: NextRequest) {
         message: 'Image deleted successfully',
       });
     } else {
-      return NextResponse.json(
-        { error: 'Failed to delete image', details: result },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Failed to delete image', details: result }, { status: 400 });
     }
   } catch (error) {
     console.error('Delete error:', error);

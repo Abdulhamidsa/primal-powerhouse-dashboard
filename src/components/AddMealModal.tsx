@@ -38,17 +38,12 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) newErrors.name = 'Meal name is required';
-    if (!formData.calories || isNaN(Number(formData.calories)))
-      newErrors.calories = 'Valid calories required';
-    if (!formData.protein || isNaN(Number(formData.protein)))
-      newErrors.protein = 'Valid protein amount required';
-    if (!formData.carbs || isNaN(Number(formData.carbs)))
-      newErrors.carbs = 'Valid carbs amount required';
+    if (!formData.calories || isNaN(Number(formData.calories))) newErrors.calories = 'Valid calories required';
+    if (!formData.protein || isNaN(Number(formData.protein))) newErrors.protein = 'Valid protein amount required';
+    if (!formData.carbs || isNaN(Number(formData.carbs))) newErrors.carbs = 'Valid carbs amount required';
     if (!formData.fat || isNaN(Number(formData.fat))) newErrors.fat = 'Valid fat amount required';
-    if (!formData.prepTime || isNaN(Number(formData.prepTime)))
-      newErrors.prepTime = 'Valid prep time required';
-    if (!formData.cookTime || isNaN(Number(formData.cookTime)))
-      newErrors.cookTime = 'Valid cook time required';
+    if (!formData.prepTime || isNaN(Number(formData.prepTime))) newErrors.prepTime = 'Valid prep time required';
+    if (!formData.cookTime || isNaN(Number(formData.cookTime))) newErrors.cookTime = 'Valid cook time required';
     if (formData.ingredients.filter(ing => ing.trim()).length === 0)
       newErrors.ingredients = 'At least one ingredient required';
     if (formData.instructions.filter(inst => inst.trim()).length === 0)
@@ -66,9 +61,9 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
     setLoading(true);
     try {
       console.log('Submitting meal form with data:', formData);
-      
+
       let imageUrl = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500';
-      
+
       // Upload image to Cloudinary if selected
       if (selectedImageFile) {
         console.log('Uploading image to Cloudinary...');
@@ -90,7 +85,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
         imageUrl = uploadResult.data.url;
         console.log('Image uploaded successfully:', imageUrl);
       }
-      
+
       // Create meal data with uploaded image URL
       const mealData = {
         name: formData.name.trim(),
@@ -112,7 +107,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
       console.log('Creating meal with processed data:', mealData);
       await DataService.createMeal(mealData);
       console.log('Meal created successfully');
-      
+
       onMealAdded();
       onClose();
       resetForm();
@@ -152,11 +147,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
     }
   };
 
-  const handleArrayChange = (
-    field: 'ingredients' | 'instructions' | 'tags',
-    index: number,
-    value: string
-  ) => {
+  const handleArrayChange = (field: 'ingredients' | 'instructions' | 'tags', index: number, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: prev[field].map((item, i) => (i === index ? value : item)),
@@ -194,10 +185,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
         <div className="p-6 border-b border-zinc-700">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-zinc-100">Add New Meal</h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
-            >
+            <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
               <span className="text-2xl">&times;</span>
             </button>
           </div>
@@ -205,9 +193,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-              {errors.general}
-            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{errors.general}</div>
           )}
 
           {/* Basic Info */}
@@ -256,9 +242,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Protein (g) *
-                </label>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Protein (g) *</label>
                 <input
                   type="number"
                   value={formData.protein}
@@ -309,9 +293,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
           {/* Timing & Servings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Prep Time (minutes) *
-              </label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">Prep Time (minutes) *</label>
               <input
                 type="number"
                 value={formData.prepTime}
@@ -323,9 +305,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Cook Time (minutes) *
-              </label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">Cook Time (minutes) *</label>
               <input
                 type="number"
                 value={formData.cookTime}
@@ -383,9 +363,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
                 </div>
               ))}
             </div>
-            {errors.ingredients && (
-              <p className="text-red-500 text-sm mt-1">{errors.ingredients}</p>
-            )}
+            {errors.ingredients && <p className="text-red-500 text-sm mt-1">{errors.ingredients}</p>}
           </div>
 
           {/* Instructions */}
@@ -425,9 +403,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
                 </div>
               ))}
             </div>
-            {errors.instructions && (
-              <p className="text-red-500 text-sm mt-1">{errors.instructions}</p>
-            )}
+            {errors.instructions && <p className="text-red-500 text-sm mt-1">{errors.instructions}</p>}
           </div>
 
           {/* Tags */}
@@ -468,20 +444,10 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
 
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Meal Image
-            </label>
-            <ImageUpload
-              onFileSelect={handleImageSelect}
-              onError={handleImageError}
-              disabled={loading}
-            />
-            {uploadError && (
-              <p className="text-red-500 text-sm mt-2">{uploadError}</p>
-            )}
-            <p className="text-xs text-zinc-500 mt-2">
-              Image will be uploaded to Cloudinary when you create the meal
-            </p>
+            <label className="block text-sm font-medium text-zinc-300 mb-2">Meal Image</label>
+            <ImageUpload onFileSelect={handleImageSelect} onError={handleImageError} disabled={loading} />
+            {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
+            <p className="text-xs text-zinc-500 mt-2">Image will be uploaded to Cloudinary when you create the meal</p>
           </div>
 
           {/* Form Actions */}

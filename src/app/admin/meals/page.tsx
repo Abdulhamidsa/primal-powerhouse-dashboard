@@ -276,10 +276,7 @@ export default function MealsPage() {
                     <Image
                       src={
                         meal.imageUrl.includes('cloudinary.com')
-                          ? getOptimizedImageUrl(
-                              meal.imageUrl.split('/upload/')[1] || meal.imageUrl,
-                              'card'
-                            )
+                          ? getOptimizedImageUrl(meal.imageUrl.split('/upload/')[1] || meal.imageUrl, 'card')
                           : meal.imageUrl
                       }
                       alt={meal.name}
