@@ -59,9 +59,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     });
   } catch (error) {
     console.error('Error assigning meal:', error);
-    return NextResponse.json(
-      { error: 'Failed to assign meal', details: (error as Error).message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to assign meal', details: (error as Error).message }, { status: 500 });
   }
 }

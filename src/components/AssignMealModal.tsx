@@ -23,13 +23,7 @@ interface AssignMealModalProps {
   onAssignSuccess?: () => void;
 }
 
-export default function AssignMealModal({
-  isOpen,
-  onClose,
-  mealId,
-  mealName,
-  onAssignSuccess,
-}: AssignMealModalProps) {
+export default function AssignMealModal({ isOpen, onClose, mealId, mealName, onAssignSuccess }: AssignMealModalProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,9 +56,7 @@ export default function AssignMealModal({
 
     const query = searchQuery.toLowerCase();
     return clients.filter(
-      client =>
-        client.name.toLowerCase().includes(query) ||
-        client.email.toLowerCase().includes(query)
+      client => client.name.toLowerCase().includes(query) || client.email.toLowerCase().includes(query)
     );
   }, [clients, searchQuery]);
 
@@ -79,7 +71,7 @@ export default function AssignMealModal({
     try {
       setAssigning(true);
       await DataService.assignMealToClient(mealId, selectedClient.id);
-      
+
       // Success
       setSelectedClient(null);
       setConfirming(false);
@@ -171,11 +163,8 @@ export default function AssignMealModal({
                           className="text-xs px-2 py-1 rounded-full"
                           style={{
                             background:
-                              client.status === 'ACTIVE'
-                                ? 'rgba(34, 197, 94, 0.1)'
-                                : 'rgba(107, 114, 128, 0.1)',
-                            color:
-                              client.status === 'ACTIVE' ? '#22c55e' : '#9ca3af',
+                              client.status === 'ACTIVE' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(107, 114, 128, 0.1)',
+                            color: client.status === 'ACTIVE' ? '#22c55e' : '#9ca3af',
                           }}
                         >
                           {client.status}
@@ -239,12 +228,7 @@ export default function AssignMealModal({
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               Cancel
             </button>
@@ -267,12 +251,7 @@ export default function AssignMealModal({
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Confirm
                 </>

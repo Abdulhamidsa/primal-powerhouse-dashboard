@@ -138,16 +138,16 @@ export class DataService {
   static async getMeals(clientId?: string) {
     try {
       console.log('DataService: Fetching meals', clientId ? `for client ${clientId}` : '');
-      
+
       // If clientId is provided, include it in the request to get personalized meals
       const url = clientId ? `/api/meals?clientId=${clientId}` : '/api/meals';
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         console.error('DataService: Failed to fetch meals', response.status, response.statusText);
         throw new Error(`Failed to fetch meals: ${response.status}`);
       }
-      
+
       const meals = await response.json();
       console.log('DataService: Successfully fetched meals:', meals.length);
       return meals;
@@ -229,7 +229,7 @@ export class DataService {
   static async getClientById(id: string): Promise<Client> {
     console.log(`DataService: Fetching client with ID: ${id}`);
     const response = await fetch(`${this.baseUrl}/clients/${id}`);
-    
+
     if (!response.ok) {
       // Get the error message from the response
       let errorText;
@@ -239,11 +239,11 @@ export class DataService {
       } catch (e) {
         errorText = 'Client not found';
       }
-      
+
       console.error(`DataService: Failed to fetch client ${id}. Status: ${response.status}. Message: ${errorText}`);
       throw new Error(errorText);
     }
-    
+
     const client = await response.json();
     console.log(`DataService: Successfully fetched client: ${client.name}`);
     return client;
@@ -313,16 +313,16 @@ export class DataService {
       notes?: string;
     }[];
   }): Promise<MealPlan> {
-    console.log('DataService.createMealPlan - Starting', { 
+    console.log('DataService.createMealPlan - Starting', {
       clientId: mealPlanData.clientId,
       name: mealPlanData.name,
-      assignments: mealPlanData.mealAssignments.length
+      assignments: mealPlanData.mealAssignments.length,
     });
-    
+
     try {
       console.log('Making API request to /api/meal-plans');
       console.log('Request payload:', JSON.stringify(mealPlanData, null, 2));
-      
+
       const response = await fetch(`${this.baseUrl}/meal-plans`, {
         method: 'POST',
         headers: {
@@ -330,17 +330,17 @@ export class DataService {
         },
         body: JSON.stringify(mealPlanData),
       });
-      
+
       console.log('API response status:', response.status);
-      
+
       // Get response text first for debugging
       const responseText = await response.text();
       console.log('API response text:', responseText);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to create meal plan: ${responseText}`);
       }
-      
+
       // Parse the JSON response if it's valid JSON
       try {
         const mealPlan = JSON.parse(responseText);
