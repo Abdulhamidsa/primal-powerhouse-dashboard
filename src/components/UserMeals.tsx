@@ -208,36 +208,67 @@ export default function UserMeals({ userId }: UserMealsProps) {
                   {meals.map(meal => (
                     <div key={meal.id} className="w-full flex-shrink-0">
                       <div
-                        className={`bg-gradient-to-br ${typeColors[type as keyof typeof typeColors]} backdrop-blur-sm border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-all duration-300`}
+                        className="rounded-2xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-zinc-800/50 border border-zinc-700/50 flex flex-col h-full"
                         onClick={() => router.push(`/user/meals/${meal.id}`)}
                       >
-                        {meal.imageUrl && (
-                          <img
-                            src={meal.imageUrl}
-                            alt={meal.name}
-                            className="w-full h-32 object-cover rounded-xl mb-3"
-                          />
-                        )}
-                        <h4 className="font-semibold text-white mb-3 text-lg">{meal.name}</h4>
+                        {/* Image Container */}
+                        <div className="relative w-full h-40 bg-zinc-900 overflow-hidden">
+                          {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
+                            <img
+                              src={meal.imageUrl}
+                              alt={meal.name}
+                              className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-900">
+                              <svg
+                                className="w-12 h-12 text-zinc-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M12 6.253v13m0-13C6.5 6.253 2 10.753 2 16.253v0c0 5.5 4.5 10 10 10s10-4.5 10-10v0c0-5.5-4.5-10-10-10z"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
 
-                        {/* Key Nutrition Info */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 text-sm">Calories</span>
-                            <span className="text-white font-semibold">{meal.calories}</span>
+                        {/* Content Container */}
+                        <div className="p-4 flex-1 flex flex-col">
+                          <h4 className="font-semibold text-white mb-3 text-base line-clamp-2 group-hover:text-blue-400">
+                            {meal.name}
+                          </h4>
+
+                          {/* Nutrition Grid */}
+                          <div className="space-y-2 flex-1">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-400">Calories</span>
+                              <span className="text-white font-semibold text-sm">{meal.calories}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-400">Protein</span>
+                              <span className="text-white font-semibold text-sm">{meal.protein}g</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-400">Carbs</span>
+                              <span className="text-white font-semibold text-sm">{meal.carbs}g</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-400">Fat</span>
+                              <span className="text-white font-semibold text-sm">{meal.fat}g</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 text-sm">Protein</span>
-                            <span className="text-white font-semibold">{meal.protein}g</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 text-sm">Carbs</span>
-                            <span className="text-white font-semibold">{meal.carbs}g</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 text-sm">Fat</span>
-                            <span className="text-white font-semibold">{meal.fat}g</span>
-                          </div>
+
+                          {/* View Details Button */}
+                          <button className="mt-4 w-full py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg text-sm font-medium transition-colors border border-blue-600/30">
+                            View Details
+                          </button>
                         </div>
                       </div>
                     </div>

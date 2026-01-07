@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BarChart2, Utensils, Users, Flame, Apple, Clock, BarChart } from 'lucide-react';
+import Image from 'next/image';
 
 const adminNavItems = [
   {
@@ -127,7 +128,7 @@ export default function Navigation({
           <div className="flex items-center justify-between p-4 border-b border-border">
             <Link href={userType === 'admin' ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary text-primary-foreground">
-                <span className="text-lg font-bold">PP</span>
+                <Image src="/logo.png" alt="Logo" width={24} height={24} />
               </div>
               {!collapsed && (
                 <div className="ml-3">
