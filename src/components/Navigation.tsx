@@ -118,8 +118,9 @@ export default function Navigation({
     <div className="flex h-screen overflow-hidden relative">
       {/* Sidebar Navigation - Desktop Only */}
       <aside
-        className={`h-screen lg:relative z-40 transition-all duration-300 ease-in-out bg-card border-r border-border hidden lg:flex
-          ${collapsed ? 'w-20' : 'w-64'}`}
+        className={`h-screen lg:relative z-40 transition-all duration-300 ease-in-out hidden lg:flex
+  ${collapsed ? 'w-20' : 'w-64'}
+  bg-card/60 backdrop-blur-xl border-r border-border/70`}
       >
         <div className="flex flex-col h-full">
           {/* Logo & Toggle */}
@@ -158,22 +159,39 @@ export default function Navigation({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} 
-                    px-4 py-3 mb-1 mx-2 rounded-lg transition-colors duration-200
-                    ${isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-foreground'}`}
+                  className={[
+                    'group relative flex items-center',
+                    collapsed ? 'justify-center' : 'justify-between',
+                    'px-4 py-3 mb-1 mx-2 rounded-2xl transition-all duration-200',
+                    isActive
+                      ? 'bg-background/60 border border-border/70 shadow-sm'
+                      : 'hover:bg-muted/60 text-foreground',
+                  ].join(' ')}
                 >
                   <div className={`flex items-center ${collapsed ? '' : 'w-full'}`}>
-                    <div className={`${isActive ? 'text-primary' : 'text-muted-foreground'}`}>{item.icon}</div>
+                    <div className={isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}>
+                      {item.icon}
+                    </div>
 
                     {!collapsed && (
-                      <div className="ml-3 flex-1">
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-xs opacity-75">{item.description}</div>
+                      <div className="ml-3 flex-1 min-w-0">
+                        <div
+                          className={['font-medium truncate', isActive ? 'text-foreground' : 'text-foreground'].join(
+                            ' '
+                          )}
+                        >
+                          {item.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">{item.description}</div>
                       </div>
                     )}
                   </div>
 
-                  {!collapsed && isActive && <BarChart size={16} />}
+                  {!collapsed && (
+                    <div className="flex items-center gap-2">
+                      {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                    </div>
+                  )}
                 </Link>
               );
             })}

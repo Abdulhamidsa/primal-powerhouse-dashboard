@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import VideoPlayerModal from '@/components/VideoPlayerModal';
 import { format } from 'date-fns';
 
@@ -28,6 +29,65 @@ interface VideoAssignment {
 interface CoachInfo {
   name: string;
   email: string;
+}
+
+function formatDuration(seconds: number) {
+  const mins = Math.floor(seconds / 60);
+  return `${mins} min`;
+}
+
+function Segmented({
+  options,
+  value,
+  onChange,
+}: {
+  options: { label: string; value: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="inline-flex rounded-2xl border border-border bg-card/60 backdrop-blur-xl p-1">
+      {options.map(opt => {
+        const active = opt.value === value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={[
+              'px-3 py-1.5 text-sm font-medium rounded-xl transition-all',
+              active ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            ].join(' ')}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Thumb({ src, alt }: { src?: string; alt: string }) {
+  if (src) {
+    return (
+      <div className="relative h-16 w-24 overflow-hidden rounded-2xl border border-border bg-muted">
+        <Image src={src} alt={alt} fill sizes="96px" className="object-cover" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-16 w-24 overflow-hidden rounded-2xl border border-border bg-muted flex items-center justify-center">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="opacity-60">
+        <path d="M10.5 8.5V15.5L16 12L10.5 8.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path
+          d="M7 4.5H17C18.3807 4.5 19.5 5.61929 19.5 7V17C19.5 18.3807 18.3807 19.5 17 19.5H7C5.61929 19.5 4.5 18.3807 4.5 17V7C4.5 5.61929 5.61929 4.5 7 4.5Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
+      </svg>
+    </div>
+  );
 }
 
 export default function UserTrainingPage() {
@@ -70,18 +130,12 @@ export default function UserTrainingPage() {
     try {
       const response = await fetch('/api/user/videos/complete', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assignmentId }),
       });
 
       if (response.ok) {
-        setAssignments(
-          assignments.map(assignment =>
-            assignment.id === assignmentId ? { ...assignment, isCompleted: true } : assignment
-          )
-        );
+        setAssignments(prev => prev.map(a => (a.id === assignmentId ? { ...a, isCompleted: true } : a)));
       }
     } catch (error) {
       console.error('Error marking video as completed:', error);
@@ -105,121 +159,135 @@ export default function UserTrainingPage() {
     }
   };
 
-  // Get all unique tags
-  const allTags = Array.from(new Set(assignments.flatMap(a => (Array.isArray(a.video.tags) ? a.video.tags : []))));
+  const allTags = useMemo(
+    () => Array.from(new Set(assignments.flatMap(a => (Array.isArray(a.video.tags) ? a.video.tags : [])))),
+    [assignments]
+  );
 
-  const filteredAssignments =
-    selectedTag === 'all'
-      ? assignments
-      : assignments.filter(a => Array.isArray(a.video.tags) && a.video.tags.includes(selectedTag));
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    return `${mins} min`;
-  };
+  const filteredAssignments = useMemo(() => {
+    if (selectedTag === 'all') return assignments;
+    return assignments.filter(a => Array.isArray(a.video.tags) && a.video.tags.includes(selectedTag));
+  }, [assignments, selectedTag]);
 
   return (
     <div className="p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Training Videos</h1>
-          </div>
+      <div className="max-w-6xl mx-auto space-y-5">
+        {/* iOS-ish header */}
+        <div>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">My Training</h1>
+              <p className="text-sm text-muted-foreground">Your plan, clean and simple.</p>
+            </div>
 
-          {allTags.length > 0 && (
-            <select
-              value={selectedTag}
-              onChange={e => setSelectedTag(e.target.value)}
-              className="px-4 py-2 border border-border rounded-lg bg-background text-foreground"
-            >
-              <option value="all">All Categories</option>
-              {allTags.map(tag => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-            </select>
-          )}
+            {allTags.length > 0 && (
+              <Segmented
+                value={selectedTag}
+                onChange={setSelectedTag}
+                options={[{ label: 'All', value: 'all' }, ...allTags.slice(0, 6).map(t => ({ label: t, value: t }))]}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Videos List */}
+        {/* Empty state */}
         {filteredAssignments.length === 0 ? (
-          <div className="bg-card p-12 rounded-lg border border-border text-center">
-            <p className="text-muted-foreground">No videos assigned yet</p>
+          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+            <p className="text-sm text-muted-foreground">No videos assigned yet</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredAssignments.map(assignment => (
-              <div
-                key={assignment.id}
-                className="bg-card p-4 rounded-lg border border-border hover:border-primary/50 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  {/* Timeline Date */}
-                  <div className="text-sm text-muted-foreground min-w-[80px]">
-                    {format(new Date(assignment.assignedDate), 'MMM dd')}
-                    {assignment.scheduledTime && (
-                      <div className="text-xs">{format(new Date(assignment.scheduledTime), 'HH:mm')}</div>
-                    )}
-                  </div>
+            {filteredAssignments.map(assignment => {
+              const dateLabel = format(new Date(assignment.assignedDate), 'MMM dd');
+              const timeLabel = assignment.scheduledTime ? format(new Date(assignment.scheduledTime), 'HH:mm') : null;
 
-                  {/* Video Info */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground mb-1">{assignment.video.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{assignment.video.description}</p>
+              return (
+                <div
+                  key={assignment.id}
+                  className={[
+                    'rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-4',
+                    'transition-all hover:shadow-md hover:border-border/70',
+                  ].join(' ')}
+                >
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => openVideoModal(assignment)}
+                      className="shrink-0"
+                      aria-label={`Open ${assignment.video.title}`}
+                    >
+                      <Thumb src={assignment.video.thumbnailUrl} alt={assignment.video.title} />
+                    </button>
 
-                        {/* Tags */}
-                        {Array.isArray(assignment.video.tags) && assignment.video.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {assignment.video.tags.map((tag, idx) => (
-                              <span key={idx} className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm text-muted-foreground">
+                            {dateLabel}
+                            {timeLabel ? <span className="ml-2">• {timeLabel}</span> : null}
+                          </p>
 
-                      {/* Duration & Status */}
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-foreground mb-1">
-                          {formatDuration(assignment.video.duration)}
+                          <h3 className="mt-0.5 font-semibold text-foreground truncate">{assignment.video.title}</h3>
+
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                            {assignment.video.description}
+                          </p>
                         </div>
-                        <div className="text-xs text-muted-foreground mb-2">{assignment.video.difficulty}</div>
-                        {assignment.isCompleted && (
-                          <span className="inline-flex items-center text-xs text-green-600">✓ Done</span>
+
+                        {assignment.isCompleted ? (
+                          <span className="shrink-0 rounded-full border border-border bg-background/70 px-2.5 py-1 text-xs font-medium text-foreground">
+                            Done
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded-full border border-border bg-background/50 px-2.5 py-1 text-xs text-muted-foreground">
+                            Pending
+                          </span>
                         )}
                       </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => openVideoModal(assignment)}
-                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                      >
-                        Watch Video
-                      </button>
-                      {!assignment.isCompleted && (
+                      {/* meta row */}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-background/60 border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                          {formatDuration(assignment.video.duration)}
+                        </span>
+                        <span className="rounded-full bg-background/60 border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                          {assignment.video.difficulty}
+                        </span>
+
+                        {Array.isArray(assignment.video.tags) && assignment.video.tags.length > 0 && (
+                          <span className="rounded-full bg-background/60 border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                            {assignment.video.tags[0]}
+                            {assignment.video.tags.length > 1 ? ` +${assignment.video.tags.length - 1}` : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* actions */}
+                      <div className="mt-3 flex items-center gap-2">
                         <button
-                          onClick={() => markVideoCompleted(assignment.id)}
-                          className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm"
+                          onClick={() => openVideoModal(assignment)}
+                          className="px-4 py-2 rounded-2xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
                         >
-                          Mark Complete
+                          Watch
                         </button>
-                      )}
+
+                        {!assignment.isCompleted && (
+                          <button
+                            onClick={() => markVideoCompleted(assignment.id)}
+                            className="px-4 py-2 rounded-2xl border border-border bg-background/50 text-sm text-foreground hover:bg-muted transition-colors"
+                          >
+                            Mark done
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {/* Video Player Modal */}
         {selectedVideo && (
           <VideoPlayerModal
             isOpen={isVideoModalOpen}
