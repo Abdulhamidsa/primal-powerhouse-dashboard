@@ -111,7 +111,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare password (optional: generate if not provided)
-    const generatePassword = () => `PP-${crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)}!`;
+    const generatePassword = () =>
+      `PP-${crypto
+        .randomBytes(9)
+        .toString('base64')
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .slice(0, 12)}!`;
     const plainPassword = (clientData.password && String(clientData.password).trim()) || generatePassword();
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 

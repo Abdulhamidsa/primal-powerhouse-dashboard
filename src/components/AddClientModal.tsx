@@ -198,7 +198,9 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Leave empty to auto-generate"
                 />
-                <p className="text-gray-500 text-xs mt-1">If left empty, a secure password will be generated and shown after creation.</p>
+                <p className="text-gray-500 text-xs mt-1">
+                  If left empty, a secure password will be generated and shown after creation.
+                </p>
               </div>
 
               <div>
