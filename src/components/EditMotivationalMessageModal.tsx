@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from '../../node_modules/lucide-react';
+// @ts-ignore - lucide-react type definitions issue
+import { X } from 'lucide-react';
 
 interface EditMotivationalMessageModalProps {
   isOpen: boolean;
@@ -11,15 +12,9 @@ interface EditMotivationalMessageModalProps {
     name: string;
     motivationalMessage?: string;
   };
-  onSuccess: () => void;
 }
 
-export default function EditMotivationalMessageModal({
-  isOpen,
-  onClose,
-  client,
-  onSuccess,
-}: EditMotivationalMessageModalProps) {
+export default function EditMotivationalMessageModal({ isOpen, onClose, client }: EditMotivationalMessageModalProps) {
   const [message, setMessage] = useState(client.motivationalMessage || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -45,7 +40,6 @@ export default function EditMotivationalMessageModal({
         throw new Error('Failed to update message');
       }
 
-      onSuccess();
       onClose();
     } catch (err) {
       setError('Failed to update motivational message');

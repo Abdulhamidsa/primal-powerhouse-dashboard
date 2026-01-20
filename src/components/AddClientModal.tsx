@@ -14,6 +14,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     phone: '',
     avatar: '',
     currentWeight: '',
@@ -59,6 +60,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
       const clientData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
+        password: formData.password.trim(),
         phone: formData.phone.trim(),
         avatar:
           formData.avatar ||
@@ -76,7 +78,12 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
         progressPhotos: [],
       };
 
-      await DataService.createClient(clientData);
+      const result = await DataService.createClient(clientData);
+      // If API returns credentials, show them to the user in a success box
+      const creds = result?.credentials;
+      if (creds?.email && creds?.password) {
+        alert(`Client created!\nEmail: ${creds.email}\nPassword: ${creds.password}`);
+      }
       onClientAdded();
       onClose();
       resetForm();
@@ -92,6 +99,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
     setFormData({
       name: '',
       email: '',
+      password: '',
       phone: '',
       avatar: '',
       currentWeight: '',
@@ -179,6 +187,18 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
                   placeholder="john.smith@email.com"
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Initial Password (optional)</label>
+                <input
+                  type="text"
+                  value={formData.password}
+                  onChange={e => handleInputChange('password', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Leave empty to auto-generate"
+                />
+                <p className="text-gray-500 text-xs mt-1">If left empty, a secure password will be generated and shown after creation.</p>
               </div>
 
               <div>

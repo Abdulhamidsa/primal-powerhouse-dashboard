@@ -137,11 +137,11 @@ export default function UserLogin() {
             </button>
           </div>
 
-          <div className="text-center">
+          {/* <div className="text-center">
             <Link href="/admin/login" className="text-primary hover:underline">
               Are you a coach? Sign in here
             </Link>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

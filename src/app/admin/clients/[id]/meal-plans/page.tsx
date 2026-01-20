@@ -166,7 +166,7 @@ export default function ClientMealPlansPage() {
                 <button
                   key={plan.id}
                   onClick={() => setSelectedPlanId(plan.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${selectedPlanId === plan.id ? 'bg-blue-500 text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-blue-50 border border-gray-200'}`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200  ${selectedPlanId === plan.id ? 'bg-blue-500 text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-blue-50 border border-gray-200'}`}
                 >
                   {plan.name}
                   {plan.isActive && <span className="ml-2 text-xs">●</span>}

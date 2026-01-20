@@ -57,7 +57,6 @@ export default function UserMealsPage() {
   const router = useRouter();
   const [todaysMeals, setTodaysMeals] = useState<TodaysMeals>({});
   const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'today' | 'all'>('today');
 
   useEffect(() => {
@@ -86,8 +85,6 @@ export default function UserMealsPage() {
       }
     } catch (error) {
       console.error('Error fetching all meal assignments:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -111,120 +108,116 @@ export default function UserMealsPage() {
 
   const totalNutrition = calculateTotalNutrition();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">My Meals</h1>
-          <p className="text-muted-foreground">Your personalized meal plans</p>
-        </div>
-      </div>
-
-      {/* Meal Sections */}
-      {['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'].map(mealType => {
-        const mealsForType = allMealAssignments.filter(assignment => assignment.mealType.toUpperCase() === mealType);
-
-        if (mealsForType.length === 0) return null;
-
-        return (
-          <div key={mealType} className="bg-card p-6 rounded-lg border border-border">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-foreground flex items-center">
-                <ChefHat size={20} />
-                {mealType.charAt(0) + mealType.slice(1).toLowerCase()} Options
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {mealsForType.length} meal{mealsForType.length !== 1 ? 's' : ''} assigned
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mealsForType.map(assignment => (
-                <div
-                  key={assignment.id}
-                  className="bg-background p-4 rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
-                  onClick={() => router.push(`/user/meals/${assignment.meal.id}`)}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {assignment.meal.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {getDayName(assignment.dayOfWeek)} • {assignment.mealPlan.name}
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{assignment.meal.description}</p>
-
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                    <div className="flex items-center gap-1">
-                      <Clock size={12} />
-                      <span>{assignment.meal.prepTime + assignment.meal.cookTime} min</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users size={12} />
-                      <span>{assignment.meal.servings} servings</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <ChefHat size={12} />
-                      <span>{assignment.meal.difficulty}</span>
-                    </div>
-                  </div>
-
-                  {assignment.meal.tags && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {assignment.meal.tags
-                        .split(',')
-                        .slice(0, 3)
-                        .map((tag, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
-                          >
-                            {tag.trim()}
-                          </span>
-                        ))}
-                      {assignment.meal.tags.split(',').length > 3 && (
-                        <span className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs">
-                          +{assignment.meal.tags.split(',').length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex space-x-2">
-                    <button
-                      className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90 transition-colors"
-                      onClick={e => {
-                        e.stopPropagation();
-                        router.push(`/user/meals/${assignment.meal.id}`);
-                      }}
-                    >
-                      View Details
-                    </button>
-                  </div>
-
-                  {assignment.scheduledTime && (
-                    <p className="text-xs text-muted-foreground mt-2 text-center">
-                      Recommended time: {assignment.scheduledTime}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">My Meals</h1>
           </div>
-        );
-      })}
+        </div>
+        <div className="bg-card p-12 rounded-lg border border-border text-center">
+          <p className="text-muted-foreground">No Meals assigned yet</p>
+        </div>
+
+        {/* Meal Sections */}
+        {['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'].map(mealType => {
+          const mealsForType = allMealAssignments.filter(assignment => assignment.mealType.toUpperCase() === mealType);
+
+          if (mealsForType.length === 0) return null;
+
+          return (
+            <div key={mealType} className="bg-card p-6 rounded-lg border border-border">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground flex items-center">
+                  <ChefHat size={20} />
+                  {mealType.charAt(0) + mealType.slice(1).toLowerCase()} Options
+                </h2>
+                <span className="text-sm text-muted-foreground">
+                  {mealsForType.length} meal{mealsForType.length !== 1 ? 's' : ''} assigned
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mealsForType.map(assignment => (
+                  <div
+                    key={assignment.id}
+                    className="bg-background p-4 rounded-lg border border-border hover:shadow-md transition-all cursor-pointer group"
+                    onClick={() => router.push(`/user/meals/${assignment.meal.id}`)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {assignment.meal.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {getDayName(assignment.dayOfWeek)} • {assignment.mealPlan.name}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{assignment.meal.description}</p>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                      <div className="flex items-center gap-1">
+                        <Clock size={12} />
+                        <span>{assignment.meal.prepTime + assignment.meal.cookTime} min</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users size={12} />
+                        <span>{assignment.meal.servings} servings</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ChefHat size={12} />
+                        <span>{assignment.meal.difficulty}</span>
+                      </div>
+                    </div>
+
+                    {assignment.meal.tags && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {assignment.meal.tags
+                          .split(',')
+                          .slice(0, 3)
+                          .map((tag, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
+                            >
+                              {tag.trim()}
+                            </span>
+                          ))}
+                        {assignment.meal.tags.split(',').length > 3 && (
+                          <span className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs">
+                            +{assignment.meal.tags.split(',').length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex space-x-2">
+                      <button
+                        className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90 transition-colors"
+                        onClick={e => {
+                          e.stopPropagation();
+                          router.push(`/user/meals/${assignment.meal.id}`);
+                        }}
+                      >
+                        View Details
+                      </button>
+                    </div>
+
+                    {assignment.scheduledTime && (
+                      <p className="text-xs text-muted-foreground mt-2 text-center">
+                        Recommended time: {assignment.scheduledTime}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

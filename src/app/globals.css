@@ -10,6 +10,7 @@
     --color-surface: #0a0a0a;
     --color-bg-alt: #1a1a1a;
     --color-text: #ffffff;
+    --color-text-black: #000000;
     --color-text-muted: #888888;
     --color-border: #1a1a1a;
     --color-accent: #ffffff;
@@ -46,6 +47,17 @@
 
   h3 {
     @apply text-lg font-medium;
+  }
+  .btn-active {
+    background: var(--color-text-black);
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+  }
+
+  .btn-inactive {
+    background: var(--color-text);
+    color: var(--color-text-black);
+    border-color: var(--color-border);
   }
 
   /* Tablet and desktop typography */
@@ -217,6 +229,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
   }
 
   .line-clamp-2 {
@@ -224,6 +237,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .line-clamp-3 {
@@ -231,6 +245,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
   }
 
   /* Gradient backgrounds */

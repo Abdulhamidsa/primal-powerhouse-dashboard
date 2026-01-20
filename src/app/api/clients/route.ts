@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
@@ -108,6 +110,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'A client with this email already exists' }, { status: 400 });
     }
 
+    // Prepare password (optional: generate if not provided)
+    const generatePassword = () => `PP-${crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)}!`;
+    const plainPassword = (clientData.password && String(clientData.password).trim()) || generatePassword();
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
     // Prepare data for Prisma
     const clientToCreate = {
       name: clientData.name,
@@ -120,6 +127,7 @@ export async function POST(request: NextRequest) {
       height: clientData.height || null,
       age: clientData.age || null,
       activityLevel: clientData.activityLevel || null,
+      password: hashedPassword,
       notes: clientData.notes || null,
       sessionsCompleted: clientData.sessionsCompleted || 0,
       coachId: userId,
@@ -142,7 +150,16 @@ export async function POST(request: NextRequest) {
       progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
     };
 
-    return NextResponse.json(parsedClient, { status: 201 });
+    return NextResponse.json(
+      {
+        client: parsedClient,
+        credentials: {
+          email: client.email,
+          password: plainPassword,
+        },
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
     console.error('Error creating client:', error);
     return NextResponse.json(

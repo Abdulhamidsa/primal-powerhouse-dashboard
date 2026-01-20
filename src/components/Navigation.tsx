@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart2, Utensils, Users, Flame, Apple, Clock, BarChart } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, Apple, Clock, BarChart, User } from 'lucide-react';
 import Image from 'next/image';
 
 const adminNavItems = [
@@ -64,6 +64,12 @@ const userNavItems = [
     icon: <Flame size={20} />,
     description: 'Workout videos',
   },
+  {
+    name: 'Profile',
+    href: '/user/profile',
+    icon: <User size={20} />,
+    description: 'My profile',
+  },
 ];
 
 export default function Navigation({
@@ -100,34 +106,30 @@ export default function Navigation({
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Handle sign out
-  const handleSignOut = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      // Redirect to appropriate login page based on user type
-      if (userType === 'admin') {
-        window.location.href = '/admin/login';
-      } else {
-        window.location.href = '/user/login';
-      }
-    } catch (error) {
-      console.error('Sign out error:', error);
+  // Prevent unnecessary navigation when clicking logo on current page
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const dashboardPath = userType === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+    if (pathname === dashboardPath) {
+      e.preventDefault();
     }
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar Navigation */}
+    <div className="flex h-screen overflow-hidden relative">
+      {/* Sidebar Navigation - Desktop Only */}
       <aside
-        className={`h-screen lg:relative z-40 transition-all duration-300 ease-in-out bg-card border-r border-border
-          ${collapsed ? 'w-20' : 'w-64'} 
-          ${isMobile ? (mobileMenuOpen ? 'translate-x-0 fixed' : '-translate-x-full fixed') : ''}`}
+        className={`h-screen lg:relative z-40 transition-all duration-300 ease-in-out bg-card border-r border-border hidden lg:flex
+          ${collapsed ? 'w-20' : 'w-64'}`}
       >
         <div className="flex flex-col h-full">
           {/* Logo & Toggle */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <Link href={userType === 'admin' ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary text-primary-foreground">
+            <Link
+              href={userType === 'admin' ? '/admin/dashboard' : '/user/dashboard'}
+              className="flex items-center"
+              onClick={handleLogoClick}
+            >
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground">
                 <Image src="/logo.png" alt="Logo" width={24} height={24} />
               </div>
               {!collapsed && (
@@ -178,62 +180,61 @@ export default function Navigation({
           </div>
 
           {/* Bottom Actions */}
-          <div className="border-t border-border p-4 space-y-2">
-            <button
-              onClick={handleSignOut}
-              className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} px-2 py-2 rounded-lg text-destructive hover:bg-destructive/10`}
-            >
-              {/* <Flame size={20} /> */}
-              {!collapsed && <span className="ml-3 font-medium">Sign Out</span>}
-            </button>
-          </div>
+          <div className="border-t border-border p-4 space-y-2">{/* Logout moved to Profile page */}</div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-card sticky top-0 z-20">
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-foreground">
-            {mobileMenuOpen ? (
-              <BarChart2 size={24} />
-            ) : (
-              <div className="space-y-1">
-                <div className="w-6 h-0.5 bg-foreground"></div>
-                <div className="w-6 h-0.5 bg-foreground"></div>
-                <div className="w-6 h-0.5 bg-foreground"></div>
-              </div>
-            )}
-          </button>
-
-          <div className="flex items-center space-x-1">
-            {/* <div className="font-bold text-lg text-foreground">Primal Powerhouse</div> */}
-            <div className="w-16 h-10 rounded-lg flex items-center justify-center ml-2 text-primary-foreground">
-              <Image src="/logo.png" alt="Logo" width={80} height={80} />
-            </div>
+        {/* Mobile Header - Simple Logo Only */}
+        <header className="lg:hidden flex items-center justify-center p-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
+          <div className="flex items-center space-x-2">
+            <Link href="/" className="w-20 h-16 rounded-lg flex items-center justify-center cursor-pointer">
+              <Image src="/logo.png" alt="Logo" width={100} height={80} />
+            </Link>
+            {/* <h1 className="font-bold text-lg text-foreground">Primal Power</h1> */}
           </div>
-
-          {/* <button className="relative p-2 text-foreground">
-            <Flame size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
-          </button> */}
         </header>
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-background">
+        {/* Content Area - Extra padding bottom for mobile tab bar */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-background pb-24 lg:pb-6">
           {children || (
             <div id="page-content">
-              {/* This div will be populated by your page content */}
-              <p className="text-center py-8 text-muted-foreground">Select an option from the sidebar to get started</p>
+              <p className="text-center py-8 text-muted-foreground">Select an option from the navigation</p>
             </div>
           )}
         </main>
-      </div>
 
-      {/* Mobile overlay */}
-      {isMobile && mobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-30" onClick={() => setMobileMenuOpen(false)} aria-hidden="true" />
-      )}
+        {/* Bottom Tab Bar - Mobile Only (iOS/Android style) */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg">
+          <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
+            {navItems.map(item => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="flex flex-col items-center justify-center min-w-[60px] py-2 px-2 rounded-xl"
+                >
+                  <div
+                    className={`transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                  >
+                    {item.icon}
+                  </div>
+
+                  <span
+                    className={`text-[10px] font-medium mt-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                  >
+                    {item.name.split(' ')[0]}
+                  </span>
+                </Link>
+              );
+            })}
+
+            {/* Profile link moved to primary navigation */}
+          </div>
+        </nav>
+      </div>
     </div>
   );
 }

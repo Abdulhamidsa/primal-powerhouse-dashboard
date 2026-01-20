@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import NewAddClientModal from '@/components/NewAddClientModal';
-import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { DataService, Client } from '@/services/dataService';
 import {
   Users,
@@ -25,8 +24,6 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const fetchClients = async () => {
@@ -86,13 +83,9 @@ export default function ClientsPage() {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200`}
-                style={{
-                  background: statusFilter === status ? 'var(--color-accent)' : 'var(--color-surface)',
-                  color: statusFilter === status ? 'var(--color-text)' : 'var(--color-text-muted)',
-                  borderColor: statusFilter === status ? 'var(--color-accent)' : 'var(--color-border)',
-                  borderWidth: statusFilter === status ? '0px' : '1px',
-                }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
+    ${statusFilter === status ? 'btn-active' : 'btn-inactive'}
+  `}
               >
                 {status === 'ALL' ? 'All Clients' : status.charAt(0) + status.slice(1).toLowerCase()}
               </button>
@@ -251,11 +244,6 @@ export default function ClientsPage() {
                           className="object-cover"
                           fill
                           sizes="64px"
-                          onError={(e: any) => {
-                            // Fallback to UI Avatars if image fails to load
-                            (e.target as HTMLImageElement).src =
-                              `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}&background=random`;
-                          }}
                         />
                       </div>
                       <div>
@@ -395,23 +383,11 @@ export default function ClientsPage() {
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedClient(client);
-                        setShowMessageModal(true);
-                      }}
-                      className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 border border-border hover:bg-muted transition-colors"
-                    >
-                      <MessageCircle size={16} />
-                      Message
-                    </button>
                     <Link
                       href={`/admin/clients/${client.id}`}
-                      className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1"
-                      style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+                      className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 btn-inactive"
                     >
                       View Profile
-                      <ChevronRight size={16} />
                     </Link>
                   </div>
                 </div>
@@ -436,8 +412,7 @@ export default function ClientsPage() {
             </p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
-              style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+              className="px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2 btn-inactive"
             >
               <Users size={16} />
               Add Your First Client
@@ -450,20 +425,6 @@ export default function ClientsPage() {
       <NewAddClientModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onClientAdded={fetchClients} />
 
       {/* Edit Motivational Message Modal */}
-      {selectedClient && (
-        <EditMotivationalMessageModal
-          isOpen={showMessageModal}
-          onClose={() => {
-            setShowMessageModal(false);
-            setSelectedClient(null);
-          }}
-          client={selectedClient}
-          onSuccess={() => {
-            fetchClients();
-            // You could add a toast notification here
-          }}
-        />
-      )}
     </div>
   );
 }

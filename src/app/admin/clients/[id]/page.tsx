@@ -27,7 +27,9 @@ import {
   Coffee,
   Salad,
   Apple,
-} from 'lucide-react';
+  MessageCircle,
+} from '../../../../../node_modules/lucide-react';
+import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 
 interface Client {
   id: string;
@@ -77,6 +79,8 @@ interface MealAssignment {
 export default function ClientProfilePage() {
   const params = useParams();
   const clientId = params.id as string;
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const [client, setClient] = useState<Client | null>(null);
   const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
@@ -93,6 +97,7 @@ export default function ClientProfilePage() {
       if (response.ok) {
         const clientData = await response.json();
         setClient(clientData);
+        setSelectedClient(clientData);
       }
     } catch (error) {
       console.error('Error fetching client:', error);
@@ -228,7 +233,7 @@ export default function ClientProfilePage() {
 
       {/* Header */}
       <header
-        className="sticky top-16 z-40 border-b"
+        className="z-40 border-b"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -278,23 +283,30 @@ export default function ClientProfilePage() {
                   setAssignModalType('videos');
                   setShowAssignModal(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium"
-                style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium btn-inactive"
               >
                 <Film size={18} />
                 Assign Videos
               </button>
-
               <button
                 onClick={() => {
                   setAssignModalType('meals');
                   setShowAssignModal(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium"
-                style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium btn-inactive"
               >
                 <Utensils size={18} />
                 Assign Meals
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedClient(client);
+                  setShowMessageModal(true);
+                }}
+                className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 border border-border hover:bg-muted transition-colors"
+              >
+                <MessageCircle size={16} />
+                Message
               </button>
             </div>
           </div>
@@ -894,7 +906,16 @@ export default function ClientProfilePage() {
           </div>
         )}
       </main>
-
+      {selectedClient && (
+        <EditMotivationalMessageModal
+          isOpen={showMessageModal}
+          onClose={() => {
+            setShowMessageModal(false);
+            setSelectedClient(null);
+          }}
+          client={selectedClient}
+        />
+      )}
       {/* Assignment Modal */}
       {client && (
         <AssignContentModal

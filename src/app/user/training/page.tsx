@@ -32,7 +32,6 @@ interface CoachInfo {
 
 export default function UserTrainingPage() {
   const [assignments, setAssignments] = useState<VideoAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<VideoAssignment | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>('all');
@@ -64,8 +63,6 @@ export default function UserTrainingPage() {
       }
     } catch (error) {
       console.error('Error fetching user videos:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -121,16 +118,6 @@ export default function UserTrainingPage() {
     return `${mins} min`;
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center py-20">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -138,7 +125,6 @@ export default function UserTrainingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Training Videos</h1>
-            {coachInfo && <p className="text-sm text-muted-foreground mt-1">Coach: {coachInfo.name}</p>}
           </div>
 
           {allTags.length > 0 && (

@@ -1,5 +1,23 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+
+function validateToken(request: NextRequest) {
+  const token = request.cookies.get('auth-token')?.value;
+  if (!token) return null;
+  try {
+    return jwt.verify(token, JWT_SECRET) as { type?: 'admin' | 'client' };
+  } catch (err) {
+    return null;
+  }
+}
+
+const isAdminPath = (pathname: string) => pathname.startsWith('/admin');
+const isUserPath = (pathname: string) => pathname.startsWith('/user');
+const isLoginPath = (pathname: string) => pathname === '/admin/login' || pathname === '/user/login';
+const isApiPath = (pathname: string) => pathname.startsWith('/api');
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
@@ -43,12 +61,40 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // For regular localhost:3002 (no subdomain) - redirect to login page
-  if (hostname.includes('localhost:3002') && !isLocalAdminDomain && !isLocalUserDomain) {
+  // For regular localhost - check if user is authenticated before redirecting
+  if (hostname.includes('localhost') && !isLocalAdminDomain && !isLocalUserDomain) {
     if (url.pathname === '/') {
-      // Default to user login for regular localhost
-      url.pathname = '/user/login';
-      return NextResponse.redirect(url);
+      // Check authentication token
+      const payload = validateToken(request);
+      if (payload && payload.type === 'client') {
+        // User is authenticated, redirect to user dashboard
+        url.pathname = '/user/dashboard';
+        return NextResponse.redirect(url);
+      } else if (payload && payload.type === 'admin') {
+        // Admin is authenticated, redirect to admin dashboard
+        url.pathname = '/admin/dashboard';
+        return NextResponse.redirect(url);
+      }
+      // Not authenticated, let the page handle it (no redirect from middleware)
+    }
+  }
+
+  // Global protection for admin/user paths even on localhost:3000
+  if (!isApiPath(url.pathname) && !isLoginPath(url.pathname)) {
+    if (isAdminPath(url.pathname)) {
+      const payload = validateToken(request);
+      if (!payload || payload.type !== 'admin') {
+        url.pathname = '/admin/login';
+        return NextResponse.redirect(url);
+      }
+    }
+
+    if (isUserPath(url.pathname)) {
+      const payload = validateToken(request);
+      if (!payload || payload.type !== 'client') {
+        url.pathname = '/user/login';
+        return NextResponse.redirect(url);
+      }
     }
   }
 

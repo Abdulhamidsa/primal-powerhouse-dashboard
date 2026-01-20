@@ -1,118 +1,227 @@
-export default function UserProfilePage() {
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { LogOut, Mail, User, Phone, Ruler, Cake, Scale, ChevronRight } from 'lucide-react';
+
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  age?: number;
+  height?: number;
+  currentWeight?: number;
+  targetWeight?: number;
+  avatar?: string;
+}
+
+type Row = {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+};
+
+function SettingsGroup({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
-          <p className="text-muted-foreground">Manage your personal information and goals</p>
+    <section className="space-y-2">
+      {title ? (
+        <p className="px-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+      ) : null}
+
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">{children}</div>
+    </section>
+  );
+}
+
+function SettingsRow({
+  icon,
+  label,
+  value,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value?: string;
+  onClick?: () => void;
+}) {
+  const clickable = Boolean(onClick);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!clickable}
+      className={`w-full text-left ${clickable ? 'hover:bg-muted/40 active:bg-muted/60' : ''}`}
+    >
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted/50">{icon}</div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-foreground">{label}</p>
+          {value ? <p className="truncate text-xs text-muted-foreground">{value}</p> : null}
+        </div>
+
+        {clickable ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : null}
+      </div>
+
+      {/* iOS-like separator */}
+      <div className="ml-16 h-px bg-border/60" />
+    </button>
+  );
+}
+
+function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="w-full">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted/50">{icon}</div>
+
+        <p className="text-sm font-medium text-foreground">{label}</p>
+
+        <div className="min-w-0 flex-1 text-right">
+          <p className="truncate text-sm text-muted-foreground">{value}</p>
         </div>
       </div>
 
-      {/* Profile Info */}
-      <div className="bg-card p-6 rounded-lg border border-border">
-        <h2 className="text-xl font-semibold mb-4 text-foreground">Personal Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Full Name</label>
-            <input
-              type="text"
-              defaultValue="John Doe"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
+      <div className="ml-16 h-px bg-border/60" />
+    </div>
+  );
+}
+
+export default function UserProfilePage() {
+  const router = useRouter();
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/auth/me', { credentials: 'include' });
+
+        if (!response.ok) {
+          router.push('/user/login');
+          return;
+        }
+
+        const data = await response.json();
+        setUserData(data.user);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        router.push('/user/login');
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/user/login';
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const rows = useMemo(() => {
+    if (!userData) return { contact: [] as Row[], body: [] as Row[] };
+
+    const contact: Row[] = [{ label: 'Email', value: userData.email, icon: <Mail className="h-4 w-4" /> }];
+
+    if (userData.phone) {
+      contact.push({
+        label: 'Phone',
+        value: userData.phone,
+        icon: <Phone className="h-4 w-4" />,
+      });
+    }
+
+    const body: Row[] = [];
+
+    if (typeof userData.age === 'number') {
+      body.push({
+        label: 'Age',
+        value: `${userData.age} years`,
+        icon: <Cake className="h-4 w-4" />,
+      });
+    }
+
+    if (typeof userData.height === 'number') {
+      body.push({
+        label: 'Height',
+        value: `${userData.height} cm`,
+        icon: <Ruler className="h-4 w-4" />,
+      });
+    }
+
+    if (typeof userData.currentWeight === 'number' || typeof userData.targetWeight === 'number') {
+      const cur = typeof userData.currentWeight === 'number' ? `${userData.currentWeight} kg` : '';
+      const tgt = typeof userData.targetWeight === 'number' ? `${userData.targetWeight} kg` : '';
+      const value = cur && tgt ? `${cur} → ${tgt}` : cur || tgt;
+
+      body.push({
+        label: 'Weight',
+        value,
+        icon: <Scale className="h-4 w-4" />,
+      });
+    }
+
+    return { contact, body };
+  }, [userData]);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto w-full max-w-md px-4 pb-10 pt-8">
+        {/* iOS-ish header */}
+        <div className="flex items-center gap-4 px-1 pb-6">
+          <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border bg-muted/30">
+            {userData?.avatar ? (
+              <Image src={userData.avatar} alt={userData.name} fill className="object-cover" />
+            ) : (
+              <div className="grid h-full w-full place-items-center">
+                <User className="h-7 w-7 text-muted-foreground" />
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-            <input
-              type="email"
-              defaultValue="john@example.com"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Age</label>
-            <input
-              type="number"
-              defaultValue="30"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Height (ft)</label>
-            <input
-              type="number"
-              step="0.1"
-              defaultValue="5.8"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-semibold text-foreground">{userData?.name ?? 'Profile'}</h1>
+            <p className="truncate text-sm text-muted-foreground">{userData?.email ?? 'Loading…'}</p>
           </div>
         </div>
-      </div>
 
-      {/* Goals & Progress */}
-      <div className="bg-card p-6 rounded-lg border border-border">
-        <h2 className="text-xl font-semibold mb-4 text-foreground">Goals & Progress</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Current Weight (kg)</label>
-            <input
-              type="number"
-              defaultValue="75"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
-          </div>
+        <div className="space-y-6">
+          <SettingsGroup title="Contact">
+            {rows.contact.map((r, idx) => (
+              <StaticRow key={`${r.label}-${idx}`} icon={r.icon} label={r.label} value={r.value} />
+            ))}
+            {/* remove last separator line */}
+            <div className="ml-16 h-px bg-transparent" />
+          </SettingsGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Goal Weight (kg)</label>
-            <input
-              type="number"
-              defaultValue="70"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-            />
-          </div>
+          {rows.body.length ? (
+            <SettingsGroup title="Body">
+              {rows.body.map((r, idx) => (
+                <StaticRow key={`${r.label}-${idx}`} icon={r.icon} label={r.label} value={r.value} />
+              ))}
+              <div className="ml-16 h-px bg-transparent" />
+            </SettingsGroup>
+          ) : null}
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Activity Level</label>
-            <select className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground">
-              <option>Light</option>
-              <option selected>Moderate</option>
-              <option>High</option>
-              <option>Very High</option>
-            </select>
-          </div>
+          <SettingsGroup>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="w-full px-4 py-3 text-left text-sm font-semibold text-destructive hover:bg-destructive/5 active:bg-destructive/10"
+            >
+              <div className="flex items-center justify-between">
+                <span>Sign Out</span>
+                <LogOut className="h-4 w-4" />
+              </div>
+            </button>
+          </SettingsGroup>
         </div>
-      </div>
-
-      {/* Fitness Goals */}
-      <div className="bg-card p-6 rounded-lg border border-border">
-        <h2 className="text-xl font-semibold mb-4 text-foreground">Fitness Goals</h2>
-        <div className="space-y-3">
-          <label className="flex items-center space-x-3">
-            <input type="checkbox" checked className="rounded border-border" />
-            <span className="text-foreground">Weight Loss</span>
-          </label>
-          <label className="flex items-center space-x-3">
-            <input type="checkbox" className="rounded border-border" />
-            <span className="text-foreground">Muscle Gain</span>
-          </label>
-          <label className="flex items-center space-x-3">
-            <input type="checkbox" className="rounded border-border" />
-            <span className="text-foreground">Improve Endurance</span>
-          </label>
-          <label className="flex items-center space-x-3">
-            <input type="checkbox" className="rounded border-border" />
-            <span className="text-foreground">Get Stronger</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <button className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
-          Save Changes
-        </button>
       </div>
     </div>
   );

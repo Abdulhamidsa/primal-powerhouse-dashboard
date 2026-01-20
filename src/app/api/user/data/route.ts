@@ -36,6 +36,12 @@ export async function GET(request: NextRequest) {
           include: {
             video: true,
           },
+          orderBy: { dueDate: 'asc' },
+          take: 5,
+        },
+        workouts: {
+          orderBy: { date: 'desc' },
+          take: 5,
         },
       },
     });
@@ -99,6 +105,22 @@ export async function GET(request: NextRequest) {
         thisWeekMeals,
         thisWeekVideos,
       },
+      recentWorkouts: client.workouts.map(w => ({
+        id: w.id,
+        date: w.date,
+        type: w.type,
+        duration: w.duration,
+        rating: w.rating,
+      })),
+      upcomingAssignments: client.videoAssignments
+        .filter(va => !va.isCompleted)
+        .slice(0, 3)
+        .map(va => ({
+          id: va.id,
+          title: va.video.title,
+          dueDate: va.dueDate,
+          completed: va.isCompleted,
+        })),
       joinedAt: client.createdAt,
     };
 

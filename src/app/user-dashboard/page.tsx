@@ -6,6 +6,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import UserMeals from '@/components/UserMeals';
 import UserVideos from '@/components/UserVideos';
 import CoachContact from '@/components/CoachContact';
+
+// @ts-ignore - lucide-react type definitions issue
 import { Home, Utensils, Play, User, LogOut } from 'lucide-react';
 
 interface User {

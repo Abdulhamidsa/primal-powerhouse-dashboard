@@ -2,28 +2,43 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // This will be handled by middleware for domain-based routing
-    // But as fallback, redirect to login
-    const hostname = window.location.hostname;
+    const handleRedirect = async () => {
+      try {
+        // Try to get user data to check if authenticated
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+        });
 
-    if (hostname.includes('admin')) {
-      router.push('/admin/login');
-    } else {
-      router.push('/user/login');
-    }
+        // Force minimum 1 second loading screen
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        if (response.ok) {
+          // User is authenticated, redirect to their dashboard
+          router.push('/user/dashboard');
+        } else {
+          // Not authenticated, redirect to login
+          router.push('/user/login');
+        }
+      } catch (error) {
+        // Error checking auth, force loading screen then default to login
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        router.push('/user/login');
+      }
+    };
+
+    handleRedirect();
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Redirecting...</p>
-      </div>
-    </div>
+    <>
+      <LoadingScreen />
+    </>
   );
 }
