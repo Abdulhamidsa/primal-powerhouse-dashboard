@@ -35,6 +35,23 @@ export function middleware(request: NextRequest) {
   const userType = payload?.type;
   console.log('[Middleware] User Type:', userType);
 
+  // Handle root path - redirect based on subdomain
+  if (pathname === '/') {
+    console.log('[Middleware] Root path - redirecting based on auth');
+    if (userType === 'admin') {
+      url.pathname = '/admin/dashboard';
+      return NextResponse.redirect(url);
+    } else if (userType === 'client') {
+      url.pathname = '/user/dashboard';
+      return NextResponse.redirect(url);
+    } else {
+      // No token - redirect to appropriate login
+      const loginPath = getLoginPathBySubdomain(subdomain);
+      url.pathname = loginPath;
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Skip API and login paths from subdomain enforcement
   if (isApiPath(pathname) || isLoginPath(pathname)) {
     return NextResponse.next();
