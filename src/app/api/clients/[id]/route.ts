@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     // Make sure to await params (if it's a Promise) to fix "params should be awaited" error
-    const id = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
     console.log(`API: GET /api/clients/${id}`);
 
     // Check if the client ID is valid
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     console.log(`API: Found client: ${client.name}`);
-    
+
     // Parse JSON fields
     try {
       const clientData = {
@@ -38,32 +39,37 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(clientData);
     } catch (parseError) {
       console.error('API: Error parsing client JSON fields:', parseError);
-      return NextResponse.json({ 
-        error: 'Error parsing client data',
-        details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: 'Error parsing client data',
+          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error',
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error('API: Error fetching client:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
-    const id = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
     const body = await request.json();
 
     // Convert arrays to JSON strings for SQLite storage
     const updateData = {
       ...body,
       goals: body.goals ? JSON.stringify(body.goals) : undefined,
-      dietaryRestrictions: body.dietaryRestrictions
-        ? JSON.stringify(body.dietaryRestrictions)
-        : undefined,
+      dietaryRestrictions: body.dietaryRestrictions ? JSON.stringify(body.dietaryRestrictions) : undefined,
       progressPhotos: body.progressPhotos ? JSON.stringify(body.progressPhotos) : undefined,
     };
 
@@ -87,9 +93,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
-    const id = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
 
     // First, delete related records
     await prisma.workout.deleteMany({

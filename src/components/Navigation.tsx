@@ -37,12 +37,6 @@ const adminNavItems = [
     icon: <Users size={20} />,
     description: 'Client management',
   },
-  {
-    name: 'Schedule',
-    href: '/admin/schedule',
-    icon: <Clock size={20} />,
-    description: 'Appointments',
-  },
 ];
 
 const userNavItems = [
