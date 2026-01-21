@@ -103,6 +103,7 @@ export default function UserDashboardPage() {
       if (!response.ok) return;
 
       const data = await response.json();
+      console.log('[DASHBOARD] Received user data:', data);
 
       if (
         previousMessageRef.current !== null &&

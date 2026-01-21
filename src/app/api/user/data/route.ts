@@ -50,6 +50,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
     }
 
+    console.log('[USER DATA API] Client found:', {
+      id: client.id,
+      name: client.name,
+      motivationalMessage: client.motivationalMessage,
+    });
+
     // Calculate stats
     const allMealAssignments = client.mealPlans.flatMap(plan => plan.mealAssignments);
     const totalMealAssignments = allMealAssignments.length;
