@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { getSubdomainFromHostname, isPathForSubdomain, getLoginPathBySubdomain } from '@/lib/subdomain';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
@@ -14,87 +15,53 @@ function validateToken(request: NextRequest) {
   }
 }
 
-const isAdminPath = (pathname: string) => pathname.startsWith('/admin');
-const isUserPath = (pathname: string) => pathname.startsWith('/user');
 const isLoginPath = (pathname: string) => pathname === '/admin/login' || pathname === '/user/login';
 const isApiPath = (pathname: string) => pathname.startsWith('/api');
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
+  const pathname = url.pathname;
 
-  // For local development - check if using subdomain approach
-  const isLocalAdminDomain = hostname.includes('admin.localhost');
-  const isLocalUserDomain = hostname.includes('app.localhost');
+  // Get subdomain from hostname
+  const subdomain = getSubdomainFromHostname(hostname);
 
-  // Production domains (you can customize these)
-  const isAdminDomain = hostname.includes('admin.') || isLocalAdminDomain;
-  const isUserDomain = hostname.includes('app.') || isLocalUserDomain;
+  // Get user token and type
+  const payload = validateToken(request);
+  const userType = payload?.type;
 
-  // Admin domain routing
-  if (isAdminDomain) {
-    // Redirect root to admin login
-    if (url.pathname === '/') {
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
-    }
-
-    // Block user routes on admin domain
-    if (url.pathname.startsWith('/user')) {
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
-    }
+  // Skip API and login paths from subdomain enforcement
+  if (isApiPath(pathname) || isLoginPath(pathname)) {
+    return NextResponse.next();
   }
 
-  // User domain routing
-  if (isUserDomain) {
-    // Redirect root to user login
-    if (url.pathname === '/') {
-      url.pathname = '/user/login';
+  // SUBDOMAIN ENFORCEMENT - Block wrong routes on subdomains
+  if (subdomain === 'admin') {
+    // Admin subdomain - block user routes
+    if (pathname.startsWith('/user') && !isLoginPath(pathname)) {
+      url.pathname = '/admin/login';
       return NextResponse.redirect(url);
     }
-
-    // Block admin routes on user domain, but allow admin login
-    if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
+  } else if (subdomain === 'user') {
+    // User subdomain - allow /admin/login but block other /admin routes
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
       url.pathname = '/user/login';
       return NextResponse.redirect(url);
     }
   }
 
-  // For regular localhost - check if user is authenticated before redirecting
-  if (hostname.includes('localhost') && !isLocalAdminDomain && !isLocalUserDomain) {
-    if (url.pathname === '/') {
-      // Check authentication token
-      const payload = validateToken(request);
-      if (payload && payload.type === 'client') {
-        // User is authenticated, redirect to user dashboard
-        url.pathname = '/user/dashboard';
-        return NextResponse.redirect(url);
-      } else if (payload && payload.type === 'admin') {
-        // Admin is authenticated, redirect to admin dashboard
-        url.pathname = '/admin/dashboard';
-        return NextResponse.redirect(url);
-      }
-      // Not authenticated, let the page handle it (no redirect from middleware)
+  // AUTHENTICATION ENFORCEMENT - Check if user has right role
+  if (pathname.startsWith('/admin')) {
+    // Admin routes - user must be admin
+    if (!userType || userType !== 'admin') {
+      url.pathname = getLoginPathBySubdomain(subdomain);
+      return NextResponse.redirect(url);
     }
-  }
-
-  // Global protection for admin/user paths even on localhost:3000
-  if (!isApiPath(url.pathname) && !isLoginPath(url.pathname)) {
-    if (isAdminPath(url.pathname)) {
-      const payload = validateToken(request);
-      if (!payload || payload.type !== 'admin') {
-        url.pathname = '/admin/login';
-        return NextResponse.redirect(url);
-      }
-    }
-
-    if (isUserPath(url.pathname)) {
-      const payload = validateToken(request);
-      if (!payload || payload.type !== 'client') {
-        url.pathname = '/user/login';
-        return NextResponse.redirect(url);
-      }
+  } else if (pathname.startsWith('/user')) {
+    // User routes - user must be client
+    if (!userType || userType !== 'client') {
+      url.pathname = getLoginPathBySubdomain(subdomain);
+      return NextResponse.redirect(url);
     }
   }
 
