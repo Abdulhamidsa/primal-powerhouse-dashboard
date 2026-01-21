@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, JSX } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-// import Navigation from '@/components/Navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
 import {
@@ -28,7 +27,7 @@ import {
   Salad,
   Apple,
   MessageCircle,
-} from '../../../../../node_modules/lucide-react';
+} from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 
 interface Client {
@@ -76,16 +75,21 @@ interface MealAssignment {
   };
 }
 
+type TabKey = 'overview' | 'videos' | 'meals' | 'progress';
+
+const cx = (...classes: Array<string | false | undefined | null>) => classes.filter(Boolean).join(' ');
+
 export default function ClientProfilePage() {
   const params = useParams();
   const clientId = params.id as string;
+
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const [client, setClient] = useState<Client | null>(null);
   const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
   const [mealAssignments, setMealAssignments] = useState<MealAssignment[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'videos' | 'meals' | 'progress'>('overview');
+  const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [loading, setLoading] = useState(true);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
@@ -123,8 +127,8 @@ export default function ClientProfilePage() {
       const response = await fetch(`/api/meal-plans?clientId=${clientId}`);
       if (response.ok) {
         const mealPlans = await response.json();
-        // Extract meal assignments from meal plans and format them
         const allAssignments: MealAssignment[] = [];
+
         mealPlans.forEach(
           (plan: {
             startDate: string;
@@ -152,6 +156,7 @@ export default function ClientProfilePage() {
             );
           }
         );
+
         setMealAssignments(allAssignments);
       }
     } catch (error) {
@@ -187,17 +192,25 @@ export default function ClientProfilePage() {
     return `${hours}h ${remainingMinutes}min`;
   };
 
+  const tabs: Array<{ key: TabKey; label: string; icon: JSX.Element }> = [
+    { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
+    { key: 'videos', label: 'Videos', icon: <Film size={16} /> },
+    { key: 'meals', label: 'Meals', icon: <Utensils size={16} /> },
+    { key: 'progress', label: 'Progress', icon: <BarChart size={16} /> },
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
-        {/* <Navigation /> */}
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[60vh] px-4">
           <div className="text-center">
             <div
-              className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+              className="w-14 h-14 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
               style={{ borderColor: 'var(--color-accent)' }}
-            ></div>
-            <p style={{ color: 'var(--color-text-muted)' }}>Loading client profile...</p>
+            />
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Loading client profile...
+            </p>
           </div>
         </div>
       </div>
@@ -207,16 +220,15 @@ export default function ClientProfilePage() {
   if (!client) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
-        {/* <Navigation /> */}
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[60vh] px-4">
           <div className="text-center">
-            <Users size={48} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
-            <p className="text-xl" style={{ color: 'var(--color-text)' }}>
+            <Users size={44} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+            <p className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
               Client not found
             </p>
             <Link
               href="/clients"
-              className="mt-4 inline-flex items-center gap-1"
+              className="mt-4 inline-flex items-center gap-1 text-sm"
               style={{ color: 'var(--color-accent)' }}
             >
               <ChevronLeft size={16} /> Back to Clients
@@ -227,25 +239,42 @@ export default function ClientProfilePage() {
     );
   }
 
+  const iosPanel = 'rounded-2xl border shadow-sm';
+  const iosPanelStyle = {
+    background: 'var(--color-surface)',
+    borderColor: 'var(--color-border)',
+  } as const;
+
+  const iosCardStyle = {
+    background: 'var(--color-bg-alt)',
+    borderColor: 'var(--color-border)',
+  } as const;
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
-      {/* <Navigation /> */}
-
-      {/* Header */}
       <header
-        className="z-40 border-b"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        className="sticky top-0 z-40 border-b"
+        style={{
+          borderColor: 'var(--color-border)',
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+        }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center gap-6">
-              <Link href="/admin/clients" className="transition-colors" style={{ color: 'var(--color-text-muted)' }}>
-                <ChevronLeft size={24} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <Link
+                href="/admin/clients"
+                className="shrink-0 p-2 -ml-2 rounded-full transition-colors"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                <ChevronLeft size={22} />
               </Link>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className="relative w-16 h-16 rounded-full overflow-hidden shadow-sm border"
+                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border shrink-0"
                   style={{ borderColor: 'var(--color-border)' }}
                 >
                   <Image
@@ -256,241 +285,260 @@ export default function ClientProfilePage() {
                     alt={client.name}
                     className="object-cover"
                     fill
-                    sizes="64px"
+                    sizes="56px"
                   />
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
+
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                     {client.name}
                   </h1>
-                  <p style={{ color: 'var(--color-text-muted)' }}>{client.email}</p>
-                  <span
-                    className="inline-block px-3 py-1 rounded-full text-xs font-medium mt-1"
-                    style={{
-                      background: client.status === 'ACTIVE' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
-                      color: client.status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                    }}
-                  >
-                    {client.status}
-                  </span>
+                  <p className="text-sm truncate" style={{ color: 'var(--color-text-muted)' }}>
+                    {client.email}
+                  </p>
+                  <div className="mt-1">
+                    <span
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium"
+                      style={{
+                        background: client.status === 'ACTIVE' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+                        color: client.status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                        border: '1px solid var(--color-border)',
+                      }}
+                    >
+                      {client.status}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full lg:w-auto">
               <button
                 onClick={() => {
                   setAssignModalType('videos');
                   setShowAssignModal(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium btn-inactive"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition active:scale-[0.99]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  borderColor: 'var(--color-border)',
+                  color: 'var(--color-text)',
+                }}
               >
                 <Film size={18} />
                 Assign Videos
               </button>
+
               <button
                 onClick={() => {
                   setAssignModalType('meals');
                   setShowAssignModal(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium btn-inactive"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition active:scale-[0.99]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  borderColor: 'var(--color-border)',
+                  color: 'var(--color-text)',
+                }}
               >
                 <Utensils size={18} />
                 Assign Meals
               </button>
+
               <button
                 onClick={() => {
                   setSelectedClient(client);
                   setShowMessageModal(true);
                 }}
-                className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 border border-border hover:bg-muted transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
+                style={{
+                  background: 'var(--color-accent)',
+                  color: 'var(--color-text)',
+                }}
               >
                 <MessageCircle size={16} />
                 Message
               </button>
             </div>
           </div>
+
+          <div className="mt-4">
+            <div
+              className="w-full inline-flex gap-1 p-1 rounded-2xl border overflow-x-auto no-scrollbar"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              {tabs.map(t => {
+                const isActive = activeTab === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setActiveTab(t.key)}
+                    className={cx(
+                      'shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition active:scale-[0.99]',
+                      isActive ? 'shadow-sm' : 'opacity-80 hover:opacity-100'
+                    )}
+                    style={{
+                      background: isActive ? 'rgba(255,255,255,0.10)' : 'transparent',
+                      color: isActive ? 'var(--color-text)' : 'var(--color-text-muted)',
+                      border: isActive ? '1px solid var(--color-border)' : '1px solid transparent',
+                    }}
+                  >
+                    <span style={{ color: isActive ? 'var(--color-accent)' : 'currentColor' }}>{t.icon}</span>
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Assigned Videos
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
-                  {videoAssignments.length}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <Film size={24} style={{ color: 'var(--color-accent)' }} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
+            <div className={cx(iosPanel, 'p-5 min-w-[220px] md:min-w-0')} style={iosPanelStyle}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                    Assigned Videos
+                  </p>
+                  <p className="text-3xl font-semibold" style={{ color: 'var(--color-accent)' }}>
+                    {videoAssignments.length}
+                  </p>
+                </div>
+                <div
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'var(--color-bg-alt)' }}
+                >
+                  <Film size={22} style={{ color: 'var(--color-accent)' }} />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Assigned Meals
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
-                  {mealAssignments.length}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <Utensils size={24} style={{ color: 'var(--color-accent)' }} />
+            <div className={cx(iosPanel, 'p-5 min-w-[220px] md:min-w-0')} style={iosPanelStyle}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                    Assigned Meals
+                  </p>
+                  <p className="text-3xl font-semibold" style={{ color: 'var(--color-accent)' }}>
+                    {mealAssignments.length}
+                  </p>
+                </div>
+                <div
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'var(--color-bg-alt)' }}
+                >
+                  <Utensils size={22} style={{ color: 'var(--color-accent)' }} />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  BMI
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
-                  {calculateBMI(client.height, client.currentWeight)}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <BarChart size={24} style={{ color: 'var(--color-accent)' }} />
+            <div className={cx(iosPanel, 'p-5 min-w-[220px] md:min-w-0')} style={iosPanelStyle}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                    BMI
+                  </p>
+                  <p className="text-3xl font-semibold" style={{ color: 'var(--color-accent)' }}>
+                    {calculateBMI(client.height, client.currentWeight)}
+                  </p>
+                </div>
+                <div
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'var(--color-bg-alt)' }}
+                >
+                  <BarChart size={22} style={{ color: 'var(--color-accent)' }} />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Sessions
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
-                  {client.sessionsCompleted || 0}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <Activity size={24} style={{ color: 'var(--color-accent)' }} />
+            <div className={cx(iosPanel, 'p-5 min-w-[220px] md:min-w-0')} style={iosPanelStyle}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                    Sessions
+                  </p>
+                  <p className="text-3xl font-semibold" style={{ color: 'var(--color-accent)' }}>
+                    {client.sessionsCompleted || 0}
+                  </p>
+                </div>
+                <div
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'var(--color-bg-alt)' }}
+                >
+                  <Activity size={22} style={{ color: 'var(--color-accent)' }} />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div
-          className="rounded-xl border mb-8"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <nav className="flex space-x-8 px-6">
-            {[
-              { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
-              { key: 'videos', label: 'Assigned Videos', icon: <Film size={16} /> },
-              { key: 'meals', label: 'Assigned Meals', icon: <Utensils size={16} /> },
-              { key: 'progress', label: 'Progress', icon: <BarChart size={16} /> },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as 'overview' | 'videos' | 'meals' | 'progress')}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-transform flex items-center gap-2 ${activeTab === tab.key ? 'bg-white text-background' : 'border-white'}`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Physical Stats */}
-            <div
-              className="rounded-xl border p-6"
-              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-            >
-              <h3 className="text-lg font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
+              <h3
+                className="text-base sm:text-lg font-semibold mb-5 flex items-center gap-2"
+                style={{ color: 'var(--color-text)' }}
+              >
                 <Scale size={20} style={{ color: 'var(--color-accent)' }} />
                 Physical Stats
               </h3>
-              <div className="space-y-4">
+
+              <div className="space-y-3 text-sm">
                 <div className="flex justify-between py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Age:</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Age</span>
                   <span style={{ color: 'var(--color-text)' }}>{calculateAge(client.dateOfBirth)} years</span>
                 </div>
                 <div className="flex justify-between py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Height:</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Height</span>
                   <span style={{ color: 'var(--color-text)' }}>{client.height ? `${client.height} cm` : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Current Weight:</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Current Weight</span>
                   <span style={{ color: 'var(--color-text)' }}>
                     {client.currentWeight ? `${client.currentWeight} kg` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Target Weight:</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Target Weight</span>
                   <span style={{ color: 'var(--color-text)' }}>
                     {client.targetWeight ? `${client.targetWeight} kg` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span style={{ color: 'var(--color-text-muted)' }}>Activity Level:</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Activity Level</span>
                   <span style={{ color: 'var(--color-text)' }}>{client.activityLevel?.replace('_', ' ') || 'N/A'}</span>
                 </div>
               </div>
-            </div>
+            </section>
 
-            {/* Goals & Preferences */}
-            <div
-              className="rounded-xl border p-6"
-              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-            >
-              <h3 className="text-lg font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+            <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
+              <h3
+                className="text-base sm:text-lg font-semibold mb-5 flex items-center gap-2"
+                style={{ color: 'var(--color-text)' }}
+              >
                 <Target size={20} style={{ color: 'var(--color-accent)' }} />
                 Goals & Preferences
               </h3>
+
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
-                    Goals:
+                  <h4 className="text-xs sm:text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+                    Goals
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {client.goals && client.goals.length > 0 ? (
                       client.goals.map((goal, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm rounded-full font-medium"
+                          className="px-3 py-1 text-xs sm:text-sm rounded-full font-medium border"
                           style={{
-                            background: 'var(--color-accent-muted)',
+                            background: 'rgba(255,255,255,0.04)',
+                            borderColor: 'var(--color-border)',
                             color: 'var(--color-accent)',
                           }}
                         >
@@ -506,16 +554,20 @@ export default function ClientProfilePage() {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
-                    Preferences:
+                  <h4 className="text-xs sm:text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+                    Preferences
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {client.preferences && client.preferences.length > 0 ? (
                       client.preferences.map((pref, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm rounded-full font-medium"
-                          style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
+                          className="px-3 py-1 text-xs sm:text-sm rounded-full font-medium border"
+                          style={{
+                            background: 'rgba(255,255,255,0.04)',
+                            borderColor: 'var(--color-border)',
+                            color: 'var(--color-text)',
+                          }}
                         >
                           {pref.replace('_', ' ')}
                         </span>
@@ -528,30 +580,31 @@ export default function ClientProfilePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
 
-            {/* Dietary Information */}
-            <div
-              className="rounded-xl border p-6"
-              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-            >
-              <h3 className="text-lg font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+            <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
+              <h3
+                className="text-base sm:text-lg font-semibold mb-5 flex items-center gap-2"
+                style={{ color: 'var(--color-text)' }}
+              >
                 <Utensils size={20} style={{ color: 'var(--color-accent)' }} />
                 Dietary Information
               </h3>
+
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
-                    Restrictions:
+                  <h4 className="text-xs sm:text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+                    Restrictions
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {client.dietaryRestrictions && client.dietaryRestrictions.length > 0 ? (
                       client.dietaryRestrictions.map((restriction, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm rounded-full font-medium"
+                          className="px-3 py-1 text-xs sm:text-sm rounded-full font-medium border"
                           style={{
-                            background: 'var(--color-accent-muted)',
+                            background: 'rgba(255,255,255,0.04)',
+                            borderColor: 'var(--color-border)',
                             color: 'var(--color-accent)',
                           }}
                         >
@@ -567,17 +620,18 @@ export default function ClientProfilePage() {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
-                    Allergies:
+                  <h4 className="text-xs sm:text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+                    Allergies
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {client.allergies && client.allergies.length > 0 ? (
                       client.allergies.map((allergy, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm rounded-full font-medium flex items-center gap-1"
+                          className="px-3 py-1 text-xs sm:text-sm rounded-full font-medium flex items-center gap-1 border"
                           style={{
-                            background: 'var(--color-accent-muted)',
+                            background: 'rgba(255,255,255,0.04)',
+                            borderColor: 'var(--color-border)',
                             color: 'var(--color-accent)',
                           }}
                         >
@@ -594,62 +648,59 @@ export default function ClientProfilePage() {
               </div>
 
               {client.notes && (
-                <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                <div className="mt-6 pt-5 border-t" style={{ borderColor: 'var(--color-border)' }}>
                   <h4
-                    className="text-sm font-medium mb-3 flex items-center gap-1"
+                    className="text-xs sm:text-sm font-semibold mb-3 flex items-center gap-2"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <FileText size={14} style={{ color: 'var(--color-accent)' }} /> Coach Notes:
+                    <FileText size={14} style={{ color: 'var(--color-accent)' }} /> Coach Notes
                   </h4>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                     {client.notes}
                   </p>
                 </div>
               )}
-            </div>
+            </section>
           </div>
         )}
 
         {activeTab === 'videos' && (
-          <div
-            className="rounded-xl border p-6"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
+          <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+              <h3 className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
                 Assigned Videos
               </h3>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    setAssignModalType('videos');
-                    setShowAssignModal(true);
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium"
-                  style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
-                >
-                  <PlusCircle size={18} />
-                  Assign Videos
-                </button>
-              </div>
+
+              <button
+                onClick={() => {
+                  setAssignModalType('videos');
+                  setShowAssignModal(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+              >
+                <PlusCircle size={18} />
+                Assign Videos
+              </button>
             </div>
 
             {videoAssignments.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {videoAssignments.map(assignment => {
                   if (!assignment.video) return null;
+
                   return (
                     <div
                       key={assignment.id}
-                      className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
-                      style={{
-                        background: 'var(--color-bg-alt)',
-                        borderColor: 'var(--color-border)',
-                      }}
+                      className="border rounded-2xl p-4 transition shadow-sm"
+                      style={iosCardStyle}
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-3">
                         {assignment.video.thumbnailUrl ? (
-                          <div className="relative w-20 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                          <div
+                            className="relative w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 border"
+                            style={{ borderColor: 'var(--color-border)' }}
+                          >
                             <Image
                               src={assignment.video.thumbnailUrl}
                               alt={assignment.video.title}
@@ -660,22 +711,23 @@ export default function ClientProfilePage() {
                           </div>
                         ) : (
                           <div
-                            className="w-20 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ background: 'var(--color-bg)' }}
+                            className="w-20 h-16 rounded-xl flex items-center justify-center flex-shrink-0 border"
+                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                           >
                             <Film className="w-8 h-8" style={{ color: 'var(--color-accent)' }} />
                           </div>
                         )}
 
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium truncate mb-1" style={{ color: 'var(--color-text)' }}>
+                          <h4 className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                             {assignment.video.title}
                           </h4>
+
                           <div
-                            className="flex items-center gap-3 text-sm mb-2"
+                            className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
                             style={{ color: 'var(--color-text-muted)' }}
                           >
-                            <span className="flex items-center gap-1">
+                            <span className="inline-flex items-center gap-1">
                               <Clock size={12} /> {formatDuration(assignment.video.duration)}
                             </span>
                             <span>•</span>
@@ -683,22 +735,27 @@ export default function ClientProfilePage() {
                             <span>•</span>
                             <span className="capitalize">{assignment.video.category}</span>
                           </div>
-                          <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                            <span className="flex items-center gap-1">
+
+                          <div className="mt-2 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                            <span className="inline-flex items-center gap-1">
                               <CalendarDays size={10} /> Assigned:{' '}
                               {new Date(assignment.assignedDate).toLocaleDateString()}
                             </span>
                           </div>
+
                           {assignment.notes && (
                             <div
-                              className="text-xs mt-1 p-2 rounded flex items-start gap-1"
+                              className="mt-2 text-[11px] p-2 rounded-xl border"
                               style={{
-                                background: 'var(--color-accent-muted)',
+                                background: 'rgba(255,255,255,0.04)',
+                                borderColor: 'var(--color-border)',
                                 color: 'var(--color-accent)',
                               }}
                             >
-                              <FileText size={10} className="mt-0.5" />
-                              {assignment.notes}
+                              <div className="flex items-start gap-2">
+                                <FileText size={12} className="mt-[2px]" />
+                                <span className="leading-snug">{assignment.notes}</span>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -707,17 +764,19 @@ export default function ClientProfilePage() {
                           onClick={async () => {
                             if (confirm('Remove this video assignment?')) {
                               try {
-                                await fetch(`/api/video-assignments/${assignment.id}`, {
-                                  method: 'DELETE',
-                                });
+                                await fetch(`/api/video-assignments/${assignment.id}`, { method: 'DELETE' });
                                 fetchVideoAssignments();
                               } catch (error) {
                                 console.error('Error removing assignment:', error);
                               }
                             }
                           }}
-                          className="p-1 rounded transition-colors"
-                          style={{ color: 'var(--color-accent)' }}
+                          className="p-2 rounded-xl border transition active:scale-[0.99]"
+                          style={{
+                            background: 'rgba(255,255,255,0.04)',
+                            borderColor: 'var(--color-border)',
+                            color: 'var(--color-accent)',
+                          }}
                           title="Remove assignment"
                         >
                           <Trash2 size={18} />
@@ -729,19 +788,19 @@ export default function ClientProfilePage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <Film size={64} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+                <Film size={56} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+                <h3 className="text-base sm:text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
                   No Videos Assigned
                 </h3>
-                <p className="mb-6" style={{ color: 'var(--color-text-muted)' }}>
-                  This client doesn&apos;t have any assigned videos yet.
+                <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
+                  This client does not have any assigned videos yet.
                 </p>
                 <button
                   onClick={() => {
                     setAssignModalType('videos');
                     setShowAssignModal(true);
                   }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
                   style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
                 >
                   <PlusCircle size={18} />
@@ -749,69 +808,59 @@ export default function ClientProfilePage() {
                 </button>
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {activeTab === 'meals' && (
-          <div
-            className="rounded-xl border p-6"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
+          <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+              <h3 className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
                 Assigned Meals
               </h3>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    setAssignModalType('meals');
-                    setShowAssignModal(true);
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium"
-                  style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
-                >
-                  <PlusCircle size={18} />
-                  Assign Meals
-                </button>
-              </div>
+
+              <button
+                onClick={() => {
+                  setAssignModalType('meals');
+                  setShowAssignModal(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+              >
+                <PlusCircle size={18} />
+                Assign Meals
+              </button>
             </div>
 
             {mealAssignments.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {mealAssignments.map(assignment => (
-                  <div
-                    key={assignment.id}
-                    className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
-                    style={{
-                      background: 'var(--color-bg-alt)',
-                      borderColor: 'var(--color-border)',
-                    }}
-                  >
-                    <div className="flex items-start gap-4">
+                  <div key={assignment.id} className="border rounded-2xl p-4 transition shadow-sm" style={iosCardStyle}>
+                    <div className="flex items-start gap-3">
                       <div
-                        className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: 'var(--color-bg)' }}
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 border"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                       >
                         {assignment.meal.type === 'BREAKFAST' ? (
-                          <Coffee size={24} style={{ color: 'var(--color-accent)' }} />
+                          <Coffee size={22} style={{ color: 'var(--color-accent)' }} />
                         ) : assignment.meal.type === 'LUNCH' ? (
-                          <Salad size={24} style={{ color: 'var(--color-accent)' }} />
+                          <Salad size={22} style={{ color: 'var(--color-accent)' }} />
                         ) : assignment.meal.type === 'DINNER' ? (
-                          <Utensils size={24} style={{ color: 'var(--color-accent)' }} />
+                          <Utensils size={22} style={{ color: 'var(--color-accent)' }} />
                         ) : (
-                          <Apple size={24} style={{ color: 'var(--color-accent)' }} />
+                          <Apple size={22} style={{ color: 'var(--color-accent)' }} />
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate mb-1" style={{ color: 'var(--color-text)' }}>
+                        <h4 className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                           {assignment.meal.name}
                         </h4>
+
                         <div
-                          className="flex items-center gap-3 text-sm mb-2"
+                          className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
                           style={{ color: 'var(--color-text-muted)' }}
                         >
-                          <span className="flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1">
                             <Flame size={12} /> {assignment.meal.calories} cal
                           </span>
                           <span>•</span>
@@ -819,21 +868,26 @@ export default function ClientProfilePage() {
                           <span>•</span>
                           <span className="capitalize">{assignment.meal.type.toLowerCase()}</span>
                         </div>
-                        <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          <span className="flex items-center gap-1">
+
+                        <div className="mt-2 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                          <span className="inline-flex items-center gap-1">
                             <CalendarDays size={10} /> Assigned: {assignment.assignedDate.toLocaleDateString()}
                           </span>
                         </div>
+
                         {assignment.notes && (
                           <div
-                            className="text-xs mt-1 p-2 rounded flex items-start gap-1"
+                            className="mt-2 text-[11px] p-2 rounded-xl border"
                             style={{
-                              background: 'var(--color-accent-muted)',
+                              background: 'rgba(255,255,255,0.04)',
+                              borderColor: 'var(--color-border)',
                               color: 'var(--color-accent)',
                             }}
                           >
-                            <FileText size={10} className="mt-0.5" />
-                            {assignment.notes}
+                            <div className="flex items-start gap-2">
+                              <FileText size={12} className="mt-[2px]" />
+                              <span className="leading-snug">{assignment.notes}</span>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -842,17 +896,19 @@ export default function ClientProfilePage() {
                         onClick={async () => {
                           if (confirm('Remove this meal assignment?')) {
                             try {
-                              await fetch(`/api/meal-assignments/${assignment.id}`, {
-                                method: 'DELETE',
-                              });
+                              await fetch(`/api/meal-assignments/${assignment.id}`, { method: 'DELETE' });
                               fetchMealAssignments();
                             } catch (error) {
                               console.error('Error removing assignment:', error);
                             }
                           }
                         }}
-                        className="p-1 rounded transition-colors"
-                        style={{ color: 'var(--color-accent)' }}
+                        className="p-2 rounded-xl border transition active:scale-[0.99]"
+                        style={{
+                          background: 'rgba(255,255,255,0.04)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-accent)',
+                        }}
                         title="Remove assignment"
                       >
                         <Trash2 size={18} />
@@ -863,19 +919,19 @@ export default function ClientProfilePage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <Utensils size={64} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+                <Utensils size={56} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+                <h3 className="text-base sm:text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
                   No Meals Assigned
                 </h3>
-                <p className="mb-6" style={{ color: 'var(--color-text-muted)' }}>
-                  This client doesn&apos;t have any assigned meals yet.
+                <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
+                  This client does not have any assigned meals yet.
                 </p>
                 <button
                   onClick={() => {
                     setAssignModalType('meals');
                     setShowAssignModal(true);
                   }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
                   style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
                 >
                   <PlusCircle size={18} />
@@ -883,29 +939,27 @@ export default function ClientProfilePage() {
                 </button>
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {activeTab === 'progress' && (
-          <div
-            className="rounded-xl border p-6"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text)' }}>
+          <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
+            <h3 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
               Progress Tracking
             </h3>
             <div className="text-center py-12">
-              <BarChart size={64} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
-              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
-                Progress Tracking
+              <BarChart size={56} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+                Coming soon
               </h3>
-              <p style={{ color: 'var(--color-text-muted)' }}>
-                Progress tracking features will be available once the client starts following their assigned program.
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                Progress tracking will be available once the client starts following the assigned program.
               </p>
             </div>
-          </div>
+          </section>
         )}
       </main>
+
       {selectedClient && (
         <EditMotivationalMessageModal
           isOpen={showMessageModal}
@@ -916,7 +970,7 @@ export default function ClientProfilePage() {
           client={selectedClient}
         />
       )}
-      {/* Assignment Modal */}
+
       {client && (
         <AssignContentModal
           isOpen={showAssignModal}
@@ -925,14 +979,21 @@ export default function ClientProfilePage() {
           clientName={client.name}
           type={assignModalType}
           onAssignmentComplete={() => {
-            if (assignModalType === 'videos') {
-              fetchVideoAssignments();
-            } else {
-              fetchMealAssignments();
-            }
+            if (assignModalType === 'videos') fetchVideoAssignments();
+            else fetchMealAssignments();
           }}
         />
       )}
+
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
