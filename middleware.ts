@@ -23,12 +23,17 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const pathname = url.pathname;
 
+  console.log('[Middleware] Host:', hostname);
+  console.log('[Middleware] Path:', pathname);
+
   // Get subdomain from hostname
   const subdomain = getSubdomainFromHostname(hostname);
+  console.log('[Middleware] Subdomain:', subdomain);
 
   // Get user token and type
   const payload = validateToken(request);
   const userType = payload?.type;
+  console.log('[Middleware] User Type:', userType);
 
   // Skip API and login paths from subdomain enforcement
   if (isApiPath(pathname) || isLoginPath(pathname)) {
@@ -39,12 +44,14 @@ export function middleware(request: NextRequest) {
   if (subdomain === 'admin') {
     // Admin subdomain - block user routes
     if (pathname.startsWith('/user') && !isLoginPath(pathname)) {
+      console.log('[Middleware] Admin domain blocking user route');
       url.pathname = '/admin/login';
       return NextResponse.redirect(url);
     }
   } else if (subdomain === 'user') {
     // User subdomain - allow /admin/login but block other /admin routes
     if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+      console.log('[Middleware] User domain blocking admin route (except login)');
       url.pathname = '/user/login';
       return NextResponse.redirect(url);
     }
@@ -54,12 +61,14 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin')) {
     // Admin routes - user must be admin
     if (!userType || userType !== 'admin') {
+      console.log('[Middleware] No admin token, redirecting to login');
       url.pathname = getLoginPathBySubdomain(subdomain);
       return NextResponse.redirect(url);
     }
   } else if (pathname.startsWith('/user')) {
     // User routes - user must be client
     if (!userType || userType !== 'client') {
+      console.log('[Middleware] No client token, redirecting to login');
       url.pathname = getLoginPathBySubdomain(subdomain);
       return NextResponse.redirect(url);
     }

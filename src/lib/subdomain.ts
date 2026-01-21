@@ -31,24 +31,34 @@ export const DOMAIN_CONFIG = {
 export function getSubdomainFromHostname(hostname: string): Subdomain {
   if (!hostname) return 'unknown';
 
-  // Admin subdomains
-  if (hostname.includes('admin.')) {
+  console.log('[Subdomain Debug] Hostname:', hostname); // Debug logging
+
+  // Remove port number if present
+  const hostWithoutPort = hostname.split(':')[0];
+
+  // Check for specific subdomains
+  if (hostWithoutPort === 'admin.primalpowerhouse.com' || hostWithoutPort.includes('admin.')) {
+    console.log('[Subdomain Debug] Detected: admin');
     return 'admin';
   }
 
-  // User subdomains
-  if (hostname.includes('app.')) {
+  if (hostWithoutPort === 'app.primalpowerhouse.com' || hostWithoutPort.includes('app.')) {
+    console.log('[Subdomain Debug] Detected: user');
     return 'user';
   }
 
   // Check for localhost development
-  if (hostname.includes('localhost')) {
-    // If no subdomain specified on localhost, default to user
-    if (!hostname.includes('admin.localhost')) {
-      return 'user';
+  if (hostWithoutPort.includes('localhost')) {
+    if (hostWithoutPort.includes('admin.localhost')) {
+      console.log('[Subdomain Debug] Detected: admin (localhost)');
+      return 'admin';
     }
+    // Default localhost to user
+    console.log('[Subdomain Debug] Detected: user (localhost default)');
+    return 'user';
   }
 
+  console.log('[Subdomain Debug] Detected: unknown');
   return 'unknown';
 }
 
