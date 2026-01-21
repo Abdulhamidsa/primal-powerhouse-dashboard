@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, Users, Flame, Drumstick, Wheat, Droplets } from '../../../../../node_modules/lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Clock, Users, Flame, Wheat, Droplets } from 'lucide-react';
 
 interface Meal {
   id: string;
@@ -13,8 +14,8 @@ interface Meal {
   carbs: number;
   fat: number;
   fiber?: number;
-  ingredients?: string;
-  instructions?: string;
+  ingredients?: string | string[];
+  instructions?: string | string[];
   prepTime?: number;
   cookTime?: number;
   servings: number;
@@ -24,45 +25,72 @@ interface Meal {
 export default function MealDetailPage() {
   const params = useParams();
   const router = useRouter();
+
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (params.mealId) {
-      fetchMealDetails();
-    }
-  }, [params.mealId]);
+    if (!params?.mealId) return;
+    fetchMealDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params?.mealId]);
 
   const fetchMealDetails = async () => {
     try {
       const response = await fetch(`/api/meals/${params.mealId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMeal(data);
-      } else {
-        console.error('Failed to fetch meal details');
+      if (!response.ok) {
+        setMeal(null);
+        return;
       }
+      const data = await response.json();
+      setMeal(data);
     } catch (error) {
       console.error('Error fetching meal details:', error);
+      setMeal(null);
     } finally {
       setLoading(false);
     }
   };
 
   const formatDuration = (minutes?: number) => {
-    if (!minutes) return 'N/A';
+    if (!minutes || minutes <= 0) return 'N/A';
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes > 0 ? `${remainingMinutes}m` : ''}`;
+    return `${hours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`;
   };
+
+  const fallback =
+    'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=60';
+
+  const imageSrc = meal?.imageUrl?.trim() ? meal.imageUrl : fallback;
+
+  const totalTime = useMemo(() => {
+    if (!meal) return 0;
+    return (meal.prepTime ?? 0) + (meal.cookTime ?? 0);
+  }, [meal]);
+
+  const ingredientsList = useMemo(() => normalizeToList(meal?.ingredients), [meal?.ingredients]);
+  const instructionsList = useMemo(() => normalizeToList(meal?.instructions), [meal?.instructions]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400">Loading meal details...</p>
+      <div className="min-h-screen bg-background px-4 py-10">
+        <div className="mx-auto max-w-3xl">
+          <div className="h-6 w-36 rounded-md bg-muted/40" />
+          <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card">
+            <div className="h-56 w-full bg-muted/40" />
+            <div className="p-6 space-y-4">
+              <div className="h-8 w-2/3 rounded-md bg-muted/40" />
+              <div className="h-4 w-1/2 rounded-md bg-muted/40" />
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="h-16 rounded-2xl bg-muted/40" />
+                <div className="h-16 rounded-2xl bg-muted/40" />
+                <div className="h-16 rounded-2xl bg-muted/40" />
+                <div className="h-16 rounded-2xl bg-muted/40" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -70,15 +98,18 @@ export default function MealDetailPage() {
 
   if (!meal) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-white mb-3">Meal Not Found</h3>
-          <p className="text-slate-400 mb-6">The meal you're looking for doesn't exist.</p>
+      <div className="min-h-screen bg-background px-4 py-10">
+        <div className="mx-auto max-w-xl rounded-3xl border border-border bg-card p-8 text-center">
+          <h3 className="text-xl font-semibold text-foreground">Meal not found</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The meal you are looking for does not exist or could not be loaded.
+          </p>
+
           <button
             onClick={() => router.back()}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+            className="mt-6 inline-flex items-center justify-center rounded-2xl border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
           >
-            Go Back
+            Go back
           </button>
         </div>
       </div>
@@ -86,172 +117,200 @@ export default function MealDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Back Button */}
+    <div className="min-h-screen bg-background px-4 py-8 md:px-6">
+      <div className="mx-auto max-w-4xl space-y-6">
+        {/* Back */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors font-medium"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft size={20} />
-          <span>Back to Meals</span>
+          <ArrowLeft size={18} />
+          Back to meals
         </button>
 
-        {/* Meal Header */}
-        <div className="rounded-2xl overflow-hidden border border-slate-700/50 bg-gradient-to-br from-slate-800 to-slate-900 mb-8 shadow-2xl">
-          <div className="flex flex-col lg:flex-row">
-            {/* Meal Image */}
-            {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
-              <div className="lg:w-1/2 h-64 lg:h-96 overflow-hidden bg-slate-900">
-                <img src={meal.imageUrl} alt={meal.name} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="lg:w-1/2 h-64 lg:h-96 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                <svg
-                  className="w-20 h-20 text-slate-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M12 6.253v13m0-13C6.5 6.253 2 10.753 2 16.253v0c0 5.5 4.5 10 10 10s10-4.5 10-10v0c0-5.5-4.5-10-10-10z"
-                  />
-                </svg>
-              </div>
-            )}
+        {/* Header Card */}
+        <div className="overflow-hidden rounded-3xl border border-border bg-card">
+          {/* Hero image */}
+          <div className="relative h-60 w-full md:h-72">
+            <Image
+              src={imageSrc}
+              alt={meal.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 900px"
+              priority={false}
+            />
 
-            {/* Meal Info */}
-            <div className={meal.imageUrl && meal.imageUrl.trim() !== '' ? 'lg:w-1/2 p-8' : 'w-full p-8'}>
-              <h1 className="text-4xl font-bold text-white mb-6">{meal.name}</h1>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-              {/* Nutrition Grid */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400 text-sm mb-1">Calories</p>
-                  <p className="text-2xl font-bold text-blue-400">{meal.calories}</p>
-                </div>
-                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400 text-sm mb-1">Protein</p>
-                  <p className="text-2xl font-bold text-green-400">{meal.protein}g</p>
-                </div>
-                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400 text-sm mb-1">Carbs</p>
-                  <p className="text-2xl font-bold text-orange-400">{meal.carbs}g</p>
-                </div>
-                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400 text-sm mb-1">Fat</p>
-                  <p className="text-2xl font-bold text-red-400">{meal.fat}g</p>
-                </div>
-              </div>
+            {/* Top chips */}
+            <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
+              <span className="max-w-[70%] truncate rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
+                {meal.type || 'Meal'}
+              </span>
 
-              {/* Meal Meta */}
-              <div className="space-y-3 text-slate-300">
-                <div className="flex items-center gap-3">
-                  <Clock size={18} className="text-blue-400" />
-                  <span>
-                    Prep: <span className="text-white font-semibold">{formatDuration(meal.prepTime)}</span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock size={18} className="text-blue-400" />
-                  <span>
-                    Cook: <span className="text-white font-semibold">{formatDuration(meal.cookTime)}</span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Users size={18} className="text-blue-400" />
-                  <span>
-                    Servings: <span className="text-white font-semibold">{meal.servings}</span>
-                  </span>
-                </div>
-              </div>
+              {totalTime > 0 ? (
+                <span className="shrink-0 rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
+                  {totalTime}m total
+                </span>
+              ) : null}
             </div>
+
+            {/* Title */}
+            <div className="absolute bottom-4 left-4 right-4">
+              <h1 className="text-2xl font-semibold text-white md:text-3xl">{meal.name}</h1>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="p-6">
+            {/* Meta chips */}
+            <div className="flex flex-wrap gap-2">
+              <MetaChip icon={<Clock size={12} />} label={`Prep ${formatDuration(meal.prepTime)}`} />
+              <MetaChip icon={<Clock size={12} />} label={`Cook ${formatDuration(meal.cookTime)}`} />
+              <MetaChip icon={<Users size={12} />} label={`${meal.servings} servings`} />
+            </div>
+
+            {/* Stats */}
+            <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <StatCard label="Calories" value={`${meal.calories}`} />
+              <StatCard label="Protein" value={`${meal.protein}g`} />
+              <StatCard label="Carbs" value={`${meal.carbs}g`} />
+              <StatCard label="Fat" value={`${meal.fat}g`} />
+            </div>
+
+            {meal.fiber !== undefined ? (
+              <div className="mt-3">
+                <StatRow icon={<Droplets size={14} />} label="Fiber" value={`${meal.fiber}g`} />
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* Ingredients & Instructions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Details */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {/* Ingredients */}
-          {meal.ingredients && (
-            <div className="rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-800 to-slate-900 p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-green-600/20 flex items-center justify-center">
-                  <Wheat size={18} className="text-green-400" />
-                </div>
-                Ingredients
-              </h2>
-              <div className="space-y-3">
-                {Array.isArray(meal.ingredients) ? (
-                  <ul className="space-y-3">
-                    {meal.ingredients.map((ingredient: string, index: number) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-600/20 flex items-center justify-center mt-0.5">
-                          <span className="text-green-400 text-xs font-bold">{index + 1}</span>
-                        </span>
-                        <span className="text-slate-300">{ingredient}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed font-sans">{meal.ingredients}</pre>
-                )}
+          <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-muted/40">
+                <Wheat size={18} className="text-muted-foreground" />
               </div>
+              <h2 className="text-lg font-semibold text-foreground">Ingredients</h2>
             </div>
-          )}
+
+            <div className="mt-4">
+              {ingredientsList.length > 0 ? (
+                <ul className="space-y-3">
+                  {ingredientsList.map((item, idx) => (
+                    <li key={`${item}-${idx}`} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-[11px] text-muted-foreground">
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground/90">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">No ingredients provided.</p>
+              )}
+            </div>
+          </div>
 
           {/* Instructions */}
-          {meal.instructions && (
-            <div className="rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-800 to-slate-900 p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
-                  <Flame size={18} className="text-blue-400" />
-                </div>
-                Instructions
-              </h2>
-              <div className="space-y-4">
-                {Array.isArray(meal.instructions) ? (
-                  <ol className="space-y-4">
-                    {meal.instructions.map((instruction: string, index: number) => (
-                      <li key={index} className="flex gap-4">
-                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-sm">
-                          {index + 1}
-                        </span>
-                        <span className="text-slate-300 pt-1">{instruction}</span>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <pre className="text-slate-300 whitespace-pre-wrap leading-relaxed font-sans">
-                    {meal.instructions}
-                  </pre>
-                )}
+          <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-muted/40">
+                <Flame size={18} className="text-muted-foreground" />
               </div>
+              <h2 className="text-lg font-semibold text-foreground">Instructions</h2>
             </div>
-          )}
-        </div>
 
-        {/* Fiber and Additional Info */}
-        {meal.fiber !== undefined && (
-          <div className="mt-8 rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-800 to-slate-900 p-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-orange-600/20 flex items-center justify-center">
-                <Droplets size={18} className="text-orange-400" />
-              </div>
-              Additional Nutrition
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm mb-1">Fiber</p>
-                <p className="text-2xl font-bold text-orange-400">{meal.fiber}g</p>
-              </div>
+            <div className="mt-4">
+              {instructionsList.length > 0 ? (
+                <ol className="space-y-4">
+                  {instructionsList.map((step, idx) => (
+                    <li key={`${step}-${idx}`} className="flex gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-foreground">
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground/90">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-sm text-muted-foreground">No instructions provided.</p>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
+}
+
+function MetaChip({ icon, label }: { icon?: React.ReactNode; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2.5 py-1 text-[11px] text-muted-foreground">
+      {icon ? <span className="text-muted-foreground">{icon}</span> : null}
+      <span className="leading-none">{label}</span>
+    </span>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-background p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function StatRow({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/20 px-4 py-3">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {icon ? <span className="text-muted-foreground">{icon}</span> : null}
+        <span>{label}</span>
+      </div>
+      <span className="text-sm font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function normalizeToList(value?: string | string[]) {
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value.map(v => String(v).trim()).filter(Boolean);
+  }
+
+  const raw = String(value).trim();
+  if (!raw) return [];
+
+  // Try to split common formats:
+  // - newline separated
+  // - "1) step" or "1. step"
+  // - comma separated fallback
+  const lines = raw
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (lines.length > 1) return lines;
+
+  const numbered = raw
+    .split(/(?:\r?\n)?\s*\d+[\).\:-]\s+/g)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (numbered.length > 1) return numbered;
+
+  const comma = raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  return comma.length > 1 ? comma : [raw];
 }

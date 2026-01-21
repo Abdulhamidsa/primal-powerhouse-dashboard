@@ -6,13 +6,13 @@ import PersonalizeMealModal from './PersonalizeMealModal';
 
 interface MealDetailModalProps {
   meal: Meal;
-  onClose: () => void;
+  onCloseAction: () => void;
   onEdit?: (meal: Meal) => void;
   onDelete?: (mealId: string) => void;
   onUpdateMeal?: (updatedMeal: Meal) => void;
 }
 
-export default function MealDetailModal({ meal, onClose, onEdit, onDelete, onUpdateMeal }: MealDetailModalProps) {
+export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete, onUpdateMeal }: MealDetailModalProps) {
   const [showPersonalizeModal, setShowPersonalizeModal] = useState(false);
   const [mealData, setMealData] = useState<Meal>(meal);
 
@@ -74,7 +74,7 @@ export default function MealDetailModal({ meal, onClose, onEdit, onDelete, onUpd
 
             {/* Close button */}
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="absolute top-4 right-4 p-2 bg-zinc-900/90 backdrop-blur-sm rounded-full hover:bg-zinc-800 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
