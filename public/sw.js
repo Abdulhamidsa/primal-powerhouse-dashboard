@@ -1,102 +1,98 @@
-const CACHE_NAME = 'primal-powerhouse-v1';
-const urlsToCache = [
-  '/',
-  '/user/dashboard',
-  '/user/training',
-  '/user/meal-planner',
-  '/admin/dashboard',
-  '/admin/clients',
+const CACHE_NAME = 'primal-powerhouse-v2';
+const PRECACHE_URLS = [
+  '/login',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-512-maskable.png',
+  '/favicon.ico',
 ];
 
-// Install service worker
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await Promise.allSettled(PRECACHE_URLS.map(url => cache.add(url)));
+    })()
   );
   self.skipWaiting();
 });
 
-// Activate service worker
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => (k === CACHE_NAME ? Promise.resolve() : caches.delete(k))));
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
-// Fetch with network-first strategy for API calls, cache-first for static assets
 self.addEventListener('fetch', event => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
+  const req = event.request;
 
-  // Network-first for API calls
-  if (event.request.url.includes('/api/')) {
+  // Only handle same-origin GET requests
+  if (req.method !== 'GET') return;
+  if (!req.url.startsWith(self.location.origin)) return;
+
+  const url = new URL(req.url);
+
+  // Network-first for navigations (HTML documents)
+  if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Clone the response before caching
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        })
+      (async () => {
+        try {
+          const fresh = await fetch(req);
+          return fresh;
+        } catch {
+          const cached = await caches.match('/login');
+          return cached || new Response('Offline', { status: 503 });
+        }
+      })()
     );
     return;
   }
 
-  // Cache-first for everything else
+  // Do not cache API by default (safer)
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Cache-first for static assets
   event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) {
-        return response;
+    (async () => {
+      const cached = await caches.match(req);
+      if (cached) return cached;
+
+      const res = await fetch(req);
+
+      // Cache only successful basic/cors responses (not opaque errors)
+      if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(req, res.clone());
       }
-      return fetch(event.request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'error') {
-          return response;
-        }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseToCache);
-        });
-        return response;
-      });
+
+      return res;
+    })()
+  );
+});
+
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Primal Powerhouse';
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || 'New update from your coach!',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: 'notification',
+      requireInteraction: false,
     })
   );
 });
 
-// Push notification handler
-self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Primal Powerhouse';
-  const options = {
-    body: data.body || 'New update from your coach!',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    tag: 'notification',
-    requireInteraction: false,
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// Notification click handler
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/user/dashboard'));
+  event.waitUntil(clients.openWindow('/login'));
 });
