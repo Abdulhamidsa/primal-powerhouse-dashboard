@@ -11,15 +11,25 @@ export default function UserDashboardPage() {
   // 1) ALL hooks first. No early return before this point.
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const prevMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        console.log('[DASHBOARD] Fetching user data...');
         const res = await fetch('/api/user/data');
-        if (!res.ok) return;
+        console.log('[DASHBOARD] Response status:', res.status);
+        
+        if (!res.ok) {
+          console.error('[DASHBOARD] API returned non-ok status:', res.status);
+          setError(`Failed to load user data (${res.status})`);
+          setLoading(false);
+          return;
+        }
 
         const data = (await res.json()) as UserData;
+        console.log('[DASHBOARD] Data received:', data);
 
         // Example: notification logic (optional)
         if (
@@ -35,8 +45,10 @@ export default function UserDashboardPage() {
         prevMessageRef.current = data.motivationalMessage || null;
 
         setUserData(data);
+        setError(null);
       } catch (err) {
-        console.error(err);
+        console.error('[DASHBOARD] Error fetching user data:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
       }
@@ -56,6 +68,15 @@ export default function UserDashboardPage() {
 
   // 2) NOW you can conditionally render safely
   if (loading) return <div>Loading…</div>;
+
+  if (error) {
+    return (
+      <div className="text-red-600">
+        <p>Error loading user data: {error}</p>
+        <p className="text-sm text-gray-600 mt-2">Please make sure you are logged in.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
