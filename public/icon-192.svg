@@ -1,7 +1,0 @@
-<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="192" height="192" fill="#000000"/>
-  <path d="M96 40 L120 80 L96 70 L72 80 Z" fill="#ef4444"/>
-  <path d="M60 100 L96 140 L132 100 L96 110 Z" fill="#ef4444"/>
-  <circle cx="96" cy="96" r="8" fill="#ffffff"/>
-  <text x="96" y="170" font-family="Arial" font-size="32" font-weight="bold" fill="#ef4444" text-anchor="middle">PRIMAL</text>
-</svg>
