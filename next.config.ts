@@ -1,9 +1,10 @@
 // next.config.ts
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'ui-avatars.com' },
@@ -13,10 +14,7 @@ const nextConfig = {
     ],
     formats: ['image/webp', 'image/avif'],
   },
-  experimental: {
-    optimizePackageImports: ['react', 'react-dom'],
-    turbo: true,
-  },
+
   async headers() {
     return [
       {
@@ -29,11 +27,12 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve = config.resolve || {};
       config.resolve.alias = {
-        ...config.resolve.alias,
+        ...(config.resolve.alias || {}),
         '@prisma/client': false,
       };
     }

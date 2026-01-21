@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import PWAInstaller from '@/components/PWAInstaller';
 import InstallPrompt from '@/components/InstallPrompt';
-import LoadingScreen from '@/components/LoadingScreen';
+import LayoutClient from '@/components/LayoutClient';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -54,7 +54,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
-        <LoadingScreen />
+        <LayoutClient />
         <PWAInstaller />
         <InstallPrompt />
         {children}

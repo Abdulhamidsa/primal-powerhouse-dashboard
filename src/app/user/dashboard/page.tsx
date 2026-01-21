@@ -88,8 +88,17 @@ function StatPill({ label, value }: { label: string; value: string }) {
 }
 
 export default function UserDashboardPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="text-sm text-muted-foreground">Loading…</div>;
+  }
+
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
   const previousMessageRef = useRef<string | null>(null);
 
   const firstName = useMemo(() => {
@@ -117,8 +126,6 @@ export default function UserDashboardPage() {
       setUserData(data);
     } catch (error) {
       console.error('Error fetching user data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -170,10 +177,6 @@ export default function UserDashboardPage() {
       start,
     };
   }, [userData?.currentWeight, userData?.goalWeight]);
-
-  if (loading && !userData) {
-    return <div className="text-sm text-muted-foreground">Loading…</div>;
-  }
 
   return (
     <div className="space-y-6">
@@ -238,7 +241,7 @@ export default function UserDashboardPage() {
               key={a.id}
               icon={<Clock className="h-4 w-4" />}
               title={a.title}
-              subtitle={a.dueDate ? `Due ${new Date(a.dueDate).toLocaleDateString()}` : 'No due date'}
+              subtitle={a.dueDate ? `Due ${new Date(a.dueDate).toISOString().slice(0, 10)}` : undefined}
               right={
                 a.completed ? (
                   <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -260,7 +263,7 @@ export default function UserDashboardPage() {
               key={w.id}
               icon={<TrendingUp className="h-4 w-4" />}
               title={w.type.replace(/_/g, ' ')}
-              subtitle={`${w.duration} min • ${new Date(w.date).toLocaleDateString()}`}
+              subtitle={`${w.duration} min • ${new Date(w.date).toISOString().slice(0, 10)}`}
               right={
                 typeof w.rating === 'number' ? (
                   <span className="text-xs font-semibold text-primary">{w.rating}★</span>
