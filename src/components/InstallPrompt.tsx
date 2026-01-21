@@ -26,9 +26,22 @@ function isDismissedRecently(): boolean {
   }
 }
 
+function isInStandaloneMode(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const mql = window.matchMedia?.('(display-mode: standalone)');
+  const standaloneByMql = mql?.matches ?? false;
+
+  // iOS Safari fallback
+  const standaloneByNavigator = (window.navigator as any).standalone === true;
+
+  return standaloneByMql || standaloneByNavigator;
+}
+
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
   const dismissedRecently = useMemo(() => {
     if (typeof window === 'undefined') return true;
@@ -36,8 +49,31 @@ export default function InstallPrompt() {
   }, []);
 
   useEffect(() => {
+    // If already running as installed app, never show prompt
+    if (isInStandaloneMode()) {
+      setInstalled(true);
+      setVisible(false);
+      setDeferredPrompt(null);
+    }
+
+    const onInstalled = () => {
+      setInstalled(true);
+      setVisible(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('appinstalled', onInstalled);
+
+    return () => {
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  useEffect(() => {
     const handler = (e: Event) => {
+      if (installed) return;
       if (dismissedRecently) return;
+      if (isInStandaloneMode()) return;
 
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -49,13 +85,17 @@ export default function InstallPrompt() {
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
-  }, [dismissedRecently]);
+  }, [dismissedRecently, installed]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
     await deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setInstalled(true);
+    }
 
     setDeferredPrompt(null);
     setVisible(false);
@@ -72,7 +112,7 @@ export default function InstallPrompt() {
     }
   };
 
-  if (!visible || !deferredPrompt) return null;
+  if (installed || !visible || !deferredPrompt) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-in slide-in-from-bottom duration-300">
