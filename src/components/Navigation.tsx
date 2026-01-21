@@ -219,7 +219,7 @@ export default function Navigation({
 
         {/* Bottom Tab Bar - Mobile Only (iOS/Android style) */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg">
-          <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
+          <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto mb-6">
             {navItems.map(item => {
               const isActive = pathname === item.href;
               return (
@@ -233,7 +233,6 @@ export default function Navigation({
                   >
                     {item.icon}
                   </div>
-
                   <span
                     className={`text-[10px] font-medium mt-1 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
                   >
