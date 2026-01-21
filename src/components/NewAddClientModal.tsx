@@ -112,9 +112,9 @@ export default function NewAddClientModal({ isOpen, onClose, onClientAdded }: Ad
       };
 
       // Remove any undefined values
-      Object.keys(clientData).forEach(key => {
-        if (clientData[key] === undefined) {
-          delete clientData[key];
+      Object.entries(clientData).forEach(([key, value]) => {
+        if (value === undefined) {
+          delete clientData[key as keyof typeof clientData];
         }
       });
 

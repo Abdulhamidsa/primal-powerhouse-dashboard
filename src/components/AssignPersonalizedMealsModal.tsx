@@ -8,16 +8,16 @@ import { clientApi } from '@/lib/client-api';
 
 interface AssignPersonalizedMealsModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId?: string;
-  onAssign?: (mealId: string, clientId: string, isPersonalized: boolean) => void;
+  onAssignAction?: (mealId: string, clientId: string, isPersonalized: boolean) => void;
 }
 
 export default function AssignPersonalizedMealsModal({
   isOpen,
-  onClose,
+  onCloseAction,
   clientId,
-  onAssign,
+  onAssignAction,
 }: AssignPersonalizedMealsModalProps) {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -175,14 +175,16 @@ export default function AssignPersonalizedMealsModal({
 
   const handleAssign = () => {
     if (selectedMealId && selectedClientId) {
-      if (onAssign) {
-        onAssign(selectedMealId, selectedClientId, false);
+      if (onAssignAction) {
+        onAssignAction(selectedMealId, selectedClientId, false);
       }
 
       setSuccessMessage(`Assigned ${selectedMeal?.name} to ${selectedClient?.name} successfully!`);
-      
+
       // Show an alert to make the feedback clearer
-      alert(`"${selectedMeal?.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`);
+      alert(
+        `"${selectedMeal?.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`
+      );
 
       // Clear success message after 3 seconds
       setTimeout(() => {
@@ -200,21 +202,19 @@ export default function AssignPersonalizedMealsModal({
     try {
       if (clientId) {
         setLoading(true);
-        
+
         // Convert Meal to PersonalizedMealInput by adding required fields
         // and handling the specific format requirements
         const mealInput = {
           name: personalizedMeal.name,
           description: personalizedMeal.description || '',
-          ingredients: Array.isArray(personalizedMeal.ingredients) 
-            ? personalizedMeal.ingredients.map(ing => 
+          ingredients: Array.isArray(personalizedMeal.ingredients)
+            ? personalizedMeal.ingredients.map(ing =>
                 typeof ing === 'string' ? ing : `${ing.amount} ${ing.unit} ${ing.name}`
-              ) 
-            : [],
-          instructions: Array.isArray(personalizedMeal.instructions) 
-            ? personalizedMeal.instructions.map(inst => 
-                typeof inst === 'string' ? inst : inst.instruction
               )
+            : [],
+          instructions: Array.isArray(personalizedMeal.instructions)
+            ? personalizedMeal.instructions.map(inst => (typeof inst === 'string' ? inst : inst.instruction))
             : [],
           calories: personalizedMeal.calories,
           protein: personalizedMeal.protein,
@@ -224,25 +224,25 @@ export default function AssignPersonalizedMealsModal({
           prepTime: personalizedMeal.prepTime,
           cookTime: personalizedMeal.cookTime,
           servings: personalizedMeal.servings,
-          imageUrl: personalizedMeal.images && personalizedMeal.images.length > 0 
-            ? personalizedMeal.images[0] 
-            : '',
+          imageUrl: personalizedMeal.images && personalizedMeal.images.length > 0 ? personalizedMeal.images[0] : '',
           tags: personalizedMeal.tags,
           type: personalizedMeal.type as any,
           coachId: '1', // Using a placeholder - in a real app, get this from context/auth
         };
-        
+
         // Save the personalized meal using client-side safe API
         await clientApi.createPersonalizedMeal(
-          mealInput, 
+          mealInput,
           clientId,
           personalizedMeal.id // Pass the original meal ID
         );
 
         setSuccessMessage(`Personalized meal created and assigned to client successfully!`);
-        
+
         // Show an alert to make the feedback clearer
-        alert(`Personalized meal "${personalizedMeal.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`);
+        alert(
+          `Personalized meal "${personalizedMeal.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`
+        );
 
         // Clear success message after 3 seconds
         setTimeout(() => {
@@ -280,7 +280,7 @@ export default function AssignPersonalizedMealsModal({
         >
           <h2 className="text-xl font-bold">Assign Meals to Client</h2>
           <button
-            onClick={onClose}
+            onClick={onCloseAction}
             className="p-2 rounded-lg hover:bg-opacity-10 transition-colors"
             style={{ color: 'var(--color-text-muted)' }}
             aria-label="Close"
@@ -525,8 +525,8 @@ export default function AssignPersonalizedMealsModal({
           meal={mealToPersonalize}
           clientId={selectedClientId || undefined}
           isOpen={showPersonalizationModal}
-          onClose={() => setShowPersonalizationModal(false)}
-          onSave={handleSavePersonalizedMeal}
+          onCloseAction={() => setShowPersonalizationModal(false)}
+          onSaveAction={handleSavePersonalizedMeal}
         />
       )}
     </div>

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { clientId } = body;
 
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Verify meal exists
     const meal = await prisma.meal.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!meal) {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // For now, we'll log the assignment and return success
     // You can expand this based on your schema
 
-    console.log(`Assigned meal ${params.id} to client ${clientId}`);
+    console.log(`Assigned meal ${(await params).id} to client ${clientId}`);
 
     // Option 1: If using a MealAssignment table (uncomment when available)
     // const assignment = await prisma.mealAssignment.create({
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // For now, we'll return a success response
     return NextResponse.json({
       message: 'Meal assigned successfully',
-      mealId: params.id,
+      mealId: (await params).id,
       clientId: clientId,
       timestamp: new Date().toISOString(),
     });

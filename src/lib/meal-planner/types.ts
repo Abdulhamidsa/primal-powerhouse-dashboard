@@ -56,7 +56,7 @@ export enum ServingUnit {
  * An anchor is a placeholder in a recipe for a certain type of ingredient
  * that can be filled with different options
  */
-export interface AnchorPoint {
+export interface Anchor {
   id: string;
   name: string;
   category: FoodCategory;
@@ -88,7 +88,7 @@ export interface RecipeTemplate {
   description?: string;
   instructions?: string;
   imageUrl?: string;
-  anchors: AnchorPoint[];
+  anchors: Anchor[];
   tags?: string[];
   estimatedTimeMinutes?: number;
 }

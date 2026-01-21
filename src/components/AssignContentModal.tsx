@@ -34,7 +34,7 @@ export default function AssignContentModal({
   const [searchTerm, setSearchTerm] = useState('');
   const [previewItem, setPreviewItem] = useState<Video | Meal | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  
+
   // Show the integrated meal assignment modal for meals
   const [showIntegratedModal, setShowIntegratedModal] = useState(false);
 
@@ -234,13 +234,13 @@ export default function AssignContentModal({
     return (
       <IntegratedMealAssignmentModal
         isOpen={isOpen && type === 'meals'}
-        onClose={onClose}
+        onCloseAction={onClose}
         clientId={clientId}
-        onAssigned={onAssignmentComplete}
+        onAssignedAction={onAssignmentComplete}
       />
     );
   }
-  
+
   if (!isOpen) return null;
 
   return (

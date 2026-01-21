@@ -2,18 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { Meal, MealIngredient, MealInstruction } from '@/types/meal';
-import Image from 'next/image';
-import { Clock, Users, Utensils, Sunrise, Sun, Moon, Apple, Save, ChevronRight, X } from 'lucide-react';
+import { Utensils, Sunrise, Sun, Moon, Apple, Save, X } from 'lucide-react';
 
 interface MealPersonalizationProps {
-  meal: Meal | null;
+  meal: Meal;
   isOpen: boolean;
   clientId?: string;
-  onClose: () => void;
-  onSave: (personalizedMeal: Meal, clientId?: string, originalMealId?: string) => void;
+  onCloseAction: () => void;
+  onSaveAction: (personalizedMeal: Meal, clientId?: string) => Promise<void>;
 }
 
-export default function MealPersonalization({ meal, isOpen, clientId, onClose, onSave }: MealPersonalizationProps) {
+export default function MealPersonalization({
+  meal,
+  isOpen,
+  clientId,
+  onCloseAction,
+  onSaveAction,
+}: MealPersonalizationProps) {
   // State for personalized meal data
   const [personalizedMeal, setPersonalizedMeal] = useState<Meal | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
@@ -37,12 +42,12 @@ export default function MealPersonalization({ meal, isOpen, clientId, onClose, o
   }, [meal]);
 
   // Handler for saving the personalized meal
-  const handleSave = () => {
+  const handleSave = async () => {
     if (personalizedMeal && meal) {
       try {
         console.log('Saving personalized meal:', personalizedMeal);
         console.log('Original meal ID:', meal.id);
-        
+
         // Update timestamps
         personalizedMeal.updatedAt = new Date();
 
@@ -51,24 +56,29 @@ export default function MealPersonalization({ meal, isOpen, clientId, onClose, o
         personalizedMeal.protein = Number(personalizedMeal.protein);
         personalizedMeal.carbs = Number(personalizedMeal.carbs);
         personalizedMeal.fat = Number(personalizedMeal.fat);
-        personalizedMeal.fiber = personalizedMeal.fiber !== undefined ? Number(personalizedMeal.fiber) : undefined;
-        personalizedMeal.sugar = personalizedMeal.sugar !== undefined ? Number(personalizedMeal.sugar) : undefined;
-        personalizedMeal.prepTime = personalizedMeal.prepTime !== undefined ? Number(personalizedMeal.prepTime) : undefined;
-        personalizedMeal.cookTime = personalizedMeal.cookTime !== undefined ? Number(personalizedMeal.cookTime) : undefined;
+        if (personalizedMeal.fiber !== undefined) {
+          personalizedMeal.fiber = Number(personalizedMeal.fiber);
+        }
+        if (personalizedMeal.sugar !== undefined) {
+          personalizedMeal.sugar = Number(personalizedMeal.sugar);
+        }
+        if (personalizedMeal.prepTime !== undefined) {
+          personalizedMeal.prepTime = Number(personalizedMeal.prepTime);
+        }
+        if (personalizedMeal.cookTime !== undefined) {
+          personalizedMeal.cookTime = Number(personalizedMeal.cookTime);
+        }
         personalizedMeal.servings = Number(personalizedMeal.servings);
 
-        // Call the save callback with the personalized meal, client ID, and original meal ID
-        // This ensures we create a new copy but maintain a reference to the original
-        console.log('Calling onSave with personalized meal and original ID');
-        onSave(personalizedMeal, clientId, meal.id);
-        
+        // Call the save callback with the personalized meal and client ID
+        console.log('Calling onSaveAction with personalized meal');
+        await onSaveAction(personalizedMeal, clientId);
+
         // Log successful save
         console.log('Personalized meal saved successfully');
-        
-        // Show an alert to make it clear this isn't the final save
-        alert(`Personalized meal "${personalizedMeal.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`);
-        
-        onClose();
+
+        // Close the modal after successful save
+        onCloseAction();
       } catch (error) {
         console.error('Error in handleSave:', error);
         alert(`Error saving personalized meal: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -211,7 +221,7 @@ export default function MealPersonalization({ meal, isOpen, clientId, onClose, o
         isOpen ? 'block' : 'hidden'
       }`}
       onClick={e => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onCloseAction();
       }}
     >
       <div
@@ -249,7 +259,7 @@ export default function MealPersonalization({ meal, isOpen, clientId, onClose, o
             </button>
 
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="p-2 rounded-lg hover:bg-opacity-10 transition-colors"
               style={{ color: 'var(--color-text-muted)' }}
               aria-label="Close"
@@ -673,7 +683,7 @@ export default function MealPersonalization({ meal, isOpen, clientId, onClose, o
           <div className="flex justify-end mt-8 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
             <div className="flex gap-3">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-4 py-2 rounded-lg"
                 style={{
                   background: 'var(--color-bg-alt)',

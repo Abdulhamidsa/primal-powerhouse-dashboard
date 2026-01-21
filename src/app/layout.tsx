@@ -1,9 +1,9 @@
-import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import PWAInstaller from '@/components/PWAInstaller';
 import InstallPrompt from '@/components/InstallPrompt';
-import LayoutClient from '@/components/LayoutClient';
+// import LayoutClient from '@/components/LayoutClient';
+import { Metadata } from 'next/types';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
+export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -54,7 +54,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
-        <LayoutClient />
+        {/* <LayoutClient /> */}
         <PWAInstaller />
         <InstallPrompt />
         {children}

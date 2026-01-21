@@ -1,5 +1,5 @@
 import { Meal, MealIngredient } from '@/types/meal';
-import { RecipeTemplate, Anchor, Food, Macros } from '@/lib/meal-planner/types';
+import { RecipeTemplate, Food, Macros, Anchor, FoodCategory, ServingUnit } from '@/lib/meal-planner/types';
 import { foodsDatabase } from '@/lib/meal-planner/foods-database';
 
 /**
@@ -8,7 +8,7 @@ import { foodsDatabase } from '@/lib/meal-planner/foods-database';
 export interface IngredientWithSubstitutions {
   originalIngredient: MealIngredient;
   substitutions: Food[];
-  anchorCategory?: string; // protein, carbs, vegetable, etc.
+  anchorCategory?: FoodCategory;
 }
 
 /**
@@ -68,9 +68,7 @@ export function convertMealToRecipeTemplate(
       .map(instr => `${instr.step}. ${instr.instruction}`)
       .join('\n'),
     estimatedTimeMinutes: meal.prepTime + meal.cookTime,
-    servings: meal.servings,
     tags: meal.tags,
-    difficulty: meal.difficulty,
   };
 }
 
@@ -97,10 +95,9 @@ function findMatchingFood(ingredient: MealIngredient): Food | undefined {
  * Determine the ingredient category based on its properties
  * This is a simple heuristic that can be improved
  */
-function determineIngredientCategory(ingredient: MealIngredient): string {
+function determineIngredientCategory(ingredient: MealIngredient): FoodCategory {
   const name = ingredient.name.toLowerCase();
 
-  // Check for protein sources
   if (
     name.includes('chicken') ||
     name.includes('beef') ||
@@ -111,10 +108,9 @@ function determineIngredientCategory(ingredient: MealIngredient): string {
     name.includes('turkey') ||
     name.includes('egg')
   ) {
-    return 'protein';
+    return FoodCategory.PROTEIN;
   }
 
-  // Check for carb sources
   if (
     name.includes('rice') ||
     name.includes('pasta') ||
@@ -124,10 +120,9 @@ function determineIngredientCategory(ingredient: MealIngredient): string {
     name.includes('quinoa') ||
     name.includes('flour')
   ) {
-    return 'carbs';
+    return FoodCategory.CARB;
   }
 
-  // Check for vegetable sources
   if (
     name.includes('broccoli') ||
     name.includes('spinach') ||
@@ -140,10 +135,9 @@ function determineIngredientCategory(ingredient: MealIngredient): string {
     name.includes('garlic') ||
     name.includes('vegetable')
   ) {
-    return 'vegetable';
+    return FoodCategory.VEGETABLE;
   }
 
-  // Check for fat sources
   if (
     name.includes('oil') ||
     name.includes('butter') ||
@@ -152,11 +146,10 @@ function determineIngredientCategory(ingredient: MealIngredient): string {
     name.includes('cream') ||
     name.includes('cheese')
   ) {
-    return 'fat';
+    return FoodCategory.FAT;
   }
 
-  // Default category
-  return 'other';
+  return FoodCategory.OTHER;
 }
 
 /**
@@ -169,8 +162,8 @@ export function createFoodFromIngredient(ingredient: MealIngredient, macros: Mac
     name: ingredient.name,
     category: determineIngredientCategory(ingredient),
     macrosPer100g: macros,
-    servingUnit: ingredient.unit || 'g',
-    servingSize: ingredient.amount || 100,
+    servingUnit: ServingUnit.GRAM,
+    servingSizeGrams: ingredient.amount || 100,
   };
 }
 

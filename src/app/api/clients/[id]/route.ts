@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Make sure to await params (if it's a Promise) to fix "params should be awaited" error
-    const resolvedParams = await Promise.resolve(params);
-    const id = resolvedParams.id;
+    const { id } = await params;
     console.log(`API: GET /api/clients/${id}`);
 
     // Check if the client ID is valid
@@ -59,10 +57,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await Promise.resolve(params);
-    const id = resolvedParams.id;
+    const { id } = await params;
     const body = await request.json();
 
     // Convert arrays to JSON strings for SQLite storage
@@ -93,10 +90,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await Promise.resolve(params);
-    const id = resolvedParams.id;
+    const { id } = await params;
 
     // First, delete related records
     await prisma.workout.deleteMany({

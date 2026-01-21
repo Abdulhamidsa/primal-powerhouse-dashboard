@@ -98,9 +98,9 @@ export default function MealAssignmentPage() {
       {/* Integrated Meal Assignment Modal */}
       <IntegratedMealAssignmentModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onCloseAction={() => setIsModalOpen(false)}
         clientId={clientId}
-        onAssigned={handleMealsAssigned}
+        onAssignedAction={handleMealsAssigned}
       />
     </div>
   );

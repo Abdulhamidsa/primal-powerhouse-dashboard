@@ -4,7 +4,7 @@ import { requireAuth } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
-export async function POST(request: NextRequest, { params }: { params: { assignmentId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ assignmentId: string }> }) {
   try {
     const { error, user } = await requireAuth(request);
 
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest, { params }: { params: { assignm
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { assignmentId } = params;
+    const { assignmentId } = await params;
 
     // Verify the assignment belongs to the authenticated user
     const assignment = await prisma.videoAssignment.findUnique({

@@ -291,10 +291,8 @@ export default function UserTrainingPage() {
           </div>
         )}
 
-        {selectedVideo && (
+        {selectedVideo && isVideoModalOpen && (
           <VideoPlayerModal
-            isOpen={isVideoModalOpen}
-            onClose={closeVideoModal}
             video={{
               title: selectedVideo.video.title,
               description: selectedVideo.video.description,
@@ -302,12 +300,15 @@ export default function UserTrainingPage() {
               duration: selectedVideo.video.duration,
               difficulty: selectedVideo.video.difficulty,
             }}
-            onComplete={selectedVideo.isCompleted ? undefined : handleVideoComplete}
+            isOpen={false}
+            onCloseAction={function (): void {
+              throw new Error('Function not implemented.');
+            }}
           />
         )}
       </div>
 
-      <style jsx global>{`
+      <style>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }

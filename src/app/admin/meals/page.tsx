@@ -448,10 +448,14 @@ export default function MealsPage() {
       </div>
 
       {/* Add Meal Modal */}
-      <AddMealModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onMealAdded={fetchMeals} />
+      <AddMealModal isOpen={showAddModal} onCloseAction={() => setShowAddModal(false)} onMealAddedAction={fetchMeals} />
 
       {/* Meal Detail Modal */}
-      <NewMealDetailModal meal={selectedMeal} isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} />
+      <NewMealDetailModal
+        meal={selectedMeal}
+        isOpen={showDetailModal}
+        onCloseAction={() => setShowDetailModal(false)}
+      />
 
       {/* Delete Confirmation Modal */}
       {mealToDelete && (

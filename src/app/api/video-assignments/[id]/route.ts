@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { isCompleted, progress, notes } = body;
 
@@ -42,13 +42,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         ? {
             ...assignment.video,
             equipment: assignment.video.equipment ? JSON.parse(assignment.video.equipment) : [],
-            muscleGroups: assignment.video.muscleGroups
-              ? JSON.parse(assignment.video.muscleGroups)
-              : [],
+            muscleGroups: assignment.video.muscleGroups ? JSON.parse(assignment.video.muscleGroups) : [],
             tags: assignment.video.tags ? JSON.parse(assignment.video.tags) : [],
-            instructions: assignment.video.instructions
-              ? JSON.parse(assignment.video.instructions)
-              : [],
+            instructions: assignment.video.instructions ? JSON.parse(assignment.video.instructions) : [],
             tips: assignment.video.tips ? JSON.parse(assignment.video.tips) : [],
           }
         : null,
@@ -62,13 +58,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // Add PATCH method for compatibility
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return PUT(request, { params });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.videoAssignment.delete({
       where: { id },

@@ -356,7 +356,7 @@ export default function ClientMealPlansPage() {
         {isPersonalizeMealModalOpen && (
           <AssignPersonalizedMealsModal
             isOpen={isPersonalizeMealModalOpen}
-            onClose={() => setIsPersonalizeMealModalOpen(false)}
+            onCloseAction={() => setIsPersonalizeMealModalOpen(false)}
             clientId={clientId}
           />
         )}

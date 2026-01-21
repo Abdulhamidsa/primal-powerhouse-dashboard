@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { BarChart2, Utensils, Users, Flame, Apple, Clock, BarChart, User } from 'lucide-react';
 import Image from 'next/image';
-
+import { usePathname } from 'next/navigation';
 const adminNavItems = [
   {
     name: 'Dashboard',

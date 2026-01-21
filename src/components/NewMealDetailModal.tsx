@@ -18,17 +18,23 @@ import AssignMealModal from './AssignMealModal';
 interface MealDetailModalProps {
   meal: Meal | null;
   isOpen: boolean;
-  onClose: () => void;
-  onEdit?: (meal: Meal) => void;
-  onDelete?: (mealId: string) => void;
+  onCloseAction: () => void;
+  onEditAction?: (meal: Meal) => void;
+  onDeleteAction?: (mealId: string) => void;
 }
 
-export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDelete }: MealDetailModalProps) {
+export default function NewMealDetailModal({
+  meal,
+  isOpen,
+  onCloseAction,
+  onEditAction,
+  onDeleteAction,
+}: MealDetailModalProps) {
   const [personalizeModalOpen, setPersonalizeModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
 
-  const handleSavePersonalizedMeal = (personalizedMeal: any, clientId?: string) => {
+  const handleSavePersonalizedMeal = async (personalizedMeal: any, clientId?: string): Promise<void> => {
     console.log('Saving personalized meal:', personalizedMeal);
     console.log('For client ID:', clientId || 'No client selected');
     // In a real app, you would call your service to save the personalized meal
@@ -68,7 +74,7 @@ export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDe
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={onCloseAction}>
         <DialogContent
           className="max-w-4xl sm:max-w-[700px] p-0"
           style={{
@@ -335,9 +341,9 @@ export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDe
                   Assign
                 </button>
 
-                {onEdit && (
+                {onEditAction && (
                   <button
-                    onClick={() => onEdit(meal)}
+                    onClick={() => onEditAction(meal)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                     style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
                   >
@@ -360,9 +366,9 @@ export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDe
                   </button>
                 )}
 
-                {onDelete && (
+                {onDeleteAction && (
                   <button
-                    onClick={() => onDelete(meal.id)}
+                    onClick={() => onDeleteAction(meal.id)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                     style={{
                       background: 'var(--color-accent)',
@@ -398,16 +404,16 @@ export default function NewMealDetailModal({ meal, isOpen, onClose, onEdit, onDe
         meal={meal}
         clientId={selectedClientId}
         isOpen={personalizeModalOpen}
-        onClose={() => setPersonalizeModalOpen(false)}
-        onSave={handleSavePersonalizedMeal}
+        onCloseAction={() => setPersonalizeModalOpen(false)}
+        onSaveAction={handleSavePersonalizedMeal}
       />
 
       <AssignMealModal
         isOpen={assignModalOpen}
-        onClose={() => setAssignModalOpen(false)}
+        onCloseAction={() => setAssignModalOpen(false)}
         mealId={meal.id}
         mealName={meal.name}
-        onAssignSuccess={() => {
+        onAssignSuccessAction={() => {
           setAssignModalOpen(false);
           // Optional: Show success message or refresh data
         }}

@@ -5,7 +5,7 @@ import { X, Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-re
 
 interface VideoPlayerModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   video: {
     title: string;
     description: string;
@@ -13,10 +13,10 @@ interface VideoPlayerModalProps {
     duration: number;
     difficulty: string;
   };
-  onComplete?: () => void;
+  onCompleteAction?: () => void;
 }
 
-export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }: VideoPlayerModalProps) {
+export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompleteAction }: VideoPlayerModalProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -79,7 +79,7 @@ export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }:
     const updateDuration = () => setDuration(video.duration);
     const handleEnded = () => {
       setIsPlaying(false);
-      if (onComplete) onComplete();
+      if (onCompleteAction) onCompleteAction();
     };
     const handleError = () => setVideoError(true);
 
@@ -94,7 +94,7 @@ export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }:
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('error', handleError);
     };
-  }, [onComplete]);
+  }, [onCompleteAction]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -185,7 +185,7 @@ export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }:
                 {video.difficulty} • {video.duration} min
               </p>
             </div>
-            <button onClick={onClose} className="text-white hover:text-gray-300 transition-colors">
+            <button onClick={onCloseAction} className="text-white hover:text-gray-300 transition-colors">
               <X size={24} />
             </button>
           </div>
@@ -244,9 +244,9 @@ export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }:
           <div
             className={`absolute bottom-4 right-4 flex space-x-2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}
           >
-            {onComplete && (
+            {onCompleteAction && (
               <button
-                onClick={onComplete}
+                onClick={onCompleteAction}
                 className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
               >
                 ✓ Mark Complete
@@ -299,9 +299,9 @@ export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }:
               </div>
 
               <div className="flex items-center space-x-4">
-                {onComplete && currentTime > 0 && (
+                {onCompleteAction && currentTime > 0 && (
                   <button
-                    onClick={onComplete}
+                    onClick={onCompleteAction}
                     className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
                   >
                     Mark Complete

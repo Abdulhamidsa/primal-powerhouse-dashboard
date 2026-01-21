@@ -12,6 +12,12 @@ export default function LayoutClient() {
 
   useEffect(() => {
     setShow(true);
+
+    const t = window.setTimeout(() => {
+      setShow(false);
+    }, 450); // tweak: 250–700ms
+
+    return () => window.clearTimeout(t);
   }, [pathname]);
 
   return (

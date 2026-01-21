@@ -17,13 +17,19 @@ interface Client {
 
 interface AssignMealModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   mealId: string;
   mealName: string;
-  onAssignSuccess?: () => void;
+  onAssignSuccessAction?: () => void;
 }
 
-export default function AssignMealModal({ isOpen, onClose, mealId, mealName, onAssignSuccess }: AssignMealModalProps) {
+export default function AssignMealModal({
+  isOpen,
+  onCloseAction,
+  mealId,
+  mealName,
+  onAssignSuccessAction,
+}: AssignMealModalProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -76,8 +82,8 @@ export default function AssignMealModal({ isOpen, onClose, mealId, mealName, onA
       setSelectedClient(null);
       setConfirming(false);
       setSearchQuery('');
-      onAssignSuccess?.();
-      onClose();
+      onAssignSuccessAction?.();
+      onCloseAction();
     } catch (error) {
       console.error('Error assigning meal:', error);
       alert('Failed to assign meal');
@@ -181,7 +187,7 @@ export default function AssignMealModal({ isOpen, onClose, mealId, mealName, onA
           {/* Footer */}
           <div className="p-4 border-t border-zinc-700 flex gap-3">
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="flex-1 px-4 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors font-medium"
             >
               Cancel

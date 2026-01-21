@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Clock, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Users, Utensils } from 'lucide-react';
 
 interface Meal {
   id: string;

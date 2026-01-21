@@ -6,11 +6,11 @@ import ImageUpload from '@/components/ImageUpload';
 
 interface AddMealModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onMealAdded: () => void;
+  onCloseAction: () => void;
+  onMealAddedAction: () => void;
 }
 
-export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealModalProps) {
+export default function AddMealModal({ isOpen, onCloseAction, onMealAddedAction }: AddMealModalProps) {
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState<string>('');
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -108,8 +108,8 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
       await DataService.createMeal(mealData);
       console.log('Meal created successfully');
 
-      onMealAdded();
-      onClose();
+      onMealAddedAction();
+      onCloseAction();
       resetForm();
     } catch (error) {
       console.error('Error creating meal:', error);
@@ -185,7 +185,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
         <div className="p-6 border-b border-zinc-700">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-zinc-100">Add New Meal</h2>
-            <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
+            <button onClick={onCloseAction} className="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
               <span className="text-2xl">&times;</span>
             </button>
           </div>
@@ -454,7 +454,7 @@ export default function AddMealModal({ isOpen, onClose, onMealAdded }: AddMealMo
           <div className="flex gap-4 pt-6 border-t border-zinc-700">
             <button
               type="button"
-              onClick={onClose}
+              onClick={onCloseAction}
               className="flex-1 px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors font-medium"
             >
               Cancel

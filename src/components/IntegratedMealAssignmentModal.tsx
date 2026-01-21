@@ -29,22 +29,30 @@ const mealTypes = [
 
 interface IntegratedMealAssignmentModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId?: string;
-  onAssigned?: () => void; // Callback when meals are successfully assigned
+  onAssignedAction?: () => void; // Callback when meals are successfully assigned
 }
 
 export default function IntegratedMealAssignmentModal({
   isOpen,
-  onClose,
+  onCloseAction,
   clientId,
-  onAssigned,
+  onAssignedAction,
 }: IntegratedMealAssignmentModalProps) {
   // State for data
   const [meals, setMeals] = useState<Meal[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedMeals, setSelectedMeals] = useState<{
-    [key: string]: { mealId: string; isPersonalized: boolean; personalizedMeal?: Meal; originalMealId?: string };
+    [key: string]: {
+      mealId: string;
+      isPersonalized: boolean;
+      personalizedMeal?: Meal;
+      originalMealId?: string;
+      meal?: Meal;
+      needsSaving?: boolean;
+      alreadySaved?: boolean;
+    };
   }>({});
 
   // State for UI control
@@ -75,7 +83,7 @@ export default function IntegratedMealAssignmentModal({
   const [isEditingExistingPlan, setIsEditingExistingPlan] = useState(false);
   const [activeMealPlan, setActiveMealPlan] = useState<any | null>(null);
   const [existingMealAssignments, setExistingMealAssignments] = useState<any[]>([]);
-  
+
   // Initialize data when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -89,10 +97,10 @@ export default function IntegratedMealAssignmentModal({
     if (clientId) {
       try {
         console.log(`Checking for existing meal plans for client: ${clientId}`);
-        
+
         // Fetch existing meal plans for the client
         const response = await fetch(`/api/clients/${clientId}/meal-plans`);
-        
+
         // Check if we got a 404 - this could be because the API endpoint doesn't exist yet
         if (response.status === 404) {
           console.warn('API endpoint not found: /api/clients/${clientId}/meal-plans');
@@ -101,13 +109,13 @@ export default function IntegratedMealAssignmentModal({
           initializeMealPlan();
           return;
         }
-        
+
         if (response.ok) {
           const plans = await response.json();
           console.log(`Found ${plans.length} meal plans for client ${clientId}`);
-          
+
           setExistingMealPlans(plans);
-          
+
           // Check if there's an active plan
           const activePlan = plans.find((plan: any) => plan.isActive);
           if (activePlan) {
@@ -115,7 +123,7 @@ export default function IntegratedMealAssignmentModal({
             setActiveMealPlan(activePlan);
             setHasExistingActivePlan(true);
             setIsEditingExistingPlan(true); // Set to editing mode
-            
+
             // Pre-fill the form with the active plan data
             setPlanName(activePlan.name || '');
             if (activePlan.startDate) {
@@ -127,10 +135,10 @@ export default function IntegratedMealAssignmentModal({
             if (activePlan.notes) {
               setNotes(activePlan.notes);
             }
-            
+
             // Set active tab to schedule by default when there's an existing plan
             setActiveTab('schedule');
-            
+
             // Check if the plan has meal assignments included
             if (activePlan.mealAssignments && activePlan.mealAssignments.length > 0) {
               console.log('Using meal assignments from the plan response');
@@ -141,7 +149,7 @@ export default function IntegratedMealAssignmentModal({
               try {
                 console.log(`Fetching meal assignments for plan: ${activePlan.id}`);
                 const assignmentsResponse = await fetch(`/api/meal-plans/${activePlan.id}/assignments`);
-                
+
                 if (assignmentsResponse.ok) {
                   const assignments = await assignmentsResponse.json();
                   console.log('Loaded existing meal assignments:', assignments);
@@ -174,45 +182,45 @@ export default function IntegratedMealAssignmentModal({
       initializeMealPlan();
     }
   };
-  
+
   // Helper function to process existing meal assignments
   const processExistingMealAssignments = (assignments: any[]) => {
-    console.log("Processing existing meal assignments:", assignments);
+    console.log('Processing existing meal assignments:', assignments);
     setExistingMealAssignments(assignments);
-    
+
     // Convert existing assignments to the selectedMeals format
     const mealMap: {
-      [key: string]: { 
-        mealId: string; 
-        isPersonalized: boolean; 
-        personalizedMeal?: Meal; 
+      [key: string]: {
+        mealId: string;
+        isPersonalized: boolean;
+        personalizedMeal?: Meal;
         originalMealId?: string;
-        meal?: Meal; 
-      }
+        meal?: Meal;
+      };
     } = {};
-    
+
     // Also collect meal data to add to our meals array
     const mealsToAdd: Meal[] = [];
-    
+
     // Process each assignment and add it to the map
     for (const assignment of assignments) {
-      console.log("Processing assignment:", assignment);
-      
+      console.log('Processing assignment:', assignment);
+
       // Handle different formats of mealType
       let mealTypeKey = assignment.mealType;
       if (typeof mealTypeKey === 'string') {
         mealTypeKey = mealTypeKey.toLowerCase();
       }
-      
+
       const key = `${assignment.dayOfWeek}_${mealTypeKey}`;
-      
+
       // Check if we have meal data directly in the assignment
       if (assignment.meal) {
-        console.log("Assignment has meal data:", assignment.meal.name);
+        console.log('Assignment has meal data:', assignment.meal.name);
         // Add this meal to our collection to update the meals array
         mealsToAdd.push(assignment.meal);
       }
-      
+
       mealMap[key] = {
         mealId: assignment.mealId,
         isPersonalized: assignment.isPersonalized || false,
@@ -222,44 +230,37 @@ export default function IntegratedMealAssignmentModal({
         originalMealId: assignment.originalMealId,
       };
     }
-    
+
     // Update our meals array with any meals from assignments
     if (mealsToAdd.length > 0) {
       console.log(`Adding ${mealsToAdd.length} meals from assignments to meals array`);
       setMeals(prevMeals => {
         // Filter out duplicates
-        const newMeals = mealsToAdd.filter(
-          newMeal => !prevMeals.some(existingMeal => existingMeal.id === newMeal.id)
-        );
+        const newMeals = mealsToAdd.filter(newMeal => !prevMeals.some(existingMeal => existingMeal.id === newMeal.id));
         return [...prevMeals, ...newMeals];
       });
     }
-    
-    console.log("Setting selectedMeals with mapped data:", mealMap);
+
+    console.log('Setting selectedMeals with mapped data:', mealMap);
     setSelectedMeals(mealMap);
-    
+
     // Check if we need to load personalized meals separately
-    const personalizedAssignments = assignments.filter(
-      (a: any) => a.isPersonalized && !a.meal
-    );
-    
+    const personalizedAssignments = assignments.filter((a: any) => a.isPersonalized && !a.meal);
+
     if (personalizedAssignments.length > 0) {
       console.log(`Loading ${personalizedAssignments.length} personalized meals that don't have meal data`);
       loadPersonalizedMeals(personalizedAssignments, mealMap);
     }
   };
-  
+
   // Helper function to load personalized meal details
-  const loadPersonalizedMeals = async (
-    personalizedAssignments: any[], 
-    mealMap: { [key: string]: any }
-  ) => {
+  const loadPersonalizedMeals = async (personalizedAssignments: any[], mealMap: { [key: string]: any }) => {
     try {
       for (const assignment of personalizedAssignments) {
         const mealResponse = await fetch(`/api/meals/${assignment.mealId}`);
         if (mealResponse.ok) {
           const mealData = await mealResponse.json();
-          
+
           // Add the personalized meal data to our map
           const key = `${assignment.dayOfWeek}_${assignment.mealType.toLowerCase()}`;
           if (mealMap[key]) {
@@ -271,7 +272,7 @@ export default function IntegratedMealAssignmentModal({
         }
       }
       // Update the selected meals with the personalized data
-      setSelectedMeals({...mealMap});
+      setSelectedMeals({ ...mealMap });
     } catch (error) {
       console.error('Error loading personalized meals:', error);
     }
@@ -389,7 +390,33 @@ export default function IntegratedMealAssignmentModal({
         try {
           console.log('Fetching specific client with ID:', clientId);
           // Get the specific client
-          const client = await DataService.getClientById(clientId);
+          const clientData = await DataService.getClientById(clientId);
+
+          // Map activity level from API format to expected format
+          const mapActivityLevel = (apiLevel: string): string => {
+            const mapping: { [key: string]: string } = {
+              LOW: 'sedentary',
+              MODERATE: 'moderately_active',
+              HIGH: 'very_active',
+              sedentary: 'sedentary',
+              lightly_active: 'lightly_active',
+              moderately_active: 'moderately_active',
+              very_active: 'very_active',
+              extremely_active: 'extremely_active',
+            };
+            return mapping[apiLevel] || 'moderately_active';
+          };
+
+          // Map the client data to match the expected type
+          const client = {
+            ...clientData,
+            activityLevel: mapActivityLevel(clientData.activityLevel || 'moderately_active') as
+              | 'sedentary'
+              | 'lightly_active'
+              | 'moderately_active'
+              | 'very_active'
+              | 'extremely_active',
+          } as unknown as Client;
           setClients([client]);
           setSelectedClientId(clientId);
           setPlanName(`${client.name}'s Meal Plan`);
@@ -398,11 +425,11 @@ export default function IntegratedMealAssignmentModal({
           alert(`The client with ID ${clientId} could not be found. Please try again or select another client.`);
           // Reset selected client ID to avoid further errors
           setSelectedClientId(null);
-          
+
           // Fetch all clients as a fallback
           try {
             const clientsData = await DataService.getClients();
-            setClients(clientsData);
+            setClients(clientsData as unknown as Client[]);
           } catch (clientsError) {
             console.error('Error fetching all clients:', clientsError);
             // Use fallback mock data below
@@ -412,7 +439,7 @@ export default function IntegratedMealAssignmentModal({
         // Fetch all clients
         try {
           const clientsData = await DataService.getClients();
-          setClients(clientsData);
+          setClients(clientsData as unknown as Client[]);
         } catch (error) {
           console.error('Error fetching clients:', error);
           // Fallback mock data
@@ -484,7 +511,11 @@ export default function IntegratedMealAssignmentModal({
   };
 
   // Handle saving personalized meal
-  const handleSavePersonalizedMeal = async (personalizedMeal: Meal, clientId?: string, originalMealId?: string) => {
+  const handleSavePersonalizedMeal = async (
+    personalizedMeal: Meal,
+    clientId?: string,
+    originalMealId?: string
+  ): Promise<void> => {
     try {
       setLoading(true);
       console.log('Saving personalized meal in IntegratedMealAssignmentModal:', personalizedMeal.name);
@@ -494,73 +525,67 @@ export default function IntegratedMealAssignmentModal({
       // If we have a day and meal type selected, assign the personalized meal to that slot
       if (selectedDay !== null && selectedMealType !== null && selectedClientId) {
         const key = `${selectedDay}_${selectedMealType}`;
-        
+
         console.log('Adding personalized meal to slot:', key);
-        
+
         // Make sure we have the original meal ID from the meal being personalized
         let originalId = originalMealId;
         if (!originalId && mealToPersonalize) {
           originalId = mealToPersonalize.id;
           console.log('Using mealToPersonalize.id as originalMealId:', originalId);
         }
-        
-          // First, save the personalized meal to the database to get a real ID
-          try {
-            console.log('Saving personalized meal to database before adding to plan');
-            console.log('Client ID for personalization:', selectedClientId);
-            
-            if (!selectedClientId) {
-              throw new Error('No client selected for meal personalization');
-            }
-            
-            // Find a valid coach ID to use for the meal creation
-            let coachId;
-            try {
-              // Try to get a coach ID from the meal list (any meal will do)
-              const anyMeal = meals.find(m => m.coachId);
-              coachId = anyMeal?.coachId || 'clmermeye5001d7k2kwvec0tkv'; // Use a fallback ID if needed
-              console.log('Using coach ID for personalized meal:', coachId);
-            } catch (coachError) {
-              console.error('Error finding coach ID:', coachError);
-              coachId = 'clmermeye5001d7k2kwvec0tkv'; // Fallback to a known ID
-            }
-            
-            // Use client-side safe API to create personalized meal
-            const mealData = {
-              name: personalizedMeal.name,
-              description: personalizedMeal.description,
-              ingredients: JSON.stringify(personalizedMeal.ingredients),
-              instructions: JSON.stringify(personalizedMeal.instructions),
-              calories: personalizedMeal.calories,
-              protein: personalizedMeal.protein,
-              carbs: personalizedMeal.carbs,
-              fat: personalizedMeal.fat,
-              fiber: personalizedMeal.fiber,
-              prepTime: personalizedMeal.prepTime,
-              cookTime: personalizedMeal.cookTime,
-              servings: personalizedMeal.servings,
-              imageUrl: personalizedMeal.images?.[0],
-              tags: personalizedMeal.tags,
-              // Convert meal type to uppercase format to match Prisma enum
-              type: typeof personalizedMeal.type === 'string' ? personalizedMeal.type.toUpperCase() : personalizedMeal.type,
-              coachId: coachId, // Use a valid coach ID from the database
-            };
-            
-            const savedMeal = await clientApi.createPersonalizedMeal(
-              mealData,
-              selectedClientId, // Make sure we pass the selected client ID
-              originalId
-            );
-            
-            // Format the response to match what the component expects
-            const savedMealResult = {
-              meal: savedMeal,
-              client: { id: selectedClientId, name: 'Client' }
-            };          console.log('Personalized meal saved to database:', savedMealResult.meal.id);
-          
+
+        // First, save the personalized meal to the database to get a real ID
+        try {
+          console.log('Saving personalized meal to database before adding to plan');
+          console.log('Client ID for personalization:', selectedClientId);
+
+          if (!selectedClientId) {
+            throw new Error('No client selected for meal personalization');
+          }
+
+          // Find a valid coach ID to use for the meal creation
+          let coachId = 'clmermeye5001d7k2kwvec0tkv'; // Use a fallback ID
+          console.log('Using coach ID for personalized meal:', coachId);
+
+          // Use client-side safe API to create personalized meal
+          const mealData = {
+            name: personalizedMeal.name,
+            description: personalizedMeal.description,
+            ingredients: JSON.stringify(personalizedMeal.ingredients),
+            instructions: JSON.stringify(personalizedMeal.instructions),
+            calories: personalizedMeal.calories,
+            protein: personalizedMeal.protein,
+            carbs: personalizedMeal.carbs,
+            fat: personalizedMeal.fat,
+            fiber: personalizedMeal.fiber,
+            prepTime: personalizedMeal.prepTime,
+            cookTime: personalizedMeal.cookTime,
+            servings: personalizedMeal.servings,
+            imageUrl: personalizedMeal.images?.[0],
+            tags: personalizedMeal.tags,
+            // Convert meal type to uppercase format to match Prisma enum
+            type:
+              typeof personalizedMeal.type === 'string' ? personalizedMeal.type.toUpperCase() : personalizedMeal.type,
+            coachId: coachId, // Use a valid coach ID from the database
+          };
+
+          const savedMeal = await clientApi.createPersonalizedMeal(
+            mealData,
+            selectedClientId || clientId!, // Make sure we pass the selected client ID
+            originalId
+          );
+
+          // Format the response to match what the component expects
+          const savedMealResult = {
+            meal: savedMeal as unknown as Meal,
+            client: { id: selectedClientId || clientId!, name: 'Client' },
+          };
+          console.log('Personalized meal saved to database:', savedMealResult.meal.id);
+
           // Use the saved meal ID and data
           personalizedMeal = savedMealResult.meal;
-          
+
           // Store the personalized meal in the selected slot with reference to original meal
           setSelectedMeals(prev => ({
             ...prev,
@@ -596,9 +621,9 @@ export default function IntegratedMealAssignmentModal({
               </div>
             </div>
           `;
-          
+
           document.body.appendChild(notification);
-          
+
           // Remove the notification after 4 seconds
           setTimeout(() => {
             notification.classList.add('animate-fade-out');
@@ -607,11 +632,12 @@ export default function IntegratedMealAssignmentModal({
 
           // Clear success message after a few seconds
           setTimeout(() => setSuccessMessage(null), 3000);
-          
         } catch (saveError) {
           console.error('Error saving personalized meal to database:', saveError);
-          alert(`Failed to save personalized meal to database: ${saveError instanceof Error ? saveError.message : 'Unknown error'}`);
-          
+          alert(
+            `Failed to save personalized meal to database: ${saveError instanceof Error ? saveError.message : 'Unknown error'}`
+          );
+
           // If saving to database fails, we still want to show the personalized meal in the UI
           // but we need to mark it with a temporary ID that indicates it needs to be saved
           setSelectedMeals(prev => ({
@@ -621,12 +647,14 @@ export default function IntegratedMealAssignmentModal({
               isPersonalized: true,
               personalizedMeal: personalizedMeal,
               originalMealId: originalId,
-              needsSaving: true // Mark this meal as needing to be saved
+              needsSaving: true, // Mark this meal as needing to be saved
             },
           }));
-          
+
           setShowPersonalizationModal(false);
-          setSuccessMessage('Meal personalized but could not be saved to database. Will try again when creating meal plan.');
+          setSuccessMessage(
+            'Meal personalized but could not be saved to database. Will try again when creating meal plan.'
+          );
         }
       }
     } catch (error) {
@@ -641,8 +669,10 @@ export default function IntegratedMealAssignmentModal({
   const handleAssignMeal = (meal: Meal) => {
     if (selectedDay !== null && selectedMealType !== null) {
       const key = `${selectedDay}_${selectedMealType}`;
-      
-      console.log(`Assigning meal "${meal.name}" (ID: ${meal.id}) to ${mealTypes.find(m => m.value === selectedMealType)?.label} on ${daysOfWeek.find(d => d.value === selectedDay)?.label}`);
+
+      console.log(
+        `Assigning meal "${meal.name}" (ID: ${meal.id}) to ${mealTypes.find(m => m.value === selectedMealType)?.label} on ${daysOfWeek.find(d => d.value === selectedDay)?.label}`
+      );
 
       setSelectedMeals(prev => ({
         ...prev,
@@ -650,11 +680,15 @@ export default function IntegratedMealAssignmentModal({
       }));
 
       setActiveTab('schedule');
-      setSuccessMessage(`"${meal.name}" added to ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}!`);
-      
+      setSuccessMessage(
+        `"${meal.name}" added to ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}!`
+      );
+
       // Show more detailed message
-      alert(`"${meal.name}" has been added to your meal plan for ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}. Click "Create Meal Plan" to save all assignments.`);
-      
+      alert(
+        `"${meal.name}" has been added to your meal plan for ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}. Click "Create Meal Plan" to save all assignments.`
+      );
+
       setTimeout(() => setSuccessMessage(null), 3000);
     } else {
       // If no day or meal type is selected, show an instruction to the user
@@ -674,24 +708,24 @@ export default function IntegratedMealAssignmentModal({
     if (selection.isPersonalized && selection.personalizedMeal) {
       return selection.personalizedMeal;
     }
-    
+
     // If the meal object is directly attached to the selection (from API)
     if (selection.meal) {
       return selection.meal;
     }
-    
+
     // Try to find the meal in our local meals array
     const foundMeal = meals.find(meal => meal.id === selection.mealId);
     if (foundMeal) {
       return foundMeal;
     }
-    
+
     // If we don't have the meal data yet, fetch it asynchronously and update
     if (selection.mealId) {
       // Create a placeholder meal with the ID and basic info while we fetch
       const placeholderMeal: Partial<Meal> = {
         id: selection.mealId,
-        name: "Loading meal...",
+        name: 'Loading meal...',
         calories: 0,
         protein: 0,
         prepTime: 0,
@@ -703,7 +737,7 @@ export default function IntegratedMealAssignmentModal({
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      
+
       // Fetch the meal data asynchronously
       fetch(`/api/meals/${selection.mealId}`)
         .then(response => {
@@ -719,24 +753,24 @@ export default function IntegratedMealAssignmentModal({
             }
             return [...prevMeals, mealData];
           });
-          
+
           // If this is a personalized meal, update the selection
           if (selection.isPersonalized) {
             setSelectedMeals(prev => ({
               ...prev,
               [key]: {
                 ...prev[key],
-                personalizedMeal: mealData
-              }
+                personalizedMeal: mealData,
+              },
             }));
           }
         })
-        .catch(error => console.error("Error fetching meal:", error));
-      
+        .catch(error => console.error('Error fetching meal:', error));
+
       // Return placeholder while fetching
       return placeholderMeal as Meal;
     }
-    
+
     return null;
   };
 
@@ -757,24 +791,25 @@ export default function IntegratedMealAssignmentModal({
       alert('Please fill in all required fields and add at least one meal.');
       return;
     }
-    
+
     // If client has an existing active plan, we always want to edit it rather than create a new one
     if (hasExistingActivePlan && !isEditingExistingPlan) {
       console.log('Setting isEditingExistingPlan to true because user has an existing active plan');
       setIsEditingExistingPlan(true);
       setActiveMealPlan(existingMealPlans.find(plan => plan.isActive) || null);
-      
+
       // Show a notification that we're updating the existing plan
       const notificationOverlay = document.createElement('div');
-      notificationOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] animate-fade-in';
+      notificationOverlay.className =
+        'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] animate-fade-in';
       notificationOverlay.style.zIndex = '9999';
-      
+
       const notificationDialog = document.createElement('div');
       notificationDialog.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl max-w-md animate-slide-up';
       notificationDialog.style.background = 'var(--color-surface)';
       notificationDialog.style.color = 'var(--color-text)';
       notificationDialog.style.borderColor = 'var(--color-border)';
-      
+
       notificationDialog.innerHTML = `
         <div class="mb-4">
           <h3 class="text-lg font-bold mb-2">Updating Existing Meal Plan</h3>
@@ -788,10 +823,10 @@ export default function IntegratedMealAssignmentModal({
           <button id="continue-update" class="px-6 py-2 rounded" style="background: var(--color-accent); color: var(--color-text-on-accent)">Continue</button>
         </div>
       `;
-      
+
       notificationOverlay.appendChild(notificationDialog);
       document.body.appendChild(notificationOverlay);
-      
+
       // Return a promise that resolves when the user confirms
       return new Promise(resolve => {
         document.getElementById('continue-update')?.addEventListener('click', () => {
@@ -809,7 +844,7 @@ export default function IntegratedMealAssignmentModal({
       console.log('Is editing existing plan:', isEditingExistingPlan);
       console.log('Active meal plan:', activeMealPlan);
       console.log('Has existing active plan:', hasExistingActivePlan);
-      
+
       // If there's an existing active plan but isEditingExistingPlan is false, set it to true
       if (hasExistingActivePlan && !isEditingExistingPlan) {
         console.log('Setting isEditingExistingPlan to true because hasExistingActivePlan is true');
@@ -824,11 +859,13 @@ export default function IntegratedMealAssignmentModal({
         .filter(([_, selection]) => selection.isPersonalized && selection.personalizedMeal)
         .map(async ([key, selection]) => {
           if (!selection.personalizedMeal) return null;
-          
+
           // If the meal was already saved to the database (in handleSavePersonalizedMeal),
           // we can skip saving it again
-          if ((!selection.needsSaving && !selection.personalizedMeal.id.includes('personalized-')) || 
-              selection.alreadySaved === true) {
+          if (
+            (!selection.needsSaving && !selection.personalizedMeal.id.includes('personalized-')) ||
+            selection.alreadySaved === true
+          ) {
             console.log('Personalized meal already saved to database:', selection.personalizedMeal.id);
             return { key, mealId: selection.personalizedMeal.id };
           }
@@ -836,24 +873,16 @@ export default function IntegratedMealAssignmentModal({
           try {
             console.log('Saving personalized meal:', selection.personalizedMeal.name);
             console.log('Original meal ID:', selection.originalMealId);
-            
+
             // Make sure we have the original meal ID to maintain the reference
             const originalId = selection.originalMealId || selection.personalizedMeal.id;
-            
+
             console.log('Using original meal ID for reference:', originalId);
-            
+
             // Find a valid coach ID to use for the meal creation
-            let coachId;
-            try {
-              // Try to get a coach ID from the meal list (any meal will do)
-              const anyMeal = meals.find(m => m.coachId);
-              coachId = anyMeal?.coachId || 'clmermeye5001d7k2kwvec0tkv'; // Use a fallback ID if needed
-              console.log('Using coach ID for personalized meal:', coachId);
-            } catch (coachError) {
-              console.error('Error finding coach ID:', coachError);
-              coachId = 'clmermeye5001d7k2kwvec0tkv'; // Fallback to a known ID
-            }
-            
+            let coachId = 'clmermeye5001d7k2kwvec0tkv'; // Use a fallback ID
+            console.log('Using coach ID for personalized meal:', coachId);
+
             // Save personalized meal with the PersonalizedMealService
             // Pass the original meal ID to maintain the reference
             // Use client-side safe API to create personalized meal
@@ -873,20 +902,19 @@ export default function IntegratedMealAssignmentModal({
               imageUrl: selection.personalizedMeal.images?.[0],
               tags: selection.personalizedMeal.tags,
               // Convert meal type to uppercase format to match Prisma enum
-              type: typeof selection.personalizedMeal.type === 'string' ? selection.personalizedMeal.type.toUpperCase() : selection.personalizedMeal.type,
+              type:
+                typeof selection.personalizedMeal.type === 'string'
+                  ? selection.personalizedMeal.type.toUpperCase()
+                  : selection.personalizedMeal.type,
               coachId: coachId, // Use valid coach ID
             };
-            
-            const savedMeal = await clientApi.createPersonalizedMeal(
-              mealData,
-              selectedClientId,
-              originalId
-            );
-            
+
+            const savedMeal = await clientApi.createPersonalizedMeal(mealData, selectedClientId, originalId);
+
             // Format the response to match what the component expects
             const result = {
               meal: savedMeal,
-              client: { id: selectedClientId, name: 'Client' }
+              client: { id: selectedClientId, name: 'Client' },
             };
 
             console.log('Successfully saved personalized meal:', result.meal.id);
@@ -914,7 +942,9 @@ export default function IntegratedMealAssignmentModal({
           return;
         } else {
           // Some meals failed, but we can continue with the ones that worked
-          alert(`${failedMeals.length} out of ${savedPersonalizedMeals.length} personalized meals failed to save. The meal plan will be created with only the successfully saved meals.`);
+          alert(
+            `${failedMeals.length} out of ${savedPersonalizedMeals.length} personalized meals failed to save. The meal plan will be created with only the successfully saved meals.`
+          );
         }
       }
 
@@ -930,13 +960,13 @@ export default function IntegratedMealAssignmentModal({
             if (savedMeal) {
               mealId = savedMeal.mealId;
               console.log(`Using saved personalized meal ID ${mealId} for assignment ${key}`);
-              
+
               // Don't include temporary IDs in the final assignments
               if (mealId.startsWith('personalized-')) {
                 console.warn(`Skipping assignment with temporary ID: ${mealId}`);
                 return null; // Will be filtered out below
               }
-              
+
               // Return the assignment with the valid meal ID
               return {
                 mealId,
@@ -964,35 +994,38 @@ export default function IntegratedMealAssignmentModal({
         })
         // Filter out any null entries (failed personalized meals)
         .filter(assignment => assignment !== null && assignment.mealId) as Array<{
-          mealId: string;
-          dayOfWeek: number;
-          mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
-          portion: number;
-          isPersonalized?: boolean;
-          notes?: string;
-        }>;
+        mealId: string;
+        dayOfWeek: number;
+        mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+        portion: number;
+        isPersonalized?: boolean;
+        notes?: string;
+      }>;
 
       console.log('Final meal assignments to create:', finalMealAssignments);
 
       try {
         let mealPlan;
-        
+
         // If user has an active meal plan, always update it even if isEditingExistingPlan wasn't explicitly set
-        if ((isEditingExistingPlan || hasExistingActivePlan) && (activeMealPlan || existingMealPlans.find(plan => plan.isActive))) {
+        if (
+          (isEditingExistingPlan || hasExistingActivePlan) &&
+          (activeMealPlan || existingMealPlans.find(plan => plan.isActive))
+        ) {
           // Get the active meal plan ID
           const planToUpdate = activeMealPlan || existingMealPlans.find(plan => plan.isActive);
-          
+
           if (!planToUpdate) {
-            throw new Error("Expected to find an active meal plan but none was found");
+            throw new Error('Expected to find an active meal plan but none was found');
           }
-          
+
           // Update existing meal plan
           console.log('Updating existing meal plan with ID:', planToUpdate.id);
           console.log('Client ID:', selectedClientId);
           console.log('Plan Name:', planName);
           console.log('Start Date:', startDate);
           console.log('End Date:', endDate);
-          
+
           try {
             mealPlan = await MealAssignmentService.updateMealPlan(
               planToUpdate.id,
@@ -1003,11 +1036,11 @@ export default function IntegratedMealAssignmentModal({
               endDate || undefined,
               notes || undefined
             );
-            
+
             setSuccessMessage('Meal plan updated successfully!');
           } catch (updateError) {
             console.error('Error updating meal plan:', updateError);
-            
+
             // If we get a 404 Not Found or other API error, fall back to creating a new plan
             console.log('Falling back to creating a new meal plan');
             mealPlan = await MealAssignmentService.createMealPlan(
@@ -1018,7 +1051,7 @@ export default function IntegratedMealAssignmentModal({
               endDate || undefined,
               notes || undefined
             );
-            
+
             setSuccessMessage('Created new meal plan since update failed!');
           }
         } else {
@@ -1028,7 +1061,7 @@ export default function IntegratedMealAssignmentModal({
           console.log('Plan Name:', planName);
           console.log('Start Date:', startDate);
           console.log('End Date:', endDate);
-          
+
           mealPlan = await MealAssignmentService.createMealPlan(
             selectedClientId,
             finalMealAssignments,
@@ -1037,29 +1070,33 @@ export default function IntegratedMealAssignmentModal({
             endDate || undefined,
             notes || undefined
           );
-          
+
           setSuccessMessage('Meal plan created successfully!');
         }
-        
+
         console.log('Meal plan operation completed successfully:', mealPlan);
 
-        // Call the onAssigned callback if provided
-        if (onAssigned) {
-          console.log('Calling onAssigned callback');
-          onAssigned();
+        // Call the onAssignedAction callback if provided
+        if (onAssignedAction) {
+          console.log('Calling onAssignedAction callback');
+          onAssignedAction();
         }
 
         // Close the modal after a delay
         setTimeout(() => {
-          onClose();
+          onCloseAction();
         }, 1500);
       } catch (error) {
         console.error('Failed to save meal plan:', error);
-        alert(`Failed to ${isEditingExistingPlan ? 'update' : 'create'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        alert(
+          `Failed to ${isEditingExistingPlan ? 'update' : 'create'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     } catch (error) {
       console.error('Error in meal plan submission process:', error);
-      alert(`Error ${isEditingExistingPlan ? 'updating' : 'creating'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(
+        `Error ${isEditingExistingPlan ? 'updating' : 'creating'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setLoading(false);
     }
@@ -1109,7 +1146,7 @@ export default function IntegratedMealAssignmentModal({
             )}
 
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="p-2 rounded-lg hover:bg-opacity-10 transition-colors"
               style={{ color: 'var(--color-text-muted)' }}
               aria-label="Close"
@@ -1130,15 +1167,15 @@ export default function IntegratedMealAssignmentModal({
               {successMessage}
             </div>
           )}
-          
+
           {/* Editing existing plan notification */}
           {isEditingExistingPlan && activeMealPlan && (
             <div
               className="mb-4 p-3 rounded-lg border-l-4 flex items-center gap-2 animate-fade-in"
-              style={{ 
-                background: 'var(--color-accent-translucent)', 
+              style={{
+                background: 'var(--color-accent-translucent)',
                 borderLeftColor: 'var(--color-accent)',
-                color: 'var(--color-accent)'
+                color: 'var(--color-accent)',
               }}
             >
               <Edit size={18} />
@@ -1379,19 +1416,20 @@ export default function IntegratedMealAssignmentModal({
               </div>
 
               {/* Summary */}
-              <div 
-                className="mb-6 p-4 rounded-lg border" 
-                style={{ 
-                  background: 'var(--color-bg-alt)', 
+              <div
+                className="mb-6 p-4 rounded-lg border"
+                style={{
+                  background: 'var(--color-bg-alt)',
                   borderColor: Object.keys(selectedMeals).length > 0 ? 'var(--color-accent)' : 'var(--color-border)',
-                  boxShadow: Object.keys(selectedMeals).length > 0 ? '0 0 8px rgba(var(--color-accent-rgb), 0.3)' : 'none'
+                  boxShadow:
+                    Object.keys(selectedMeals).length > 0 ? '0 0 8px rgba(var(--color-accent-rgb), 0.3)' : 'none',
                 }}
               >
                 <h4 className="font-medium mb-2 flex items-center gap-2">
                   <span>Meal Plan Summary</span>
                   {Object.keys(selectedMeals).length > 0 && (
-                    <span 
-                      className="text-xs px-2 py-0.5 rounded-full" 
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full"
                       style={{ background: 'var(--color-accent)', color: 'var(--color-text-on-accent)' }}
                     >
                       {Object.keys(selectedMeals).length} meals ready to save
@@ -1437,7 +1475,7 @@ export default function IntegratedMealAssignmentModal({
                     </span>
                   </div>
                 </div>
-                
+
                 {Object.keys(selectedMeals).length > 0 && (
                   <div className="mt-3 text-sm italic" style={{ color: 'var(--color-accent)' }}>
                     Don't forget to click "Create Meal Plan" to save your selections!
@@ -1447,7 +1485,7 @@ export default function IntegratedMealAssignmentModal({
 
               {/* Instructions and Submit Button */}
               <div className="flex flex-col gap-4">
-                <div 
+                <div
                   className="p-4 rounded-lg border-2 border-dashed"
                   style={{
                     borderColor: 'var(--color-accent)',
@@ -1459,21 +1497,24 @@ export default function IntegratedMealAssignmentModal({
                     <span style={{ color: 'var(--color-accent)' }}>Important: Save Your Meal Plan</span>
                   </h4>
                   <p className="text-sm" style={{ color: 'var(--color-text)' }}>
-                    Your meal assignments will not be saved until you click the "Create Meal Plan" button below.
-                    Make sure all your meals are assigned correctly before saving.
+                    Your meal assignments will not be saved until you click the "Create Meal Plan" button below. Make
+                    sure all your meals are assigned correctly before saving.
                   </p>
                 </div>
-              
+
                 <div className="flex flex-col items-center">
                   {Object.keys(selectedMeals).length > 0 && (
-                    <div className="w-full max-w-lg text-center mb-4 p-3 rounded-lg animate-slide-down" 
-                      style={{ background: 'var(--color-accent-translucent)' }}>
+                    <div
+                      className="w-full max-w-lg text-center mb-4 p-3 rounded-lg animate-slide-down"
+                      style={{ background: 'var(--color-accent-translucent)' }}
+                    >
                       <p className="font-semibold text-sm" style={{ color: 'var(--color-accent)' }}>
-                        You've selected {Object.keys(selectedMeals).length} meal(s). Click below to save all assignments.
+                        You've selected {Object.keys(selectedMeals).length} meal(s). Click below to save all
+                        assignments.
                       </p>
                     </div>
                   )}
-                  
+
                   <button
                     onClick={handleSubmitMealPlan}
                     disabled={
@@ -1482,12 +1523,17 @@ export default function IntegratedMealAssignmentModal({
                     className={`px-8 py-4 rounded-lg flex items-center gap-3 text-lg font-bold ${
                       loading || !selectedClientId || !planName || !startDate || Object.keys(selectedMeals).length === 0
                         ? 'opacity-50 cursor-not-allowed'
-                        : Object.keys(selectedMeals).length > 0 ? 'animate-pulse hover:animate-none hover:scale-105 transition-transform' : ''
+                        : Object.keys(selectedMeals).length > 0
+                          ? 'animate-pulse hover:animate-none hover:scale-105 transition-transform'
+                          : ''
                     }`}
                     style={{
                       background: 'var(--color-accent)',
                       color: 'var(--color-text-on-accent)',
-                      boxShadow: Object.keys(selectedMeals).length > 0 ? '0 8px 16px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
+                      boxShadow:
+                        Object.keys(selectedMeals).length > 0
+                          ? '0 8px 16px rgba(0, 0, 0, 0.2)'
+                          : '0 4px 6px rgba(0, 0, 0, 0.1)',
                     }}
                   >
                     {loading ? (
@@ -1665,8 +1711,8 @@ export default function IntegratedMealAssignmentModal({
           meal={mealToPersonalize}
           clientId={selectedClientId || undefined}
           isOpen={showPersonalizationModal}
-          onClose={() => setShowPersonalizationModal(false)}
-          onSave={handleSavePersonalizedMeal}
+          onCloseAction={() => setShowPersonalizationModal(false)}
+          onSaveAction={handleSavePersonalizedMeal}
         />
       )}
     </div>
