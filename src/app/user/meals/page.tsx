@@ -1,30 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, Users, ChefHat } from '../../../../node_modules/lucide-react';
-
-interface Meal {
-  id: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  portion: number;
-  scheduledTime?: string;
-  mealPlan: string;
-  assignmentId?: string;
-  mealType?: string;
-}
-
-interface TodaysMeals {
-  breakfast?: Meal;
-  lunch?: Meal;
-  dinner?: Meal;
-  snack?: Meal;
-}
+import { Clock, Users, ChefHat } from 'lucide-react';
 
 interface MealAssignment {
   id: string;
@@ -54,7 +33,10 @@ interface MealAssignment {
     name: string;
   };
 }
+
 type Tab = 'today' | 'all';
+
+const MEAL_TYPES = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
 
 export default function UserMealsPage() {
   const router = useRouter();
@@ -70,10 +52,9 @@ export default function UserMealsPage() {
   const fetchTodaysMeals = async () => {
     try {
       const response = await fetch('/api/user/meals/today');
-      if (response.ok) {
-        const data = await response.json();
-        setTodaysMeals(data);
-      }
+      if (!response.ok) return;
+      const data = await response.json();
+      setTodaysMeals(data);
     } catch (error) {
       console.error("Error fetching today's meals:", error);
     }
@@ -82,10 +63,9 @@ export default function UserMealsPage() {
   const fetchAllMealAssignments = async () => {
     try {
       const response = await fetch('/api/user/meals');
-      if (response.ok) {
-        const data = await response.json();
-        setAllMealAssignments(data);
-      }
+      if (!response.ok) return;
+      const data = await response.json();
+      setAllMealAssignments(data);
     } catch (error) {
       console.error('Error fetching all meal assignments:', error);
     }
@@ -98,11 +78,11 @@ export default function UserMealsPage() {
 
   const mealSections = useMemo(() => {
     const source =
-      activeTab === 'today' ? (Object.values(todaysMeals).filter(Boolean) as MealAssignment[]) : allMealAssignments;
+      activeTab === 'today'
+        ? (Object.values(todaysMeals).filter(Boolean) as MealAssignment[])
+        : allMealAssignments;
 
-    const types = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
-
-    return types
+    return MEAL_TYPES
       .map(type => ({
         type,
         items: source.filter(a => a.mealType?.toUpperCase() === type),
@@ -116,21 +96,22 @@ export default function UserMealsPage() {
     <div className="px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">My Meals</h1>
-            <p className="text-sm text-muted-foreground">Your plan, clean and simple.</p>
+            <p className="text-sm text-muted-foreground">Tap a meal for the full recipe.</p>
           </div>
 
           {/* iOS segmented control */}
-          <div className="rounded-full border border-border bg-muted/40 p-1">
+          <div className="rounded-full border border-border bg-muted/50 p-1 shadow-sm">
             <button
               type="button"
               onClick={() => setActiveTab('today')}
               className={[
                 'px-4 py-2 text-sm rounded-full transition-all',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 activeTab === 'today'
-                  ? 'bg-background shadow-sm text-foreground'
+                  ? 'bg-background shadow text-foreground'
                   : 'text-muted-foreground hover:text-foreground',
               ].join(' ')}
             >
@@ -141,8 +122,9 @@ export default function UserMealsPage() {
               onClick={() => setActiveTab('all')}
               className={[
                 'px-4 py-2 text-sm rounded-full transition-all',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 activeTab === 'all'
-                  ? 'bg-background shadow-sm text-foreground'
+                  ? 'bg-background shadow text-foreground'
                   : 'text-muted-foreground hover:text-foreground',
               ].join(' ')}
             >
@@ -198,16 +180,13 @@ function MealCard({
 }) {
   const totalTime = (assignment.meal.prepTime ?? 0) + (assignment.meal.cookTime ?? 0);
 
-  const fallback = `https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60`;
-  const imageSrc = assignment.meal.imageUrl || fallback;
+  const fallback =
+    'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
-  const tags = assignment.meal.tags
-    ? assignment.meal.tags
-        .split(',')
-        .map(t => t.trim())
-        .filter(Boolean)
-        .slice(0, 2)
-    : [];
+  const imageSrc = assignment.meal.imageUrl?.trim() ? assignment.meal.imageUrl : fallback;
+
+  const subtitleLeft = `${getDayName(assignment.dayOfWeek)} • ${assignment.mealPlan.name}`;
+  const subtitleRight = assignment.scheduledTime ? assignment.scheduledTime : null;
 
   return (
     <div
@@ -216,93 +195,74 @@ function MealCard({
       onClick={onOpen}
       onKeyDown={e => (e.key === 'Enter' ? onOpen() : null)}
       className={[
-        'group overflow-hidden rounded-2xl border border-border bg-card',
+        'group overflow-hidden rounded-3xl border border-border bg-card',
         'transition-all hover:-translate-y-[1px] hover:shadow-md active:translate-y-0',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       ].join(' ')}
     >
-      {/* Image */}
-      <div className="hidden md:block">
-        <div className="relative h-40 w-full">
-          <Image
-            src={imageSrc}
-            alt={assignment.meal.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 33vw"
-            priority={false}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-            <span className="rounded-full bg-black/40 px-2.5 py-1 text-[11px] text-white backdrop-blur">
-              {getDayName(assignment.dayOfWeek)} • {assignment.mealPlan.name}
+      {/* Image (always) */}
+      <div className="relative h-44 w-full">
+        <Image
+          src={imageSrc}
+          alt={assignment.meal.name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority={false}
+        />
+
+        {/* iOS-like soft overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
+        {/* Top-right tiny icon */}
+        <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-2xl bg-black/35 backdrop-blur">
+          <ChefHat size={16} className="text-white/90" />
+        </div>
+
+        {/* Bottom chips */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+          <span className="truncate rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
+            {subtitleLeft}
+          </span>
+
+          {subtitleRight ? (
+            <span className="shrink-0 rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
+              {subtitleRight}
             </span>
-            {assignment.scheduledTime ? (
-              <span className="rounded-full bg-black/40 px-2.5 py-1 text-[11px] text-white backdrop-blur">
-                {assignment.scheduledTime}
-              </span>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </div>
 
-      {/* Content */}
+      {/* Minimal content */}
       <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate text-[15px] font-semibold text-foreground group-hover:text-primary transition-colors">
-              {assignment.meal.name}
-            </h3>
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{assignment.meal.description}</p>
-          </div>
+        <div className="min-w-0">
+          <h3 className="truncate text-[15px] font-semibold text-foreground">
+            {assignment.meal.name}
+          </h3>
 
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/40">
-            <ChefHat size={16} className="text-muted-foreground" />
-          </div>
+          {assignment.meal.description ? (
+            <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+              {assignment.meal.description}
+            </p>
+          ) : null}
         </div>
 
-        {/* Meta row */}
-        <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <Clock size={12} />
-            {totalTime}m
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Users size={12} />
-            {assignment.meal.servings}
-          </span>
-          <span className="ml-auto rounded-full border border-border bg-muted/30 px-2 py-1">
-            {assignment.meal.difficulty}
-          </span>
-        </div>
-
-        {/* Tags */}
-        {tags.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {tags.map(tag => (
-              <span
-                key={tag}
-                className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        {/* CTA */}
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={e => {
-              e.stopPropagation();
-              onOpen();
-            }}
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
-          >
-            View details
-          </button>
+        {/* Only important meta */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <MetaChip icon={<Clock size={12} />} label={`${totalTime}m`} />
+          <MetaChip icon={<Users size={12} />} label={`${assignment.meal.servings} servings`} />
+          <MetaChip label={assignment.meal.difficulty} />
         </div>
       </div>
     </div>
+  );
+}
+
+function MetaChip({ icon, label }: { icon?: React.ReactNode; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2.5 py-1 text-[11px] text-muted-foreground">
+      {icon ? <span className="text-muted-foreground">{icon}</span> : null}
+      <span className="leading-none">{label}</span>
+    </span>
   );
 }
