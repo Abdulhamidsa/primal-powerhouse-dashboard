@@ -10,26 +10,29 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const pathname = url.pathname;
 
-  const subdomain = getSubdomainFromHostname(hostname); // "admin" | "app" | null
+  const subdomain = getSubdomainFromHostname(hostname);
 
-  // Allow static/auth endpoints
+  // Allow API + login
   if (isApiPath(pathname) || isLoginPath(pathname)) {
     return NextResponse.next();
   }
 
-  // SUBDOMAIN ENFORCEMENT
-  // admin.primalpowerhouse.com should not allow client routes
+  // ROOT redirect
+  if (pathname === '/') {
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  // admin.primalpowerhouse.com: only /admin/*
   if (subdomain === 'admin') {
-    // If someone tries to access anything that's not /admin/* on admin subdomain, redirect to /login
     if (!pathname.startsWith('/admin')) {
       url.pathname = '/login';
       return NextResponse.redirect(url);
     }
   }
 
-  // app.primalpowerhouse.com should not allow admin routes
-  if (subdomain === 'app' || subdomain === null) {
-    // block /admin on app/main
+  // app.primalpowerhouse.com: block /admin/*
+  if (subdomain === 'app' || subdomain === 'main' || subdomain === 'unknown') {
     if (pathname.startsWith('/admin')) {
       url.pathname = '/login';
       return NextResponse.redirect(url);
