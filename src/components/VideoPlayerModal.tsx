@@ -27,7 +27,7 @@ export default function VideoPlayerModal({ isOpen, onClose, video, onComplete }:
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle different video URL formats
   const getVideoSource = (url: string) => {

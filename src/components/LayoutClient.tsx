@@ -12,12 +12,6 @@ export default function LayoutClient() {
 
   useEffect(() => {
     setShow(true);
-
-    const t = setTimeout(() => {
-      setShow(false);
-    }, 1000); // 1 second
-
-    return () => clearTimeout(t);
   }, [pathname]);
 
   return (

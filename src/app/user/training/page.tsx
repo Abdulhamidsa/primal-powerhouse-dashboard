@@ -46,7 +46,7 @@ function Segmented({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="inline-flex rounded-2xl border border-border bg-card/60 backdrop-blur-xl p-1">
+    <div className="inline-flex max-w-full overflow-x-auto no-scrollbar rounded-2xl border border-border bg-card/60 backdrop-blur-xl p-1">
       {options.map(opt => {
         const active = opt.value === value;
         return (
@@ -55,7 +55,7 @@ function Segmented({
             type="button"
             onClick={() => onChange(opt.value)}
             className={[
-              'px-3 py-1.5 text-sm font-medium rounded-xl transition-all',
+              'shrink-0 px-3 py-1.5 text-sm font-medium rounded-xl transition-all whitespace-nowrap',
               active ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground',
             ].join(' ')}
           >
@@ -70,7 +70,7 @@ function Segmented({
 function Thumb({ src, alt }: { src?: string; alt: string }) {
   if (src) {
     return (
-      <div className="relative h-16 w-24 overflow-hidden rounded-2xl border border-border bg-muted">
+      <div className="relative h-16 w-24 sm:h-16 sm:w-24 overflow-hidden rounded-2xl border border-border bg-muted">
         <Image src={src} alt={alt} fill sizes="96px" className="object-cover" />
       </div>
     );
@@ -170,29 +170,31 @@ export default function UserTrainingPage() {
   }, [assignments, selectedTag]);
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="max-w-6xl mx-auto space-y-5">
-        {/* iOS-ish header */}
-        <div>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">My Training</h1>
-              <p className="text-sm text-muted-foreground">Your plan, clean and simple.</p>
-            </div>
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="space-y-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">My Training</h1>
+            <p className="text-sm text-muted-foreground">
+              Your plan, clean and simple{coachInfo?.name ? ` • Coach: ${coachInfo.name}` : ''}.
+            </p>
+          </div>
 
-            {allTags.length > 0 && (
+          {allTags.length > 0 && (
+            <div className="sm:shrink-0">
               <Segmented
                 value={selectedTag}
                 onChange={setSelectedTag}
-                options={[{ label: 'All', value: 'all' }, ...allTags.slice(0, 6).map(t => ({ label: t, value: t }))]}
+                options={[{ label: 'All', value: 'all' }, ...allTags.slice(0, 8).map(t => ({ label: t, value: t }))]}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Empty state */}
+        {/* Empty */}
         {filteredAssignments.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+          <div className="rounded-2xl border border-border bg-card p-8 sm:p-10 text-center">
             <p className="text-sm text-muted-foreground">No videos assigned yet</p>
           </div>
         ) : (
@@ -209,11 +211,12 @@ export default function UserTrainingPage() {
                     'transition-all hover:shadow-md hover:border-border/70',
                   ].join(' ')}
                 >
-                  <div className="flex gap-4">
+                  {/* Make it stack on very small screens */}
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       type="button"
                       onClick={() => openVideoModal(assignment)}
-                      className="shrink-0"
+                      className="shrink-0 self-start"
                       aria-label={`Open ${assignment.video.title}`}
                     >
                       <Thumb src={assignment.video.thumbnailUrl} alt={assignment.video.title} />
@@ -222,7 +225,7 @@ export default function UserTrainingPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {dateLabel}
                             {timeLabel ? <span className="ml-2">• {timeLabel}</span> : null}
                           </p>
@@ -262,11 +265,11 @@ export default function UserTrainingPage() {
                         )}
                       </div>
 
-                      {/* actions */}
-                      <div className="mt-3 flex items-center gap-2">
+                      {/* actions: stack on phone */}
+                      <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2">
                         <button
                           onClick={() => openVideoModal(assignment)}
-                          className="px-4 py-2 rounded-2xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                          className="w-full sm:w-auto px-4 py-2 rounded-2xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
                         >
                           Watch
                         </button>
@@ -274,7 +277,7 @@ export default function UserTrainingPage() {
                         {!assignment.isCompleted && (
                           <button
                             onClick={() => markVideoCompleted(assignment.id)}
-                            className="px-4 py-2 rounded-2xl border border-border bg-background/50 text-sm text-foreground hover:bg-muted transition-colors"
+                            className="w-full sm:w-auto px-4 py-2 rounded-2xl border border-border bg-background/50 text-sm text-foreground hover:bg-muted transition-colors"
                           >
                             Mark done
                           </button>
@@ -303,6 +306,16 @@ export default function UserTrainingPage() {
           />
         )}
       </div>
+
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
