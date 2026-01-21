@@ -42,7 +42,7 @@ export default function UserMealsPage() {
   const router = useRouter();
   const [todaysMeals, setTodaysMeals] = useState<Record<string, MealAssignment | undefined>>({});
   const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
-  const [activeTab, setActiveTab] = useState<Tab>('today');
+  const [activeTab, setActiveTab] = useState<Tab>('all');
 
   useEffect(() => {
     fetchTodaysMeals();
