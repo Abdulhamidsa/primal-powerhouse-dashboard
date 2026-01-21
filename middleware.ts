@@ -54,8 +54,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Block admin routes on user domain
-    if (url.pathname.startsWith('/admin')) {
+    // Block admin routes on user domain, but allow admin login
+    if (url.pathname.startsWith('/admin') && url.pathname !== '/admin/login') {
       url.pathname = '/user/login';
       return NextResponse.redirect(url);
     }
