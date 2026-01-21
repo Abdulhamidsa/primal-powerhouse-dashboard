@@ -1,12 +1,5 @@
 const CACHE_NAME = 'primal-powerhouse-v2';
-const PRECACHE_URLS = [
-  '/login',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-512-maskable.png',
-  '/favicon.ico',
-];
+const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -45,7 +38,7 @@ self.addEventListener('fetch', event => {
           const fresh = await fetch(req);
           return fresh;
         } catch {
-          const cached = await caches.match('/login');
+          const cached = await caches.match(req);
           return cached || new Response('Offline', { status: 503 });
         }
       })()
@@ -55,6 +48,11 @@ self.addEventListener('fetch', event => {
 
   // Do not cache API by default (safer)
   if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Do not cache login/auth pages
+  if (url.pathname.includes('/login') || url.pathname.includes('/register')) {
     return;
   }
 
@@ -94,5 +92,5 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/login'));
+  event.waitUntil(clients.openWindow('/user/dashboard'));
 });
