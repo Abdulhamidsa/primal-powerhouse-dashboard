@@ -4,6 +4,7 @@ import PWAInstaller from '@/components/PWAInstaller';
 import InstallPrompt from '@/components/InstallPrompt';
 // import LayoutClient from '@/components/LayoutClient';
 import { Metadata } from 'next/types';
+import { SwrProvider } from '@/providers/swr-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -57,7 +58,7 @@ export default function RootLayout({
         {/* <LayoutClient /> */}
         <PWAInstaller />
         <InstallPrompt />
-        {children}
+        <SwrProvider>{children}</SwrProvider>
       </body>
     </html>
   );
