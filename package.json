@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "node scripts/setup-prisma-provider.js && next dev --turbo",
     "build": "node scripts/setup-prisma-provider.js && prisma generate && next build",
     "deploy": "node scripts/setup-prisma-provider.js && prisma generate && prisma migrate deploy",
     "start": "next start",
@@ -12,7 +12,7 @@
     "db:push": "node scripts/setup-prisma-provider.js && prisma db push",
     "db:migrate": "node scripts/setup-prisma-provider.js && prisma migrate deploy",
     "db:seed": "npx tsx prisma/seed.ts",
-    "postinstall": "node scripts/setup-prisma-provider.js && prisma generate",
+    "postinstall": "prisma generate",
     "type-check": "tsc --noEmit",
     "build:local": "next build",
     "build:production": "pnpm run prepare:prod && next build",
