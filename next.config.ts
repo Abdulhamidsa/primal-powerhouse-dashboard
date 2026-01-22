@@ -1,5 +1,6 @@
 // next.config.ts
 import type { NextConfig } from 'next';
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
@@ -25,16 +26,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
-
-  webpack: (config: any, { isServer }: { isServer: boolean }) => {
-    if (!isServer) {
-      config.resolve = config.resolve || {};
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-      };
-    }
-    return config;
   },
 };
 
