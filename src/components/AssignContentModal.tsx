@@ -10,20 +10,20 @@ const { useState, useEffect } = React;
 
 interface AssignContentModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId: string;
   clientName: string;
   type: 'videos' | 'meals';
-  onAssignmentComplete: () => void;
+  onAssignmentCompleteAction: () => void;
 }
 
 export default function AssignContentModal({
   isOpen,
-  onClose,
+  onCloseAction,
   clientId,
   clientName,
   type,
-  onAssignmentComplete,
+  onAssignmentCompleteAction,
 }: AssignContentModalProps) {
   const [content, setContent] = useState<Video[] | Meal[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -140,8 +140,8 @@ export default function AssignContentModal({
         });
 
         if (response.ok) {
-          onAssignmentComplete();
-          onClose();
+          onAssignmentCompleteAction();
+          onCloseAction();
         } else {
           console.error('Failed to assign videos');
         }
@@ -169,8 +169,8 @@ export default function AssignContentModal({
         });
 
         if (response.ok) {
-          onAssignmentComplete();
-          onClose();
+          onAssignmentCompleteAction();
+          onCloseAction();
         } else {
           console.error('Failed to assign meals');
         }
@@ -234,9 +234,9 @@ export default function AssignContentModal({
     return (
       <IntegratedMealAssignmentModal
         isOpen={isOpen && type === 'meals'}
-        onCloseAction={onClose}
+        onCloseAction={onCloseAction}
         clientId={clientId}
-        onAssignedAction={onAssignmentComplete}
+        onAssignedAction={onAssignmentCompleteAction}
       />
     );
   }
@@ -258,7 +258,7 @@ export default function AssignContentModal({
               Assign {type === 'videos' ? 'Videos' : 'Meals'} to {clientName}
             </h2>
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,7 +481,7 @@ export default function AssignContentModal({
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-6 py-3 rounded-xl hover:bg-opacity-10 transition-all font-medium"
                 style={{
                   color: 'var(--color-text)',
