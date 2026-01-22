@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/setup-prisma-provider.js && next dev --turbo",
-    "build": "node scripts/setup-prisma-provider.js && prisma generate && next build",
-    "deploy": "node scripts/setup-prisma-provider.js && prisma generate && prisma migrate deploy",
+    "build": "prisma generate && next build",
+    "deploy": "prisma generate && prisma migrate deploy",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "node scripts/setup-prisma-provider.js && prisma generate",
