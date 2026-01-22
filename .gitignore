@@ -116,9 +116,9 @@ update-*.js
 assign-*.js
 clear-*.js
 deploy-*.js
-setup-*.js
 scripts/
 !scripts/prepare-production.js
+!scripts/setup-prisma-provider.js
 
 # Documentation (keep only essential ones)
 *.md
