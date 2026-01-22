@@ -422,7 +422,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Add Client Modal */}
-      <NewAddClientModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onClientAdded={fetchClients} />
+      <NewAddClientModal isOpen={showAddModal} onCloseAction={() => setShowAddModal(false)} onClientAddedAction={fetchClients} />
 
       {/* Edit Motivational Message Modal */}
     </div>
