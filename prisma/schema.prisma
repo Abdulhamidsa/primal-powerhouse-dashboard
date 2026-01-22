@@ -7,8 +7,7 @@ generator client {
 }
 
 datasource db {
-  // Auto-configured by setup-prisma-provider.js based on DATABASE_URL
-  // LOCAL: sqlite (file:./dev.db) | PRODUCTION: postgresql://...
+  // SQLite everywhere: local dev & Vercel production
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
