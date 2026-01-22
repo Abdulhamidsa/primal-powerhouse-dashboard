@@ -3,6 +3,12 @@ export type ApiError = {
   status: number;
 };
 
+type ErrorBody = {
+  message?: string;
+  error?: string;
+  details?: string;
+};
+
 export async function fetcher<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
@@ -15,14 +21,24 @@ export async function fetcher<T>(url: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     let message = 'Request failed';
-    try {
-      const data = await res.json();
-      if (data?.message) message = data.message;
-    } catch {}
 
-    throw { message, status: res.status };
+    try {
+      const data = (await res.json()) as ErrorBody;
+      message = data.message || data.error || message;
+      if (data.details) message = `${message}: ${data.details}`;
+    } catch {
+      try {
+        const text = await res.text();
+        if (text) message = text;
+      } catch {}
+    }
+
+    throw { message, status: res.status } satisfies ApiError;
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
   }
 
   return (await res.json()) as T;
 }
-
