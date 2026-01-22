@@ -7,9 +7,12 @@ generator client {
 }
 
 datasource db {
-  // SQLite everywhere: local dev & Vercel production
-  provider = "sqlite"
+  // Auto-detect provider from DATABASE_URL:
+  // - LOCAL: file:./dev.db → SQLite
+  // - VERCEL: postgres://... → PostgreSQL
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model User {
