@@ -14,6 +14,19 @@ const eslintConfig = [
   {
     rules: {
       'prettier/prettier': 'warn',
+
+      // Disable base rule to avoid duplicate warnings
+      'no-unused-vars': 'off',
+
+      // TypeScript-aware unused checks
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
 ];

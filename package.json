@@ -12,7 +12,6 @@
     "db:push": "node scripts/setup-prisma-provider.js && prisma db push",
     "db:migrate": "node scripts/setup-prisma-provider.js && prisma migrate deploy",
     "db:seed": "npx tsx prisma/seed.ts",
-    "postinstall": "prisma generate",
     "type-check": "tsc --noEmit",
     "build:local": "next build",
     "build:production": "pnpm run prepare:prod && next build",
