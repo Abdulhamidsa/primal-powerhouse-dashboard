@@ -7,8 +7,8 @@ generator client {
 }
 
 datasource db {
-  // LOCAL development: sqlite (file:./dev.db)
-  // PRODUCTION: Change provider to "postgresql" and update DATABASE_URL
+  // Auto-configured by setup-prisma-provider.js based on DATABASE_URL
+  // LOCAL: sqlite (file:./dev.db) | PRODUCTION: postgresql://...
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
