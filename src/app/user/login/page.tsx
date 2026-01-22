@@ -1,28 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function UserLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState('');
+
   const router = useRouter();
+
+  const canSubmit = useMemo(() => {
+    return email.trim().length > 0 && password.trim().length > 0 && !loading;
+  }, [email, password, loading]);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/user/data', { credentials: 'include' });
-        if (response.ok) router.push('/user/dashboard');
-      } catch {}
+        if (response.ok) {
+          router.push('/user/dashboard');
+          return;
+        }
+      } catch {
+      } finally {
+        setCheckingAuth(false);
+      }
     };
+
     checkAuth();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) return;
+
     setLoading(true);
     setError('');
 
@@ -34,10 +52,13 @@ export default function UserLogin() {
         body: JSON.stringify({ email, password, rememberMe }),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {}
 
       if (!response.ok) {
-        const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error || 'Login failed';
+        const errorMessage = data?.details ? `${data?.error}: ${data?.details}` : data?.error || 'Login failed';
         throw new Error(errorMessage);
       }
 
@@ -50,37 +71,128 @@ export default function UserLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full space-y-8 p-8">
-        {/* ... */}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* email + password */}
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="text-primary hover:underline">
-                Forgot your password?
-              </a>
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md">
+        <div className="rounded-3xl border border-border bg-card/80 backdrop-blur p-6 sm:p-8 shadow-sm">
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-semibold text-foreground">Welcome back</h1>
+            <p className="text-sm text-muted-foreground">Sign in to continue to your dashboard</p>
           </div>
 
-          {/* submit */}
-        </form>
+          {checkingAuth ? (
+            <div className="mt-8 space-y-4">
+              <div className="h-12 rounded-xl bg-muted animate-pulse" />
+              <div className="h-12 rounded-xl bg-muted animate-pulse" />
+              <div className="h-11 rounded-xl bg-muted animate-pulse" />
+            </div>
+          ) : (
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="email" className="sr-only">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="Email"
+                    className="
+                      w-full rounded-xl border border-border bg-background
+                      px-4 py-3 text-base text-foreground
+                      placeholder:text-muted-foreground
+                      focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
+                      transition
+                    "
+                  />
+                </div>
+
+                <div className="relative">
+                  <label htmlFor="password" className="sr-only">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="
+                      w-full rounded-xl border border-border bg-background
+                      px-4 py-3 pr-14 text-base text-foreground
+                      placeholder:text-muted-foreground
+                      focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
+                      transition
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="
+                      absolute right-2 top-1/2 -translate-y-1/2
+                      rounded-lg px-2 py-1 text-sm
+                      text-muted-foreground hover:text-foreground
+                      transition
+                    "
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3">
+                    <p className="text-sm text-destructive">{error}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm text-foreground select-none">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  Remember me
+                </label>
+
+                <a href="#" className="text-sm text-primary hover:underline underline-offset-4">
+                  Forgot password?
+                </a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="
+                  w-full rounded-xl px-4 py-3 text-base font-medium
+                  bg-primary text-primary-foreground
+                  hover:opacity-95
+                  disabled:opacity-60 disabled:cursor-not-allowed
+                  transition
+                "
+              >
+                {loading ? 'Signing in…' : 'Sign in'}
+              </button>
+
+              <p className="text-center text-sm text-muted-foreground">By continuing, you agree to the app policies.</p>
+            </form>
+          )}
+        </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">Trouble signing in? Contact support.</p>
       </div>
     </div>
   );

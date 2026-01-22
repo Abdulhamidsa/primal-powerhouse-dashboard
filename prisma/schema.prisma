@@ -7,9 +7,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  // LOCAL development: sqlite (file:./dev.db)
+  // PRODUCTION: Change provider to "postgresql" and update DATABASE_URL
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-  relationMode = "prisma"
 }
 
 model User {
