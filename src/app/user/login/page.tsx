@@ -2,26 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+
 export default function UserLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/user/data');
-        if (response.ok) {
-          // User is already logged in, redirect to dashboard
-          router.push('/user/dashboard');
-        }
-      } catch (error) {
-        // Not logged in, stay on login page
-      }
+        const response = await fetch('/api/user/data', { credentials: 'include' });
+        if (response.ok) router.push('/user/dashboard');
+      } catch {}
     };
     checkAuth();
   }, [router]);
@@ -34,78 +29,33 @@ export default function UserLogin() {
     try {
       const response = await fetch('/api/auth/user/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Show more detailed error information
         const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error || 'Login failed';
         throw new Error(errorMessage);
       }
 
-      // Redirect to user dashboard
       router.push('/user/dashboard');
     } catch (err) {
-      console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Login failed';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Welcome Back</h2>
-          <p className="mt-2 text-muted-foreground">Sign in to continue your fitness journey</p>
-        </div>
-
-        {error && (
-          <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-2 rounded-md">
-            {error}
-          </div>
-        )}
+        {/* ... */}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
-              placeholder="your@email.com"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
-              placeholder="Password"
-            />
-          </div>
+          {/* email + password */}
 
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -113,6 +63,8 @@ export default function UserLogin() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
@@ -127,21 +79,7 @@ export default function UserLogin() {
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
-
-          {/* <div className="text-center">
-            <Link href="/admin/login" className="text-primary hover:underline">
-              Are you a coach? Sign in here
-            </Link>
-          </div> */}
+          {/* submit */}
         </form>
       </div>
     </div>

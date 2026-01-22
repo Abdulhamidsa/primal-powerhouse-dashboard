@@ -40,18 +40,19 @@ export class AuthService {
     }
   }
 
-  static async setAuthCookie(payload: AuthTokenPayload): Promise<void> {
-    const token = this.generateToken(payload);
-    const cookieStore = await cookies();
+  static async setAuthCookie(payload: AuthTokenPayload, rememberMe: boolean): Promise<void> {
+  const token = this.generateToken(payload);
+  const cookieStore = await cookies();
 
-    cookieStore.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-  }
+  cookieStore.set('auth-token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    ...(rememberMe ? { maxAge: 60 * 60 * 24 * 7 } : {}),
+  });
+}
+
 
   static async getAuthCookie(): Promise<string | null> {
     const cookieStore = await cookies();
