@@ -1,34 +1,35 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const compat = new FlatCompat({ baseDirectory: __dirname });
 
-const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+export default [
+  ...compat.extends('next/core-web-vitals', 'prettier'),
+
   {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        project: true,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
     rules: {
-      'prettier/prettier': 'warn',
-
-      // Disable base rule to avoid duplicate warnings
       'no-unused-vars': 'off',
-
-      // TypeScript-aware unused checks
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          ignoreRestSiblings: true,
-        },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
     },
   },
 ];
-
-export default eslintConfig;

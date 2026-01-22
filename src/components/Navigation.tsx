@@ -212,7 +212,7 @@ export default function Navigation({
         <header className="lg:hidden flex items-center justify-center p-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
           <div className="flex items-center space-x-2">
             <Link href={dashboardPath} className="w-20 h-16 rounded-lg flex items-center justify-center cursor-pointer">
-              <Image src="/logo.png" alt="Logo" width={100} height={80} />
+              <Image src="/logo.png" alt="Logo" width={100} height={100} />
             </Link>
           </div>
         </header>
