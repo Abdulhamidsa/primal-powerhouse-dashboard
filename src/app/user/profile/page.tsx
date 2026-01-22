@@ -241,7 +241,7 @@ export default function UserProfilePage() {
             </button>
           </SettingsGroup>
 
-          <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+          <FeedbackModal isOpen={isFeedbackOpen} onCloseAction={() => setIsFeedbackOpen(false)} />
         </div>
       </div>
     </div>
