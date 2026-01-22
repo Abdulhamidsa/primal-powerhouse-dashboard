@@ -283,3 +283,6 @@ Icon
 .directory
 .Trash-*
 .nfs*
+
+.vercel
+.env*.local

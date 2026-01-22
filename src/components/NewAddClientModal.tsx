@@ -30,8 +30,8 @@ import {
 
 interface AddClientModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onClientAdded: () => void;
+  onCloseAction: () => void;
+  onClientAddedAction: () => void;
 }
 
 interface Credentials {
@@ -40,7 +40,7 @@ interface Credentials {
   clientName: string;
 }
 
-export default function NewAddClientModal({ isOpen, onClose, onClientAdded }: AddClientModalProps) {
+export default function NewAddClientModal({ isOpen, onCloseAction, onClientAddedAction }: AddClientModalProps) {
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function NewAddClientModal({ isOpen, onClose, onClientAdded }: Ad
         });
       }
 
-      onClientAdded();
+      onClientAddedAction();
     } catch (error: any) {
       console.error('Error creating client:', error);
       setErrors({
@@ -149,7 +149,7 @@ export default function NewAddClientModal({ isOpen, onClose, onClientAdded }: Ad
 
   const handleCredentialsClose = () => {
     setCredentials(null);
-    onClose();
+    onCloseAction();
     resetForm();
   };
 
@@ -327,7 +327,7 @@ export default function NewAddClientModal({ isOpen, onClose, onClientAdded }: Ad
       )}
 
       {/* Main Add Client Modal */}
-      <Dialog open={isOpen && !credentials} onOpenChange={onClose}>
+      <Dialog open={isOpen && !credentials} onOpenChange={onCloseAction}>
         <DialogContent
           className="max-w-4xl p-0 overflow-hidden"
           style={{
@@ -845,7 +845,7 @@ export default function NewAddClientModal({ isOpen, onClose, onClientAdded }: Ad
               <div className="flex gap-4">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={onCloseAction}
                   className="px-6 py-3 border rounded-lg"
                   style={{
                     background: 'var(--color-bg-alt)',

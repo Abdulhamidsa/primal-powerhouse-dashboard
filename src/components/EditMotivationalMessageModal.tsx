@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 
 interface EditMotivationalMessageModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   client: {
     id: string;
     name: string;
@@ -14,7 +14,7 @@ interface EditMotivationalMessageModalProps {
   };
 }
 
-export default function EditMotivationalMessageModal({ isOpen, onClose, client }: EditMotivationalMessageModalProps) {
+export default function EditMotivationalMessageModal({ isOpen, onCloseAction, client }: EditMotivationalMessageModalProps) {
   const [message, setMessage] = useState(client.motivationalMessage || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,7 +40,7 @@ export default function EditMotivationalMessageModal({ isOpen, onClose, client }
         throw new Error('Failed to update message');
       }
 
-      onClose();
+      onCloseAction();
     } catch (err) {
       setError('Failed to update motivational message');
     } finally {
@@ -55,7 +55,7 @@ export default function EditMotivationalMessageModal({ isOpen, onClose, client }
       <div className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-2xl font-bold text-foreground">Edit Motivational Message</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onCloseAction} className="text-muted-foreground hover:text-foreground transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -90,7 +90,7 @@ export default function EditMotivationalMessageModal({ isOpen, onClose, client }
           <div className="flex gap-3 justify-end pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={onCloseAction}
               className="px-6 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
               disabled={loading}
             >

@@ -240,7 +240,7 @@ export default function ClientProfilePage() {
       {selectedClient && (
         <EditMotivationalMessageModal
           isOpen={showMessageModal}
-          onClose={() => {
+          onCloseAction={() => {
             setShowMessageModal(false);
             setSelectedClient(null);
           }}
@@ -251,11 +251,11 @@ export default function ClientProfilePage() {
       {client && (
         <AssignContentModal
           isOpen={showAssignModal}
-          onClose={() => setShowAssignModal(false)}
+          onCloseAction={() => setShowAssignModal(false)}
           clientId={clientId}
           clientName={client.name}
           type={assignModalType}
-          onAssignmentComplete={() => {
+          onAssignmentCompleteAction={() => {
             if (assignModalType === 'videos') fetchVideoAssignments();
             else fetchMealAssignments();
           }}
