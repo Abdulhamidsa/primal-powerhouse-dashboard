@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import Image from 'next/image';
 import { Clock, Users, ChefHat } from 'lucide-react';
+import type { ApiError } from '@/lib/fetcher';
 
 interface MealAssignment {
   id: string;
@@ -40,36 +42,22 @@ const MEAL_TYPES = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
 
 export default function UserMealsPage() {
   const router = useRouter();
-  const [todaysMeals, setTodaysMeals] = useState<Record<string, MealAssignment | undefined>>({});
-  const [allMealAssignments, setAllMealAssignments] = useState<MealAssignment[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>('all');
 
-  useEffect(() => {
-    fetchTodaysMeals();
-    fetchAllMealAssignments();
-  }, []);
+  const {
+    data: todaysMeals,
+    error: todayError,
+    isLoading: todayLoading,
+  } = useSWR<Record<string, MealAssignment | undefined>, ApiError>('/api/user/meals/today');
 
-  const fetchTodaysMeals = async () => {
-    try {
-      const response = await fetch('/api/user/meals/today');
-      if (!response.ok) return;
-      const data = await response.json();
-      setTodaysMeals(data);
-    } catch (error) {
-      console.error("Error fetching today's meals:", error);
-    }
-  };
+  const {
+    data: allMealAssignments,
+    error: allError,
+    isLoading: allLoading,
+  } = useSWR<MealAssignment[], ApiError>('/api/user/meals');
 
-  const fetchAllMealAssignments = async () => {
-    try {
-      const response = await fetch('/api/user/meals');
-      if (!response.ok) return;
-      const data = await response.json();
-      setAllMealAssignments(data);
-    } catch (error) {
-      console.error('Error fetching all meal assignments:', error);
-    }
-  };
+  const isLoading = activeTab === 'today' ? !todaysMeals && todayLoading : !allMealAssignments && allLoading;
+  const error = activeTab === 'today' ? todayError : allError;
 
   const getDayName = (dayOfWeek: number) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -79,8 +67,8 @@ export default function UserMealsPage() {
   const mealSections = useMemo(() => {
     const source =
       activeTab === 'today'
-        ? (Object.values(todaysMeals).filter(Boolean) as MealAssignment[])
-        : allMealAssignments;
+        ? (Object.values(todaysMeals ?? {}).filter(Boolean) as MealAssignment[])
+        : (allMealAssignments ?? []);
 
     return MEAL_TYPES
       .map(type => ({
@@ -95,14 +83,12 @@ export default function UserMealsPage() {
   return (
     <div className="px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl space-y-5">
-        {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">My Meals</h1>
             <p className="text-sm text-muted-foreground">Tap a meal for the full recipe.</p>
           </div>
 
-          {/* iOS segmented control */}
           <div className="rounded-full border border-border bg-muted/50 p-1 shadow-sm">
             <button
               type="button"
@@ -133,14 +119,24 @@ export default function UserMealsPage() {
           </div>
         </div>
 
-        {/* Empty */}
-        {mealSections.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+            <p className="text-sm text-muted-foreground">Loading meals…</p>
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+            <p className="text-sm text-destructive">Failed to load meals: {error.message}</p>
+          </div>
+        ) : null}
+
+        {!isLoading && !error && mealSections.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-10 text-center">
             <p className="text-sm text-muted-foreground">{emptyState}</p>
           </div>
         ) : null}
 
-        {/* Sections */}
         {mealSections.map(section => (
           <section key={section.type} className="space-y-3">
             <div className="flex items-end justify-between">
@@ -200,7 +196,6 @@ function MealCard({
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       ].join(' ')}
     >
-      {/* Image (always) */}
       <div className="relative h-44 w-full">
         <Image
           src={imageSrc}
@@ -210,21 +205,14 @@ function MealCard({
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           priority={false}
         />
-
-        {/* iOS-like soft overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-
-        {/* Top-right tiny icon */}
         <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-2xl bg-black/35 backdrop-blur">
           <ChefHat size={16} className="text-white/90" />
         </div>
-
-        {/* Bottom chips */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
           <span className="truncate rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
             {subtitleLeft}
           </span>
-
           {subtitleRight ? (
             <span className="shrink-0 rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
               {subtitleRight}
@@ -233,21 +221,14 @@ function MealCard({
         </div>
       </div>
 
-      {/* Minimal content */}
       <div className="p-4">
         <div className="min-w-0">
-          <h3 className="truncate text-[15px] font-semibold text-foreground">
-            {assignment.meal.name}
-          </h3>
-
+          <h3 className="truncate text-[15px] font-semibold text-foreground">{assignment.meal.name}</h3>
           {assignment.meal.description ? (
-            <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-              {assignment.meal.description}
-            </p>
+            <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{assignment.meal.description}</p>
           ) : null}
         </div>
 
-        {/* Only important meta */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <MetaChip icon={<Clock size={12} />} label={`${totalTime}m`} />
           <MetaChip icon={<Users size={12} />} label={`${assignment.meal.servings} servings`} />
