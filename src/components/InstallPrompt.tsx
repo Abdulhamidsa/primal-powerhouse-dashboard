@@ -49,11 +49,11 @@ export default function InstallPrompt() {
   }, []);
 
   useEffect(() => {
-    // If already running as installed app, never show prompt
     if (isInStandaloneMode()) {
       setInstalled(true);
       setVisible(false);
       setDeferredPrompt(null);
+      return;
     }
 
     const onInstalled = () => {
@@ -63,10 +63,7 @@ export default function InstallPrompt() {
     };
 
     window.addEventListener('appinstalled', onInstalled);
-
-    return () => {
-      window.removeEventListener('appinstalled', onInstalled);
-    };
+    return () => window.removeEventListener('appinstalled', onInstalled);
   }, []);
 
   useEffect(() => {
