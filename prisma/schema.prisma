@@ -1,18 +1,21 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for Primal Powerhouse
+// PostgreSQL + Hetzner ready
 
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  // Keep both to be safe across local/dev/prod
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  // Auto-configured by setup-prisma-provider.js based on DATABASE_URL
-  // LOCAL: file:./dev.db (SQLite) | VERCEL: postgres://... (PostgreSQL)
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
+
+/* =========================
+   MODELS
+========================= */
 
 model User {
   id        String   @id @default(cuid())
@@ -23,106 +26,107 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
-  meals    Meal[]
-  clients  Client[]
-  workouts Workout[]
-  videos   Video[]
+  meals     Meal[]
+  clients   Client[]
+  workouts  Workout[]
+  videos    Video[]
+  sessions  Session[]
 
   @@map("users")
 }
 
 model Client {
-  id                   String   @id @default(cuid())
-  name                 String
-  email                String   @unique
-  password             String?  // Optional for backward compatibility
-  phone                String?
-  avatar               String?
-  status               ClientStatus @default(ACTIVE)
-  joinDate             DateTime @default(now())
-  currentWeight        Float?
-  targetWeight         Float?
-  height               Float?
-  age                  Int?
-  activityLevel        ActivityLevel?
-  dietaryRestrictions  String? // JSON string
-  goals                String? // JSON string
-  notes                String?
-  motivationalMessage  String? // Custom motivational message for client dashboard
-  lastSession          DateTime?
-  nextSession          DateTime?
-  sessionsCompleted    Int      @default(0)
-  progressPhotos       String? // JSON string
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  name                String
+  email               String   @unique
+  password            String?
+  phone               String?
+  avatar              String?
+  status              ClientStatus @default(ACTIVE)
+  joinDate            DateTime @default(now())
+  currentWeight       Float?
+  targetWeight        Float?
+  height              Float?
+  age                 Int?
+  activityLevel       ActivityLevel?
+  dietaryRestrictions String?
+  goals               String?
+  notes               String?
+  motivationalMessage String?
+  lastSession         DateTime?
+  nextSession         DateTime?
+  sessionsCompleted   Int      @default(0)
+  progressPhotos      String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  // Relations
   coachId  String
   coach    User     @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  workouts Workout[]
-  mealPlans MealPlan[]
-  videoAssignments VideoAssignment[]
-  meals    Meal[] // Relation to personalized meals for this client
-  feedback Feedback[]
+
+  workouts          Workout[]
+  mealPlans         MealPlan[]
+  videoAssignments  VideoAssignment[]
+  meals             Meal[]
+  feedback          Feedback[]
+  sessions          Session[]
 
   @@map("clients")
 }
 
 model Meal {
-  id           String   @id @default(cuid())
-  name         String
-  type         MealType
-  calories     Float
-  protein      Float
-  carbs        Float
-  fat          Float
-  fiber        Float?
-  ingredients  String? // JSON string
-  instructions String? // JSON string
-  prepTime     Int?     // minutes
-  cookTime     Int?     // minutes
-  servings     Int      @default(1)
-  tags         String? // JSON string
-  imageUrl     String?
-  isPersonalized Boolean @default(false)
-  originalMealId String? // Reference to the original meal if this is a personalized copy
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  type            MealType
+  calories        Float
+  protein         Float
+  carbs           Float
+  fat             Float
+  fiber           Float?
+  ingredients     String?
+  instructions    String?
+  prepTime        Int?
+  cookTime        Int?
+  servings        Int      @default(1)
+  tags            String?
+  imageUrl        String?
+  isPersonalized  Boolean  @default(false)
+  originalMealId  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  // Relations
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  // Add relation to Client for personalized meals
-  clientId String? // Optional client ID for personalized meals
+
+  clientId String?
   client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   mealAssignments MealAssignment[]
 
   @@map("meals")
 }
 
 model Video {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  category    VideoCategory
-  difficulty  DifficultyLevel
-  duration    Int      // duration in seconds
-  videoUrl    String   // URL to video file or YouTube/Vimeo URL
-  thumbnailUrl String?
-  equipment   String? // JSON string for required equipment
-  muscleGroups String? // JSON string for target muscle groups
-  tags        String? // JSON string for tags
-  instructions String? // JSON string for exercise instructions
-  tips        String? // JSON string for tips and form cues
-  isPublic    Boolean @default(true)
-  viewCount   Int     @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  category      VideoCategory
+  difficulty    DifficultyLevel
+  duration      Int
+  videoUrl      String
+  thumbnailUrl  String?
+  equipment     String?
+  muscleGroups  String?
+  tags          String?
+  instructions  String?
+  tips          String?
+  isPublic      Boolean  @default(true)
+  viewCount     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  // Relations
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
   videoAssignments VideoAssignment[]
 
   @@map("videos")
@@ -132,56 +136,55 @@ model Workout {
   id             String   @id @default(cuid())
   date           DateTime
   type           WorkoutType
-  duration       Int      // minutes
-  exercises      String   // JSON string containing exercise data
+  duration       Int
+  exercises      String
   notes          String?
   caloriesBurned Float?
-  rating         Int?     // 1-5 rating
+  rating         Int?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // Relations
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  coachId  String
-  coach    User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
 
-    @@map("workouts")
+  coachId String
+  coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@map("workouts")
 }
 
 model MealPlan {
-  id         String    @id @default(cuid())
-  name       String    // e.g., "Week 1 Plan", "Weight Loss Plan"
-  startDate  DateTime
-  endDate    DateTime?
-  isActive   Boolean   @default(true)
-  notes      String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime?
+  isActive  Boolean  @default(true)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Relations
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+
   mealAssignments MealAssignment[]
 
   @@map("meal_plans")
 }
 
-model MealAssignment {
-  id           String   @id @default(cuid())
-  dayOfWeek    Int      // 0 = Sunday, 1 = Monday, etc.
-  mealType     MealType
-  portion      Float    @default(1.0) // serving size multiplier
-  scheduledTime String?  // Time in HH:MM format
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 
-  // Relations
+model MealAssignment {
+  id            String   @id @default(cuid())
+  dayOfWeek     Int
+  mealType      MealType
+  portion       Float    @default(1.0)
+  scheduledTime String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   mealPlanId String
   mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
-  
+
   mealId String
   meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
 
@@ -192,33 +195,35 @@ model VideoAssignment {
   id            String   @id @default(cuid())
   assignedDate  DateTime @default(now())
   dueDate       DateTime?
-  scheduledTime String?  // Time in HH:MM format
+  scheduledTime String?
   isCompleted   Boolean  @default(false)
   completedAt   DateTime?
   notes         String?
-  progress      Float    @default(0.0) // 0.0 to 100.0 percentage
+  progress      Float    @default(0.0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // Relations
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+
   videoId String
   video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@map("video_assignments")
 }
 
-// Enums
-
 model Session {
   id        String   @id @default(cuid())
+
   clientId  String
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   coachId   String
+  coach     User    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
   date      DateTime
   type      WorkoutType
-  duration  Int      // minutes
+  duration  Int
   status    SessionStatus @default(SCHEDULED)
   notes     String?
   createdAt DateTime @default(now())
@@ -231,13 +236,16 @@ model Feedback {
   id        String   @id @default(cuid())
   message   String
   clientId  String
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@map("feedback")
 }
 
-// Enums
+/* =========================
+   ENUMS
+========================= */
+
 enum Role {
   COACH
   ADMIN

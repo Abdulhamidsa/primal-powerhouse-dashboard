@@ -18,8 +18,11 @@ if (isServer) {
   };
 
   // Use existing instance if available (dev mode) or create a new one
-  prismaInstance = globalForPrisma.prisma ?? new PrismaClient();
-
+  prismaInstance =
+    globalForPrisma.prisma ??
+    new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    });
   // Save instance to global in development
   if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prismaInstance;
