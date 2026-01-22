@@ -2,49 +2,12 @@ import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
 import type { ApiError } from '@/lib/fetcher';
-
-export interface MealAssignment {
-  id: string;
-  mealType: string;
-  dayOfWeek: number;
-  portion: number;
-  scheduledTime?: string;
-  meal: {
-    id: string;
-    name: string;
-    description: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    ingredients: string;
-    instructions: string;
-    category: string;
-    difficulty: string;
-    prepTime: number;
-    cookTime: number;
-    servings: number;
-    tags: string;
-    imageUrl?: string;
-  };
-  mealPlan: {
-    name: string;
-  };
-}
-
-export type MealsTab = 'today' | 'all';
-
-const MEAL_TYPES = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
-type MealType = (typeof MEAL_TYPES)[number];
+import { MEAL_TYPES, MealAssignment, MealsTab, MealType } from '..';
 
 export function useUserMeals() {
   const [activeTab, setActiveTab] = useState<MealsTab>('all');
 
-  const todaySWR = useSWR<Record<string, MealAssignment | undefined>, ApiError>(
-    '/api/user/meals/today',
-    url => fetcher(url),
-    { revalidateOnFocus: true }
-  );
+  const todaySWR = useSWR<Record<string, MealAssignment | undefined>, ApiError>('/api/user/meals/today', url => fetcher(url), { revalidateOnFocus: true });
 
   const allSWR = useSWR<MealAssignment[], ApiError>('/api/user/meals', url => fetcher(url), {
     revalidateOnFocus: true,
