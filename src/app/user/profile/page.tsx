@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogOut, Mail, User, Phone, Ruler, Cake, Scale, ChevronRight } from 'lucide-react';
+import { LogOut, Mail, User, Phone, Ruler, Cake, Scale, ChevronRight, MessageSquare } from 'lucide-react';
+import { FeedbackModal } from '@/components/FeedbackModal';
 
 interface UserData {
   id: string;
@@ -93,6 +94,7 @@ function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: strin
 export default function UserProfilePage() {
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -212,6 +214,23 @@ export default function UserProfilePage() {
           <SettingsGroup>
             <button
               type="button"
+              onClick={() => setIsFeedbackOpen(true)}
+              className="w-full px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-muted/40 active:bg-muted/60"
+            >
+              <div className="flex items-center gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted/50">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Send Feedback</p>
+                  <p className="text-xs text-muted-foreground">Help us improve</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </button>
+            <div className="ml-16 h-px bg-border/60" />
+            <button
+              type="button"
               onClick={handleSignOut}
               className="w-full px-4 py-3 text-left text-sm font-semibold text-destructive hover:bg-destructive/5 active:bg-destructive/10"
             >
@@ -221,6 +240,8 @@ export default function UserProfilePage() {
               </div>
             </button>
           </SettingsGroup>
+
+          <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
         </div>
       </div>
     </div>
