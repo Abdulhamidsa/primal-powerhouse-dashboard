@@ -1,42 +1,13 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import useSWR from 'swr';
-import type { ApiError } from '@/lib/fetcher';
-
-interface UserData {
-  name: string;
-  motivationalMessage?: string;
-}
+import { useMotivationNotification } from '@/hooks/useMotivationNotification';
+import { useUserData } from '@/hooks/useUserData';
+import React from 'react';
 
 export default function UserDashboardPage() {
-  const prevMessageRef = useRef<string | null>(null);
+  const { user, error, isLoading } = useUserData();
 
-  const { data, error, isLoading } = useSWR<UserData, ApiError>('/api/user/data');
-
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!data) return;
-
-    const next = data.motivationalMessage ?? null;
-
-    if (
-      prevMessageRef.current &&
-      next &&
-      prevMessageRef.current !== next &&
-      'Notification' in window &&
-      Notification.permission === 'granted'
-    ) {
-      new Notification('New Message from Your Coach', { body: next });
-    }
-
-    prevMessageRef.current = next;
-  }, [data]);
+  useMotivationNotification(user?.motivationalMessage);
 
   if (isLoading) return <div>Loading…</div>;
 
@@ -51,8 +22,8 @@ export default function UserDashboardPage() {
 
   return (
     <div>
-      <h1>Hi, {data?.name?.split(' ')[0] || 'Member'}</h1>
-      <p>{data?.motivationalMessage || 'The only bad workout is the one that did not happen.'}</p>
+      <h1>Hi, {user?.name?.split(' ')[0] || 'Member'}</h1>
+      <p>{user?.motivationalMessage || 'The only bad workout is the one that did not happen.'}</p>
     </div>
   );
 }
