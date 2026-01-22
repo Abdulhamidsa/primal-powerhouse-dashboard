@@ -9,7 +9,7 @@
     "db:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
     "db:studio:dev": "dotenv -e .env.dev -- prisma studio",
     "db:studio:prod": "dotenv -e .env.prod -- prisma studio",
-    "build": "next build --turbo",
+    "build": "next build",
     "start": "next start --turbo",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "type-check": "tsc --noEmit"
