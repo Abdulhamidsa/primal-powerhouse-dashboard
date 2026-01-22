@@ -9,10 +9,6 @@ export type DashboardUser = {
   coach?: { name: string } | null;
   currentWeight?: number | null;
   goalWeight?: number | null;
-  stats: {
-    thisWeekVideos: number;
-    upcomingVideos: number;
-  };
 };
 
 export async function GET(request: NextRequest) {
@@ -24,40 +20,18 @@ export async function GET(request: NextRequest) {
 
   const clientId = user.userId;
 
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
-
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(endOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
-
   try {
-    const [client, thisWeekVideos, upcomingVideos] = await prisma.$transaction([
-      prisma.client.findUnique({
-        where: { id: clientId },
-        select: {
-          id: true,
-          name: true,
-          motivationalMessage: true,
-          currentWeight: true,
-          targetWeight: true,
-          coach: { select: { name: true } },
-        },
-      }),
-
-      prisma.videoAssignment.count({
-        where: {
-          clientId,
-          assignedDate: { gte: startOfWeek, lte: endOfWeek },
-        },
-      }),
-
-      prisma.videoAssignment.count({
-        where: { clientId, isCompleted: false },
-      }),
-    ]);
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: {
+        id: true,
+        name: true,
+        motivationalMessage: true,
+        currentWeight: true,
+        targetWeight: true,
+        coach: { select: { name: true } },
+      },
+    });
 
     if (!client) {
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
@@ -70,10 +44,6 @@ export async function GET(request: NextRequest) {
       coach: client.coach,
       currentWeight: client.currentWeight,
       goalWeight: client.targetWeight,
-      stats: {
-        thisWeekVideos,
-        upcomingVideos,
-      },
     };
 
     return NextResponse.json(payload);
