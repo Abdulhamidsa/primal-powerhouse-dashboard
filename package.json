@@ -8,7 +8,11 @@
     "db:migrate:dev": "dotenv -e .env.dev -- prisma migrate dev",
     "db:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
     "db:studio:dev": "dotenv -e .env.dev -- prisma studio",
-    "db:studio:prod": "dotenv -e .env.prod -- prisma studio"
+    "db:studio:prod": "dotenv -e .env.prod -- prisma studio",
+    "build": "next build --turbo",
+    "start": "next start --turbo",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/client": "6.17.1",
