@@ -6,6 +6,7 @@ import React from 'react';
 
 export default function UserDashboardPage() {
   const { user, error, isLoading } = useUserData();
+  console.log('User data:', user, 'Error:', error);
 
   useMotivationNotification(user?.motivationalMessage);
 

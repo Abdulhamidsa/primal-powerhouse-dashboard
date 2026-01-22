@@ -1,84 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
 import Image from 'next/image';
 import { Clock, Users, ChefHat } from 'lucide-react';
-import type { ApiError } from '@/lib/fetcher';
-
-interface MealAssignment {
-  id: string;
-  mealType: string;
-  dayOfWeek: number;
-  portion: number;
-  scheduledTime?: string;
-  meal: {
-    id: string;
-    name: string;
-    description: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    ingredients: string;
-    instructions: string;
-    category: string;
-    difficulty: string;
-    prepTime: number;
-    cookTime: number;
-    servings: number;
-    tags: string;
-    imageUrl?: string;
-  };
-  mealPlan: {
-    name: string;
-  };
-}
-
-type Tab = 'today' | 'all';
-
-const MEAL_TYPES = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
+import React from 'react';
+import { useUserMeals } from '@/hooks/useUserMeals';
 
 export default function UserMealsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>('all');
-
-  const {
-    data: todaysMeals,
-    error: todayError,
-    isLoading: todayLoading,
-  } = useSWR<Record<string, MealAssignment | undefined>, ApiError>('/api/user/meals/today');
-
-  const {
-    data: allMealAssignments,
-    error: allError,
-    isLoading: allLoading,
-  } = useSWR<MealAssignment[], ApiError>('/api/user/meals');
-
-  const isLoading = activeTab === 'today' ? !todaysMeals && todayLoading : !allMealAssignments && allLoading;
-  const error = activeTab === 'today' ? todayError : allError;
-
-  const getDayName = (dayOfWeek: number) => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return days[dayOfWeek];
-  };
-
-  const mealSections = useMemo(() => {
-    const source =
-      activeTab === 'today'
-        ? (Object.values(todaysMeals ?? {}).filter(Boolean) as MealAssignment[])
-        : (allMealAssignments ?? []);
-
-    return MEAL_TYPES
-      .map(type => ({
-        type,
-        items: source.filter(a => a.mealType?.toUpperCase() === type),
-      }))
-      .filter(section => section.items.length > 0);
-  }, [activeTab, todaysMeals, allMealAssignments]);
-
-  const emptyState = activeTab === 'today' ? 'No meals for today yet.' : 'No meals assigned yet.';
+  const { activeTab, setActiveTab, sections, isLoading, error, emptyState, getDayName } = useUserMeals();
 
   return (
     <div className="px-4 py-6 md:px-6">
@@ -131,13 +61,13 @@ export default function UserMealsPage() {
           </div>
         ) : null}
 
-        {!isLoading && !error && mealSections.length === 0 ? (
+        {!isLoading && !error && sections.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-10 text-center">
             <p className="text-sm text-muted-foreground">{emptyState}</p>
           </div>
         ) : null}
 
-        {mealSections.map(section => (
+        {sections.map(section => (
           <section key={section.type} className="space-y-3">
             <div className="flex items-end justify-between">
               <h2 className="text-lg font-semibold text-foreground">
@@ -170,14 +100,28 @@ function MealCard({
   getDayName,
   onOpen,
 }: {
-  assignment: MealAssignment;
+  assignment: {
+    id: string;
+    dayOfWeek: number;
+    scheduledTime?: string;
+    mealPlan: { name: string };
+    meal: {
+      id: string;
+      name: string;
+      description: string;
+      prepTime: number;
+      cookTime: number;
+      servings: number;
+      difficulty: string;
+      imageUrl?: string;
+    };
+  };
   getDayName: (d: number) => string;
   onOpen: () => void;
 }) {
   const totalTime = (assignment.meal.prepTime ?? 0) + (assignment.meal.cookTime ?? 0);
 
-  const fallback =
-    'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
+  const fallback = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
   const imageSrc = assignment.meal.imageUrl?.trim() ? assignment.meal.imageUrl : fallback;
 
