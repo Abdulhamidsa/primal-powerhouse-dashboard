@@ -28,6 +28,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure feedback table exists
+    try {
+      await prisma.$executeRaw`
+        CREATE TABLE IF NOT EXISTS "feedback" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "message" TEXT NOT NULL,
+          "clientId" TEXT NOT NULL,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "feedback_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "clients"("id") ON DELETE CASCADE ON UPDATE CASCADE
+        )
+      `;
+    } catch (tableError) {
+      // Table might already exist, continue
+      console.log('[FEEDBACK API] Table check completed');
+    }
+
     // Create feedback record
     const feedback = await prisma.feedback.create({
       data: {
