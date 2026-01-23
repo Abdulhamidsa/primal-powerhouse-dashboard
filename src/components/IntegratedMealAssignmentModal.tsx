@@ -1497,8 +1497,8 @@ export default function IntegratedMealAssignmentModal({
                     <span style={{ color: 'var(--color-accent)' }}>Important: Save Your Meal Plan</span>
                   </h4>
                   <p className="text-sm" style={{ color: 'var(--color-text)' }}>
-                    Your meal assignments will not be saved until you click the &quot;Create Meal Plan&quot; button below. Make
-                    sure all your meals are assigned correctly before saving.
+                    Your meal assignments will not be saved until you click the &quot;Create Meal Plan&quot; button
+                    below. Make sure all your meals are assigned correctly before saving.
                   </p>
                 </div>
 

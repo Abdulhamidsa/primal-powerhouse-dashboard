@@ -55,9 +55,7 @@ export default function EditAssignmentsModal({
       fetchAllContent();
       // Initialize selected items with current assignments
       const currentIds = currentAssignments.map(assignment =>
-        type === 'videos'
-          ? (assignment as VideoAssignment).videoId
-          : (assignment as MealAssignment).mealId
+        type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId
       );
       setSelectedItems(currentIds);
     } else {
@@ -101,9 +99,7 @@ export default function EditAssignmentsModal({
   });
 
   const handleItemToggle = (itemId: string) => {
-    setSelectedItems(prev =>
-      prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
-    );
+    setSelectedItems(prev => (prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]));
   };
 
   const formatDuration = (seconds: number): string => {
@@ -119,9 +115,7 @@ export default function EditAssignmentsModal({
     try {
       // Get current assignment IDs
       const currentIds = currentAssignments.map(assignment =>
-        type === 'videos'
-          ? (assignment as VideoAssignment).videoId
-          : (assignment as MealAssignment).mealId
+        type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId
       );
 
       // Find items to add and remove
@@ -131,15 +125,11 @@ export default function EditAssignmentsModal({
       // Remove assignments
       for (const itemId of toRemove) {
         const assignment = currentAssignments.find(a =>
-          type === 'videos'
-            ? (a as VideoAssignment).videoId === itemId
-            : (a as MealAssignment).mealId === itemId
+          type === 'videos' ? (a as VideoAssignment).videoId === itemId : (a as MealAssignment).mealId === itemId
         );
         if (assignment) {
           const endpoint =
-            type === 'videos'
-              ? `/api/video-assignments/${assignment.id}`
-              : `/api/meal-assignments/${assignment.id}`;
+            type === 'videos' ? `/api/video-assignments/${assignment.id}` : `/api/meal-assignments/${assignment.id}`;
           await fetch(endpoint, { method: 'DELETE' });
         }
       }
@@ -194,9 +184,7 @@ export default function EditAssignmentsModal({
   if (!isOpen) return null;
 
   const currentIds = currentAssignments.map(assignment =>
-    type === 'videos'
-      ? (assignment as VideoAssignment).videoId
-      : (assignment as MealAssignment).mealId
+    type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId
   );
 
   const toAdd = selectedItems.filter(id => !currentIds.includes(id));
@@ -229,12 +217,7 @@ export default function EditAssignmentsModal({
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -322,18 +305,8 @@ export default function EditAssignmentsModal({
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-1 ${isSelected ? (type === 'videos' ? 'border-purple-500 bg-purple-500' : 'border-green-500 bg-green-500') : 'border-gray-300'}`}
                       >
                         {isSelected && (
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
                       </div>
@@ -349,14 +322,10 @@ export default function EditAssignmentsModal({
                             </span>
                           )}
                           {willBeAdded && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                              Will Add
-                            </span>
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Will Add</span>
                           )}
                           {willBeRemoved && (
-                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                              Will Remove
-                            </span>
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Will Remove</span>
                           )}
                         </div>
 
@@ -379,9 +348,7 @@ export default function EditAssignmentsModal({
                         )}
 
                         {item.description && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                            {item.description}
-                          </p>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
                         )}
                       </div>
                     </div>
@@ -422,14 +389,7 @@ export default function EditAssignmentsModal({
                 {saving ? (
                   <>
                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path
                         className="opacity-75"
                         fill="currentColor"
@@ -441,12 +401,7 @@ export default function EditAssignmentsModal({
                 ) : (
                   <>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     Save Changes ({toAdd.length + toRemove.length})
                   </>

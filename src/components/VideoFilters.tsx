@@ -28,8 +28,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
     });
   };
 
-  const hasActiveFilters =
-    filters.category !== 'all' || filters.difficulty !== 'all' || filters.search !== '';
+  const hasActiveFilters = filters.category !== 'all' || filters.difficulty !== 'all' || filters.search !== '';
 
   return (
     <div className="bg-gradient-to-r from-white via-gray-50 to-white rounded-2xl shadow-sm border p-6 mb-8">
@@ -63,12 +62,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             )}
@@ -114,12 +108,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
             className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 font-medium shadow-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
             Clear All
           </button>
@@ -129,12 +118,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
       {/* Results Count & Active Filters */}
       <div className="flex flex-wrap items-center gap-3 mt-5 pt-5 border-t border-gray-100">
         <div className="flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-blue-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -160,12 +144,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
                     className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </span>
@@ -179,12 +158,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
                     className="hover:bg-purple-200 rounded-full p-0.5 transition-colors"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </span>
@@ -198,12 +172,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
                     className="hover:bg-green-200 rounded-full p-0.5 transition-colors"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </span>

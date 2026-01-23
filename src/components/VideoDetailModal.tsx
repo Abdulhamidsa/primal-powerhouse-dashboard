@@ -128,8 +128,7 @@ export default function VideoDetailModal({
               <h2 className="text-2xl font-bold mb-2">{video.title}</h2>
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <span className="flex items-center gap-1">
-                  {getCategoryIcon(video.category)}{' '}
-                  {video.category.charAt(0).toUpperCase() + video.category.slice(1)}
+                  {getCategoryIcon(video.category)} {video.category.charAt(0).toUpperCase() + video.category.slice(1)}
                 </span>
                 <span className="text-blue-200">•</span>
                 <span
@@ -151,12 +150,7 @@ export default function VideoDetailModal({
                   title="Assign to Clients"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   <span className="font-medium text-sm">Assign</span>
                 </button>
@@ -198,12 +192,7 @@ export default function VideoDetailModal({
                 className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
@@ -223,20 +212,10 @@ export default function VideoDetailModal({
                     allowFullScreen
                   />
                 ) : video.videoUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={video.videoUrl}
-                    controls
-                    autoPlay
-                    className="w-full h-full object-cover"
-                  />
+                  <video src={video.videoUrl} controls autoPlay className="w-full h-full object-cover" />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-white">
-                    <svg
-                      className="w-16 h-16 mb-4 opacity-50"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -260,12 +239,7 @@ export default function VideoDetailModal({
               {/* Description */}
               <div className="mt-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-blue-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -275,21 +249,14 @@ export default function VideoDetailModal({
                   </svg>
                   Description
                 </h3>
-                <p className="text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-4">
-                  {video.description}
-                </p>
+                <p className="text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-4">{video.description}</p>
               </div>
 
               {/* Instructions */}
               {video.instructions && video.instructions.length > 0 && (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -316,12 +283,7 @@ export default function VideoDetailModal({
               {video.tips && video.tips.length > 0 && (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-yellow-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -362,12 +324,7 @@ export default function VideoDetailModal({
               {/* Video Stats */}
               <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-blue-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -380,9 +337,7 @@ export default function VideoDetailModal({
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Duration</span>
-                    <span className="font-semibold text-gray-800">
-                      {formatDuration(video.duration)}
-                    </span>
+                    <span className="font-semibold text-gray-800">{formatDuration(video.duration)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Category</span>
@@ -412,12 +367,7 @@ export default function VideoDetailModal({
               {video.equipment && video.equipment.length > 0 && (
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -444,12 +394,7 @@ export default function VideoDetailModal({
               {video.muscleGroups && video.muscleGroups.length > 0 && (
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-purple-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -476,12 +421,7 @@ export default function VideoDetailModal({
               {video.tags && video.tags.length > 0 && (
                 <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-orange-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -513,12 +453,7 @@ export default function VideoDetailModal({
             <div className="bg-white rounded-2xl p-6 max-w-md w-full">
               <div className="text-center">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-6 h-6 text-red-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -546,14 +481,7 @@ export default function VideoDetailModal({
                     {isDeleting ? (
                       <>
                         <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path
                             className="opacity-75"
                             fill="currentColor"

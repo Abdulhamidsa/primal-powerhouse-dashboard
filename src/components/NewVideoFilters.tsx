@@ -13,11 +13,7 @@ interface VideoFiltersProps {
   videosCount: number;
 }
 
-export default function NewVideoFilters({
-  filters,
-  onFiltersChange,
-  videosCount,
-}: VideoFiltersProps) {
+export default function NewVideoFilters({ filters, onFiltersChange, videosCount }: VideoFiltersProps) {
   const handleFilterChange = (key: string, value: any) => {
     onFiltersChange({
       ...filters,
@@ -33,8 +29,7 @@ export default function NewVideoFilters({
     });
   };
 
-  const hasActiveFilters =
-    filters.category !== 'all' || filters.difficulty !== 'all' || filters.search !== '';
+  const hasActiveFilters = filters.category !== 'all' || filters.difficulty !== 'all' || filters.search !== '';
 
   return (
     <div

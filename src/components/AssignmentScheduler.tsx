@@ -209,9 +209,7 @@ export default function AssignmentScheduler({
     try {
       for (const item of scheduleItems) {
         const endpoint =
-          item.type === 'video'
-            ? `/api/video-assignments/${item.id}`
-            : `/api/meal-assignments/${item.id}`;
+          item.type === 'video' ? `/api/video-assignments/${item.id}` : `/api/meal-assignments/${item.id}`;
 
         await fetch(endpoint, {
           method: 'PATCH',
@@ -250,21 +248,14 @@ export default function AssignmentScheduler({
               <h2 className="text-2xl font-bold">
                 Schedule {clientName}&apos;s {type === 'videos' ? 'Videos' : 'Meals'}
               </h2>
-              <p className="text-white/90 mt-1">
-                Drag and drop assignments to schedule them throughout the week
-              </p>
+              <p className="text-white/90 mt-1">Drag and drop assignments to schedule them throughout the week</p>
             </div>
             <button
               onClick={onClose}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -278,12 +269,7 @@ export default function AssignmentScheduler({
               className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Previous Week
             </button>
@@ -305,12 +291,7 @@ export default function AssignmentScheduler({
             >
               Next Week
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>

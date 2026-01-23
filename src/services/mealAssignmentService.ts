@@ -25,13 +25,13 @@ export class MealAssignmentService {
     coachId: string = 'system'
   ) {
     try {
-      console.log('personalizeAndAssignMeal - Starting', { 
-        mealId: meal.id, 
-        clientId, 
-        mealType, 
-        dayOfWeek 
+      console.log('personalizeAndAssignMeal - Starting', {
+        mealId: meal.id,
+        clientId,
+        mealType,
+        dayOfWeek,
       });
-      
+
       // 1. Save the personalized meal with reference to the original meal
       const mealData = {
         name: personalizedMeal.name,
@@ -51,22 +51,22 @@ export class MealAssignmentService {
         type: personalizedMeal.type as any,
         coachId: coachId,
       };
-      
+
       // Use client-side safe API to create personalized meal
       const savedMealObj = await clientApi.createPersonalizedMeal(
         mealData,
         clientId,
-        meal.id  // Pass the original meal ID
+        meal.id // Pass the original meal ID
       );
-      
+
       // Format the response to match what the component expects
       const savedMeal = {
         meal: savedMealObj,
-        client: { id: clientId, name: 'Client' }
+        client: { id: clientId, name: 'Client' },
       };
 
       console.log('Meal personalized and saved:', savedMeal.meal.id);
-      
+
       return {
         originalMeal: meal,
         personalizedMeal: savedMeal.meal,
@@ -112,7 +112,7 @@ export class MealAssignmentService {
       console.log('MealAssignmentService.createMealPlan - Starting');
       console.log('Creating meal plan with:', { clientId, planName, startDate, endDate });
       console.log('Meal assignments to process:', mealAssignments.length);
-      
+
       // Convert meal types to uppercase if needed and remove isPersonalized field
       const formattedAssignments = mealAssignments.map(({ mealId, dayOfWeek, mealType, portion }) => {
         console.log('Formatting assignment:', { mealId, dayOfWeek, mealType });
@@ -126,7 +126,7 @@ export class MealAssignmentService {
 
       console.log('Formatted assignments:', formattedAssignments);
       console.log('Calling DataService.createMealPlan');
-      
+
       // Make direct API call instead of using the DataService
       const response = await fetch('/api/meal-plans', {
         method: 'POST',
@@ -142,15 +142,15 @@ export class MealAssignmentService {
           mealAssignments: formattedAssignments,
         }),
       });
-      
+
       console.log('API response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API error response:', errorText);
         throw new Error(`API error: ${response.status} - ${errorText}`);
       }
-      
+
       const data = await response.json();
       console.log('Meal plan created successfully:', data);
       return data;
@@ -193,7 +193,7 @@ export class MealAssignmentService {
       console.log('Updating meal plan with ID:', mealPlanId);
       console.log('Plan details:', { clientId, planName, startDate, endDate });
       console.log('Meal assignments to process:', mealAssignments.length);
-      
+
       // Convert meal types to uppercase if needed and remove isPersonalized field
       const formattedAssignments = mealAssignments.map(({ mealId, dayOfWeek, mealType, portion }) => {
         console.log('Formatting assignment:', { mealId, dayOfWeek, mealType });
@@ -206,7 +206,7 @@ export class MealAssignmentService {
       });
 
       console.log('Formatted assignments:', formattedAssignments);
-      
+
       // Make direct API call to update the meal plan
       const response = await fetch(`/api/meal-plans/${mealPlanId}`, {
         method: 'PUT',
@@ -222,15 +222,15 @@ export class MealAssignmentService {
           mealAssignments: formattedAssignments,
         }),
       });
-      
+
       console.log('API response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API error response:', errorText);
         throw new Error(`API error: ${response.status} - ${errorText}`);
       }
-      
+
       const data = await response.json();
       console.log('Meal plan updated successfully:', data);
       return data;

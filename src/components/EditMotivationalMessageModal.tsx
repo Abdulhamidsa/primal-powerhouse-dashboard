@@ -14,7 +14,11 @@ interface EditMotivationalMessageModalProps {
   };
 }
 
-export default function EditMotivationalMessageModal({ isOpen, onCloseAction, client }: EditMotivationalMessageModalProps) {
+export default function EditMotivationalMessageModal({
+  isOpen,
+  onCloseAction,
+  client,
+}: EditMotivationalMessageModalProps) {
   const [message, setMessage] = useState(client.motivationalMessage || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -64,8 +68,8 @@ export default function EditMotivationalMessageModal({ isOpen, onCloseAction, cl
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Client: {client.name}</label>
             <p className="text-sm text-muted-foreground mb-4">
-              This message will appear on the client&apos;s dashboard and they&apos;ll receive a browser notification when you
-              update it.
+              This message will appear on the client&apos;s dashboard and they&apos;ll receive a browser notification
+              when you update it.
             </p>
           </div>
 
