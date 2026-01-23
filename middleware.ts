@@ -3,8 +3,6 @@ import type { NextRequest } from 'next/server';
 import { getSubdomainFromHostname } from '@/lib/subdomain';
 
 const isApiPath = (pathname: string) => pathname.startsWith('/api');
-const isLoginPath = (pathname: string) => pathname === '/login';
-
 const isPwaAsset = (pathname: string) => {
   if (pathname === '/manifest.json') return true;
   if (pathname === '/sw.js') return true; // if you use sw.js
@@ -14,6 +12,13 @@ const isPwaAsset = (pathname: string) => {
   return false;
 };
 
+const isLoginPage = (pathname: string, subdomain: string) => {
+  if (subdomain === 'admin') {
+    return pathname === '/admin/login';
+  }
+  return pathname === '/user/login';
+};
+
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
@@ -21,29 +26,30 @@ export function middleware(request: NextRequest) {
 
   const subdomain = getSubdomainFromHostname(hostname);
 
-  // Allow API, login, and PWA assets
-  if (isApiPath(pathname) || isLoginPath(pathname) || isPwaAsset(pathname)) {
+  // Allow API, login pages, and PWA assets
+  if (isApiPath(pathname) || isLoginPage(pathname, subdomain) || isPwaAsset(pathname)) {
     return NextResponse.next();
   }
 
-  // Root redirect
+  // Root redirect - based on subdomain
   if (pathname === '/') {
-    url.pathname = '/login';
+    const loginPath = subdomain === 'admin' ? '/admin/login' : '/user/login';
+    url.pathname = loginPath;
     return NextResponse.redirect(url);
   }
 
   // admin.primalpowerhouse.com: only /admin/*
   if (subdomain === 'admin') {
     if (!pathname.startsWith('/admin')) {
-      url.pathname = '/login';
+      url.pathname = '/admin/login';
       return NextResponse.redirect(url);
     }
   }
 
-  // app/main/unknown: block /admin/*
+  // app/main/unknown: block /admin/*, redirect to user login
   if (subdomain === 'app' || subdomain === 'main' || subdomain === 'unknown') {
     if (pathname.startsWith('/admin')) {
-      url.pathname = '/login';
+      url.pathname = '/user/login';
       return NextResponse.redirect(url);
     }
   }
