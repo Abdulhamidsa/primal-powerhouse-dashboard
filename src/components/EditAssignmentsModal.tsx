@@ -213,7 +213,7 @@ export default function EditAssignmentsModal({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">
-                Edit {clientName}'s {type === 'videos' ? 'Video' : 'Meal'} Assignments
+                Edit {clientName}&apos;s {type === 'videos' ? 'Video' : 'Meal'} Assignments
               </h2>
               <p className="text-white/90 mt-1">
                 {selectedItems.length} {type} selected

@@ -154,7 +154,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
             <div className="flex flex-wrap items-center gap-2">
               {filters.search && (
                 <span className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm px-3 py-1.5 rounded-full font-medium">
-                  🔍 "{filters.search}"
+                  🔍 &quot;{filters.search}&quot;
                   <button
                     onClick={() => handleFilterChange('search', '')}
                     className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"

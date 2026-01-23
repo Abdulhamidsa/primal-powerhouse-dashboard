@@ -248,7 +248,7 @@ export default function AssignmentScheduler({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">
-                Schedule {clientName}'s {type === 'videos' ? 'Videos' : 'Meals'}
+                Schedule {clientName}&apos;s {type === 'videos' ? 'Videos' : 'Meals'}
               </h2>
               <p className="text-white/90 mt-1">
                 Drag and drop assignments to schedule them throughout the week

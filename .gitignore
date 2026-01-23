@@ -286,3 +286,6 @@ Icon
 
 .vercel
 .env*.local
+
+# seed.ts
+/prisma/seed.ts

@@ -1,6 +1,5 @@
 import { Meal, MealType } from '@/types/meal';
 import { clientApi } from '@/lib/client-api';
-import { DataService } from './dataService';
 
 /**
  * Helper service for handling meal personalization and assignment workflows

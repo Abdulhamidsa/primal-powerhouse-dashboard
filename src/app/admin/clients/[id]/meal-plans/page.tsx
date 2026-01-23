@@ -154,7 +154,7 @@ export default function ClientMealPlansPage() {
               className="w-16 h-16 rounded-full object-cover"
             />
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{client.name}'s Meal Plans</h1>
+              <h1 className="text-4xl font-bold text-gray-900">{client.name}&apos;s Meal Plans</h1>
               <p className="text-gray-600">Nutritional guidance and meal scheduling</p>
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function ClientMealPlansPage() {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🍽️</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No meal plans yet</h3>
-            <p className="text-gray-600 mb-6">This client doesn't have any meal plans assigned.</p>
+            <p className="text-gray-600 mb-6">This client doesn&apos;t have any meal plans assigned.</p>
             <button className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
               Assign First Meal Plan
             </button>

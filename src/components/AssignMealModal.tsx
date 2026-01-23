@@ -107,7 +107,7 @@ export default function AssignMealModal({
           {/* Header */}
           <div className="p-6 border-b border-zinc-700">
             <h2 className="text-2xl font-bold text-zinc-100">Assign Meal to Client</h2>
-            <p className="text-zinc-400 mt-1">Select a client to assign "{mealName}" to</p>
+            <p className="text-zinc-400 mt-1">Select a client to assign &quot;{mealName}&quot; to</p>
           </div>
 
           {/* Search Bar */}
@@ -216,7 +216,7 @@ export default function AssignMealModal({
             </div>
             <h3 className="text-xl font-bold text-zinc-100 mb-2">Confirm Assignment</h3>
             <p className="text-zinc-400">
-              Assign <span className="font-semibold text-zinc-200">"{mealName}"</span> to{' '}
+              Assign <span className="font-semibold text-zinc-200">&quot;{mealName}&quot;</span> to{' '}
               <span className="font-semibold text-zinc-200">{selectedClient?.name}</span>?
             </p>
           </div>

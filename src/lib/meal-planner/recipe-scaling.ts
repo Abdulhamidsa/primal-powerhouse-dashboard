@@ -82,7 +82,7 @@ export function scaleIngredientForTarget(
   baseQuantity: number,
   macroContribution: MacroContribution,
   remainingTarget: MacroTarget,
-  currentTotalMacros: Macros
+  _currentTotalMacros: Macros
 ): number {
   let scaleFactor = 1;
 
@@ -169,7 +169,7 @@ export function scaleRecipe(
   }
 
   // Calculate initial total macros
-  const initialTotalMacros = calculateTotalMacros(initialIngredients);
+  const _initialTotalMacros = calculateTotalMacros(initialIngredients);
 
   // Second pass: Scale primary macro contributors to hit targets
   const scaledIngredients: ScaledIngredient[] = [];

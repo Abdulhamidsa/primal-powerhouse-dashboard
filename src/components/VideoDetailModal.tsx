@@ -529,7 +529,7 @@ export default function VideoDetailModal({
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Video</h3>
                 <p className="text-gray-600 mb-6">
-                  Are you sure you want to delete "{video.title}"? This action cannot be undone.
+                  Are you sure you want to delete &quot;{video.title}&quot;? This action cannot be undone.
                 </p>
                 <div className="flex gap-3 justify-center">
                   <button

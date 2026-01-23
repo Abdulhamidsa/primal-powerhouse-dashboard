@@ -79,15 +79,15 @@ const clientFoodSelections: { clientName: string; foodSelections: FoodSelection[
  * Generate scaled recipes for each client
  */
 export function generateClientMealPlans() {
-  const results = clientMacroTargets.map((client, index) => {
+  const results = clientMacroTargets.map((_client, _index) => {
     // Find the corresponding food selections for this client
-    const selections = clientFoodSelections.find(c => c.clientName === client.clientName)?.foodSelections || [];
+    const selections = clientFoodSelections.find(c => c.clientName === _client.clientName)?.foodSelections || [];
 
     // Scale the recipe for this client
-    const scaledRecipe = scaleRecipe(chickenRiceBowl, client.macroTarget, selections, foodsDatabase);
+    const scaledRecipe = scaleRecipe(chickenRiceBowl, _client.macroTarget, selections, foodsDatabase);
 
     return {
-      clientName: client.clientName,
+      clientName: _client.clientName,
       scaledRecipe,
     };
   });

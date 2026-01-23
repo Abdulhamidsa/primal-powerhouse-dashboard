@@ -99,7 +99,7 @@ export default function UserDashboard() {
                     <span className="text-2xl">✨</span>
                   </div>
                   <blockquote className="text-lg font-medium text-white mb-2">
-                    "Success is the sum of small efforts repeated day in and day out."
+                    &quot;Success is the sum of small efforts repeated day in and day out.&quot;
                   </blockquote>
                   <p className="text-slate-400 text-sm">- Robert Collier</p>
                 </div>

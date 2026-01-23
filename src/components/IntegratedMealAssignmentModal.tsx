@@ -1478,7 +1478,7 @@ export default function IntegratedMealAssignmentModal({
 
                 {Object.keys(selectedMeals).length > 0 && (
                   <div className="mt-3 text-sm italic" style={{ color: 'var(--color-accent)' }}>
-                    Don't forget to click "Create Meal Plan" to save your selections!
+                    Don&apos;t forget to click &quot;Create Meal Plan&quot; to save your selections!
                   </div>
                 )}
               </div>
@@ -1497,7 +1497,7 @@ export default function IntegratedMealAssignmentModal({
                     <span style={{ color: 'var(--color-accent)' }}>Important: Save Your Meal Plan</span>
                   </h4>
                   <p className="text-sm" style={{ color: 'var(--color-text)' }}>
-                    Your meal assignments will not be saved until you click the "Create Meal Plan" button below. Make
+                    Your meal assignments will not be saved until you click the &quot;Create Meal Plan&quot; button below. Make
                     sure all your meals are assigned correctly before saving.
                   </p>
                 </div>
@@ -1509,7 +1509,7 @@ export default function IntegratedMealAssignmentModal({
                       style={{ background: 'var(--color-accent-translucent)' }}
                     >
                       <p className="font-semibold text-sm" style={{ color: 'var(--color-accent)' }}>
-                        You've selected {Object.keys(selectedMeals).length} meal(s). Click below to save all
+                        You&apos;ve selected {Object.keys(selectedMeals).length} meal(s). Click below to save all
                         assignments.
                       </p>
                     </div>

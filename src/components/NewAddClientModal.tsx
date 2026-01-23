@@ -224,7 +224,7 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
                     Client Credentials
                   </DialogTitle>
                   <DialogDescription style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                    Client "{credentials.clientName}" has been created successfully
+                    Client &quot;{credentials.clientName}&quot; has been created successfully
                   </DialogDescription>
                 </div>
               </div>

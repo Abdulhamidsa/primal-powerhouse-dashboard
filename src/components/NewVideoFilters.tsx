@@ -158,7 +158,7 @@ export default function NewVideoFilters({
                       color: 'var(--color-accent)',
                     }}
                   >
-                    "{filters.search}"
+                    &quot;{filters.search}&quot;
                     <button
                       onClick={() => handleFilterChange('search', '')}
                       className="rounded-full p-0.5"

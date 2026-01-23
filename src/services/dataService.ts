@@ -236,7 +236,7 @@ export class DataService {
       try {
         const errorData = await response.json();
         errorText = errorData.error || 'Client not found';
-      } catch (e) {
+      } catch {
         errorText = 'Client not found';
       }
 
@@ -274,7 +274,7 @@ export class DataService {
         // Try to parse the response as JSON if possible
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.error || errorMessage;
-      } catch (e) {
+      } catch {
         // If not JSON, use the raw text
         errorMessage = responseText || errorMessage;
       }

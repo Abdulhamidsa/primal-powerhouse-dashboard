@@ -83,7 +83,7 @@ export default function CoachContact({ userId }: CoachContactProps) {
           </div>
           <h3 className="text-xl font-semibold text-white mb-3">No Coach Assigned</h3>
           <p className="text-slate-400 max-w-sm">
-            You don't have a coach assigned yet. Contact support for assistance.
+            You don&apos;t have a coach assigned yet. Contact support for assistance.
           </p>
         </div>
       </div>

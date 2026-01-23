@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface DashboardStats {
   totalClients: number;
@@ -143,15 +144,15 @@ export default function AdminDashboard() {
         <div className="bg-card p-6 rounded-lg border border-border">
           <h3 className="font-semibold mb-2 text-foreground">Quick Actions</h3>
           <div className="space-y-2">
-            <a href="/admin/clients" className="block text-primary hover:underline">
+            <Link href="/admin/clients" className="block text-primary hover:underline">
               Manage Clients
-            </a>
-            <a href="/admin/meals" className="block text-primary hover:underline">
+            </Link>
+            <Link href="/admin/meals" className="block text-primary hover:underline">
               Add New Meal
-            </a>
-            <a href="/admin/videos" className="block text-primary hover:underline">
+            </Link>
+            <Link href="/admin/videos" className="block text-primary hover:underline">
               Upload Video
-            </a>
+            </Link>
           </div>
         </div>
 
