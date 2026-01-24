@@ -30,6 +30,9 @@ export default function AdminLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
+      // Store user type in localStorage for PWA
+      localStorage.setItem('userType', 'admin');
+
       // Redirect to admin dashboard
       router.push('/admin/dashboard');
     } catch (err) {

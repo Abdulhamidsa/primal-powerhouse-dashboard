@@ -8,13 +8,25 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Get the hostname to determine subdomain
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    const subdomain = getSubdomainFromHostname(hostname);
+    const redirectToLogin = () => {
+      // Try to get stored user type from localStorage (for PWA)
+      const storedUserType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
 
-    // Redirect to the appropriate login page based on subdomain
-    const loginPath = subdomain === 'admin' ? '/admin/login' : '/user/login';
-    router.replace(loginPath);
+      if (storedUserType === 'admin') {
+        router.replace('/admin/login');
+        return;
+      }
+
+      // Get the hostname to determine subdomain (for web)
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+      const subdomain = getSubdomainFromHostname(hostname);
+
+      // Redirect to the appropriate login page based on subdomain
+      const loginPath = subdomain === 'admin' ? '/admin/login' : '/user/login';
+      router.replace(loginPath);
+    };
+
+    redirectToLogin();
   }, [router]);
 
   // Show a loading state while redirecting

@@ -44,6 +44,9 @@ export default function UserLogin() {
         throw new Error(errorMessage);
       }
 
+      // Store user type in localStorage for PWA
+      localStorage.setItem('userType', 'user');
+
       router.push('/user/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
