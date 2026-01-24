@@ -3,7 +3,7 @@
   "short_name": "Primal",
   "description": "Your personalized fitness and nutrition dashboard",
   "id": "/",
-  "start_url": "/login",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
