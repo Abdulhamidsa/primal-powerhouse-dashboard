@@ -142,6 +142,10 @@ export default function AssignMealsModal({
     return meals.find(meal => meal.id === mealId);
   };
 
+  const getAlreadySelectedMealIds = () => {
+    return Object.values(selectedMeals).filter(Boolean);
+  };
+
   const handleSubmit = async () => {
     if (!planName || !startDate) {
       alert('Please fill in plan name and start date');
@@ -376,6 +380,12 @@ export default function AssignMealsModal({
                                 <option value="">Select meal...</option>
                                 {meals
                                   .filter(meal => meal.type === mealType.value)
+                                  .filter(meal => {
+                                    // Hide meals that are already selected elsewhere UNLESS this slot currently has that meal
+                                    const selectedMealId = selectedMeals[`${day.value}_${mealType.value}`];
+                                    const alreadySelected = getAlreadySelectedMealIds();
+                                    return !alreadySelected.includes(meal.id) || meal.id === selectedMealId;
+                                  })
                                   .map(meal => (
                                     <option key={meal.id} value={meal.id}>
                                       {meal.name} ({meal.calories} cal)
