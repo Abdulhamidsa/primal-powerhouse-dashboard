@@ -445,7 +445,7 @@ export default function AddMealModal({ isOpen, onCloseAction, onMealAddedAction 
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">Meal Image</label>
-            <ImageUpload onFileSelect={handleImageSelect} onError={handleImageError} disabled={loading} />
+            <ImageUpload onFileSelectAction={handleImageSelect} onError={handleImageError} disabled={loading} />
             {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
             <p className="text-xs text-zinc-500 mt-2">Image will be uploaded to Cloudinary when you create the meal</p>
           </div>
