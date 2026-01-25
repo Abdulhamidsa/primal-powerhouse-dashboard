@@ -289,3 +289,6 @@ Icon
 
 # seed.ts
 /prisma/seed.ts
+
+# all js files
+*.js
