@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useUserMeals } from '@/app/user/meals/_hooks/useUserMeals';
 import { MealCard } from './_components/MealCard';
 import { MEAL_TYPES } from '.';
+import { SkeletonMealGrid } from '@/components/Skeletons';
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
   BREAKFAST: 'Breakfast',
@@ -74,11 +75,7 @@ export default function UserMealsPage() {
         {/* Today view */}
         {activeTab === 'today' && (
           <>
-            {isLoading ? (
-              <div className="rounded-2xl border border-border bg-card p-10 text-center">
-                <p className="text-sm text-muted-foreground">Loading meals…</p>
-              </div>
-            ) : null}
+            {isLoading ? <SkeletonMealGrid /> : null}
 
             {error ? (
               <div className="rounded-2xl border border-border bg-card p-10 text-center">
@@ -138,11 +135,7 @@ export default function UserMealsPage() {
               ))}
             </div>
 
-            {isLoading ? (
-              <div className="rounded-2xl border border-border bg-card p-10 text-center">
-                <p className="text-sm text-muted-foreground">Loading meals…</p>
-              </div>
-            ) : null}
+            {isLoading ? <SkeletonMealGrid /> : null}
 
             {error ? (
               <div className="rounded-2xl border border-border bg-card p-10 text-center">

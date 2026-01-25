@@ -5,6 +5,7 @@ import { useUserData } from '@/hooks/useUserData';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Apple, UtensilsCrossed, Video, MessageSquare, Zap, Sun, Cloud, Moon } from 'lucide-react';
+import { SkeletonDashboard } from '@/components/Skeletons';
 
 const MOTIVATIONAL_QUOTES = [
   'The only bad workout is the one that did not happen.',
@@ -60,14 +61,7 @@ export default function UserDashboardPage() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-border border-t-accent mb-4"></div>
-          <p className="text-muted-foreground">Loading your dashboard…</p>
-        </div>
-      </div>
-    );
+    return <SkeletonDashboard />;
   }
 
   if (error) {

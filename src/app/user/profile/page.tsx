@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
+import { SkeletonUserProfile } from '@/components/Skeletons';
 
 interface UserData {
   id: string;
@@ -53,6 +54,7 @@ export default function UserProfilePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -69,11 +71,17 @@ export default function UserProfilePage() {
       } catch (error) {
         console.error('Error fetching user data:', error);
         router.push('/user/login');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchUserData();
   }, [router]);
+
+  if (isLoading) {
+    return <SkeletonUserProfile />;
+  }
 
   const handleSignOut = async () => {
     try {

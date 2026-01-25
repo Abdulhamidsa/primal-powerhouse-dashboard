@@ -5,16 +5,20 @@ import { useAuthRefresh } from '@/hooks/useAuthRefresh';
 
 /**
  * Root-level auth gate that prevents any content from rendering
- * until auth status is determined. Shows full-screen overlay during check.
- * This is the professional way - nothing renders until auth is verified.
+ * until auth status is determined. Only shows loading on initial page load.
+ * Caches auth state to avoid loading screens on navigation.
  */
 export function RootAuthGate({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Enable auto-refresh for persistent login in PWA
   useAuthRefresh();
 
   useEffect(() => {
+    // Only check auth once on initial load
+    if (authChecked) return;
+
     // Check if we're on a login route
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     const isLoginRoute = pathname === '/admin/login' || pathname === '/user/login' || pathname === '/';
@@ -36,24 +40,27 @@ export function RootAuthGate({ children }: { children: React.ReactNode }) {
           if (!response.ok) {
             // Still allow render - middleware will catch and redirect
             setIsReady(true);
+            setAuthChecked(true);
             return;
           }
 
           // User is authenticated - safe to render
           setIsReady(true);
+          setAuthChecked(true);
         } catch {
           // On error, allow render - let app handle it
           setIsReady(true);
+          setAuthChecked(true);
         }
       };
 
       checkAuth();
     } else {
       // For login routes, we're ready immediately
-      // The login layout will handle its own auth check overlay
       setIsReady(true);
+      setAuthChecked(true);
     }
-  }, []);
+  }, [authChecked]);
 
   if (!isReady) {
     return (
