@@ -7,7 +7,8 @@ const calculateAge = (birthDate?: Date) => {
 const calculateBMI = (height?: number, weight?: number) => {
   if (!height || !weight) return 'N/A';
   const heightInMeters = height / 100;
-  return (weight / (heightInMeters * heightInMeters)).toFixed(1);
+  const bmi = weight / (heightInMeters * heightInMeters);
+  return bmi.toFixed(1);
 };
 
 const formatDuration = (seconds: number): string => {

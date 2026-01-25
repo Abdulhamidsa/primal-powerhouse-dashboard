@@ -39,7 +39,6 @@ export async function GET(request: NextRequest) {
     }
 
     const clients = await prisma.client.findMany({
-      where: { coachId: userId },
       orderBy: { createdAt: 'desc' },
     });
 

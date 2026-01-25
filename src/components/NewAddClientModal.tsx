@@ -505,7 +505,7 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
                       <Scale className="w-4 h-4" />
-                      Current Weight (lbs) *
+                      Current Weight (kg) *
                     </div>
                   </label>
                   <input
@@ -518,9 +518,9 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
                       color: 'var(--color-text)',
                       borderColor: errors.currentWeight ? 'var(--color-accent)' : 'var(--color-border)',
                     }}
-                    placeholder="160"
-                    min="50"
-                    max="500"
+                    placeholder="73"
+                    min="20"
+                    max="250"
                   />
                   {errors.currentWeight && (
                     <p
@@ -539,7 +539,7 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
                       <Scale className="w-4 h-4" />
-                      Target Weight (lbs) *
+                      Target Weight (kg) *
                     </div>
                   </label>
                   <input
@@ -552,9 +552,9 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
                       color: 'var(--color-text)',
                       borderColor: errors.targetWeight ? 'var(--color-accent)' : 'var(--color-border)',
                     }}
-                    placeholder="150"
-                    min="50"
-                    max="500"
+                    placeholder="68"
+                    min="20"
+                    max="250"
                   />
                   {errors.targetWeight && (
                     <p

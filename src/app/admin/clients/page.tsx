@@ -54,8 +54,8 @@ export default function ClientsPage() {
     const difference = current - target;
     if (Math.abs(difference) < 2) return 'On Target';
     return difference > 0
-      ? `${Math.abs(difference).toFixed(1)} lbs to lose`
-      : `${Math.abs(difference).toFixed(1)} lbs to gain`;
+      ? `${Math.abs(difference).toFixed(1)} kg to lose`
+      : `${Math.abs(difference).toFixed(1)} kg to gain`;
   };
 
   return (
@@ -294,7 +294,7 @@ export default function ClientsPage() {
                         BMI
                       </div>
                       <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                        {calculateBMI(client.currentWeight, client.height)}
+                        {calculateBMI(client.height, client.currentWeight)}
                       </p>
                     </div>
                   </div>
@@ -302,8 +302,8 @@ export default function ClientsPage() {
                   {/* Weight Progress */}
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                      <span>Current: {client.currentWeight} lbs</span>
-                      <span>Target: {client.targetWeight} lbs</span>
+                      <span>Current: {client.currentWeight} kg</span>
+                      <span>Target: {client.targetWeight} kg</span>
                     </div>
                     <div className="w-full rounded-full h-2" style={{ background: 'var(--color-bg-alt)' }}>
                       <div
@@ -422,7 +422,11 @@ export default function ClientsPage() {
       </div>
 
       {/* Add Client Modal */}
-      <NewAddClientModal isOpen={showAddModal} onCloseAction={() => setShowAddModal(false)} onClientAddedAction={fetchClients} />
+      <NewAddClientModal
+        isOpen={showAddModal}
+        onCloseAction={() => setShowAddModal(false)}
+        onClientAddedAction={fetchClients}
+      />
 
       {/* Edit Motivational Message Modal */}
     </div>
