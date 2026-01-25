@@ -61,7 +61,6 @@ export async function GET(request: NextRequest) {
             todaysMeals[mealType as keyof typeof todaysMeals] = {
               id: assignment.meal.id,
               name: assignment.meal.name,
-              description: assignment.meal.description,
               calories: assignment.meal.calories,
               protein: assignment.meal.protein,
               carbs: assignment.meal.carbs,
@@ -70,7 +69,6 @@ export async function GET(request: NextRequest) {
               prepTime: assignment.meal.prepTime,
               cookTime: assignment.meal.cookTime,
               servings: assignment.meal.servings,
-              difficulty: assignment.meal.difficulty,
               portion: assignment.portion,
               scheduledTime: assignment.scheduledTime,
               assignmentId: assignment.id,
