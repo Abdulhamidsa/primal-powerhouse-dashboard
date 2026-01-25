@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogOut, Mail, User, Phone, Ruler, Cake, Scale, ChevronRight, MessageSquare } from 'lucide-react';
+import { LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
 
 interface UserData {
@@ -18,12 +18,6 @@ interface UserData {
   avatar?: string;
 }
 
-type Row = {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-};
-
 function SettingsGroup({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
     <section className="space-y-2">
@@ -36,43 +30,6 @@ function SettingsGroup({ title, children }: { title?: string; children: React.Re
   );
 }
 
-function SettingsRow({
-  icon,
-  label,
-  value,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value?: string;
-  onClick?: () => void;
-}) {
-  const clickable = Boolean(onClick);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!clickable}
-      className={`w-full text-left ${clickable ? 'hover:bg-muted/40 active:bg-muted/60' : ''}`}
-    >
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted/50">{icon}</div>
-
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground">{label}</p>
-          {value ? <p className="truncate text-xs text-muted-foreground">{value}</p> : null}
-        </div>
-
-        {clickable ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : null}
-      </div>
-
-      {/* iOS-like separator */}
-      <div className="ml-16 h-px bg-border/60" />
-    </button>
-  );
-}
-
 function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="w-full">
@@ -82,7 +39,7 @@ function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: strin
         <p className="text-sm font-medium text-foreground">{label}</p>
 
         <div className="min-w-0 flex-1 text-right">
-          <p className="truncate text-sm text-muted-foreground">{value}</p>
+          <p className="break-all text-right text-sm text-muted-foreground">{value}</p>
         </div>
       </div>
 
@@ -94,6 +51,7 @@ function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: strin
 export default function UserProfilePage() {
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   useEffect(() => {
@@ -126,58 +84,12 @@ export default function UserProfilePage() {
     }
   };
 
-  const rows = useMemo(() => {
-    if (!userData) return { contact: [] as Row[], body: [] as Row[] };
-
-    const contact: Row[] = [{ label: 'Email', value: userData.email, icon: <Mail className="h-4 w-4" /> }];
-
-    if (userData.phone) {
-      contact.push({
-        label: 'Phone',
-        value: userData.phone,
-        icon: <Phone className="h-4 w-4" />,
-      });
-    }
-
-    const body: Row[] = [];
-
-    if (typeof userData.age === 'number') {
-      body.push({
-        label: 'Age',
-        value: `${userData.age} years`,
-        icon: <Cake className="h-4 w-4" />,
-      });
-    }
-
-    if (typeof userData.height === 'number') {
-      body.push({
-        label: 'Height',
-        value: `${userData.height} cm`,
-        icon: <Ruler className="h-4 w-4" />,
-      });
-    }
-
-    if (typeof userData.currentWeight === 'number' || typeof userData.targetWeight === 'number') {
-      const cur = typeof userData.currentWeight === 'number' ? `${userData.currentWeight} kg` : '';
-      const tgt = typeof userData.targetWeight === 'number' ? `${userData.targetWeight} kg` : '';
-      const value = cur && tgt ? `${cur} → ${tgt}` : cur || tgt;
-
-      body.push({
-        label: 'Weight',
-        value,
-        icon: <Scale className="h-4 w-4" />,
-      });
-    }
-
-    return { contact, body };
-  }, [userData]);
-
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md px-4 pb-10 pt-8">
         {/* iOS-ish header */}
         <div className="flex items-center gap-4 px-1 pb-6">
-          <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border bg-muted/30">
+          <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border bg-muted/30 flex-shrink-0">
             {userData?.avatar ? (
               <Image src={userData.avatar} alt={userData.name} fill className="object-cover" />
             ) : (
@@ -187,30 +99,96 @@ export default function UserProfilePage() {
             )}
           </div>
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="truncate text-xl font-semibold text-foreground">{userData?.name ?? 'Profile'}</h1>
-            <p className="truncate text-sm text-muted-foreground">{userData?.email ?? 'Loading…'}</p>
+            <p className="text-sm text-muted-foreground">
+              {userData?.email
+                ? userData.email.length > 25
+                  ? `${userData.email.substring(0, 22)}…`
+                  : userData.email
+                : 'Loading…'}
+            </p>
           </div>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="flex gap-3 mb-6 px-1">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`flex-1 py-3 px-4 rounded-2xl font-medium transition-all ${
+              activeTab === 'info'
+                ? 'bg-accent text-accent-foreground shadow-md'
+                : 'bg-muted/30 text-foreground hover:bg-muted/50'
+            }`}
+          >
+            User Info
+          </button>
+          <button
+            onClick={() => setActiveTab('basic')}
+            className={`flex-1 py-3 px-4 rounded-2xl font-medium transition-all ${
+              activeTab === 'basic'
+                ? 'bg-accent text-accent-foreground shadow-md'
+                : 'bg-muted/30 text-foreground hover:bg-muted/50'
+            }`}
+          >
+            Basic Info
+          </button>
+        </div>
+
         <div className="space-y-6">
-          <SettingsGroup title="Contact">
-            {rows.contact.map((r, idx) => (
-              <StaticRow key={`${r.label}-${idx}`} icon={r.icon} label={r.label} value={r.value} />
-            ))}
-            {/* remove last separator line */}
-            <div className="ml-16 h-px bg-transparent" />
-          </SettingsGroup>
+          {/* User Info Tab */}
+          {activeTab === 'info' && (
+            <>
+              <SettingsGroup title="Account">
+                <StaticRow icon={<User className="h-4 w-4" />} label="Username" value={userData?.name ?? 'Loading…'} />
+                <StaticRow icon={<Mail className="h-4 w-4" />} label="Email" value={userData?.email ?? 'Loading…'} />
+                <div className="ml-16 h-px bg-transparent" />
+              </SettingsGroup>
+            </>
+          )}
 
-          {rows.body.length ? (
-            <SettingsGroup title="Body">
-              {rows.body.map((r, idx) => (
-                <StaticRow key={`${r.label}-${idx}`} icon={r.icon} label={r.label} value={r.value} />
-              ))}
-              <div className="ml-16 h-px bg-transparent" />
-            </SettingsGroup>
-          ) : null}
+          {/* Basic Info Tab */}
+          {activeTab === 'basic' && (
+            <>
+              {userData &&
+              (userData.age !== undefined ||
+                userData.height !== undefined ||
+                userData.currentWeight !== undefined ||
+                userData.targetWeight !== undefined) ? (
+                <SettingsGroup title="Body Metrics">
+                  {userData.age !== undefined && (
+                    <StaticRow icon={<Cake className="h-4 w-4" />} label="Age" value={`${userData.age} years`} />
+                  )}
+                  {userData.height !== undefined && (
+                    <StaticRow icon={<Ruler className="h-4 w-4" />} label="Height" value={`${userData.height} cm`} />
+                  )}
+                  {(userData.currentWeight !== undefined || userData.targetWeight !== undefined) && (
+                    <StaticRow
+                      icon={<Scale className="h-4 w-4" />}
+                      label="Weight"
+                      value={
+                        userData.currentWeight && userData.targetWeight
+                          ? `${userData.currentWeight} → ${userData.targetWeight} kg`
+                          : userData.currentWeight
+                            ? `${userData.currentWeight} kg`
+                            : `→ ${userData.targetWeight} kg`
+                      }
+                    />
+                  )}
+                  <div className="ml-16 h-px bg-transparent" />
+                </SettingsGroup>
+              ) : (
+                <SettingsGroup title="Body Metrics">
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    No body metrics recorded yet
+                  </div>
+                  <div className="ml-16 h-px bg-transparent" />
+                </SettingsGroup>
+              )}
+            </>
+          )}
 
+          {/* Action Buttons */}
           <SettingsGroup>
             <button
               type="button"
@@ -225,7 +203,6 @@ export default function UserProfilePage() {
                   <p className="text-sm font-medium">Send Feedback</p>
                   <p className="text-xs text-muted-foreground">Help us improve</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
             </button>
             <div className="ml-16 h-px bg-border/60" />
