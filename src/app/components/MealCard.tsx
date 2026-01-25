@@ -1,16 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { Meal } from '@/types/meal';
 import { Sunrise, Sun, Moon, Apple, Utensils, Clock, Users } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface MealCardProps {
   meal: Meal;
@@ -19,7 +12,7 @@ interface MealCardProps {
   onView?: (meal: Meal) => void;
 }
 
-export default function MealCard({ meal, onEdit, onDelete, onView }: MealCardProps) {
+export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
   const getMealTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'breakfast':
@@ -71,9 +64,10 @@ export default function MealCard({ meal, onEdit, onDelete, onView }: MealCardPro
         {/* Header with image or placeholder */}
         <div className="relative h-48 bg-gradient-to-br from-zinc-800 to-zinc-900 overflow-hidden">
           {meal.images && meal.images.length > 0 ? (
-            <img
+            <Image
               src={meal.images[0]}
               alt={meal.name}
+              fill
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
@@ -256,9 +250,9 @@ export default function MealCard({ meal, onEdit, onDelete, onView }: MealCardPro
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
           {/* Image Section */}
-          <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 aspect-square bg-zinc-100 dark:bg-zinc-800">
+          <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 aspect-square bg-zinc-100 dark:bg-zinc-800 relative">
             {meal.images && meal.images.length > 0 ? (
-              <img src={meal.images[0]} alt={meal.name} className="w-full h-full object-cover" />
+              <Image src={meal.images[0]} alt={meal.name} fill className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-zinc-400">
                 {getMealTypeIconLarge(meal.type)}

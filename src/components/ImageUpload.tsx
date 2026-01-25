@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { Upload, X, Image as ImageIcon } from '../../node_modules/lucide-react';
 
 interface ImageUploadProps {
-  onFileSelect: (file: File | null) => void;
+  onFileSelectAction: (file: File | null) => void;
   onError?: (error: string) => void;
   currentImageUrl?: string;
   className?: string;
@@ -20,7 +20,7 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({
-  onFileSelect,
+  onFileSelectAction,
   onError,
   currentImageUrl,
   className = '',
@@ -28,7 +28,7 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Cleanup object URL on unmount or when preview changes
@@ -95,7 +95,7 @@ export default function ImageUpload({
     setSelectedFile(file);
 
     // Notify parent component
-    onFileSelect(file);
+    onFileSelectAction(file);
   };
 
   const handleDrop = useCallback(
@@ -115,7 +115,7 @@ export default function ImageUpload({
 
       handleFile(imageFile);
     },
-    [disabled, onFileSelect, onError]
+    [disabled, onFileSelectAction, onError]
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +133,7 @@ export default function ImageUpload({
 
     setPreview(null);
     setSelectedFile(null);
-    onFileSelect(null);
+    onFileSelectAction(null);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
