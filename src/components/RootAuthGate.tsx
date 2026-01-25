@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuthRefresh } from '@/hooks/useAuthRefresh';
 
 /**
  * Root-level auth gate that prevents any content from rendering
@@ -9,6 +10,9 @@ import { useEffect, useState } from 'react';
  */
 export function RootAuthGate({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
+
+  // Enable auto-refresh for persistent login in PWA
+  useAuthRefresh();
 
   useEffect(() => {
     // Check if we're on a login route

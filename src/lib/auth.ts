@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const TOKEN_EXPIRY = '7d';
+const TOKEN_EXPIRY = '30d'; // Increased from 7d to 30d for PWA persistence
 
 export interface AuthTokenPayload {
   userId: string;
@@ -41,18 +41,19 @@ export class AuthService {
   }
 
   static async setAuthCookie(payload: AuthTokenPayload, rememberMe: boolean): Promise<void> {
-  const token = this.generateToken(payload);
-  const cookieStore = await cookies();
+    const token = this.generateToken(payload);
+    const cookieStore = await cookies();
 
-  cookieStore.set('auth-token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    ...(rememberMe ? { maxAge: 60 * 60 * 24 * 7 } : {}),
-  });
-}
-
+    // Always set long expiry (30 days) for PWA persistence
+    // rememberMe parameter is kept for backward compatibility but is now always true
+    cookieStore.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 days for persistent login
+    });
+  }
 
   static async getAuthCookie(): Promise<string | null> {
     const cookieStore = await cookies();
@@ -95,6 +96,20 @@ export class AuthService {
     if (!token) return null;
 
     return this.verifyToken(token);
+  }
+
+  static async refreshAuthCookie(payload: AuthTokenPayload): Promise<void> {
+    // Refresh the token with a new expiry
+    const token = this.generateToken(payload);
+    const cookieStore = await cookies();
+
+    cookieStore.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // Reset to 30 days
+    });
   }
 }
 
