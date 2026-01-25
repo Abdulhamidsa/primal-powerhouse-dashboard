@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAuthRefresh } from '@/hooks/useAuthRefresh';
 
 /**
- * Root-level auth gate that prevents any content from rendering
- * until auth status is determined. Only shows loading on initial page load.
- * Caches auth state to avoid loading screens on navigation.
+ * Root-level auth gate that silently checks auth on initial load.
+ * Does not show loading overlay - pages use skeletons for loading states.
+ * Caches auth state to avoid repeated checks on navigation.
  */
 export function RootAuthGate({ children }: { children: React.ReactNode }) {
-  const [isReady, setIsReady] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   // Enable auto-refresh for persistent login in PWA
@@ -24,7 +23,7 @@ export function RootAuthGate({ children }: { children: React.ReactNode }) {
     const isLoginRoute = pathname === '/admin/login' || pathname === '/user/login' || pathname === '/';
 
     if (!isLoginRoute) {
-      // For protected routes, check auth before allowing render
+      // For protected routes, check auth in background (no UI blocking)
       const checkAuth = async () => {
         try {
           // Determine which endpoint to call based on URL
@@ -36,42 +35,27 @@ export function RootAuthGate({ children }: { children: React.ReactNode }) {
             cache: 'no-store',
           });
 
-          // If not authenticated on protected route, let middleware handle redirect
+          // If not authenticated on protected route, middleware will handle redirect
           if (!response.ok) {
-            // Still allow render - middleware will catch and redirect
-            setIsReady(true);
-            setAuthChecked(true);
-            return;
+            console.log('[AUTH] Not authenticated, middleware will redirect');
+          } else {
+            console.log('[AUTH] User authenticated');
           }
-
-          // User is authenticated - safe to render
-          setIsReady(true);
-          setAuthChecked(true);
-        } catch {
-          // On error, allow render - let app handle it
-          setIsReady(true);
+        } catch (error) {
+          console.error('[AUTH] Check failed:', error);
+        } finally {
+          // Mark auth check as complete regardless of outcome
           setAuthChecked(true);
         }
       };
 
       checkAuth();
     } else {
-      // For login routes, we're ready immediately
-      setIsReady(true);
+      // For login routes, mark as checked immediately
       setAuthChecked(true);
     }
   }, [authChecked]);
 
-  if (!isReady) {
-    return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary" />
-          <p className="text-muted-foreground text-sm">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Always render children - let pages handle their own loading states with skeletons
   return <>{children}</>;
 }

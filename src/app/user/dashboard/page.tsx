@@ -117,7 +117,7 @@ export default function UserDashboardPage() {
         )}
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => router.push('/user/meals')}
             className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
@@ -148,7 +148,7 @@ export default function UserDashboardPage() {
 
           <button
             onClick={() => router.push('/user/profile')}
-            className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
+            className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95 md:col-span-2"
           >
             <div className="flex items-center justify-between mb-2">
               <Apple className="w-6 h-6 text-foreground/60 group-hover:text-accent transition-colors" />
