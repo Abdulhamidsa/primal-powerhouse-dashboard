@@ -39,10 +39,8 @@ export default function UserDashboardPage() {
       greetingData = { text: 'Good Morning', icon: <Sun className="w-6 h-6" /> };
     } else if (hour >= 12 && hour < 17) {
       greetingData = { text: 'Good Afternoon', icon: <Cloud className="w-6 h-6" /> };
-    } else if (hour >= 17 && hour < 22) {
-      greetingData = { text: 'Good Evening', icon: <Sun className="w-6 h-6" /> };
     } else {
-      greetingData = { text: 'Good Night', icon: <Moon className="w-6 h-6" /> };
+      greetingData = { text: 'Good Evening', icon: <Sun className="w-6 h-6" /> };
     }
     setGreeting(greetingData);
 
@@ -125,7 +123,7 @@ export default function UserDashboardPage() {
         )}
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <button
             onClick={() => router.push('/user/meals')}
             className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
@@ -141,7 +139,7 @@ export default function UserDashboardPage() {
           </button>
 
           <button
-            onClick={() => router.push('/user/videos')}
+            onClick={() => router.push('/user/training')}
             className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
           >
             <div className="flex items-center justify-between mb-2">
@@ -150,8 +148,8 @@ export default function UserDashboardPage() {
                 →
               </span>
             </div>
-            <h3 className="font-semibold text-foreground">Workouts</h3>
-            <p className="text-xs text-muted-foreground mt-1">Watch training videos</p>
+            <h3 className="font-semibold text-foreground">Training</h3>
+            <p className="text-xs text-muted-foreground mt-1">View your workouts</p>
           </button>
 
           <button
@@ -166,20 +164,6 @@ export default function UserDashboardPage() {
             </div>
             <h3 className="font-semibold text-foreground">Profile</h3>
             <p className="text-xs text-muted-foreground mt-1">Manage your info</p>
-          </button>
-
-          <button
-            onClick={() => router.push('/user/training')}
-            className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Zap className="w-6 h-6 text-foreground/60 group-hover:text-accent transition-colors" />
-              <span className="text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                →
-              </span>
-            </div>
-            <h3 className="font-semibold text-foreground">Training</h3>
-            <p className="text-xs text-muted-foreground mt-1">View your program</p>
           </button>
         </div>
 
