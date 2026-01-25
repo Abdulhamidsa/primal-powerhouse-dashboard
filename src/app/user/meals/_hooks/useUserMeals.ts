@@ -6,8 +6,13 @@ import { MEAL_TYPES, MealAssignment, MealsTab, MealType } from '..';
 
 export function useUserMeals() {
   const [activeTab, setActiveTab] = useState<MealsTab>('all');
+  const [activeMealType, setActiveMealType] = useState<MealType>('BREAKFAST');
 
-  const todaySWR = useSWR<Record<string, MealAssignment | undefined>, ApiError>('/api/user/meals/today', url => fetcher(url), { revalidateOnFocus: true });
+  const todaySWR = useSWR<Record<string, MealAssignment | undefined>, ApiError>(
+    '/api/user/meals/today',
+    url => fetcher(url),
+    { revalidateOnFocus: true }
+  );
 
   const allSWR = useSWR<MealAssignment[], ApiError>('/api/user/meals', url => fetcher(url), {
     revalidateOnFocus: true,
@@ -51,6 +56,8 @@ export function useUserMeals() {
   return {
     activeTab,
     setActiveTab,
+    activeMealType,
+    setActiveMealType,
 
     sections,
     emptyState,

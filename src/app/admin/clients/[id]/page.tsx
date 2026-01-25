@@ -2,40 +2,16 @@
 
 import { useState, useEffect, JSX } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
-import {
-  Users,
-  Activity,
-  ChevronLeft,
-  Film,
-  Utensils,
-  BarChart,
-  PlusCircle,
-  Trash2,
-  Clock,
-  Target,
-  CalendarDays,
-  Info,
-  Scale,
-  FileText,
-  AlertTriangle,
-  Flame,
-  Coffee,
-  Salad,
-  Apple,
-  MessageCircle,
-} from 'lucide-react';
+import { Users, ChevronLeft, Film, Utensils, BarChart, Info } from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, MealAssignment, TabKey } from '@/lib/client-page/types';
-import { calculateAge, calculateBMI, formatDuration } from '@/helpers';
+import { calculateBMI } from '@/helpers';
 import { ClientHeader } from '@/components/client-profile/ClientHeader';
 import { ClientQuickStats } from '@/components/client-profile/ClientQuickStats';
 import { VideosTab } from '@/components/client-profile/VideosTab';
-
-const cx = (...classes: Array<string | false | undefined | null>) => classes.filter(Boolean).join(' ');
 
 export default function ClientProfilePage() {
   const params = useParams();
@@ -48,13 +24,11 @@ export default function ClientProfilePage() {
   const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
   const [mealAssignments, setMealAssignments] = useState<MealAssignment[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
-  const [loading, setLoading] = useState(true);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
 
   const fetchClientData = async () => {
     try {
-      setLoading(true);
       const response = await fetch(`/api/clients/${clientId}`);
       if (response.ok) {
         const clientData = await response.json();
@@ -63,8 +37,6 @@ export default function ClientProfilePage() {
       }
     } catch (error) {
       console.error('Error fetching client:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -83,42 +55,57 @@ export default function ClientProfilePage() {
   const fetchMealAssignments = async () => {
     try {
       const response = await fetch(`/api/meal-plans?clientId=${clientId}`);
-      if (response.ok) {
-        const mealPlans = await response.json();
-        const allAssignments: MealAssignment[] = [];
-
-        mealPlans.forEach(
-          (plan: {
-            startDate: string;
-            endDate?: string;
-            mealAssignments?: {
-              id: string;
-              mealId: string;
-              notes?: string;
-              meal: MealAssignment['meal'];
-            }[];
-          }) => {
-            plan.mealAssignments?.forEach(
-              (assignment: { id: string; mealId: string; notes?: string; meal: MealAssignment['meal'] }) => {
-                allAssignments.push({
-                  id: assignment.id,
-                  mealId: assignment.mealId,
-                  clientId: clientId,
-                  assignedDate: new Date(plan.startDate),
-                  dueDate: plan.endDate ? new Date(plan.endDate) : undefined,
-                  status: 'assigned',
-                  notes: assignment.notes,
-                  meal: assignment.meal,
-                });
-              }
-            );
-          }
-        );
-
-        setMealAssignments(allAssignments);
+      if (!response.ok) {
+        console.warn('Failed to fetch meal plans');
+        setMealAssignments([]);
+        return;
       }
+
+      const mealPlans = await response.json();
+      if (!Array.isArray(mealPlans)) {
+        console.warn('Meal plans response is not an array');
+        setMealAssignments([]);
+        return;
+      }
+
+      const allAssignments: MealAssignment[] = [];
+
+      mealPlans.forEach(
+        (plan: {
+          startDate: string;
+          endDate?: string;
+          mealAssignments?: {
+            id: string;
+            mealId: string;
+            notes?: string;
+            meal: MealAssignment['meal'];
+          }[];
+        }) => {
+          if (!plan.mealAssignments || !Array.isArray(plan.mealAssignments)) {
+            return;
+          }
+
+          plan.mealAssignments.forEach(
+            (assignment: { id: string; mealId: string; notes?: string; meal: MealAssignment['meal'] }) => {
+              allAssignments.push({
+                id: assignment.id,
+                mealId: assignment.mealId,
+                clientId: clientId,
+                assignedDate: new Date(plan.startDate),
+                dueDate: plan.endDate ? new Date(plan.endDate) : undefined,
+                status: 'assigned',
+                notes: assignment.notes,
+                meal: assignment.meal,
+              });
+            }
+          );
+        }
+      );
+
+      setMealAssignments(allAssignments);
     } catch (error) {
       console.error('Error fetching meal assignments:', error);
+      setMealAssignments([]);
     }
   };
 
@@ -128,7 +115,7 @@ export default function ClientProfilePage() {
       fetchVideoAssignments();
       fetchMealAssignments();
     }
-  }, [clientId]);
+  });
 
   const tabs: Array<{ key: TabKey; label: string; icon: JSX.Element }> = [
     { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
@@ -158,17 +145,6 @@ export default function ClientProfilePage() {
       </div>
     );
   }
-
-  const iosPanel = 'rounded-2xl border shadow-sm';
-  const iosPanelStyle = {
-    background: 'var(--color-surface)',
-    borderColor: 'var(--color-border)',
-  } as const;
-
-  const iosCardStyle = {
-    background: 'var(--color-bg-alt)',
-    borderColor: 'var(--color-border)',
-  } as const;
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
@@ -200,8 +176,222 @@ export default function ClientProfilePage() {
         />
 
         {activeTab === 'overview' && (
-          <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            OverviewTab goes here.
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Personal Information */}
+            <div
+              className="rounded-2xl border shadow-sm p-6"
+              style={{
+                background: 'var(--color-surface)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
+                Personal Information
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--color-text-muted)' }}>Name</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.name}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Email</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.email}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Phone</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.phone || 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Age</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.age} years
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Status</span>
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: client.status === 'ACTIVE' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+                      color: client.status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                    }}
+                  >
+                    {client.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Physical Metrics */}
+            <div
+              className="rounded-2xl border shadow-sm p-6"
+              style={{
+                background: 'var(--color-surface)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
+                Physical Metrics
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Height</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.height ? `${client.height} cm` : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Current Weight</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.currentWeight ? `${client.currentWeight} kg` : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Target Weight</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.targetWeight ? `${client.targetWeight} kg` : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>BMI</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {calculateBMI(client.height, client.currentWeight)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Weight Progress</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium text-sm">
+                    {client.currentWeight && client.targetWeight
+                      ? Math.abs(client.currentWeight - client.targetWeight).toFixed(1)
+                      : 'N/A'}{' '}
+                    kg to{' '}
+                    {client.currentWeight && client.targetWeight
+                      ? client.currentWeight > client.targetWeight
+                        ? 'lose'
+                        : 'gain'
+                      : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Activity & Lifestyle */}
+            <div
+              className="rounded-2xl border shadow-sm p-6"
+              style={{
+                background: 'var(--color-surface)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
+                Activity & Lifestyle
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--color-text-muted)' }}>Activity Level</span>
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: 'var(--color-accent-muted)',
+                      color: 'var(--color-accent)',
+                    }}
+                  >
+                    {client.activityLevel}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Sessions Completed</span>
+                  <span style={{ color: 'var(--color-text)' }} className="font-medium">
+                    {client.sessionsCompleted || 0}
+                  </span>
+                </div>
+                <div className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <p style={{ color: 'var(--color-text-muted)' }} className="text-sm mb-2 pt-3">
+                    Goals
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {client.goals && client.goals.length > 0 ? (
+                      client.goals.map((goal, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            background: 'var(--color-accent-muted)',
+                            color: 'var(--color-accent)',
+                          }}
+                        >
+                          {goal}
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ color: 'var(--color-text-muted)' }}>No goals set</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dietary Information */}
+            <div
+              className="rounded-2xl border shadow-sm p-6"
+              style={{
+                background: 'var(--color-surface)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
+                Dietary Information
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p style={{ color: 'var(--color-text-muted)' }} className="text-sm mb-2">
+                    Dietary Restrictions
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {client.dietaryRestrictions && client.dietaryRestrictions.length > 0 ? (
+                      client.dietaryRestrictions.map((restriction, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            background: 'var(--color-bg-alt)',
+                            color: 'var(--color-text)',
+                          }}
+                        >
+                          {restriction}
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ color: 'var(--color-text-muted)' }}>No restrictions</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {client.notes && (
+              <div
+                className="rounded-2xl border shadow-sm p-6 md:col-span-2"
+                style={{
+                  background: 'var(--color-surface)',
+                  borderColor: 'var(--color-border)',
+                }}
+              >
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
+                  Notes
+                </h3>
+                <p style={{ color: 'var(--color-text)' }} className="text-sm leading-relaxed">
+                  {client.notes}
+                </p>
+              </div>
+            )}
           </div>
         )}
 

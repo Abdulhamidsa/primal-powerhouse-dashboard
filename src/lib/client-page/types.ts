@@ -12,6 +12,7 @@ export interface Client {
   activityLevel?: string;
   goals?: string[];
   dietaryRestrictions?: string[];
+  age?: number;
   allergies?: string[];
   preferences?: string[];
   joinDate: Date;

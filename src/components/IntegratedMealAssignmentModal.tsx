@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Meal, Client, MealType } from '@/types/meal';
+import { Meal, Client } from '@/types/meal';
 import { DataService } from '@/services/dataService';
 import { clientApi } from '@/lib/client-api';
 import { MealAssignmentService } from '@/services/mealAssignmentService';
@@ -59,10 +59,9 @@ export default function IntegratedMealAssignmentModal({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(clientId || null);
-  const [selectedMealId, setSelectedMealId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'select-meals' | 'schedule'>('select-meals');
-  const [selectedMealType, setSelectedMealType] = useState<string | null>(null);
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedMealType, _setSelectedMealType] = useState<string | null>(null);
+  const [selectedDay, _setSelectedDay] = useState<number | null>(null);
 
   // State for personalization
   const [showPersonalizationModal, setShowPersonalizationModal] = useState(false);
@@ -82,7 +81,6 @@ export default function IntegratedMealAssignmentModal({
   const [hasExistingActivePlan, setHasExistingActivePlan] = useState(false);
   const [isEditingExistingPlan, setIsEditingExistingPlan] = useState(false);
   const [activeMealPlan, setActiveMealPlan] = useState<any | null>(null);
-  const [existingMealAssignments, setExistingMealAssignments] = useState<any[]>([]);
 
   // Initialize data when modal opens
   useEffect(() => {
@@ -90,6 +88,7 @@ export default function IntegratedMealAssignmentModal({
       fetchData();
       checkExistingMealPlans();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, clientId]);
 
   // Check for existing meal plans and load meal assignments
@@ -186,7 +185,6 @@ export default function IntegratedMealAssignmentModal({
   // Helper function to process existing meal assignments
   const processExistingMealAssignments = (assignments: any[]) => {
     console.log('Processing existing meal assignments:', assignments);
-    setExistingMealAssignments(assignments);
 
     // Convert existing assignments to the selectedMeals format
     const mealMap: {
@@ -492,15 +490,27 @@ export default function IntegratedMealAssignmentModal({
       meal.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Get the selected meal and client
-  const selectedMeal = meals.find(meal => meal.id === selectedMealId) || null;
-  const selectedClient = clients.find(client => client.id === selectedClientId) || null;
+  // Get all meal IDs that are currently assigned (to prevent duplicates)
+  const assignedMealIds = new Set(
+    Object.values(selectedMeals)
+      .map(selection => selection.mealId)
+      .filter(Boolean)
+  );
 
-  // Handle meal selection for a specific day and meal type
-  const handleSelectMealSlot = (dayOfWeek: number, mealType: string) => {
-    setSelectedDay(dayOfWeek);
-    setSelectedMealType(mealType);
-    setActiveTab('select-meals');
+  // Check if a meal is assigned to any slot
+  const isMealAssigned = (mealId: string): boolean => {
+    return assignedMealIds.has(mealId);
+  };
+
+  // Get the slot where a meal is assigned (if any)
+  const getMealAssignmentSlot = (mealId: string): { day: number; mealType: string } | null => {
+    for (const [key, selection] of Object.entries(selectedMeals)) {
+      if (selection.mealId === mealId) {
+        const [dayOfWeek, mealType] = key.split('_');
+        return { day: parseInt(dayOfWeek), mealType };
+      }
+    }
+    return null;
   };
 
   // Handle personalization of a meal
@@ -668,6 +678,19 @@ export default function IntegratedMealAssignmentModal({
   // Assign a meal to a slot without personalization
   const handleAssignMeal = (meal: Meal) => {
     if (selectedDay !== null && selectedMealType !== null) {
+      // Check if this meal is already assigned somewhere
+      if (isMealAssigned(meal.id)) {
+        const assignmentSlot = getMealAssignmentSlot(meal.id);
+        if (assignmentSlot) {
+          const dayName = daysOfWeek.find(d => d.value === assignmentSlot.day)?.label || 'Unknown day';
+          const mealTypeName = mealTypes.find(m => m.value === assignmentSlot.mealType)?.label || 'Unknown type';
+          alert(
+            `This meal is already assigned to ${dayName}'s ${mealTypeName}. Remove it from there first if you want to assign it elsewhere.`
+          );
+          return;
+        }
+      }
+
       const key = `${selectedDay}_${selectedMealType}`;
 
       console.log(
@@ -783,6 +806,11 @@ export default function IntegratedMealAssignmentModal({
       delete updated[key];
       return updated;
     });
+  };
+
+  const handleSelectMealSlot = (_dayOfWeek: number, _mealType: string) => {
+    setActiveTab('select-meals');
+    window.scrollTo(0, 0);
   };
 
   // Submit the meal plan
@@ -1446,7 +1474,7 @@ export default function IntegratedMealAssignmentModal({
                     <span className="ml-2 font-medium">
                       {Object.values(selectedMeals).length > 0
                         ? Math.round(
-                            Object.entries(selectedMeals).reduce((total, [key, selection]) => {
+                            Object.entries(selectedMeals).reduce((total, [_key, selection]) => {
                               const meal =
                                 selection.isPersonalized && selection.personalizedMeal
                                   ? selection.personalizedMeal
@@ -1625,7 +1653,20 @@ export default function IntegratedMealAssignmentModal({
                         />
                       )}
                       <div className="p-4">
-                        <h4 className="font-semibold mb-1">{meal.name}</h4>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h4 className="font-semibold flex-1">{meal.name}</h4>
+                          {isMealAssigned(meal.id) && (
+                            <div
+                              className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap"
+                              style={{
+                                background: 'var(--color-success-bg)',
+                                color: 'var(--color-success)',
+                              }}
+                            >
+                              ✓ Assigned
+                            </div>
+                          )}
+                        </div>
                         <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--color-text-muted)' }}>
                           {meal.description}
                         </p>
@@ -1685,14 +1726,24 @@ export default function IntegratedMealAssignmentModal({
 
                           <button
                             onClick={() => handleAssignMeal(meal)}
-                            className="flex-1 px-3 py-2 rounded flex items-center justify-center gap-1"
+                            disabled={isMealAssigned(meal.id)}
+                            className={`flex-1 px-3 py-2 rounded flex items-center justify-center gap-1 ${
+                              isMealAssigned(meal.id) ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                             style={{
-                              background: 'var(--color-accent)',
-                              color: 'var(--color-text-on-accent)',
+                              background: isMealAssigned(meal.id) ? 'var(--color-bg-alt)' : 'var(--color-accent)',
+                              color: isMealAssigned(meal.id)
+                                ? 'var(--color-text-muted)'
+                                : 'var(--color-text-on-accent)',
                             }}
+                            title={
+                              isMealAssigned(meal.id)
+                                ? 'This meal is already assigned. Remove it first to reassign.'
+                                : 'Assign this meal'
+                            }
                           >
                             <Calendar size={16} />
-                            <span>Assign</span>
+                            <span>{isMealAssigned(meal.id) ? 'Already Assigned' : 'Assign'}</span>
                           </button>
                         </div>
                       </div>
