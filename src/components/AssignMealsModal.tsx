@@ -5,10 +5,10 @@ import { DataService, Meal, MealPlan } from '@/services/dataService';
 
 interface AssignMealsModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId: string;
   clientName: string;
-  onMealPlanCreated: () => void;
+  onMealPlanCreatedAction: () => void;
 }
 
 const daysOfWeek = [
@@ -30,10 +30,10 @@ const mealTypes = [
 
 export default function AssignMealsModal({
   isOpen,
-  onClose,
+  onCloseAction,
   clientId,
   clientName,
-  onMealPlanCreated,
+  onMealPlanCreatedAction,
 }: AssignMealsModalProps) {
   const [loading, setLoading] = useState(false);
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -44,19 +44,14 @@ export default function AssignMealsModal({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [existingMealPlan, setExistingMealPlan] = useState<MealPlan | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       fetchMeals();
-      // Set default plan name and dates
-      setPlanName(`${clientName}'s Meal Plan`);
-      const today = new Date();
-      setStartDate(today.toISOString().split('T')[0]);
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7);
-      setEndDate(nextWeek.toISOString().split('T')[0]);
+      fetchExistingMealPlan();
     }
-  }, [isOpen, clientName]);
+  }, [isOpen, clientId, clientName]);
 
   const fetchMeals = async () => {
     try {
@@ -64,6 +59,72 @@ export default function AssignMealsModal({
       setMeals(mealsData);
     } catch (error) {
       console.error('Error fetching meals:', error);
+    }
+  };
+
+  const fetchExistingMealPlan = async () => {
+    try {
+      console.log('Fetching existing meal plans for client:', clientId);
+      const response = await fetch(`/api/clients/${clientId}/meal-plans`);
+      if (response.ok) {
+        const mealPlans = await response.json();
+        console.log('Meal plans returned:', mealPlans);
+        const activePlan = mealPlans.find((plan: MealPlan) => plan.isActive);
+        if (activePlan) {
+          console.log('Found existing active meal plan:', activePlan);
+          setExistingMealPlan(activePlan);
+
+          // Pre-populate the form with existing plan details
+          setPlanName(activePlan.name);
+          if (activePlan.startDate) {
+            setStartDate(new Date(activePlan.startDate).toISOString().split('T')[0]);
+          }
+          if (activePlan.endDate) {
+            setEndDate(new Date(activePlan.endDate).toISOString().split('T')[0]);
+          }
+          if (activePlan.notes) {
+            setNotes(activePlan.notes);
+          }
+
+          // Pre-populate selected meals from existing assignments
+          if (activePlan.mealAssignments && Array.isArray(activePlan.mealAssignments)) {
+            const mealsMap: { [key: string]: string } = {};
+            activePlan.mealAssignments.forEach((assignment: any) => {
+              const key = `${assignment.dayOfWeek}_${assignment.mealType}`;
+              mealsMap[key] = assignment.mealId;
+            });
+            setSelectedMeals(mealsMap);
+            console.log('Pre-populated selected meals:', mealsMap);
+          }
+        } else {
+          console.log('No active meal plan found');
+          // Set default plan name and dates if no existing plan
+          setPlanName(`${clientName}'s Meal Plan`);
+          const today = new Date();
+          setStartDate(today.toISOString().split('T')[0]);
+          const nextWeek = new Date(today);
+          nextWeek.setDate(today.getDate() + 7);
+          setEndDate(nextWeek.toISOString().split('T')[0]);
+        }
+      } else {
+        console.error('Failed to fetch meal plans:', response.status);
+        // Set defaults if fetch fails
+        setPlanName(`${clientName}'s Meal Plan`);
+        const today = new Date();
+        setStartDate(today.toISOString().split('T')[0]);
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+        setEndDate(nextWeek.toISOString().split('T')[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching existing meal plans:', error);
+      // Set defaults if fetch fails
+      setPlanName(`${clientName}'s Meal Plan`);
+      const today = new Date();
+      setStartDate(today.toISOString().split('T')[0]);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+      setEndDate(nextWeek.toISOString().split('T')[0]);
     }
   };
 
@@ -87,10 +148,15 @@ export default function AssignMealsModal({
       return;
     }
 
+    if (Object.keys(selectedMeals).length === 0) {
+      alert('Please select at least one meal');
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Convert selected meals to assignments
+      // Convert selected meals to assignments - ONLY the meals the user selected
       const mealAssignments = Object.entries(selectedMeals).map(([key, mealId]) => {
         const [dayOfWeek, mealType] = key.split('_');
         return {
@@ -101,26 +167,72 @@ export default function AssignMealsModal({
         };
       });
 
-      await DataService.createMealPlan({
-        clientId,
-        name: planName,
-        startDate,
-        endDate: endDate || undefined,
-        notes: notes || undefined,
-        mealAssignments,
-      });
+      console.log('Submitting meal assignments:', mealAssignments);
 
-      onMealPlanCreated();
-      onClose();
+      // If there's an existing active meal plan, UPDATE it instead of creating a new one
+      if (existingMealPlan) {
+        console.log('Updating existing meal plan:', existingMealPlan.id);
+        console.log('New meal count:', mealAssignments.length);
+
+        const response = await fetch(`/api/meal-plans/${existingMealPlan.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            clientId,
+            name: planName,
+            startDate,
+            endDate: endDate || undefined,
+            notes: notes || undefined,
+            mealAssignments, // This will REPLACE all old assignments
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to update meal plan: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Meal plan updated successfully:', result);
+      } else {
+        // Only create a new meal plan if there's no existing active one
+        console.log('Creating new meal plan');
+        const response = await fetch('/api/meal-plans', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            clientId,
+            name: planName,
+            startDate,
+            endDate: endDate || undefined,
+            notes: notes || undefined,
+            mealAssignments,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to create meal plan: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Meal plan created successfully:', result);
+      }
+
+      onMealPlanCreatedAction();
+      onCloseAction();
       // Reset form
       setSelectedMeals({});
       setPlanName('');
       setStartDate('');
       setEndDate('');
       setNotes('');
+      setExistingMealPlan(null);
     } catch (error) {
-      console.error('Error creating meal plan:', error);
-      alert('Failed to create meal plan');
+      console.error('Error saving meal plan:', error);
+      alert('Failed to save meal plan: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -135,13 +247,21 @@ export default function AssignMealsModal({
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Assign Meals</h2>
-              <p className="text-gray-600">Create a meal plan for {clientName}</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {existingMealPlan ? 'Update Meal Plan' : 'Assign Meals'}
+              </h2>
+              <p className="text-gray-600">
+                {existingMealPlan
+                  ? `Updating existing meal plan for ${clientName}`
+                  : `Create a meal plan for ${clientName}`}
+              </p>
+              {existingMealPlan && (
+                <p className="text-sm text-orange-600 mt-1">
+                  ⚠️ This will replace all existing meals in the active meal plan with your new selections.
+                </p>
+              )}
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
+            <button onClick={onCloseAction} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <span className="text-2xl text-gray-500">×</span>
             </button>
           </div>
@@ -171,9 +291,7 @@ export default function AssignMealsModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date (Optional)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">End Date (Optional)</label>
                 <input
                   type="date"
                   value={endDate}
@@ -182,9 +300,7 @@ export default function AssignMealsModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes (Optional)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
@@ -197,14 +313,29 @@ export default function AssignMealsModal({
 
             {/* Weekly Meal Grid */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Meal Schedule</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Weekly Meal Schedule</h3>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMeals({})}
+                  className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+              {existingMealPlan && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> This meal plan already has {Object.keys(selectedMeals).length} meals
+                    assigned. Click Clear All above to start fresh, or modify individual meals to update the plan.
+                  </p>
+                </div>
+              )}
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr>
-                      <th className="p-3 text-left font-medium text-gray-700 border border-gray-200 bg-gray-50">
-                        Day
-                      </th>
+                      <th className="p-3 text-left font-medium text-gray-700 border border-gray-200 bg-gray-50">Day</th>
                       {mealTypes.map(mealType => (
                         <th
                           key={mealType.value}
@@ -221,22 +352,26 @@ export default function AssignMealsModal({
                   <tbody>
                     {daysOfWeek.map(day => (
                       <tr key={day.value}>
-                        <td className="p-3 font-medium text-gray-900 border border-gray-200 bg-gray-50">
-                          {day.label}
-                        </td>
+                        <td className="p-3 font-medium text-gray-900 border border-gray-200 bg-gray-50">{day.label}</td>
                         {mealTypes.map(mealType => {
                           const selectedMeal = getMealForSlot(day.value, mealType.value);
+                          const key = `${day.value}_${mealType.value}`;
+                          const isPrefilled =
+                            existingMealPlan &&
+                            existingMealPlan.mealAssignments?.some(
+                              a => a.dayOfWeek === day.value && a.mealType === mealType.value
+                            );
                           return (
                             <td
                               key={`${day.value}_${mealType.value}`}
-                              className="p-2 border border-gray-200"
+                              className={`p-2 border ${isPrefilled && selectedMeals[key] ? 'border-blue-300 bg-blue-50' : 'border-gray-200'}`}
                             >
                               <select
                                 value={selectedMeals[`${day.value}_${mealType.value}`] || ''}
-                                onChange={e =>
-                                  handleMealSelect(day.value, mealType.value, e.target.value)
-                                }
-                                className="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                onChange={e => handleMealSelect(day.value, mealType.value, e.target.value)}
+                                className={`w-full px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isPrefilled && selectedMeals[key] ? 'border-blue-400 bg-blue-100' : 'border-gray-300'
+                                }`}
                               >
                                 <option value="">Select meal...</option>
                                 {meals
@@ -299,8 +434,7 @@ export default function AssignMealsModal({
                 <div>
                   <span className="text-gray-600">Meal Types:</span>
                   <span className="ml-2 font-medium">
-                    {new Set(Object.entries(selectedMeals).map(([key]) => key.split('_')[1])).size}{' '}
-                    types
+                    {new Set(Object.entries(selectedMeals).map(([key]) => key.split('_')[1])).size} types
                   </span>
                 </div>
               </div>
@@ -312,22 +446,20 @@ export default function AssignMealsModal({
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-end gap-3">
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              disabled={
-                loading || !planName || !startDate || Object.keys(selectedMeals).length === 0
-              }
+              disabled={loading || !planName || !startDate || Object.keys(selectedMeals).length === 0}
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               )}
-              Create Meal Plan
+              {existingMealPlan ? 'Update Meal Plan' : 'Create Meal Plan'}
             </button>
           </div>
         </div>

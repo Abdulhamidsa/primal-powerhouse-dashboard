@@ -37,7 +37,25 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const body = await request.json();
     const { name, startDate, endDate, notes, isActive, mealAssignments, clientId } = body;
 
+    console.log(`[Meal Plan Update] Updating meal plan ${id} for client ${clientId}`);
+    console.log(`[Meal Plan Update] Received ${mealAssignments?.length || 0} new meal assignments`);
+
     const updatedMealPlan = await prisma.$transaction(async tx => {
+      // First, get the existing meal plan and count current assignments
+      const existingPlan = await tx.mealPlan.findUnique({
+        where: { id },
+        include: { mealAssignments: true },
+      });
+
+      if (!existingPlan) {
+        throw new Error('Meal plan not found');
+      }
+
+      console.log(
+        `[Meal Plan Update] Found existing meal plan with ${existingPlan.mealAssignments.length} assignments`
+      );
+
+      // Update the meal plan metadata
       const mealPlan = await tx.mealPlan.update({
         where: { id },
         data: {
@@ -51,25 +69,41 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         include: { mealAssignments: true },
       });
 
-      if (mealAssignments && Array.isArray(mealAssignments)) {
+      if (mealAssignments && Array.isArray(mealAssignments) && mealAssignments.length > 0) {
         const validAssignments: any[] = [];
 
+        // Validate all meal assignments
         for (const assignment of mealAssignments) {
-          if (!assignment.mealId) continue;
-          if (assignment.mealId.startsWith('personalized-')) continue;
+          if (!assignment.mealId) {
+            console.warn(`[Meal Plan Update] Skipping assignment with missing mealId`);
+            continue;
+          }
+          if (assignment.mealId.startsWith('personalized-')) {
+            console.warn(`[Meal Plan Update] Skipping temporary personalized meal ID: ${assignment.mealId}`);
+            continue;
+          }
 
           const meal = await tx.meal.findUnique({ where: { id: assignment.mealId } });
-          if (!meal) continue;
+          if (!meal) {
+            console.warn(`[Meal Plan Update] Meal not found: ${assignment.mealId}`);
+            continue;
+          }
 
           validAssignments.push(assignment);
         }
 
+        console.log(`[Meal Plan Update] Validated ${validAssignments.length} meal assignments`);
+
         if (validAssignments.length === 0) {
-          throw new Error('No valid meal assignments found');
+          throw new Error('No valid meal assignments to save. Please check your selections.');
         }
 
-        await tx.mealAssignment.deleteMany({ where: { mealPlanId: id } });
+        // DELETE ALL existing assignments for this meal plan to avoid duplicates
+        // This ensures a clean slate - only the new assignments are kept
+        const deletedCount = await tx.mealAssignment.deleteMany({ where: { mealPlanId: id } });
+        console.log(`[Meal Plan Update] Deleted ${deletedCount.count} existing meal assignments`);
 
+        // Create all new meal assignments
         for (const assignment of validAssignments) {
           await tx.mealAssignment.create({
             data: {
@@ -82,6 +116,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             },
           });
         }
+
+        console.log(`[Meal Plan Update] Created ${validAssignments.length} new meal assignments`);
 
         return await tx.mealPlan.findUnique({
           where: { id },
@@ -97,9 +133,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return mealPlan;
     });
 
+    console.log(`[Meal Plan Update] Successfully updated meal plan ${id}`);
     return NextResponse.json(updatedMealPlan);
   } catch (error) {
-    console.error('Error updating meal plan:', error);
+    console.error('[Meal Plan Update] Error updating meal plan:', error);
     return NextResponse.json(
       { error: 'Failed to update meal plan', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
