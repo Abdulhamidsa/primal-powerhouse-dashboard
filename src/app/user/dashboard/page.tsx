@@ -123,7 +123,7 @@ export default function UserDashboardPage() {
         )}
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             onClick={() => router.push('/user/meals')}
             className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
