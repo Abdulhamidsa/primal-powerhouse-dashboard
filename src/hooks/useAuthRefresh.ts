@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 /**
  * Hook that automatically refreshes the auth token periodically
  * to maintain persistent login in PWA
- * Refreshes every 24 hours to keep the 30-day expiry active
+ * Refreshes every 6 hours to keep the 30-day expiry active
  */
 export function useAuthRefresh() {
   useEffect(() => {
@@ -23,7 +23,10 @@ export function useAuthRefresh() {
         } else if (response.status === 401) {
           // Token is no longer valid, user needs to login again
           console.warn('[AUTH] Token refresh failed - user needs to login');
-          // Don't redirect here, let the app handle it
+          try {
+            localStorage.removeItem('userType');
+          } catch {}
+          // Do not redirect here; allow middleware/page guards to handle it
         }
       } catch (error) {
         console.error('[AUTH] Token refresh error:', error);
@@ -33,8 +36,8 @@ export function useAuthRefresh() {
     // Refresh immediately on mount (in case token was about to expire)
     refreshToken();
 
-    // Then refresh every 24 hours
-    const intervalId = setInterval(refreshToken, 24 * 60 * 60 * 1000);
+    // Then refresh every 6 hours to avoid hitting expiry windows
+    const intervalId = setInterval(refreshToken, 6 * 60 * 60 * 1000);
 
     // Also refresh when page becomes visible (user returns from inactive tab)
     const handleVisibilityChange = () => {

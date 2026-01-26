@@ -1,10 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useUserMeals } from '@/app/user/meals/_hooks/useUserMeals';
 import { MealCard } from './_components/MealCard';
 import { MEAL_TYPES } from '.';
 import { SkeletonMealGrid } from '@/components/Skeletons';
+import { useUserMeals } from './_hooks/useUserMeals';
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
   BREAKFAST: 'Breakfast',

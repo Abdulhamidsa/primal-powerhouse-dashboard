@@ -5,20 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import NewAddClientModal from '@/components/NewAddClientModal';
 import { DataService, Client } from '@/services/dataService';
-import {
-  Users,
-  Flame,
-  BarChart,
-  Target,
-  Activity,
-  Clock,
-  Mail,
-  Phone,
-  Scale,
-  ChevronRight,
-  Calendar,
-  MessageCircle,
-} from '../../../../node_modules/lucide-react';
+import { Users, Flame, BarChart, Target, Activity, Clock, Mail, Phone, Scale, Calendar } from 'lucide-react';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);

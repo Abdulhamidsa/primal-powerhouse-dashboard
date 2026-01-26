@@ -3,12 +3,21 @@ import { AuthService } from '@/lib/auth';
 
 export async function POST() {
   try {
-    await AuthService.clearAuthCookie();
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Logged out successfully',
     });
+
+    // Clear cookie via response headers
+    response.cookies.set('auth-token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
+
+    return response;
   } catch (error) {
     console.error('Logout error:', error);
     return NextResponse.json({ error: 'Failed to logout' }, { status: 500 });

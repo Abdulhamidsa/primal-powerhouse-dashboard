@@ -4,8 +4,7 @@ import { AuthService, generateClientPassword } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, password, rememberMe } = body as {
+    const { email, password, rememberMe } = (await request.json()) as {
       email?: string;
       password?: string;
       rememberMe?: boolean;
@@ -45,24 +44,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    await AuthService.setAuthCookie(
-      { userId: client.id, email: client.email, type: 'client' },
-      Boolean(rememberMe)
-    );
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: client.id,
-        name: client.name,
-        email: client.email,
-        coach: client.coach,
-        type: 'client',
-      },
-      redirect: '/user/dashboard',
+    const token = AuthService.generateToken({
+      userId: client.id,
+      email: client.email,
+      type: 'client',
     });
+
+    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // example: 30d vs 1d
+
+    const response = NextResponse.json({
+      success: true,
+      user: { id: client.id, name: client.name, email: client.email, coach: client.coach },
+    });
+
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge,
+    });
+
+    return response;
   } catch (error) {
-    console.error('[LOGIN] error:', error);
+    console.error('[USER LOGIN] error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

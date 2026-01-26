@@ -1,25 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService, requireAuth } from '@/lib/auth';
 
-/**
- * Refresh the auth token to extend expiration
- * Called periodically by the client to maintain persistent login
- */
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await requireAuth(request);
+    const { user, error } = requireAuth(request);
 
     if (error || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Refresh the token
-    await AuthService.refreshAuthCookie(user);
+    // IMPORTANT: strip exp/iat by creating a fresh payload
+    const freshPayload = {
+      userId: user.userId,
+      email: user.email,
+      type: user.type,
+    } as const;
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Token refreshed',
     });
+
+    // Use your helper so domain/localhost handling stays consistent
+    AuthService.setAuthCookieOnResponse(response, freshPayload, {
+      rememberMe: true,
+      requestHost: request.headers.get('host') ?? undefined,
+    });
+
+    return response;
   } catch (error) {
     console.error('[TOKEN REFRESH] error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

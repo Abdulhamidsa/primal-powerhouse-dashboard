@@ -4,11 +4,7 @@ import { AuthService, generateClientPassword } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, rememberMe } = (await request.json()) as {
-      email?: string;
-      password?: string;
-      rememberMe?: boolean;
-    };
+    const { email, password, rememberMe } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
@@ -16,9 +12,7 @@ export async function POST(request: NextRequest) {
 
     const client = await prisma.client.findUnique({
       where: { email: email.toLowerCase().trim() },
-      include: {
-        coach: { select: { name: true, email: true } },
-      },
+      include: { coach: { select: { name: true, email: true } } },
     });
 
     if (!client) {
@@ -46,16 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    await AuthService.setAuthCookie(
-      {
-        userId: client.id,
-        email: client.email,
-        type: 'client',
-      },
-      Boolean(rememberMe)
-    );
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: client.id,
@@ -64,6 +49,20 @@ export async function POST(request: NextRequest) {
         coach: client.coach,
       },
     });
+
+    AuthService.setAuthCookieOnResponse(
+      response,
+      {
+        userId: client.id,
+        email: client.email,
+        type: 'client',
+      },
+      {
+        rememberMe,
+      }
+    );
+
+    return response;
   } catch (error) {
     console.error('[USER LOGIN] error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

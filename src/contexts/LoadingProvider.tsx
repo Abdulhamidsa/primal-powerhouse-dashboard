@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface LoadingContextType {
@@ -14,31 +14,32 @@ const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const showLoading = (duration?: number) => {
     setIsLoading(true);
     if (duration) {
-      setTimeout(() => setIsLoading(false), duration);
+      window.setTimeout(() => setIsLoading(false), duration);
     }
   };
 
-  const hideLoading = () => {
-    setIsLoading(false);
-  };
+  const hideLoading = () => setIsLoading(false);
 
   return (
     <LoadingContext.Provider value={{ isLoading, setIsLoading, showLoading, hideLoading }}>
       {children}
-      {isLoading && <LoadingOverlay />}
+      {mounted && isLoading && <LoadingOverlay />}
     </LoadingContext.Provider>
   );
 }
 
 export function useLoading() {
   const context = useContext(LoadingContext);
-  if (!context) {
-    throw new Error('useLoading must be used within LoadingProvider');
-  }
+  if (!context) throw new Error('useLoading must be used within LoadingProvider');
   return context;
 }
 

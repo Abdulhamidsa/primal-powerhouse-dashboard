@@ -1,10 +1,12 @@
+// lib/auth.ts
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
-import { NextRequest } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const TOKEN_EXPIRY = '30d'; // Increased from 7d to 30d for PWA persistence
+const TOKEN_EXPIRY = '30d';
+
+export const AUTH_COOKIE_NAME = 'auth-token';
 
 export interface AuthTokenPayload {
   userId: string;
@@ -18,6 +20,16 @@ export interface AuthUser {
   name: string;
 }
 
+function isLocalhostHost(hostname: string): boolean {
+  const host = hostname.split(':')[0].toLowerCase();
+  if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') return true;
+
+  // IPv4
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
+
+  return false;
+}
+
 export class AuthService {
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 12);
@@ -28,7 +40,9 @@ export class AuthService {
   }
 
   static generateToken(payload: AuthTokenPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+    const { userId, email, type } = payload;
+
+    return jwt.sign({ userId, email, type }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
   }
 
   static verifyToken(token: string): AuthTokenPayload | null {
@@ -40,93 +54,89 @@ export class AuthService {
     }
   }
 
-  static async setAuthCookie(payload: AuthTokenPayload, rememberMe: boolean): Promise<void> {
-    const token = this.generateToken(payload);
-    const cookieStore = await cookies();
-
-    // Always set long expiry (30 days) for PWA persistence
-    // rememberMe parameter is kept for backward compatibility but is now always true
-    cookieStore.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30, // 30 days for persistent login
-    });
-  }
-
-  static async getAuthCookie(): Promise<string | null> {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token');
-    return token?.value || null;
-  }
-
-  static async clearAuthCookie(): Promise<void> {
-    const cookieStore = await cookies();
-    cookieStore.delete('auth-token');
-  }
-
-  static async getCurrentUser(): Promise<AuthUser | null> {
-    try {
-      const token = await this.getAuthCookie();
-      if (!token) return null;
-
-      const payload = this.verifyToken(token);
-      if (!payload) return null;
-
-      // Return user info from token (we could also fetch from DB for fresh data)
-      return {
-        id: payload.userId,
-        email: payload.email,
-        name: '', // We'll fetch this from the client record
-      };
-    } catch (error) {
-      console.error('Error getting current user:', error);
-      return null;
-    }
-  }
-
   static getTokenFromRequest(request: NextRequest): string | null {
-    const token = request.cookies.get('auth-token')?.value;
-    return token || null;
+    return request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
   }
 
-  static async validateRequestAuth(request: NextRequest): Promise<AuthTokenPayload | null> {
+  static validateRequestAuth(request: NextRequest): AuthTokenPayload | null {
     const token = this.getTokenFromRequest(request);
     if (!token) return null;
-
     return this.verifyToken(token);
   }
 
-  static async refreshAuthCookie(payload: AuthTokenPayload): Promise<void> {
-    // Refresh the token with a new expiry
+  /**
+   * Cookie setter helpers
+   * Use these in route handlers where you already have a NextResponse.
+   * Do NOT use next/headers cookies() to set cookies in API route handlers.
+   *
+   * IMPORTANT: do not set a cookie domain on localhost (cookie won't be sent to localhost).
+   */
+  static setAuthCookieOnResponse(
+    response: NextResponse,
+    payload: AuthTokenPayload,
+    options?: {
+      rememberMe?: boolean;
+      cookieDomain?: string;
+      requestHost?: string; // pass request.headers.get('host')
+    }
+  ): void {
     const token = this.generateToken(payload);
-    const cookieStore = await cookies();
 
-    cookieStore.set('auth-token', token, {
+    const rememberMe = Boolean(options?.rememberMe);
+    const cookieDomain = options?.cookieDomain ?? process.env.COOKIE_DOMAIN;
+    const requestHost = options?.requestHost ?? '';
+
+    const isLocalhost = requestHost ? isLocalhostHost(requestHost) : false;
+
+    // Only set domain in production AND when not on localhost/IP
+    const shouldSetDomain = Boolean(cookieDomain) && process.env.NODE_ENV === 'production' && !isLocalhost;
+
+    response.cookies.set(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 30, // Reset to 30 days
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
+      ...(shouldSetDomain ? { domain: cookieDomain } : {}),
+    });
+  }
+
+  static clearAuthCookieOnResponse(
+    response: NextResponse,
+    options?: {
+      cookieDomain?: string;
+      requestHost?: string;
+    }
+  ): void {
+    const cookieDomain = options?.cookieDomain ?? process.env.COOKIE_DOMAIN;
+    const requestHost = options?.requestHost ?? '';
+    const isLocalhost = requestHost ? isLocalhostHost(requestHost) : false;
+
+    const shouldSetDomain = Boolean(cookieDomain) && process.env.NODE_ENV === 'production' && !isLocalhost;
+
+    response.cookies.set(AUTH_COOKIE_NAME, '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+      ...(shouldSetDomain ? { domain: cookieDomain } : {}),
     });
   }
 }
 
-// Middleware helper for API routes
-export async function requireAuth(request: NextRequest): Promise<{ error?: string; user?: AuthTokenPayload }> {
-  const user = await AuthService.validateRequestAuth(request);
-
-  if (!user) {
-    return { error: 'Unauthorized' };
-  }
-
+/**
+ * Middleware helper for API routes
+ */
+export function requireAuth(request: NextRequest): { error?: string; user?: AuthTokenPayload } {
+  const user = AuthService.validateRequestAuth(request);
+  if (!user) return { error: 'Unauthorized' };
   return { user };
 }
 
-// Client password generation helper (since clients don't have passwords in current schema)
+/**
+ * Client password generation helper (since clients don't have passwords in current schema)
+ */
 export function generateClientPassword(email: string): string {
-  // Generate a deterministic password based on email for existing clients
-  // In production, you'd want to set actual passwords or require password reset
   return `${email.split('@')[0]}123!`;
 }

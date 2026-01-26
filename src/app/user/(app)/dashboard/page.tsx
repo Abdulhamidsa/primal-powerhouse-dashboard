@@ -4,7 +4,7 @@ import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { useUserData } from '@/hooks/useUserData';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Apple, UtensilsCrossed, Video, MessageSquare, Zap, Sun, Cloud, Moon } from 'lucide-react';
+import { Apple, UtensilsCrossed, Video, MessageSquare, Zap, Sun, Cloud } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
 
 const MOTIVATIONAL_QUOTES = [

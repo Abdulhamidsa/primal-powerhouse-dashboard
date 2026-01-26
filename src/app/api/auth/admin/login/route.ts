@@ -33,16 +33,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    await AuthService.setAuthCookie(
-      {
-        userId: user.id,
-        email: user.email,
-        type: 'admin',
-      },
-      Boolean(rememberMe)
-    );
+    // Generate token
+    const token = AuthService.generateToken({
+      userId: user.id,
+      email: user.email,
+      type: 'admin',
+    });
 
-    return NextResponse.json({
+    // Create response
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -53,6 +52,17 @@ export async function POST(request: NextRequest) {
       },
       redirect: '/admin/dashboard',
     });
+
+    // Set cookie via response headers
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    return response;
   } catch (error) {
     console.error('[ADMIN LOGIN] error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

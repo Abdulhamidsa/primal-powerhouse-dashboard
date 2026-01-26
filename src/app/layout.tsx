@@ -3,7 +3,7 @@ import './globals.css';
 import PWAInstaller from '@/components/PWAInstaller';
 import InstallPrompt from '@/components/InstallPrompt';
 import { RootAuthGate } from '@/components/RootAuthGate';
-import { LoadingProvider } from '@/contexts/LoadingContext';
+import { LoadingProvider } from '@/contexts/LoadingProvider';
 // import LayoutClient from '@/components/LayoutClient';
 import { Metadata } from 'next/types';
 import { SwrProvider } from '@/providers/swr-provider';

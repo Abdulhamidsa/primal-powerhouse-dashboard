@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Gym-inspired primal theme - Mobile First! */
+/* =========================================================
+   GLOBAL BASE – iOS-FIRST PWA BEHAVIOR
+   ========================================================= */
 @layer base {
   :root {
-    /* CSS Variables for backward compatibility with admin pages */
+    /* Theme variables */
     --color-bg: #000000;
     --color-surface: #0a0a0a;
     --color-bg-alt: #1a1a1a;
@@ -22,21 +24,35 @@
     @apply border-border;
   }
 
+  html,
+  body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply bg-background text-foreground font-body antialiased;
+
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
-    /* Mobile-first: ensure full height on mobile */
+
     min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    min-height: 100dvh;
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
-  /* Mobile-first responsive typography */
+  /* Mobile-first typography */
   h1 {
     @apply text-2xl font-bold tracking-tight;
   }
@@ -48,19 +64,7 @@
   h3 {
     @apply text-lg font-medium;
   }
-  .btn-active {
-    background: var(--color-text-black);
-    color: var(--color-text);
-    border-color: var(--color-text-muted);
-  }
 
-  .btn-inactive {
-    background: var(--color-text);
-    color: var(--color-text-black);
-    border-color: var(--color-border);
-  }
-
-  /* Tablet and desktop typography */
   @media (min-width: 768px) {
     h1 {
       @apply text-4xl;
@@ -76,140 +80,128 @@
   }
 }
 
+/* =========================================================
+   GLOBAL SCROLLBAR – iOS INVISIBLE, DESKTOP SUBTLE
+   ========================================================= */
+@layer base {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    }
+
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+/* =========================================================
+   COMPONENTS
+   ========================================================= */
 @layer components {
-  /* Custom scrollbar - gym aesthetic */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  .btn-active {
+    background: var(--color-text-black);
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-card;
+  .btn-inactive {
+    background: var(--color-text);
+    color: var(--color-text-black);
+    border-color: var(--color-border);
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-muted rounded-sm;
-    transition: background-color 0.2s ease;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/50;
-  }
-
-  /* Mobile-optimized button styles */
   .btn-primary {
-    @apply bg-primary hover:bg-primary-dark text-primary-foreground;
-    @apply px-4 py-3 rounded-lg font-medium; /* Larger touch targets */
+    @apply bg-primary text-primary-foreground;
+    @apply px-4 py-3 rounded-lg font-medium;
     @apply transition-all duration-200 ease-out;
-    @apply shadow-lg hover:shadow-xl;
-    @apply active:scale-95; /* Touch feedback */
-
-    /* Ensure minimum touch target size (44px) */
+    @apply shadow-lg active:scale-95;
     min-height: 44px;
     min-width: 44px;
   }
 
   .btn-secondary {
-    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground;
+    @apply bg-secondary text-secondary-foreground;
     @apply px-4 py-3 rounded-lg font-medium;
-    @apply transition-all duration-200 ease-out;
     @apply border border-border;
-    @apply active:scale-95;
-
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  .btn-highlight {
-    @apply bg-highlight hover:bg-highlight/90 text-background;
-    @apply px-4 py-3 rounded-lg font-medium;
     @apply transition-all duration-200 ease-out;
-    @apply shadow-lg hover:shadow-xl;
     @apply active:scale-95;
-    /* Subtle glow effect for highlight buttons */
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-
     min-height: 44px;
     min-width: 44px;
   }
 
-  /* Card components - mobile optimized */
   .card-base {
-    @apply bg-card border border-border rounded-lg;
-    @apply shadow-lg;
+    @apply bg-card border border-border rounded-lg shadow-lg;
     @apply transition-all duration-200 ease-out;
   }
 
   .card-interactive {
-    @apply card-base hover:bg-card-hover;
-    @apply hover:shadow-xl hover:border-primary/20;
-    @apply active:scale-[0.98]; /* Subtle press feedback */
-    @apply cursor-pointer;
+    @apply card-base cursor-pointer;
+    @apply active:scale-[0.98];
   }
 
-  /* Input styling - mobile friendly */
   .input-base {
     @apply bg-input border border-border rounded-lg;
-    @apply px-4 py-3 text-foreground placeholder:text-muted; /* Larger padding for mobile */
+    @apply px-4 py-3 text-foreground placeholder:text-muted;
     @apply transition-all duration-200 ease-out;
     @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
     @apply focus:outline-none;
-
-    /* Ensure good mobile experience */
     min-height: 44px;
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
   }
 
-  /* Loading spinner */
-  .spinner {
-    @apply animate-spin-slow text-primary;
-  }
-
-  /* Mobile-first modal */
   .modal-overlay {
     @apply fixed inset-0 bg-background/80 backdrop-blur-sm;
-    @apply flex items-end justify-center p-4; /* Bottom-aligned on mobile */
+    @apply flex items-end justify-center p-4;
     @apply z-50;
   }
 
   .modal-content {
-    @apply bg-card border border-border rounded-t-2xl; /* Rounded top on mobile */
+    @apply bg-card border border-border rounded-t-2xl;
     @apply w-full max-w-lg max-h-[90vh];
-    @apply overflow-y-auto custom-scrollbar;
-    @apply animate-slide-up;
+    @apply overflow-y-auto;
   }
 
-  /* Desktop modal adjustments */
   @media (min-width: 768px) {
     .modal-overlay {
-      @apply items-center; /* Center on desktop */
+      @apply items-center;
     }
 
     .modal-content {
-      @apply rounded-xl; /* Rounded all corners on desktop */
+      @apply rounded-xl;
     }
-  }
-
-  /* Status indicators */
-  .status-success {
-    @apply bg-green-500/20 text-green-400 border-green-500/30;
-  }
-
-  .status-warning {
-    @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30;
-  }
-
-  .status-error {
-    @apply bg-red-500/20 text-red-400 border-red-500/30;
-  }
-
-  .status-info {
-    @apply bg-blue-500/20 text-blue-400 border-blue-500/30;
   }
 }
 
+/* =========================================================
+   UTILITIES
+   ========================================================= */
 @layer utilities {
-  /* Mobile-first utilities */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
@@ -223,7 +215,6 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Text truncation utilities */
   .line-clamp-1 {
     overflow: hidden;
     display: -webkit-box;
@@ -248,7 +239,6 @@
     line-clamp: 3;
   }
 
-  /* Gradient backgrounds */
   .bg-gym-gradient {
     background: linear-gradient(135deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%);
   }

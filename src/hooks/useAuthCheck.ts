@@ -3,15 +3,17 @@ import { useRouter } from 'next/navigation';
 
 interface AuthCheckOptions {
   checkAuthUrl: string;
-  redirectUrl: string;
+  redirectIfAuthenticated?: string; // login → dashboard
+  redirectIfUnauthenticated?: string; // protected → login
   enabled?: boolean;
 }
 
-/**
- * Hook to check if user is already authenticated
- * Should be used in layout wrappers, not in individual pages
- */
-export function useAuthCheck({ checkAuthUrl, redirectUrl, enabled = true }: AuthCheckOptions) {
+export function useAuthCheck({
+  checkAuthUrl,
+  redirectIfAuthenticated,
+  redirectIfUnauthenticated,
+  enabled = true,
+}: AuthCheckOptions) {
   const [isChecking, setIsChecking] = useState(true);
   const router = useRouter();
 
@@ -23,24 +25,31 @@ export function useAuthCheck({ checkAuthUrl, redirectUrl, enabled = true }: Auth
 
     const checkAuth = async () => {
       try {
-        const response = await fetch(checkAuthUrl, {
+        const res = await fetch(checkAuthUrl, {
           credentials: 'include',
           cache: 'no-store',
         });
 
-        if (response.ok) {
-          // User is already authenticated, redirect
-          router.replace(redirectUrl);
+        if (res.ok && redirectIfAuthenticated) {
+          router.replace(redirectIfAuthenticated);
+          return;
         }
-      } catch (error) {
-        console.error('Auth check error:', error);
+
+        if (!res.ok && redirectIfUnauthenticated) {
+          router.replace(redirectIfUnauthenticated);
+          return;
+        }
+      } catch {
+        if (redirectIfUnauthenticated) {
+          router.replace(redirectIfUnauthenticated);
+        }
       } finally {
         setIsChecking(false);
       }
     };
 
     checkAuth();
-  }, [checkAuthUrl, redirectUrl, enabled, router]);
+  }, [checkAuthUrl, redirectIfAuthenticated, redirectIfUnauthenticated, enabled, router]);
 
   return { isChecking };
 }
