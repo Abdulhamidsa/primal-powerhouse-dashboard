@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { BarChart, CalendarDays, Clock, Film, FileText, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarDays, Clock, Film, FileText, PlusCircle, Trash2 } from 'lucide-react';
 import { cx, iosCardStyle, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { VideoAssignment } from '@/types/video';
 import { formatDuration } from '@/helpers';

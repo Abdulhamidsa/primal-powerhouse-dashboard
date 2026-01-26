@@ -1,22 +1,23 @@
 'use client';
 
+import Image from 'next/image';
 import { Video } from '@/types/video';
 import { DIFFICULTY_LEVELS, VIDEO_CATEGORIES } from '@/types/video';
 
 interface VideoCardProps {
   video: Video;
   isSelected: boolean;
-  onSelect: () => void;
-  onClick: () => void;
-  formatDuration: (minutes: number) => string;
+  onSelectAction: () => void;
+  onClickAction: () => void;
+  formatDurationAction: (minutes: number) => string;
 }
 
 export default function VideoCard({
   video,
   isSelected,
-  onSelect,
-  onClick,
-  formatDuration,
+  onSelectAction,
+  onClickAction,
+  formatDurationAction,
 }: VideoCardProps) {
   const difficultyConfig = DIFFICULTY_LEVELS.find(d => d.value === video.difficulty);
   const categoryConfig = VIDEO_CATEGORIES.find(c => c.value === video.category);
@@ -25,12 +26,12 @@ export default function VideoCard({
     if ((e.target as HTMLElement).closest('.select-checkbox')) {
       return; // Don't trigger card click if checkbox was clicked
     }
-    onClick();
+    onClickAction();
   };
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect();
+    onSelectAction();
   };
 
   return (
@@ -58,17 +59,18 @@ export default function VideoCard({
       {/* Video Thumbnail */}
       <div className="relative w-full h-48 bg-gradient-to-br from-zinc-800 via-zinc-700 to-zinc-800 rounded-t-2xl overflow-hidden">
         {video.thumbnailUrl ? (
-          <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" />
+          <Image
+            src={video.thumbnailUrl}
+            alt={video.title}
+            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900/30 to-purple-900/30">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -93,7 +95,7 @@ export default function VideoCard({
 
         {/* Duration Badge */}
         <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full font-medium">
-          {formatDuration(video.duration)}
+          {formatDurationAction(video.duration)}
         </div>
 
         {/* View Count */}
@@ -113,15 +115,11 @@ export default function VideoCard({
       {/* Content */}
       <div className="p-5">
         {/* Title */}
-        <h3 className="font-bold text-zinc-100 mb-2 line-clamp-2 leading-tight text-lg">
-          {video.title}
-        </h3>
+        <h3 className="font-bold text-zinc-100 mb-2 line-clamp-2 leading-tight text-lg">{video.title}</h3>
 
         {/* Description */}
         {video.description && (
-          <p className="text-sm text-zinc-400 mb-3 line-clamp-2 leading-relaxed">
-            {video.description}
-          </p>
+          <p className="text-sm text-zinc-400 mb-3 line-clamp-2 leading-relaxed">{video.description}</p>
         )}
 
         {/* Metadata */}
@@ -148,9 +146,7 @@ export default function VideoCard({
               </span>
             ))}
             {video.tags.length > 3 && (
-              <span className="text-xs text-zinc-500 font-medium">
-                +{video.tags.length - 3} more
-              </span>
+              <span className="text-xs text-zinc-500 font-medium">+{video.tags.length - 3} more</span>
             )}
           </div>
         )}

@@ -9,9 +9,12 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default [
   ...compat.extends('next/core-web-vitals', 'prettier'),
-
+  {
+    ignores: ['.next/**', 'node_modules/**', 'dist/**', 'build/**'],
+  },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

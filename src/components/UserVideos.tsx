@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Play, Clock, X, CheckCircle, Filter, Dumbbell, Heart, Zap, User } from 'lucide-react';
 
 interface Video {
@@ -216,10 +217,12 @@ export default function UserVideos({ userId }: UserVideosProps) {
                 {/* Thumbnail */}
                 <div className="relative w-20 h-20 flex-shrink-0">
                   {assignment.video.thumbnailUrl ? (
-                    <img
+                    <Image
                       src={assignment.video.thumbnailUrl}
                       alt={assignment.video.title}
                       className="w-full h-full object-cover rounded-xl"
+                      fill
+                      sizes="80px"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center">

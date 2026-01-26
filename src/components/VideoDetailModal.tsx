@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 interface VideoDetailModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   video: Video | null;
   onEdit?: (video: Video) => void;
   onDelete?: (videoId: string) => void;
@@ -14,7 +14,7 @@ interface VideoDetailModalProps {
 
 export default function VideoDetailModal({
   isOpen,
-  onClose,
+  onCloseAction,
   video,
   onEdit,
   onDelete,
@@ -22,7 +22,6 @@ export default function VideoDetailModal({
 }: VideoDetailModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
 
   if (!isOpen || !video) return null;
 
@@ -110,7 +109,7 @@ export default function VideoDetailModal({
     try {
       await onDelete(video.id);
       setShowDeleteConfirm(false);
-      onClose();
+      onCloseAction();
     } catch (error) {
       console.error('Error deleting video:', error);
     } finally {
@@ -188,7 +187,7 @@ export default function VideoDetailModal({
                 </button>
               )}
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

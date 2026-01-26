@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Meal } from '@/types/meal';
 import PersonalizeMealModal from './PersonalizeMealModal';
 
@@ -63,8 +64,8 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
           {/* Header */}
           <div className="relative">
             {meal.images && meal.images.length > 0 ? (
-              <div className="h-64 bg-gradient-to-br from-zinc-800 to-zinc-900 overflow-hidden rounded-t-2xl">
-                <img src={meal.images[0]} alt={meal.name} className="w-full h-full object-cover" />
+              <div className="h-64 bg-gradient-to-br from-zinc-800 to-zinc-900 overflow-hidden rounded-t-2xl relative">
+                <Image src={meal.images[0]} alt={meal.name} fill className="object-cover" />
               </div>
             ) : (
               <div className="h-64 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center text-8xl rounded-t-2xl">

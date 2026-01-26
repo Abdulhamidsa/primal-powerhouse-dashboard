@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Clock, Users, Utensils } from 'lucide-react';
 
 interface Meal {
@@ -214,10 +215,11 @@ export default function UserMeals({ userId }: UserMealsProps) {
                         {/* Image Container */}
                         <div className="relative w-full h-40 bg-zinc-900 overflow-hidden">
                           {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
-                            <img
+                            <Image
                               src={meal.imageUrl}
                               alt={meal.name}
-                              className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                              fill
+                              className="object-cover hover:scale-110 transition-transform duration-300"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-900">

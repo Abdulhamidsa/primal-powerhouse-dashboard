@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Client, Meal, MealType, DailyMealPlan, AssignedMeal } from '@/types/meal';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 
 // Enhanced sample meals with detailed information
@@ -54,8 +55,7 @@ const enhancedSampleMeals: Meal[] = [
       {
         id: '2',
         step: 2,
-        instruction:
-          'Toast the bread slices until golden brown and crispy on the outside but still soft inside.',
+        instruction: 'Toast the bread slices until golden brown and crispy on the outside but still soft inside.',
         timeEstimate: 3,
       },
       {
@@ -104,8 +104,7 @@ const enhancedSampleMeals: Meal[] = [
       'Choose ripe but firm avocados for the best texture',
       'Serve immediately for the best experience with runny yolks',
     ],
-    nutritionNotes:
-      'Rich in healthy monounsaturated fats, complete proteins, and fiber. Provides long-lasting energy.',
+    nutritionNotes: 'Rich in healthy monounsaturated fats, complete proteins, and fiber. Provides long-lasting energy.',
     allergens: ['eggs', 'gluten'],
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15'),
@@ -138,8 +137,7 @@ const enhancedSampleMeals: Meal[] = [
       {
         id: '1',
         step: 1,
-        instruction:
-          'Season chicken breast with salt, pepper, and herbs. Let rest at room temperature for 15 minutes.',
+        instruction: 'Season chicken breast with salt, pepper, and herbs. Let rest at room temperature for 15 minutes.',
         timeEstimate: 15,
       },
       {
@@ -160,8 +158,7 @@ const enhancedSampleMeals: Meal[] = [
       {
         id: '4',
         step: 4,
-        instruction:
-          'Wash and chop romaine lettuce into bite-sized pieces. Place in a large serving bowl.',
+        instruction: 'Wash and chop romaine lettuce into bite-sized pieces. Place in a large serving bowl.',
         timeEstimate: 3,
       },
       {
@@ -173,8 +170,7 @@ const enhancedSampleMeals: Meal[] = [
       {
         id: '6',
         step: 6,
-        instruction:
-          'Toss lettuce with dressing, top with sliced chicken, remaining Parmesan, and roasted chickpeas.',
+        instruction: 'Toss lettuce with dressing, top with sliced chicken, remaining Parmesan, and roasted chickpeas.',
         timeEstimate: 2,
       },
     ],
@@ -336,15 +332,13 @@ const enhancedSampleMeals: Meal[] = [
       {
         id: '1',
         step: 1,
-        instruction:
-          'Wash and prepare fresh berries. Hull strawberries and cut into bite-sized pieces if large.',
+        instruction: 'Wash and prepare fresh berries. Hull strawberries and cut into bite-sized pieces if large.',
         timeEstimate: 3,
       },
       {
         id: '2',
         step: 2,
-        instruction:
-          'Mix Greek yogurt with vanilla extract and a tiny pinch of lemon zest if using.',
+        instruction: 'Mix Greek yogurt with vanilla extract and a tiny pinch of lemon zest if using.',
         timeEstimate: 1,
       },
       {
@@ -434,8 +428,7 @@ export default function AssignMealsPage() {
     const matchesSearch = meal.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || meal.type === filterType;
     const matchesRestrictions = !client.dietaryRestrictions.some(
-      restriction =>
-        meal.tags.some(tag => tag.toLowerCase().includes(restriction.toLowerCase())) === false
+      restriction => meal.tags.some(tag => tag.toLowerCase().includes(restriction.toLowerCase())) === false
     );
     return matchesSearch && matchesType;
   });
@@ -539,12 +532,7 @@ export default function AssignMealsPage() {
             <div className="flex items-center gap-4">
               <Link href={`/clients/${client.id}`} className="text-gray-600 hover:text-gray-900">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div className="text-2xl font-bold text-gray-900">Assign Meals</div>
@@ -552,10 +540,7 @@ export default function AssignMealsPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link
-                href={`/clients/${client.id}`}
-                className="text-gray-600 hover:text-gray-900 font-medium"
-              >
+              <Link href={`/clients/${client.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
                 Back to Profile
               </Link>
             </div>
@@ -608,9 +593,11 @@ export default function AssignMealsPage() {
                         {/* Meal Image */}
                         <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                           {meal.images[0] ? (
-                            <img
+                            <Image
                               src={meal.images[0]}
                               alt={meal.name}
+                              width={96}
+                              height={96}
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -625,26 +612,17 @@ export default function AssignMealsPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <h3 className="font-semibold text-gray-900 mb-1">{meal.name}</h3>
-                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                                {meal.description}
-                              </p>
+                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{meal.description}</p>
 
                               <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
                                 <span className="flex items-center gap-1">
-                                  <span className="font-medium text-gray-900">{meal.calories}</span>{' '}
-                                  cal
+                                  <span className="font-medium text-gray-900">{meal.calories}</span> cal
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <span className="font-medium text-gray-900">{meal.protein}g</span>{' '}
-                                  protein
+                                  <span className="font-medium text-gray-900">{meal.protein}g</span> protein
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
@@ -668,10 +646,7 @@ export default function AssignMealsPage() {
                                   {meal.difficulty}
                                 </span>
                                 {meal.tags.slice(0, 2).map((tag, index) => (
-                                  <span
-                                    key={index}
-                                    className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full"
-                                  >
+                                  <span key={index} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">
                                     {tag}
                                   </span>
                                 ))}
@@ -703,9 +678,7 @@ export default function AssignMealsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Date
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
                   <input
                     type="date"
                     value={selectedDate}
@@ -777,9 +750,7 @@ export default function AssignMealsPage() {
                                 )}
                               </div>
                               {assignedMeal && (
-                                <div className="mt-1 font-medium truncate">
-                                  {assignedMeal.meal.name}
-                                </div>
+                                <div className="mt-1 font-medium truncate">{assignedMeal.meal.name}</div>
                               )}
                             </div>
                           );
