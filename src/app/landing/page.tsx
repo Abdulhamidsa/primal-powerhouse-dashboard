@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
-import AdminLoginPage from '../admin/login/page';
 import UserLoginPage from '../user/login/page';
+import AdminLoginPage from '../admin/(auth)/login/page';
 
 export default async function LoginPage() {
   const headersList = await headers();
