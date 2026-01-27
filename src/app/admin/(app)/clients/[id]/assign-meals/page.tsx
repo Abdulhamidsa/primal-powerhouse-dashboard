@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Client, Meal, MealType, DailyMealPlan, AssignedMeal } from '@/types/meal';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
 
 // Enhanced sample meals with detailed information
 const enhancedSampleMeals: Meal[] = [
@@ -416,7 +415,6 @@ const sampleClient: Client = {
 };
 
 export default function AssignMealsPage() {
-  const params = useParams();
   const [client] = useState<Client>(sampleClient);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('breakfast');
@@ -427,9 +425,7 @@ export default function AssignMealsPage() {
   const filteredMeals = enhancedSampleMeals.filter(meal => {
     const matchesSearch = meal.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || meal.type === filterType;
-    const matchesRestrictions = !client.dietaryRestrictions.some(
-      restriction => meal.tags.some(tag => tag.toLowerCase().includes(restriction.toLowerCase())) === false
-    );
+
     return matchesSearch && matchesType;
   });
 

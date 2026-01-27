@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Clock, Users, Utensils } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Utensils } from 'lucide-react';
 
 interface Meal {
   id: string;
@@ -60,7 +60,7 @@ export default function UserMeals({ userId }: UserMealsProps) {
 
   useEffect(() => {
     fetchMealPlans();
-  }, [userId]);
+  });
 
   const fetchMealPlans = async () => {
     try {
@@ -76,14 +76,6 @@ export default function UserMeals({ userId }: UserMealsProps) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDuration = (minutes?: number) => {
-    if (!minutes) return 'N/A';
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes > 0 ? `${remainingMinutes}m` : ''}`;
   };
 
   // Group meals by type
@@ -165,13 +157,6 @@ export default function UserMeals({ userId }: UserMealsProps) {
           const position = carouselPositions[type] || 0;
           const canScrollLeft = position > 0;
           const canScrollRight = position < Math.max(0, meals.length - 1);
-
-          const typeColors = {
-            breakfast: 'from-orange-500/20 to-amber-600/20 border-orange-500/30',
-            lunch: 'from-green-500/20 to-emerald-600/20 border-green-500/30',
-            dinner: 'from-purple-500/20 to-indigo-600/20 border-purple-500/30',
-            snack: 'from-pink-500/20 to-rose-600/20 border-pink-500/30',
-          };
 
           return (
             <div key={type} className="space-y-3">

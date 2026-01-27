@@ -44,7 +44,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
 
   useEffect(() => {
     fetchVideoAssignments();
-  }, [userId]);
+  });
 
   const fetchVideoAssignments = async () => {
     try {
