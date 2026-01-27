@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Video, VideoCategory, DifficultyLevel, VideoFormData } from '@/types/video';
+import { Video, VideoCategory, DifficultyLevel } from '@/types/video';
 import NewAddVideoModal from '@/components/NewAddVideoModal';
 import VideoCard from '@/components/VideoCard';
 import NewVideoDetailModal from '@/components/NewVideoDetailModal';
@@ -205,12 +205,12 @@ export default function VideosPage() {
                 key={video.id}
                 video={video}
                 isSelected={selectedVideos.some(v => v.id === video.id)}
-                onSelect={() => handleVideoSelect(video)}
-                onClick={() => {
+                onSelectAction={() => handleVideoSelect(video)}
+                onClickAction={() => {
                   setSelectedVideo(video);
                   setIsDetailModalOpen(true);
                 }}
-                formatDuration={formatDuration}
+                formatDurationAction={formatDuration}
               />
             ))}
           </div>
