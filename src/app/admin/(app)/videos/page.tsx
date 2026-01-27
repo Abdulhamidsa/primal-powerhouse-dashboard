@@ -45,7 +45,7 @@ export default function VideosPage() {
 
   useEffect(() => {
     fetchVideos();
-  }, [filters.category, filters.difficulty]);
+  });
 
   const handleAddVideo = (video: Video) => {
     setVideos([video, ...videos]);
