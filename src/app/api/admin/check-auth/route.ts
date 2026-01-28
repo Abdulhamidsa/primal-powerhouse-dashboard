@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { AuthService } from '@/lib/auth';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,4 +32,3 @@ export async function GET(request: NextRequest) {
     return jsonWithCache({ authenticated: false }, { status: 401 });
   }
 }
-

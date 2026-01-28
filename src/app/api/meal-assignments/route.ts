@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 
@@ -6,12 +6,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { mealId, clientId, mealType: rawMealType, dayOfWeek, planId, portion, notes } = body;
-    
+
     // Ensure meal type is uppercase to match the Prisma enum
-    const mealType = typeof rawMealType === 'string' 
-      ? rawMealType.toUpperCase() 
-      : rawMealType;
-    
+    const mealType = typeof rawMealType === 'string' ? rawMealType.toUpperCase() : rawMealType;
+
     // Validate that meal type is a valid enum value
     const validMealTypes = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
     if (!validMealTypes.includes(mealType)) {
@@ -112,4 +110,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

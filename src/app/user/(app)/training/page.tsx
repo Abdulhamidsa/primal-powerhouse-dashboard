@@ -147,18 +147,6 @@ export default function UserTrainingPage() {
     setIsVideoModalOpen(true);
   };
 
-  const closeVideoModal = () => {
-    setSelectedVideo(null);
-    setIsVideoModalOpen(false);
-  };
-
-  const handleVideoComplete = () => {
-    if (selectedVideo) {
-      markVideoCompleted(selectedVideo.id);
-      closeVideoModal();
-    }
-  };
-
   const allTags = useMemo(
     () => Array.from(new Set(assignments.flatMap(a => (Array.isArray(a.video.tags) ? a.video.tags : [])))),
     [assignments]

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import Navigation from '@/components/Navigation';
 import { DataService, Client, MealPlan } from '@/services/dataService';
 import AssignPersonalizedMealsModal from '@/components/AssignPersonalizedMealsModal';
@@ -34,36 +35,36 @@ export default function ClientMealPlansPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchClientData = async () => {
+      try {
+        const clients = await DataService.getClients();
+        const clientData = clients.find(c => c.id === clientId);
+        setClient(clientData || null);
+      } catch (error) {
+        console.error('Error fetching client:', error);
+      }
+    };
+
+    const fetchMealPlans = async () => {
+      try {
+        setLoading(true);
+        const plans = await DataService.getMealPlans(clientId);
+        setMealPlans(plans);
+        if (plans.length > 0 && !selectedPlanId) {
+          setSelectedPlanId(plans[0].id);
+        }
+      } catch (error) {
+        console.error('Error fetching meal plans:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (clientId) {
       fetchClientData();
       fetchMealPlans();
     }
-  }, [clientId]);
-
-  const fetchClientData = async () => {
-    try {
-      const clients = await DataService.getClients();
-      const clientData = clients.find(c => c.id === clientId);
-      setClient(clientData || null);
-    } catch (error) {
-      console.error('Error fetching client:', error);
-    }
-  };
-
-  const fetchMealPlans = async () => {
-    try {
-      setLoading(true);
-      const plans = await DataService.getMealPlans(clientId);
-      setMealPlans(plans);
-      if (plans.length > 0 && !selectedPlanId) {
-        setSelectedPlanId(plans[0].id);
-      }
-    } catch (error) {
-      console.error('Error fetching meal plans:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [clientId, selectedPlanId]);
 
   const selectedPlan = mealPlans.find(plan => plan.id === selectedPlanId);
 
@@ -144,14 +145,15 @@ export default function ClientMealPlansPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <img
+            <Image
               src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                (e.target as HTMLImageElement).src =
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}&background=random`;
-              }}
               alt={client.name}
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-full object-cover"
+              onError={() => {
+                // Fallback handled by Next.js Image component
+              }}
             />
             <div>
               <h1 className="text-4xl font-bold text-gray-900">{client.name}&apos;s Meal Plans</h1>
@@ -319,8 +321,8 @@ export default function ClientMealPlansPage() {
                                               </div>
                                             )
                                           );
-                                        } catch (e) {
-                                          return null;
+                                        } catch (error) {
+                                          return error;
                                         }
                                       })()}
                                   </div>

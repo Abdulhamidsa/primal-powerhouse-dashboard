@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import bcrypt from 'bcryptjs';
@@ -175,4 +175,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

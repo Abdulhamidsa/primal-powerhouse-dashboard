@@ -17,7 +17,6 @@ export async function GET() {
   try {
     // Test database connection
     await prisma.$connect();
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
     checks.database.status = 'connected';
     checks.database.details = 'Database connection successful';
 

@@ -5,10 +5,9 @@ import { AuthService } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, rememberMe } = body as {
+    const { email, password } = body as {
       email?: string;
       password?: string;
-      rememberMe?: boolean;
     };
 
     if (!email || !password) {

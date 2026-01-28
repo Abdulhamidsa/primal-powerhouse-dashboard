@@ -358,65 +358,8 @@ async function fullSeed() {
 
     for (const client of clients) {
       // Video assignments (3 videos per client)
-      const videoAssignments = await Promise.all([
-        prisma.videoAssignment.create({
-          data: {
-            clientId: client.id,
-            videoId: videos[0].id, // Yoga Flow
-            assignedDate: new Date(),
-            notes: 'Perfect for morning routine and flexibility',
-            progress: 0,
-            isCompleted: false,
-          },
-        }),
-        prisma.videoAssignment.create({
-          data: {
-            clientId: client.id,
-            videoId: videos[1].id, // HIIT Cardio
-            assignedDate: new Date(),
-            notes: '3x per week for cardio fitness',
-            progress: 0,
-            isCompleted: false,
-          },
-        }),
-        prisma.videoAssignment.create({
-          data: {
-            clientId: client.id,
-            videoId: videos[4].id, // Post-workout stretch
-            assignedDate: new Date(),
-            notes: 'Use after every workout session',
-            progress: 0,
-            isCompleted: false,
-          },
-        }),
-      ]);
 
       // Meal plan with assignments
-      const mealPlan = await prisma.mealPlan.create({
-        data: {
-          clientId: client.id,
-          name: `${client.name}'s Weekly Nutrition Plan`,
-          startDate: new Date(),
-          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          isActive: true,
-          notes: 'Balanced nutrition plan tailored to fitness goals',
-          mealAssignments: {
-            create: [
-              // Day 1
-              { mealId: meals[0].id, dayOfWeek: 1, mealType: 'BREAKFAST', portion: 1.0 },
-              { mealId: meals[2].id, dayOfWeek: 1, mealType: 'LUNCH', portion: 1.0 },
-              { mealId: meals[4].id, dayOfWeek: 1, mealType: 'DINNER', portion: 1.0 },
-              // Day 2
-              { mealId: meals[1].id, dayOfWeek: 2, mealType: 'BREAKFAST', portion: 1.0 },
-              { mealId: meals[3].id, dayOfWeek: 2, mealType: 'LUNCH', portion: 1.0 },
-              { mealId: meals[5].id, dayOfWeek: 2, mealType: 'DINNER', portion: 1.0 },
-              // Snacks
-              { mealId: meals[6].id, dayOfWeek: 1, mealType: 'SNACK', portion: 1.0 },
-              { mealId: meals[7].id, dayOfWeek: 2, mealType: 'SNACK', portion: 1.0 },
-            ],
-          },
-        },
-      });
 
       console.log(`✅ Created assignments for ${client.name}`);
     }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 
@@ -142,8 +142,7 @@ export async function GET(request: NextRequest) {
 
     const avgRating =
       workoutsWithRating.length > 0
-        ? workoutsWithRating.reduce((sum, w) => sum + (w.rating || 0), 0) /
-          workoutsWithRating.length
+        ? workoutsWithRating.reduce((sum, w) => sum + (w.rating || 0), 0) / workoutsWithRating.length
         : 0;
 
     // Calculate growth percentages
@@ -217,4 +216,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
