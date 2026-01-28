@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Meal, MealType } from '@/types/meal';
+import { MealType } from '@/types/meal';
 
 interface MealFiltersProps {
   onFilterChangeAction: (filters: MealFilters) => void;

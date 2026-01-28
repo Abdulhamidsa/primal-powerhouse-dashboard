@@ -21,7 +21,7 @@ export default function MealPersonalization({
 }: MealPersonalizationProps) {
   // State for personalized meal data
   const [personalizedMeal, setPersonalizedMeal] = useState<Meal | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [, setSelectedImage] = useState<string>('');
 
   // Initialize the personalized meal when the original meal changes
   useEffect(() => {
@@ -110,7 +110,6 @@ export default function MealPersonalization({
       // Recalculate macros if amount changed
       if (field === 'amount') {
         // This is a simple recalculation. In a real app you might have a more sophisticated formula
-        const ratio = value / (personalizedMeal.ingredients[index].amount || 1);
 
         // Update meal macros based on the ingredient change
         // This is simplified - real calculation would depend on ingredient nutritional data

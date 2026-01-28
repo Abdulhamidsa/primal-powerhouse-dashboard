@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DataService, Meal, MealPlan } from '@/services/dataService';
 
 interface AssignMealsModalProps {
@@ -46,23 +46,16 @@ export default function AssignMealsModal({
   const [notes, setNotes] = useState('');
   const [existingMealPlan, setExistingMealPlan] = useState<MealPlan | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchMeals();
-      fetchExistingMealPlan();
-    }
-  }, [isOpen, clientId, clientName]);
-
-  const fetchMeals = async () => {
+  const fetchMeals = useCallback(async () => {
     try {
       const mealsData = await DataService.getMeals();
       setMeals(mealsData);
     } catch (error) {
       console.error('Error fetching meals:', error);
     }
-  };
+  }, []);
 
-  const fetchExistingMealPlan = async () => {
+  const fetchExistingMealPlan = useCallback(async () => {
     try {
       console.log('Fetching existing meal plans for client:', clientId);
       const response = await fetch(`/api/clients/${clientId}/meal-plans`);
@@ -126,7 +119,14 @@ export default function AssignMealsModal({
       nextWeek.setDate(today.getDate() + 7);
       setEndDate(nextWeek.toISOString().split('T')[0]);
     }
-  };
+  }, [clientId, clientName]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchMeals();
+      fetchExistingMealPlan();
+    }
+  }, [isOpen, fetchMeals, fetchExistingMealPlan]);
 
   const handleMealSelect = (dayOfWeek: number, mealType: string, mealId: string) => {
     const key = `${dayOfWeek}_${mealType}`;

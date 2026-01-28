@@ -9,18 +9,18 @@ interface VideoDetailModalProps {
   isOpen: boolean;
   onCloseAction: () => void;
   video: Video | null;
-  onEdit?: (video: Video) => void;
-  onDelete?: (videoId: string) => void;
-  onAssign?: (video: Video) => void;
+  onEditAction?: (video: Video) => void;
+  onDeleteAction?: (videoId: string) => void;
+  onAssignAction?: (video: Video) => void;
 }
 
 export default function NewVideoDetailModal({
   isOpen,
   onCloseAction,
   video,
-  onEdit,
-  onDelete,
-  onAssign,
+  onEditAction,
+  onDeleteAction,
+  onAssignAction,
 }: VideoDetailModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -144,11 +144,11 @@ export default function NewVideoDetailModal({
   };
 
   const handleDelete = async () => {
-    if (!onDelete) return;
+    if (!onDeleteAction) return;
 
     setIsDeleting(true);
     try {
-      await onDelete(video.id);
+      await onDeleteAction(video.id);
       setShowDeleteConfirm(false);
       onCloseAction();
     } catch (error) {
@@ -500,9 +500,9 @@ export default function NewVideoDetailModal({
               ID: {video.id.slice(0, 8)}...
             </div>
             <div className="flex gap-2">
-              {onAssign && (
+              {onAssignAction && (
                 <button
-                  onClick={() => onAssign(video)}
+                  onClick={() => onAssignAction(video)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                   style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
                 >
@@ -525,9 +525,9 @@ export default function NewVideoDetailModal({
                 </button>
               )}
 
-              {onEdit && (
+              {onEditAction && (
                 <button
-                  onClick={() => onEdit(video)}
+                  onClick={() => onEditAction(video)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                   style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
                 >
@@ -550,7 +550,7 @@ export default function NewVideoDetailModal({
                 </button>
               )}
 
-              {onDelete && (
+              {onDeleteAction && (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"

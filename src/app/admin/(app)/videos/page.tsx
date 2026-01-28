@@ -219,20 +219,20 @@ export default function VideosPage() {
         {/* Modals */}
         <NewAddVideoModal
           isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onVideoAdded={handleAddVideo}
+          onCloseAction={() => setIsAddModalOpen(false)}
+          onVideoAddedAction={handleAddVideo}
         />
 
         {selectedVideo && (
           <NewVideoDetailModal
             video={selectedVideo}
             isOpen={isDetailModalOpen}
-            onClose={() => {
+            onCloseAction={() => {
               setIsDetailModalOpen(false);
               setSelectedVideo(null);
             }}
-            onDelete={handleDeleteVideo}
-            onAssign={(video: Video) => {
+            onDeleteAction={handleDeleteVideo}
+            onAssignAction={(video: Video) => {
               setSelectedVideos([video]);
               setIsAssignModalOpen(true);
               setIsDetailModalOpen(false);
@@ -243,11 +243,11 @@ export default function VideosPage() {
         <AssignVideosModal
           selectedVideos={selectedVideos}
           isOpen={isAssignModalOpen}
-          onClose={() => {
+          onCloseAction={() => {
             setIsAssignModalOpen(false);
             setSelectedVideos([]);
           }}
-          onAssign={assignments => {
+          onAssignAction={assignments => {
             setSelectedVideos([]);
             setIsAssignModalOpen(false);
             alert(`Successfully assigned ${assignments.length} video assignments to clients!`);

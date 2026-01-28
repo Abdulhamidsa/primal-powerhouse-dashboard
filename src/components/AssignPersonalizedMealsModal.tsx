@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Meal, Client } from '@/types/meal';
-import { X, Search, Filter, Calendar, Edit, User, Check } from 'lucide-react';
+import { X, Search, Calendar, Edit, User, Check } from 'lucide-react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 import { clientApi } from '@/lib/client-api';
 

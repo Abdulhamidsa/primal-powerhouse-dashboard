@@ -41,7 +41,7 @@ export default function AssignMealModal({
     if (isOpen && clients.length === 0) {
       fetchClients();
     }
-  }, [isOpen]);
+  }, [clients.length, isOpen]);
 
   const fetchClients = async () => {
     try {

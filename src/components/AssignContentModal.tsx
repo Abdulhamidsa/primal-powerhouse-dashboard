@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { Video } from '@/types/video';
 import { Meal, MealIngredient } from '@/types/meal';
 import IntegratedMealAssignmentModal from './IntegratedMealAssignmentModal';
@@ -39,6 +40,22 @@ export default function AssignContentModal({
   const [showIntegratedModal, setShowIntegratedModal] = useState(false);
 
   useEffect(() => {
+    const fetchContent = async () => {
+      setLoading(true);
+      try {
+        const endpoint = type === 'videos' ? '/api/videos' : '/api/meals';
+        const response = await fetch(endpoint);
+        if (response.ok) {
+          const data = await response.json();
+          setContent(data);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${type}:`, error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (isOpen) {
       if (type === 'meals') {
         // For meals, we'll use the integrated meal assignment modal
@@ -56,22 +73,6 @@ export default function AssignContentModal({
       setShowIntegratedModal(false);
     }
   }, [isOpen, type]);
-
-  const fetchContent = async () => {
-    setLoading(true);
-    try {
-      const endpoint = type === 'videos' ? '/api/videos' : '/api/meals';
-      const response = await fetch(endpoint);
-      if (response.ok) {
-        const data = await response.json();
-        setContent(data);
-      }
-    } catch (error) {
-      console.error(`Error fetching ${type}:`, error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredContent = content.filter((item: Video | Meal) => {
     const searchLower = searchTerm.toLowerCase();
@@ -704,10 +705,11 @@ export default function AssignContentModal({
                     {/* Image */}
                     <div className="relative aspect-[4/3] mb-6 rounded-xl overflow-hidden">
                       {(previewItem as Meal).images && (previewItem as Meal).images.length > 0 ? (
-                        <img
+                        <Image
                           src={(previewItem as Meal).images[0]}
                           alt={(previewItem as Meal).name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                           onError={e => {
                             // Fallback image if the meal image fails to load
                             (e.target as HTMLImageElement).src = 'https://picsum.photos/800/600';
