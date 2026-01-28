@@ -1,33 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import NewAddClientModal from '@/components/NewAddClientModal';
-import { DataService, Client } from '@/services/dataService';
+import { useClients } from '@/hooks/useClients';
 import { Users, Flame, BarChart, Target, Activity, Clock, Mail, Phone, Scale, Calendar } from 'lucide-react';
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  const fetchClients = async () => {
-    try {
-      setLoading(true);
-      const clientsData = await DataService.getClients();
-      setClients(clientsData);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  const { clients, isLoading: loading, mutate: fetchClients } = useClients();
 
   const filteredClients = statusFilter === 'ALL' ? clients : clients.filter(client => client.status === statusFilter);
 
