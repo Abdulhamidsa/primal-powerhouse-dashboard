@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export type DashboardUser = {
   id: string;
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
       goalWeight: client.targetWeight,
     };
 
-    return NextResponse.json(payload);
+    return jsonWithCache(payload);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ error: 'Database error', details: message }, { status: 500 });

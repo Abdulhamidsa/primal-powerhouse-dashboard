@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
       };
 
-      return NextResponse.json(clientData);
+      return jsonWithCache(clientData);
     } catch (parseError) {
       console.error('API: Error parsing client JSON fields:', parseError);
       return NextResponse.json(

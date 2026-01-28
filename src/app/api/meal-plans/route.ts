@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get('clientId');
 
     if (!clientId) {
-      return NextResponse.json({ error: 'Client ID is required' }, { status: 400 });
+      return jsonWithCache({ error: 'Client ID is required' }, { status: 400 });
     }
 
     const mealPlans = await prisma.mealPlan.findMany({
@@ -23,10 +24,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(mealPlans);
+    return jsonWithCache(mealPlans);
   } catch (error) {
     console.error('Error fetching meal plans:', error);
-    return NextResponse.json({ error: 'Failed to fetch meal plans' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to fetch meal plans' }, { status: 500 });
   }
 }
 
@@ -45,14 +46,14 @@ export async function POST(request: NextRequest) {
       console.log('Parsed request body:', body);
     } catch (parseError) {
       console.error('Error parsing request body:', parseError);
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+      return jsonWithCache({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
 
     const { clientId, name, startDate, endDate, notes, mealAssignments } = body;
 
     if (!clientId || !name || !startDate) {
       console.log('Missing required fields:', { clientId, name, startDate });
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return jsonWithCache({ error: 'Missing required fields' }, { status: 400 });
     }
 
     console.log('Creating meal plan with data:', {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     // Validate meal assignments
     if (!Array.isArray(mealAssignments) || mealAssignments.length === 0) {
       console.error('No meal assignments provided or invalid format');
-      return NextResponse.json({ error: 'No meal assignments provided or invalid format' }, { status: 400 });
+      return jsonWithCache({ error: 'No meal assignments provided or invalid format' }, { status: 400 });
     }
 
     // Validate each meal assignment
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
     // If no valid assignments, return an error
     if (validAssignments.length === 0) {
       console.error('No valid meal assignments found');
-      return NextResponse.json({ error: 'No valid meal assignments found' }, { status: 400 });
+      return jsonWithCache({ error: 'No valid meal assignments found' }, { status: 400 });
     }
 
     // Use only the valid assignments for processing
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     if (!client) {
       console.error(`Client with ID ${clientId} not found`);
-      return NextResponse.json({ error: `Client with ID ${clientId} not found` }, { status: 400 });
+      return jsonWithCache({ error: `Client with ID ${clientId} not found` }, { status: 400 });
     }
 
     try {
@@ -190,10 +191,10 @@ export async function POST(request: NextRequest) {
 
       console.log('Meal plan created successfully:', mealPlan.id);
       console.log('Created assignments:', createdAssignments.length);
-      return NextResponse.json(completeMealPlan);
+      return jsonWithCache(completeMealPlan);
     } catch (dbError) {
       console.error('Database error creating meal plan:', dbError);
-      return NextResponse.json(
+      return jsonWithCache(
         {
           error: 'Database error creating meal plan',
           details: dbError instanceof Error ? dbError.message : 'Unknown error',
@@ -203,7 +204,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Error creating meal plan:', error);
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to create meal plan',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -212,3 +213,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

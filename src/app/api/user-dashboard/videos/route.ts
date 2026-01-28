@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
     const { error, user } = await requireAuth(request);
 
     if (error || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -22,11 +23,12 @@ export async function GET(request: NextRequest) {
       orderBy: { assignedDate: 'desc' },
     });
 
-    return NextResponse.json(videoAssignments);
+    return jsonWithCache(videoAssignments);
   } catch (error) {
     console.error('Error fetching user videos:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return jsonWithCache({ error: 'Internal server error' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
+

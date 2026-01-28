@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 
 export async function POST(request: NextRequest) {
@@ -8,21 +9,21 @@ export async function POST(request: NextRequest) {
     const { error, user } = await requireAuth(request);
 
     if (error || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const { message } = body;
 
     if (!message || message.trim().length === 0) {
-      return NextResponse.json(
+      return jsonWithCache(
         { error: 'Feedback message is required' },
         { status: 400 }
       );
     }
 
     if (message.length > 1000) {
-      return NextResponse.json(
+      return jsonWithCache(
         { error: 'Feedback message must be less than 1000 characters' },
         { status: 400 }
       );
@@ -58,16 +59,17 @@ export async function POST(request: NextRequest) {
       clientId: feedback.clientId,
     });
 
-    return NextResponse.json({
+    return jsonWithCache({
       success: true,
       message: 'Thank you for your feedback!',
       feedbackId: feedback.id,
     });
   } catch (error) {
     console.error('[FEEDBACK API] Error submitting feedback:', error);
-    return NextResponse.json(
+    return jsonWithCache(
       { error: 'Failed to submit feedback' },
       { status: 500 }
     );
   } 
 }
+

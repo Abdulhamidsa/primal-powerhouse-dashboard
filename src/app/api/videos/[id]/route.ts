@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       tips: video.tips ? JSON.parse(video.tips) : [],
     };
 
-    return NextResponse.json(parsedVideo);
+    return jsonWithCache(parsedVideo);
   } catch (error) {
     console.error('Error fetching video:', error);
     return NextResponse.json({ error: 'Failed to fetch video' }, { status: 500 });

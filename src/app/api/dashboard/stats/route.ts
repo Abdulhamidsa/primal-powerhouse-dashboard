@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -203,11 +204,11 @@ export async function GET(request: NextRequest) {
     };
 
     console.log('Dashboard Stats API: Successfully calculated stats');
-    return NextResponse.json(stats);
+    return jsonWithCache(stats);
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
     console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to fetch dashboard stats',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -216,3 +217,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

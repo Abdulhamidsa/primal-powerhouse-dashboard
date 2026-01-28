@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,9 +53,7 @@ export async function GET(request: NextRequest) {
       }))
     );
 
-    const response = NextResponse.json(allMealAssignments);
-    response.headers.set('Cache-Control', 'private, no-cache, max-age=0, must-revalidate');
-    return response;
+    return jsonWithCache(allMealAssignments);
   } catch (error) {
     console.error("Error fetching user's all meals:", error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

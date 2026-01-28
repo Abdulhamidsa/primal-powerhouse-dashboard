@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -126,9 +127,10 @@ export async function GET(request: NextRequest) {
       return new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime();
     });
 
-    return NextResponse.json(scheduleItems);
+    return jsonWithCache(scheduleItems);
   } catch (error) {
     console.error('Error fetching schedule:', error);
-    return NextResponse.json({ error: 'Failed to fetch schedule' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to fetch schedule' }, { status: 500 });
   }
 }
+

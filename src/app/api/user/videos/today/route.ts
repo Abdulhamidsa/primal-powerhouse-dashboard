@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       orderBy: { assignedDate: 'desc' },
     });
 
-    return NextResponse.json(todaysVideos);
+    return jsonWithCache(todaysVideos);
   } catch (error) {
     console.error("Error fetching today's videos:", error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

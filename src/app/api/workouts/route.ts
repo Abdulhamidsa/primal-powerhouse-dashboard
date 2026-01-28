@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,10 +57,10 @@ export async function GET(request: NextRequest) {
       exercises: workout.exercises ? JSON.parse(workout.exercises) : [],
     }));
 
-    return NextResponse.json(parsedWorkouts);
+    return jsonWithCache(parsedWorkouts);
   } catch (error) {
     console.error('Error fetching workouts:', error);
-    return NextResponse.json({ error: 'Failed to fetch workouts' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to fetch workouts' }, { status: 500 });
   }
 }
 
@@ -115,9 +116,10 @@ export async function POST(request: NextRequest) {
       exercises: workout.exercises ? JSON.parse(workout.exercises) : [],
     };
 
-    return NextResponse.json(parsedWorkout, { status: 201 });
+    return jsonWithCache(parsedWorkout, { status: 201 });
   } catch (error) {
     console.error('Error creating workout:', error);
-    return NextResponse.json({ error: 'Failed to create workout' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to create workout' }, { status: 500 });
   }
 }
+

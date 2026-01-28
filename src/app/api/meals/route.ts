@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 function safeJsonArray(value: string | null) {
   if (!value) return [];
@@ -26,10 +27,10 @@ export async function GET(_request: NextRequest) {
       tags: safeJsonArray(meal.tags),
     }));
 
-    return NextResponse.json(parsedMeals);
+    return jsonWithCache(parsedMeals);
   } catch (error) {
     console.error('Error fetching meals:', error);
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to fetch meals',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       console.log('Meals API: Parsed request body successfully');
     } catch (parseError) {
       console.error('Meals API: Error parsing request body:', parseError);
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+      return jsonWithCache({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
 
     // Extract fields we'll handle separately (and remove fields that aren't in the schema)
@@ -182,11 +183,11 @@ export async function POST(request: NextRequest) {
       tags: createdMeal.tags ? JSON.parse(createdMeal.tags) : [],
     };
 
-    return NextResponse.json(parsedMeal, { status: 201 });
+    return jsonWithCache(parsedMeal, { status: 201 });
   } catch (error) {
     console.error('Error creating meal:', error);
     console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to create meal',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -195,3 +196,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

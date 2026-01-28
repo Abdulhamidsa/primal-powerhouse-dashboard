@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       exercises: workout.exercises ? JSON.parse(workout.exercises) : [],
     };
 
-    return NextResponse.json(workoutData);
+    return jsonWithCache(workoutData);
   } catch (error) {
     console.error('Error fetching workout:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

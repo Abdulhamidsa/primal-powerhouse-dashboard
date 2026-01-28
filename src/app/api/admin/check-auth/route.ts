@@ -7,27 +7,28 @@ export async function GET(request: NextRequest) {
     const token = AuthService.getTokenFromRequest(request);
 
     if (!token) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return jsonWithCache({ authenticated: false }, { status: 401 });
     }
 
     // Verify the token
     const payload = AuthService.verifyToken(token);
 
     if (!payload) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return jsonWithCache({ authenticated: false }, { status: 401 });
     }
 
     // Check if user type is admin (not client)
     if (payload.type !== 'admin') {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return jsonWithCache({ authenticated: false }, { status: 401 });
     }
 
-    return NextResponse.json({
+    return jsonWithCache({
       authenticated: true,
       user: payload,
     });
   } catch (error) {
     console.error('Auth check error:', error);
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+    return jsonWithCache({ authenticated: false }, { status: 401 });
   }
 }
+

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,11 +66,11 @@ export async function GET(request: NextRequest) {
       tips: video.tips ? JSON.parse(video.tips) : [],
     }));
 
-    return NextResponse.json(parsedVideos);
+    return jsonWithCache(parsedVideos);
   } catch (error) {
     console.error('Error fetching videos:', error);
     console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to fetch videos',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -136,11 +137,11 @@ export async function POST(request: NextRequest) {
       tips: video.tips ? JSON.parse(video.tips) : [],
     };
 
-    return NextResponse.json(parsedVideo, { status: 201 });
+    return jsonWithCache(parsedVideo, { status: 201 });
   } catch (error) {
     console.error('Error creating video:', error);
     console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to create video',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -149,3 +150,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
@@ -50,10 +51,10 @@ export async function GET(request: NextRequest) {
       progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
     }));
 
-    return NextResponse.json(parsedClients);
+    return jsonWithCache(parsedClients);
   } catch (error) {
     console.error('Error fetching clients:', error);
-    return NextResponse.json({ error: 'Failed to fetch clients' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to fetch clients' }, { status: 500 });
   }
 }
 
@@ -94,10 +95,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!clientData.name) {
-      return NextResponse.json({ error: 'Client name is required' }, { status: 400 });
+      return jsonWithCache({ error: 'Client name is required' }, { status: 400 });
     }
     if (!clientData.email) {
-      return NextResponse.json({ error: 'Client email is required' }, { status: 400 });
+      return jsonWithCache({ error: 'Client email is required' }, { status: 400 });
     }
 
     // Check for existing client with same email
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingClient) {
-      return NextResponse.json({ error: 'A client with this email already exists' }, { status: 400 });
+      return jsonWithCache({ error: 'A client with this email already exists' }, { status: 400 });
     }
 
     // Prepare password (optional: generate if not provided)
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
       progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
     };
 
-    return NextResponse.json(
+    return jsonWithCache(
       {
         client: parsedClient,
         credentials: {
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Error creating client:', error);
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: `Failed to create client: ${error?.message || 'Unknown error'}`,
       },
@@ -174,3 +175,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

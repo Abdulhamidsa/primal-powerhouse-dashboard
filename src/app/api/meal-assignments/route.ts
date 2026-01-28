@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     // Validate that meal type is a valid enum value
     const validMealTypes = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
     if (!validMealTypes.includes(mealType)) {
-      return NextResponse.json(
+      return jsonWithCache(
         { error: `Invalid meal type: ${mealType}. Valid types are: ${validMealTypes.join(', ')}` },
         { status: 400 }
       );
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     console.log('Creating meal assignment with:', { mealId, clientId, mealType, dayOfWeek, planId });
 
     if (!mealId || !clientId || !mealType) {
-      return NextResponse.json(
+      return jsonWithCache(
         { error: 'Missing required fields: mealId, clientId, and mealType are required' },
         { status: 400 }
       );
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     if (!meal) {
       console.error(`Meal with ID ${mealId} not found`);
-      return NextResponse.json({ error: `Meal with ID ${mealId} not found` }, { status: 400 });
+      return jsonWithCache({ error: `Meal with ID ${mealId} not found` }, { status: 400 });
     }
 
     // Validate client exists
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     if (!client) {
       console.error(`Client with ID ${clientId} not found`);
-      return NextResponse.json({ error: `Client with ID ${clientId} not found` }, { status: 400 });
+      return jsonWithCache({ error: `Client with ID ${clientId} not found` }, { status: 400 });
     }
 
     // Get active meal plan or create a new one if needed
@@ -99,10 +100,10 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Created meal assignment:', assignment.id);
-    return NextResponse.json(assignment);
+    return jsonWithCache(assignment);
   } catch (error) {
     console.error('Error creating meal assignment:', error);
-    return NextResponse.json(
+    return jsonWithCache(
       {
         error: 'Failed to create meal assignment',
         details: error instanceof Error ? error.message : 'Unknown error',
@@ -111,3 +112,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

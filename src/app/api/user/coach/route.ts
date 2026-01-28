@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 export async function GET(request: NextRequest) {
   try {
     const { error, user } = await requireAuth(request);
 
     if (error || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return jsonWithCache({ error: 'Not authenticated' }, { status: 401 });
     }
 
     // Get client with coach info
@@ -24,12 +25,13 @@ export async function GET(request: NextRequest) {
     });
 
     if (!client || !client.coach) {
-      return NextResponse.json({ error: 'Coach not found' }, { status: 404 });
+      return jsonWithCache({ error: 'Coach not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ coach: client.coach });
+    return jsonWithCache({ coach: client.coach });
   } catch (error) {
     console.error('Error fetching coach info:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return jsonWithCache({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
