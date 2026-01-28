@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
       }))
     );
 
-    return NextResponse.json(allMealAssignments);
+    const response = NextResponse.json(allMealAssignments);
+    response.headers.set('Cache-Control', 'private, no-cache, max-age=0, must-revalidate');
+    return response;
   } catch (error) {
     console.error("Error fetching user's all meals:", error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

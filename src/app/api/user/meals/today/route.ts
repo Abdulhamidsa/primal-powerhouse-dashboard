@@ -79,7 +79,9 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    return NextResponse.json(todaysMeals);
+    const response = NextResponse.json(todaysMeals);
+    response.headers.set('Cache-Control', 'private, no-cache, max-age=0, must-revalidate');
+    return response;
   } catch (error) {
     console.error("Error fetching today's meals:", error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
