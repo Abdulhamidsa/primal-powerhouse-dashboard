@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Video, VideoAssignment } from '@/types/video';
+import Image from 'next/image';
+import { VideoAssignment } from '@/types/video';
 
 interface TimelineEvent {
   id: string;
@@ -36,17 +37,10 @@ interface MealAssignment {
 interface AssignmentTimelineProps {
   assignments: VideoAssignment[] | MealAssignment[];
   type: 'videos' | 'meals';
-  onUpdate: () => void;
+  onUpdateAction: () => void;
 }
 
-export default function AssignmentTimeline({
-  assignments,
-  type,
-  onUpdate,
-}: AssignmentTimelineProps) {
-  const [editingItem, setEditingItem] = useState<{ type: 'video' | 'meal'; id: string } | null>(
-    null
-  );
+export default function AssignmentTimeline({ assignments, type, onUpdateAction }: AssignmentTimelineProps) {
   const [showAddNote, setShowAddNote] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
 
@@ -95,14 +89,13 @@ export default function AssignmentTimeline({
     if (!confirm(`Are you sure you want to remove this ${type} assignment?`)) return;
 
     try {
-      const endpoint =
-        type === 'video' ? `/api/video-assignments/${id}` : `/api/meal-assignments/${id}`;
+      const endpoint = type === 'video' ? `/api/video-assignments/${id}` : `/api/meal-assignments/${id}`;
       const response = await fetch(endpoint, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        onUpdate();
+        onUpdateAction();
       } else {
         console.error(`Failed to remove ${type} assignment`);
       }
@@ -113,8 +106,7 @@ export default function AssignmentTimeline({
 
   const handleUpdateNotes = async (type: 'video' | 'meal', id: string, notes: string) => {
     try {
-      const endpoint =
-        type === 'video' ? `/api/video-assignments/${id}` : `/api/meal-assignments/${id}`;
+      const endpoint = type === 'video' ? `/api/video-assignments/${id}` : `/api/meal-assignments/${id}`;
       const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -124,7 +116,7 @@ export default function AssignmentTimeline({
       if (response.ok) {
         setShowAddNote(null);
         setNewNote('');
-        onUpdate();
+        onUpdateAction();
       } else {
         console.error(`Failed to update ${type} notes`);
       }
@@ -193,7 +185,7 @@ export default function AssignmentTimeline({
           <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
 
           <div className="space-y-6">
-            {timeline.map((event, index) => (
+            {timeline.map(event => (
               <div key={event.id} className="relative flex items-start gap-4">
                 {/* Timeline dot */}
                 <div
@@ -231,10 +223,7 @@ export default function AssignmentTimeline({
                         {event.type.includes('assigned') && (
                           <button
                             onClick={() =>
-                              handleRemoveAssignment(
-                                event.type.includes('video') ? 'video' : 'meal',
-                                event.item.id
-                              )
+                              handleRemoveAssignment(event.type.includes('video') ? 'video' : 'meal', event.item.id)
                             }
                             className="text-red-600 hover:text-red-800 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
                             title="Remove Assignment"
@@ -296,9 +285,11 @@ export default function AssignmentTimeline({
                       <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
                         <div className="flex items-start gap-3">
                           {event.item.video.thumbnailUrl ? (
-                            <img
+                            <Image
                               src={event.item.video.thumbnailUrl}
                               alt={event.item.video.title}
+                              width={64}
+                              height={48}
                               className="w-16 h-12 object-cover rounded-lg flex-shrink-0"
                             />
                           ) : (
@@ -307,9 +298,7 @@ export default function AssignmentTimeline({
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h5 className="font-medium text-purple-900 text-sm">
-                              {event.item.video.title}
-                            </h5>
+                            <h5 className="font-medium text-purple-900 text-sm">{event.item.video.title}</h5>
                             <div className="flex items-center gap-3 text-xs text-purple-700 mt-1">
                               <span>{formatDuration(event.item.video.duration)}</span>
                               <span>•</span>
@@ -342,9 +331,7 @@ export default function AssignmentTimeline({
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h5 className="font-medium text-green-900 text-sm">
-                              {event.item.meal.name}
-                            </h5>
+                            <h5 className="font-medium text-green-900 text-sm">{event.item.meal.name}</h5>
                             <div className="grid grid-cols-2 gap-2 text-xs text-green-700 mt-1">
                               <span>🔥 {event.item.meal.calories} cal</span>
                               <span>🥩 {event.item.meal.protein}g protein</span>
@@ -370,9 +357,7 @@ export default function AssignmentTimeline({
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📅</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assignments Yet</h3>
-          <p className="text-gray-500">
-            Start assigning videos and meals to see the timeline here.
-          </p>
+          <p className="text-gray-500">Start assigning videos and meals to see the timeline here.</p>
         </div>
       )}
     </div>

@@ -9,21 +9,14 @@ import {
   VIDEO_CATEGORIES,
   DIFFICULTY_LEVELS,
 } from '@/types/video';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Clock, Tag, Award, Dumbbell, Activity, Play, Plus, X, Info, VideoIcon } from 'lucide-react';
 import Image from 'next/image';
 
 interface AddVideoModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onVideoAdded: (video: Video) => void;
+  onCloseAction: () => void;
+  onVideoAddedAction: (video: Video) => void;
 }
 
 const INITIAL_FORM_DATA: VideoFormData = {
@@ -73,7 +66,7 @@ const EQUIPMENT_OPTIONS = [
   'Yoga Mat',
 ];
 
-export default function NewAddVideoModal({ isOpen, onClose, onVideoAdded }: AddVideoModalProps) {
+export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAction }: AddVideoModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<VideoFormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -242,8 +235,8 @@ export default function NewAddVideoModal({ isOpen, onClose, onVideoAdded }: AddV
 
       if (response.ok) {
         const newVideo = await response.json();
-        onVideoAdded(newVideo);
-        onClose();
+        onVideoAddedAction(newVideo);
+        onCloseAction();
       } else {
         const errorData = await response.json();
         console.error('Failed to add video:', errorData);
@@ -257,7 +250,7 @@ export default function NewAddVideoModal({ isOpen, onClose, onVideoAdded }: AddV
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
         <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <DialogHeader>
@@ -736,7 +729,7 @@ export default function NewAddVideoModal({ isOpen, onClose, onVideoAdded }: AddV
           </div>
           <div className="flex gap-4">
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="px-6 py-3 border rounded-lg"
               style={{
                 background: 'var(--color-bg-alt)',

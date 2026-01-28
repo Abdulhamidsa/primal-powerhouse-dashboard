@@ -76,27 +76,30 @@ export default function ImageUpload({
     return { valid: true };
   };
 
-  const handleFile = (file: File) => {
-    // Validate file
-    const validation = validateFile(file);
-    if (!validation.valid) {
-      onError?.(validation.error!);
-      return;
-    }
+  const handleFile = useCallback(
+    (file: File) => {
+      // Validate file
+      const validation = validateFile(file);
+      if (!validation.valid) {
+        onError?.(validation.error!);
+        return;
+      }
 
-    // Cleanup old preview URL
-    if (preview && preview.startsWith('blob:')) {
-      URL.revokeObjectURL(preview);
-    }
+      // Cleanup old preview URL
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
 
-    // Create local preview
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-    setSelectedFile(file);
+      // Create local preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      setSelectedFile(file);
 
-    // Notify parent component
-    onFileSelectAction(file);
-  };
+      // Notify parent component
+      onFileSelectAction(file);
+    },
+    [preview, onError, onFileSelectAction]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -115,7 +118,7 @@ export default function ImageUpload({
 
       handleFile(imageFile);
     },
-    [disabled, onFileSelectAction, onError]
+    [disabled, handleFile, onError]
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

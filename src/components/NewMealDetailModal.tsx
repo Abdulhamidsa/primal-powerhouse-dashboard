@@ -1,14 +1,7 @@
 'use client';
 
 import { Meal } from '@/types/meal';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Clock, Users, Utensils, Sunrise, Sun, Moon, Apple } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -32,7 +25,7 @@ export default function NewMealDetailModal({
 }: MealDetailModalProps) {
   const [personalizeModalOpen, setPersonalizeModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
+  const [selectedClientId] = useState<string | undefined>(undefined);
 
   const handleSavePersonalizedMeal = async (personalizedMeal: any, clientId?: string): Promise<void> => {
     console.log('Saving personalized meal:', personalizedMeal);

@@ -1,7 +1,7 @@
 'use client';
 
 import { VideoCategory, DifficultyLevel, VIDEO_CATEGORIES, DIFFICULTY_LEVELS } from '@/types/video';
-import { Search, Filter, X, Video } from 'lucide-react';
+import { Search, X, Video } from 'lucide-react';
 
 interface VideoFiltersProps {
   filters: {
@@ -9,20 +9,20 @@ interface VideoFiltersProps {
     difficulty: DifficultyLevel | 'all';
     search: string;
   };
-  onFiltersChange: (filters: any) => void;
+  onFiltersChangeAction: (filters: any) => void;
   videosCount: number;
 }
 
-export default function NewVideoFilters({ filters, onFiltersChange, videosCount }: VideoFiltersProps) {
+export default function NewVideoFilters({ filters, onFiltersChangeAction, videosCount }: VideoFiltersProps) {
   const handleFilterChange = (key: string, value: any) => {
-    onFiltersChange({
+    onFiltersChangeAction({
       ...filters,
       [key]: value,
     });
   };
 
   const clearFilters = () => {
-    onFiltersChange({
+    onFiltersChangeAction({
       category: 'all',
       difficulty: 'all',
       search: '',

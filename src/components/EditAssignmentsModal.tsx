@@ -27,22 +27,22 @@ interface MealAssignment {
 
 interface EditAssignmentsModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId: string;
   clientName: string;
   type: 'videos' | 'meals';
   currentAssignments: VideoAssignment[] | MealAssignment[];
-  onUpdate: () => void;
+  onUpdateAction: () => void;
 }
 
 export default function EditAssignmentsModal({
   isOpen,
-  onClose,
+  onCloseAction,
   clientId,
   clientName,
   type,
   currentAssignments,
-  onUpdate,
+  onUpdateAction,
 }: EditAssignmentsModalProps) {
   const [allContent, setAllContent] = useState<Video[] | Meal[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -51,6 +51,22 @@ export default function EditAssignmentsModal({
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    const fetchAllContent = async () => {
+      setLoading(true);
+      try {
+        const endpoint = type === 'videos' ? '/api/videos' : '/api/meals';
+        const response = await fetch(endpoint);
+        if (response.ok) {
+          const data = await response.json();
+          setAllContent(data);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${type}:`, error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (isOpen) {
       fetchAllContent();
       // Initialize selected items with current assignments
@@ -62,22 +78,6 @@ export default function EditAssignmentsModal({
       setSearchTerm('');
     }
   }, [isOpen, currentAssignments, type]);
-
-  const fetchAllContent = async () => {
-    setLoading(true);
-    try {
-      const endpoint = type === 'videos' ? '/api/videos' : '/api/meals';
-      const response = await fetch(endpoint);
-      if (response.ok) {
-        const data = await response.json();
-        setAllContent(data);
-      }
-    } catch (error) {
-      console.error(`Error fetching ${type}:`, error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredContent = allContent.filter(item => {
     const searchLower = searchTerm.toLowerCase();
@@ -172,8 +172,8 @@ export default function EditAssignmentsModal({
         }
       }
 
-      onUpdate();
-      onClose();
+      onUpdateAction();
+      onCloseAction();
     } catch (error) {
       console.error(`Error updating ${type} assignments:`, error);
     } finally {
@@ -213,7 +213,7 @@ export default function EditAssignmentsModal({
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,7 +370,7 @@ export default function EditAssignmentsModal({
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium"
               >
                 Cancel

@@ -46,7 +46,7 @@ export default function EditMotivationalMessageModal({
 
       onCloseAction();
     } catch (err) {
-      setError('Failed to update motivational message');
+      setError(`Failed to update motivational message ${err}`);
     } finally {
       setLoading(false);
     }

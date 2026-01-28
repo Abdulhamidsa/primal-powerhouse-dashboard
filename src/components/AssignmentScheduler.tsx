@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Video, VideoAssignment } from '@/types/video';
+import { VideoAssignment } from '@/types/video';
 
 interface MealAssignment {
   id: string;
@@ -26,12 +26,12 @@ interface MealAssignment {
 
 interface AssignmentSchedulerProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId: string;
   clientName: string;
   type: 'videos' | 'meals';
   assignments: VideoAssignment[] | MealAssignment[];
-  onUpdate: () => void;
+  onUpdateAction: () => void;
 }
 
 interface ScheduleItem {
@@ -46,12 +46,11 @@ interface ScheduleItem {
 
 export default function AssignmentScheduler({
   isOpen,
-  onClose,
-  clientId,
+  onCloseAction,
   clientName,
   type,
   assignments,
-  onUpdate,
+  onUpdateAction,
 }: AssignmentSchedulerProps) {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
@@ -83,40 +82,40 @@ export default function AssignmentScheduler({
 
   useEffect(() => {
     if (isOpen) {
+      const generateScheduleItems = () => {
+        const items: ScheduleItem[] = [];
+
+        assignments.forEach(assignment => {
+          if (type === 'videos') {
+            const videoAssignment = assignment as VideoAssignment;
+            items.push({
+              id: videoAssignment.id,
+              title: videoAssignment.video?.title || 'Unknown Video',
+              type: 'video',
+              scheduledDate: videoAssignment.dueDate || videoAssignment.assignedDate,
+              scheduledTime: '09:00', // Default time
+              duration: videoAssignment.video?.duration || 0,
+              originalAssignment: videoAssignment,
+            });
+          } else {
+            const mealAssignment = assignment as MealAssignment;
+            items.push({
+              id: mealAssignment.id,
+              title: mealAssignment.meal.name,
+              type: 'meal',
+              scheduledDate: mealAssignment.dueDate || mealAssignment.assignedDate,
+              scheduledTime: getMealDefaultTime(mealAssignment.meal.type),
+              originalAssignment: mealAssignment,
+            });
+          }
+        });
+
+        setScheduleItems(items);
+      };
+
       generateScheduleItems();
     }
   }, [isOpen, assignments, type]);
-
-  const generateScheduleItems = () => {
-    const items: ScheduleItem[] = [];
-
-    assignments.forEach(assignment => {
-      if (type === 'videos') {
-        const videoAssignment = assignment as VideoAssignment;
-        items.push({
-          id: videoAssignment.id,
-          title: videoAssignment.video?.title || 'Unknown Video',
-          type: 'video',
-          scheduledDate: videoAssignment.dueDate || videoAssignment.assignedDate,
-          scheduledTime: '09:00', // Default time
-          duration: videoAssignment.video?.duration || 0,
-          originalAssignment: videoAssignment,
-        });
-      } else {
-        const mealAssignment = assignment as MealAssignment;
-        items.push({
-          id: mealAssignment.id,
-          title: mealAssignment.meal.name,
-          type: 'meal',
-          scheduledDate: mealAssignment.dueDate || mealAssignment.assignedDate,
-          scheduledTime: getMealDefaultTime(mealAssignment.meal.type),
-          originalAssignment: mealAssignment,
-        });
-      }
-    });
-
-    setScheduleItems(items);
-  };
 
   const getMealDefaultTime = (mealType: string) => {
     switch (mealType.toLowerCase()) {
@@ -221,8 +220,8 @@ export default function AssignmentScheduler({
         });
       }
 
-      onUpdate();
-      onClose();
+      onUpdateAction();
+      onCloseAction();
     } catch (error) {
       console.error('Error saving schedule:', error);
     }
@@ -251,7 +250,7 @@ export default function AssignmentScheduler({
               <p className="text-white/90 mt-1">Drag and drop assignments to schedule them throughout the week</p>
             </div>
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -383,7 +382,7 @@ export default function AssignmentScheduler({
             <div className="text-sm text-gray-500">{scheduleItems.length} total assignments</div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium"
               >
                 Cancel

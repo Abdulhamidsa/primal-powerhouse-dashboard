@@ -2,6 +2,7 @@
 
 import { Video } from '@/types/video';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Client {
   id: string;
@@ -12,9 +13,9 @@ interface Client {
 
 interface AssignVideosModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   selectedVideos: Video[];
-  onAssign: (assignments: VideoAssignment[]) => void;
+  onAssignAction: (assignments: VideoAssignment[]) => void;
 }
 
 interface VideoAssignment {
@@ -24,7 +25,12 @@ interface VideoAssignment {
   notes?: string;
 }
 
-export default function AssignVideosModal({ isOpen, onClose, selectedVideos, onAssign }: AssignVideosModalProps) {
+export default function AssignVideosModal({
+  isOpen,
+  onCloseAction,
+  selectedVideos,
+  onAssignAction,
+}: AssignVideosModalProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState('');
@@ -117,8 +123,8 @@ export default function AssignVideosModal({ isOpen, onClose, selectedVideos, onA
       });
 
       if (response.ok) {
-        onAssign(assignments);
-        onClose();
+        onAssignAction(assignments);
+        onCloseAction();
       } else {
         console.error('Failed to assign videos');
       }
@@ -145,7 +151,7 @@ export default function AssignVideosModal({ isOpen, onClose, selectedVideos, onA
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,10 +182,12 @@ export default function AssignVideosModal({ isOpen, onClose, selectedVideos, onA
                     <div key={video.id} className="flex gap-3 bg-white rounded-lg p-3 shadow-sm">
                       <div className="flex-shrink-0">
                         {video.thumbnailUrl ? (
-                          <img
+                          <Image
                             src={video.thumbnailUrl}
                             alt={video.title}
-                            className="w-16 h-12 object-cover rounded-lg"
+                            width={64}
+                            height={48}
+                            className="object-cover rounded-lg"
                           />
                         ) : (
                           <div className="w-16 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
@@ -335,16 +343,14 @@ export default function AssignVideosModal({ isOpen, onClose, selectedVideos, onA
                         </div>
                         <div className="flex items-center gap-3 flex-1">
                           {client.avatar ? (
-                            <img
+                            <Image
                               src={
                                 client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`
                               }
-                              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                (e.target as HTMLImageElement).src =
-                                  `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}&background=random`;
-                              }}
                               alt={client.name}
-                              className="w-10 h-10 rounded-full object-cover"
+                              width={40}
+                              height={40}
+                              className="rounded-full object-cover"
                             />
                           ) : (
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
@@ -413,7 +419,7 @@ export default function AssignVideosModal({ isOpen, onClose, selectedVideos, onA
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium"
               >
                 Cancel

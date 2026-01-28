@@ -2,19 +2,12 @@
 
 import { Video } from '@/types/video';
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Clock } from 'lucide-react';
 
 interface VideoDetailModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   video: Video | null;
   onEdit?: (video: Video) => void;
   onDelete?: (videoId: string) => void;
@@ -23,7 +16,7 @@ interface VideoDetailModalProps {
 
 export default function NewVideoDetailModal({
   isOpen,
-  onClose,
+  onCloseAction,
   video,
   onEdit,
   onDelete,
@@ -157,7 +150,7 @@ export default function NewVideoDetailModal({
     try {
       await onDelete(video.id);
       setShowDeleteConfirm(false);
-      onClose();
+      onCloseAction();
     } catch (error) {
       console.error('Error deleting video:', error);
     } finally {
@@ -166,7 +159,7 @@ export default function NewVideoDetailModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent
         className="max-w-5xl p-0 overflow-hidden"
         style={{

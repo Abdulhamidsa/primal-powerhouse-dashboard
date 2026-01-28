@@ -7,24 +7,14 @@ import { convertMealToRecipeTemplate } from '@/lib/meal-planner/meal-converter';
 import { scaleRecipe } from '@/lib/meal-planner/recipe-scaling';
 import { foodsDatabase } from '@/lib/meal-planner/foods-database';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from '@/components/ui/dialog';
-
 interface PersonalizeMealModalProps {
   meal: Meal | null;
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   onSave?: (updatedMeal: Meal) => void;
 }
 
-export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: PersonalizeMealModalProps) {
+export default function PersonalizeMealModal({ meal, isOpen, onCloseAction, onSave }: PersonalizeMealModalProps) {
   // Default macro targets based on the original meal
   const defaultMacroTarget: MacroTarget = meal
     ? {
@@ -38,7 +28,7 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
   const [scaledRecipeResult, setScaledRecipeResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
-  
+
   // Reset macro targets when meal changes
   useEffect(() => {
     if (meal) {
@@ -47,7 +37,7 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
         carbs: meal.carbs,
         fat: meal.fat,
       });
-      
+
       // Clear previous scaled recipe result
       setScaledRecipeResult(null);
     }
@@ -89,8 +79,10 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
   if (!meal) return null;
 
   return (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start overflow-y-auto ${isOpen ? 'block' : 'hidden'}`}>
-      <div 
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start overflow-y-auto ${isOpen ? 'block' : 'hidden'}`}
+    >
+      <div
         className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl m-4 w-full max-w-4xl max-h-[calc(100vh-2rem)] overflow-y-auto p-6"
         style={{
           background: 'var(--color-surface)',
@@ -103,11 +95,7 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
             <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
               Personalize Meal: {meal.name}
             </h2>
-            <button 
-              onClick={onClose}
-              className="p-2 rounded-full hover:bg-gray-200"
-              aria-label="Close"
-            >
+            <button onClick={onCloseAction} className="p-2 rounded-full hover:bg-gray-200" aria-label="Close">
               ✕
             </button>
           </div>
@@ -270,45 +258,45 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
           )}
         </div>
 
-          <div className="flex justify-end mt-6 gap-3">
-            {scaledRecipeResult && (
-              <button
-                onClick={() => {
-                  if (meal && scaledRecipeResult) {
-                    setSaving(true);
-                    
-                    try {
-                      // Create an updated meal with the new macros from the scaled recipe
-                      const updatedMeal = {
-                        ...meal,
-                        protein: scaledRecipeResult.totalMacros.protein,
-                        carbs: scaledRecipeResult.totalMacros.carbs,
-                        fat: scaledRecipeResult.totalMacros.fat,
-                        calories: scaledRecipeResult.totalMacros.kcal,
-                        // Update ingredients based on scaled recipe
-                        ingredients: scaledRecipeResult.ingredients.map((item: any) => ({
-                          id: item.food.id,
-                          name: item.food.name,
-                          amount: item.quantity,
-                          unit: item.food.servingUnit
-                        }))
-                      };
-                      
-                      console.log('Saving updated meal with new macros:', updatedMeal);
-                      
-                      // Call the onSave prop if provided
-                      if (onSave) {
-                        onSave(updatedMeal);
-                      }
-                      
-                      // Send the updated meal to the server
-                      fetch(`/api/meals/${meal.id}`, {
-                        method: 'PUT',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(updatedMeal),
-                      })
+        <div className="flex justify-end mt-6 gap-3">
+          {scaledRecipeResult && (
+            <button
+              onClick={() => {
+                if (meal && scaledRecipeResult) {
+                  setSaving(true);
+
+                  try {
+                    // Create an updated meal with the new macros from the scaled recipe
+                    const updatedMeal = {
+                      ...meal,
+                      protein: scaledRecipeResult.totalMacros.protein,
+                      carbs: scaledRecipeResult.totalMacros.carbs,
+                      fat: scaledRecipeResult.totalMacros.fat,
+                      calories: scaledRecipeResult.totalMacros.kcal,
+                      // Update ingredients based on scaled recipe
+                      ingredients: scaledRecipeResult.ingredients.map((item: any) => ({
+                        id: item.food.id,
+                        name: item.food.name,
+                        amount: item.quantity,
+                        unit: item.food.servingUnit,
+                      })),
+                    };
+
+                    console.log('Saving updated meal with new macros:', updatedMeal);
+
+                    // Call the onSave prop if provided
+                    if (onSave) {
+                      onSave(updatedMeal);
+                    }
+
+                    // Send the updated meal to the server
+                    fetch(`/api/meals/${meal.id}`, {
+                      method: 'PUT',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(updatedMeal),
+                    })
                       .then(response => {
                         if (!response.ok) {
                           throw new Error(`Failed to update meal: ${response.status}`);
@@ -318,7 +306,7 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
                       .then(() => {
                         // Show success alert
                         alert('Meal has been updated with new macros!');
-                        onClose();
+                        onCloseAction();
                       })
                       .catch(error => {
                         console.error('Error updating meal:', error);
@@ -327,30 +315,28 @@ export default function PersonalizeMealModal({ meal, isOpen, onClose, onSave }: 
                       .finally(() => {
                         setSaving(false);
                       });
-                    } catch (error) {
-                      console.error('Error preparing meal update:', error);
-                      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                      setSaving(false);
-                    }
+                  } catch (error) {
+                    console.error('Error preparing meal update:', error);
+                    alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    setSaving(false);
                   }
-                }}
-                className="px-4 py-2 rounded"
-                disabled={saving}
-                style={{
-                  background: 'var(--color-accent)',
-                  color: 'var(--color-text-on-accent)',
-                }}
-              >
-                {saving ? 'Saving...' : 'Update Meal with New Macros'}
-              </button>
-            )}
-            <button 
-              onClick={onClose}
-              className="px-4 py-2 rounded bg-gray-200 text-gray-800">
-              Cancel
+                }
+              }}
+              className="px-4 py-2 rounded"
+              disabled={saving}
+              style={{
+                background: 'var(--color-accent)',
+                color: 'var(--color-text-on-accent)',
+              }}
+            >
+              {saving ? 'Saving...' : 'Update Meal with New Macros'}
             </button>
-          </div>
+          )}
+          <button onClick={onCloseAction} className="px-4 py-2 rounded bg-gray-200 text-gray-800">
+            Cancel
+          </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}

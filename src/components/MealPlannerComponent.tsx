@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { RecipeTemplate, MacroTarget, FoodSelection, ScaledRecipe, Food } from '@/lib/meal-planner/types';
+import { MacroTarget, FoodSelection, ScaledRecipe, Food } from '@/lib/meal-planner/types';
 import { recipeTemplates, foodsDatabase, scaleRecipe } from '@/lib/meal-planner';
 
 /**
