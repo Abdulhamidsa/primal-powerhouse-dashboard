@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,17 +15,11 @@ export async function POST(request: NextRequest) {
     const { message } = body;
 
     if (!message || message.trim().length === 0) {
-      return jsonWithCache(
-        { error: 'Feedback message is required' },
-        { status: 400 }
-      );
+      return jsonWithCache({ error: 'Feedback message is required' }, { status: 400 });
     }
 
     if (message.length > 1000) {
-      return jsonWithCache(
-        { error: 'Feedback message must be less than 1000 characters' },
-        { status: 400 }
-      );
+      return jsonWithCache({ error: 'Feedback message must be less than 1000 characters' }, { status: 400 });
     }
 
     // Ensure feedback table exists
@@ -43,7 +36,7 @@ export async function POST(request: NextRequest) {
       `;
     } catch (tableError) {
       // Table might already exist, continue
-      console.log('[FEEDBACK API] Table check completed');
+      console.log('[FEEDBACK API] Feedback table check/create error (might already exist):', tableError);
     }
 
     // Create feedback record
@@ -66,10 +59,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[FEEDBACK API] Error submitting feedback:', error);
-    return jsonWithCache(
-      { error: 'Failed to submit feedback' },
-      { status: 500 }
-    );
-  } 
+    return jsonWithCache({ error: 'Failed to submit feedback' }, { status: 500 });
+  }
 }
-

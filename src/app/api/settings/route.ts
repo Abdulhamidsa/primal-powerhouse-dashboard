@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { coachId, profile, preferences } = body;
+    const { coachId, profile } = body;
 
     // Get or create default coach
     let userId = coachId;

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
@@ -34,4 +34,3 @@ export async function GET(request: NextRequest) {
     return jsonWithCache({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

@@ -5,7 +5,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
-    const coachId = searchParams.get('coachId');
 
     if (!clientId) {
       return NextResponse.json({ error: 'Client ID is required' }, { status: 400 });
@@ -26,13 +25,9 @@ export async function GET(request: NextRequest) {
         ? {
             ...assignment.video,
             equipment: assignment.video.equipment ? JSON.parse(assignment.video.equipment) : [],
-            muscleGroups: assignment.video.muscleGroups
-              ? JSON.parse(assignment.video.muscleGroups)
-              : [],
+            muscleGroups: assignment.video.muscleGroups ? JSON.parse(assignment.video.muscleGroups) : [],
             tags: assignment.video.tags ? JSON.parse(assignment.video.tags) : [],
-            instructions: assignment.video.instructions
-              ? JSON.parse(assignment.video.instructions)
-              : [],
+            instructions: assignment.video.instructions ? JSON.parse(assignment.video.instructions) : [],
             tips: assignment.video.tips ? JSON.parse(assignment.video.tips) : [],
           }
         : null,
@@ -116,13 +111,9 @@ export async function POST(request: NextRequest) {
         ? {
             ...assignment.video,
             equipment: assignment.video.equipment ? JSON.parse(assignment.video.equipment) : [],
-            muscleGroups: assignment.video.muscleGroups
-              ? JSON.parse(assignment.video.muscleGroups)
-              : [],
+            muscleGroups: assignment.video.muscleGroups ? JSON.parse(assignment.video.muscleGroups) : [],
             tags: assignment.video.tags ? JSON.parse(assignment.video.tags) : [],
-            instructions: assignment.video.instructions
-              ? JSON.parse(assignment.video.instructions)
-              : [],
+            instructions: assignment.video.instructions ? JSON.parse(assignment.video.instructions) : [],
             tips: assignment.video.tips ? JSON.parse(assignment.video.tips) : [],
           }
         : null,

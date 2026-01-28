@@ -12,8 +12,8 @@ import {
 
 interface AddVideoModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onVideoAdded: (video: Video) => void;
+  onCloseAction: () => void;
+  onVideoAddedAction: (video: Video) => void;
 }
 
 const INITIAL_FORM_DATA: VideoFormData = {
@@ -63,7 +63,19 @@ const EQUIPMENT_OPTIONS = [
   'Yoga Mat',
 ];
 
-export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVideoModalProps) {
+const extractYouTubeId = (url: string): string | null => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
+const extractVimeoId = (url: string): string | null => {
+  const regExp = /vimeo\.com\/(\d+)/;
+  const match = url.match(regExp);
+  return match ? match[1] : null;
+};
+
+export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedAction }: AddVideoModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<VideoFormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,53 +92,41 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
   }, [isOpen]);
 
   useEffect(() => {
+    const detectVideoType = (url: string) => {
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const videoId = extractYouTubeId(url);
+        if (videoId) {
+          setPreviewUrl(`https://www.youtube.com/embed/${videoId}`);
+          setPreviewType('youtube');
+          if (!formData.thumbnailUrl) {
+            setFormData(prev => ({
+              ...prev,
+              thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            }));
+          }
+        }
+      } else if (url.includes('vimeo.com')) {
+        const videoId = extractVimeoId(url);
+        if (videoId) {
+          setPreviewUrl(`https://player.vimeo.com/video/${videoId}`);
+          setPreviewType('vimeo');
+        }
+      } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+        setPreviewUrl(url);
+        setPreviewType('direct');
+      } else {
+        setPreviewUrl('');
+        setPreviewType(null);
+      }
+    };
+
     if (formData.videoUrl) {
       detectVideoType(formData.videoUrl);
     } else {
       setPreviewUrl('');
       setPreviewType(null);
     }
-  }, [formData.videoUrl]);
-
-  const detectVideoType = (url: string) => {
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const videoId = extractYouTubeId(url);
-      if (videoId) {
-        setPreviewUrl(`https://www.youtube.com/embed/${videoId}`);
-        setPreviewType('youtube');
-        if (!formData.thumbnailUrl) {
-          setFormData(prev => ({
-            ...prev,
-            thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-          }));
-        }
-      }
-    } else if (url.includes('vimeo.com')) {
-      const videoId = extractVimeoId(url);
-      if (videoId) {
-        setPreviewUrl(`https://player.vimeo.com/video/${videoId}`);
-        setPreviewType('vimeo');
-      }
-    } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
-      setPreviewUrl(url);
-      setPreviewType('direct');
-    } else {
-      setPreviewUrl('');
-      setPreviewType(null);
-    }
-  };
-
-  const extractYouTubeId = (url: string): string | null => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
-
-  const extractVimeoId = (url: string): string | null => {
-    const regExp = /vimeo\.com\/(\d+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  };
+  }, [formData.videoUrl, formData.thumbnailUrl]);
 
   const handleInputChange = (field: keyof VideoFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -214,9 +214,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
     try {
       const cleanedData = {
         ...formData,
-        instructions: formData.instructions
-          ? formData.instructions.filter(i => i.trim() !== '')
-          : [],
+        instructions: formData.instructions ? formData.instructions.filter(i => i.trim() !== '') : [],
         tips: formData.tips ? formData.tips.filter(t => t.trim() !== '') : [],
         viewCount: 0,
         coachId: 'cmeejzitq00007kswt2jrt8hl', // Use the ID of the user we created
@@ -232,8 +230,8 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
 
       if (response.ok) {
         const newVideo = await response.json();
-        onVideoAdded(newVideo);
-        onClose();
+        onVideoAddedAction(newVideo);
+        onCloseAction();
       } else {
         const errorData = await response.json();
         console.error('Failed to add video:', errorData);
@@ -259,16 +257,11 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
               <p className="text-blue-100 mt-1">Step {currentStep} of 3</p>
             </div>
             <button
-              onClick={onClose}
+              onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -276,15 +269,9 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
           {/* Progress Bar */}
           <div className="mt-6">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className={currentStep >= 1 ? 'text-white font-semibold' : 'text-blue-200'}>
-                Basic Info
-              </span>
-              <span className={currentStep >= 2 ? 'text-white font-semibold' : 'text-blue-200'}>
-                Details
-              </span>
-              <span className={currentStep >= 3 ? 'text-white font-semibold' : 'text-blue-200'}>
-                Training Data
-              </span>
+              <span className={currentStep >= 1 ? 'text-white font-semibold' : 'text-blue-200'}>Basic Info</span>
+              <span className={currentStep >= 2 ? 'text-white font-semibold' : 'text-blue-200'}>Details</span>
+              <span className={currentStep >= 3 ? 'text-white font-semibold' : 'text-blue-200'}>Training Data</span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2">
               <div
@@ -302,9 +289,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      🎬 Video Title *
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">🎬 Video Title *</label>
                     <input
                       type="text"
                       value={formData.title}
@@ -315,9 +300,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      🔗 Video URL *
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">🔗 Video URL *</label>
                     <input
                       type="url"
                       value={formData.videoUrl}
@@ -327,12 +310,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                     />
                     {formData.videoUrl && !previewType && (
                       <p className="text-sm text-amber-600 mt-2 flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -346,9 +324,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      🖼️ Thumbnail URL
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">🖼️ Thumbnail URL</label>
                     <input
                       type="url"
                       value={formData.thumbnailUrl}
@@ -363,12 +339,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <svg
-                        className="w-5 h-5 text-blue-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -398,11 +369,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                             />
                           )}
                           {previewType === 'direct' && (
-                            <video
-                              src={previewUrl}
-                              controls
-                              className="w-full h-full object-cover"
-                            />
+                            <video src={previewUrl} controls className="w-full h-full object-cover" />
                           )}
                           <div className="absolute top-3 right-3">
                             <span className="bg-black/70 text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -428,9 +395,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                             />
                           </svg>
                           <p className="text-sm font-medium">Video Preview</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Enter a video URL to see preview
-                          </p>
+                          <p className="text-xs text-gray-400 mt-1">Enter a video URL to see preview</p>
                         </div>
                       )}
                     </div>
@@ -446,9 +411,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📝 Description *
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📝 Description *</label>
                     <textarea
                       value={formData.description}
                       onChange={e => handleInputChange('description', e.target.value)}
@@ -460,9 +423,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🎯 Category
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">🎯 Category</label>
                       <select
                         value={formData.category}
                         onChange={e => handleInputChange('category', e.target.value)}
@@ -477,9 +438,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        💪 Difficulty
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">💪 Difficulty</label>
                       <select
                         value={formData.difficulty}
                         onChange={e => handleInputChange('difficulty', e.target.value)}
@@ -495,9 +454,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      ⏱️ Duration (minutes) *
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">⏱️ Duration (minutes) *</label>
                     <input
                       type="number"
                       value={formData.duration}
@@ -509,9 +466,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      🏷️ Tags (comma-separated)
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">🏷️ Tags (comma-separated)</label>
                     <input
                       type="text"
                       value={formData.tags ? formData.tags.join(', ') : ''}
@@ -524,18 +479,14 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      📋 Instructions
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">📋 Instructions</label>
                     {formData.instructions &&
                       formData.instructions.map((instruction, index) => (
                         <div key={index} className="flex gap-2 mb-2">
                           <input
                             type="text"
                             value={instruction}
-                            onChange={e =>
-                              handleArrayInputChange('instructions', index, e.target.value)
-                            }
+                            onChange={e => handleArrayInputChange('instructions', index, e.target.value)}
                             placeholder={`Step ${index + 1}`}
                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                           />
@@ -544,12 +495,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                             className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all"
                             type="button"
                           >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -565,12 +511,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2 mt-2"
                       type="button"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -583,9 +524,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      💡 Tips
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">💡 Tips</label>
                     {formData.tips &&
                       formData.tips.map((tip, index) => (
                         <div key={index} className="flex gap-2 mb-2">
@@ -601,12 +540,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                             className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all"
                             type="button"
                           >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -622,12 +556,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2 mt-2"
                       type="button"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -663,9 +592,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                       >
                         <input
                           type="checkbox"
-                          checked={
-                            formData.equipment ? formData.equipment.includes(equipment) : false
-                          }
+                          checked={formData.equipment ? formData.equipment.includes(equipment) : false}
                           onChange={() => handleEquipmentToggle(equipment)}
                           className="sr-only"
                         />
@@ -691,9 +618,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                       >
                         <input
                           type="checkbox"
-                          checked={
-                            formData.muscleGroups ? formData.muscleGroups.includes(muscle) : false
-                          }
+                          checked={formData.muscleGroups ? formData.muscleGroups.includes(muscle) : false}
                           onChange={() => handleMuscleGroupToggle(muscle)}
                           className="sr-only"
                         />
@@ -716,12 +641,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   type="button"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                   Previous
                 </button>
@@ -730,7 +650,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
 
             <div className="flex items-center gap-3">
               <button
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium"
                 type="button"
               >
@@ -750,12 +670,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                 >
                   Next
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               ) : (
@@ -772,14 +687,7 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                   {isSubmitting ? (
                     <>
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path
                           className="opacity-75"
                           fill="currentColor"
@@ -790,18 +698,8 @@ export default function AddVideoModal({ isOpen, onClose, onVideoAdded }: AddVide
                     </>
                   ) : (
                     <>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       Add Video
                     </>
