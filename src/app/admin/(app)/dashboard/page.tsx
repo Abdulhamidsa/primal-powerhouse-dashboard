@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface DashboardStats {
@@ -17,36 +16,10 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const [authLoading, setAuthLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check authentication on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/admin/check-auth');
-        if (!response.ok) {
-          router.push('/admin/login');
-          return;
-        }
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.push('/admin/login');
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  useEffect(() => {
-    if (!isAuthenticated || authLoading) return;
-
     const fetchStats = async () => {
       try {
         const response = await fetch('/api/dashboard/stats');
@@ -60,27 +33,7 @@ export default function AdminDashboard() {
     };
 
     fetchStats();
-  }, [isAuthenticated, authLoading]);
-
-  if (authLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage your fitness business</p>
-          </div>
-        </div>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  }, []);
 
   const calculateEngagementRate = () => {
     if (!stats || stats.totalClients === 0) return 0;
