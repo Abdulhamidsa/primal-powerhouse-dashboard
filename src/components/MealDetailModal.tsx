@@ -286,7 +286,7 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
         <PersonalizeMealModal
           meal={mealData}
           isOpen={showPersonalizeModal}
-          onClose={() => setShowPersonalizeModal(false)}
+          onCloseAction={() => setShowPersonalizeModal(false)}
           onSave={handleMealUpdate}
         />
       )}

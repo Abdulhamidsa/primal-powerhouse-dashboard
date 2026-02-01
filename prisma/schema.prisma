@@ -10,6 +10,7 @@ generator client {
 datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL") // Direct connection for migrations, bypassing connection pooling
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 

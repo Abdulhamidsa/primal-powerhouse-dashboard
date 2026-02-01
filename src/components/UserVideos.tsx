@@ -44,7 +44,8 @@ export default function UserVideos({ userId }: UserVideosProps) {
 
   useEffect(() => {
     fetchVideoAssignments();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // Only run when userId changes
 
   const fetchVideoAssignments = async () => {
     try {

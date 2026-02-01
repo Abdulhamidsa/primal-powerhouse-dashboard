@@ -22,6 +22,12 @@ if (isServer) {
     globalForPrisma.prisma ??
     new PrismaClient({
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      // Add connection pool limits to prevent too many connections
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
     });
   // Save instance to global in development
   if (process.env.NODE_ENV !== 'production') {

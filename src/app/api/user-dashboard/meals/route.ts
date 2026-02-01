@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching user meals:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    // DO NOT disconnect in serverless - it breaks connection pooling
+    // await prisma.$disconnect();
   }
 }

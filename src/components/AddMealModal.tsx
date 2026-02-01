@@ -56,6 +56,12 @@ export default function AddMealModal({ isOpen, onCloseAction, onMealAddedAction 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prevent double-submission
+    if (loading) {
+      console.log('Already submitting, ignoring duplicate request');
+      return;
+    }
+
     if (!validateForm()) return;
 
     setLoading(true);

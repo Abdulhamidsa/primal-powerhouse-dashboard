@@ -60,7 +60,8 @@ export default function UserMeals({ userId }: UserMealsProps) {
 
   useEffect(() => {
     fetchMealPlans();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // Only run when userId changes
 
   const fetchMealPlans = async () => {
     try {

@@ -40,6 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     console.error('Error completing video assignment:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    // DO NOT disconnect in serverless - it breaks connection pooling
+    // await prisma.$disconnect();
   }
 }

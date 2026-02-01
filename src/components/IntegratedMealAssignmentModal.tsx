@@ -204,10 +204,18 @@ export default function IntegratedMealAssignmentModal({
     for (const assignment of assignments) {
       console.log('Processing assignment:', assignment);
 
-      // Handle different formats of mealType
+      // Handle different formats of mealType with proper null checking
+      if (!assignment || !assignment.mealType || !assignment.dayOfWeek) {
+        console.warn('Invalid assignment data, skipping:', assignment);
+        continue;
+      }
+
       let mealTypeKey = assignment.mealType;
       if (typeof mealTypeKey === 'string') {
         mealTypeKey = mealTypeKey.toLowerCase();
+      } else {
+        console.warn('Meal type is not a string, skipping:', assignment);
+        continue;
       }
 
       const key = `${assignment.dayOfWeek}_${mealTypeKey}`;
@@ -482,12 +490,12 @@ export default function IntegratedMealAssignmentModal({
     }
   };
 
-  // Filter meals based on search term
+  // Filter meals based on search term with null safety
   const filteredMeals = meals.filter(
     meal =>
-      meal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meal.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meal.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      (meal?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (meal?.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (meal?.tags || []).some(tag => (tag?.toLowerCase() || '').includes(searchTerm.toLowerCase()))
   );
 
   // Get all meal IDs that are currently assigned (to prevent duplicates)
@@ -722,10 +730,12 @@ export default function IntegratedMealAssignmentModal({
 
   // Get the meal assigned to a specific slot
   const getMealForSlot = (dayOfWeek: number, mealType: string) => {
+    if (dayOfWeek === undefined || !mealType) return null;
+
     const key = `${dayOfWeek}_${mealType}`;
     const selection = selectedMeals[key];
 
-    if (!selection) return null;
+    if (!selection || !selection.mealId) return null;
 
     // If this is a personalized meal and we have the meal data, return it
     if (selection.isPersonalized && selection.personalizedMeal) {
@@ -799,7 +809,13 @@ export default function IntegratedMealAssignmentModal({
 
   // Remove a meal from a slot
   const removeMealFromSlot = (dayOfWeek: number, mealType: string) => {
+    if (dayOfWeek === undefined || !mealType) {
+      console.error('Cannot remove meal: invalid slot', { dayOfWeek, mealType });
+      return;
+    }
+
     const key = `${dayOfWeek}_${mealType}`;
+    console.log('Removing meal from slot:', key);
 
     setSelectedMeals(prev => {
       const updated = { ...prev };
@@ -808,9 +824,15 @@ export default function IntegratedMealAssignmentModal({
     });
   };
 
-  const handleSelectMealSlot = (_dayOfWeek: number, _mealType: string) => {
+  const handleSelectMealSlot = (dayOfWeek: number, mealType: string) => {
+    if (dayOfWeek === undefined || !mealType) {
+      console.error('Invalid day or meal type', { dayOfWeek, mealType });
+      return;
+    }
+    _setSelectedDay(dayOfWeek);
+    _setSelectedMealType(mealType);
     setActiveTab('select-meals');
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Submit the meal plan
@@ -1328,8 +1350,86 @@ export default function IntegratedMealAssignmentModal({
               {/* Meal Schedule */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-3">Weekly Meal Schedule</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
+
+                {/* Mobile View - Cards */}
+                <div className="block lg:hidden space-y-4">
+                  {daysOfWeek.map(day => (
+                    <div
+                      key={day.value}
+                      className="border rounded-lg p-4"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                    >
+                      <h4 className="font-semibold mb-3 text-lg">{day.label}</h4>
+                      <div className="space-y-2">
+                        {mealTypes.map(mealType => {
+                          const meal = getMealForSlot(day.value, mealType.value);
+                          return (
+                            <div
+                              key={`${day.value}_${mealType.value}`}
+                              className="border rounded-lg p-3"
+                              style={{ borderColor: 'var(--color-border)' }}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-sm flex items-center gap-2">
+                                  <span>{mealType.icon}</span>
+                                  <span>{mealType.label}</span>
+                                </span>
+                                {meal && selectedMeals[`${day.value}_${mealType.value}`]?.isPersonalized && (
+                                  <span
+                                    className="text-xs px-2 py-0.5 rounded"
+                                    style={{
+                                      background: 'var(--color-accent-translucent)',
+                                      color: 'var(--color-accent)',
+                                    }}
+                                  >
+                                    Custom
+                                  </span>
+                                )}
+                              </div>
+                              {meal ? (
+                                <div className="space-y-2">
+                                  <div className="font-medium">{meal.name}</div>
+                                  <div
+                                    className="flex items-center gap-3 text-xs"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                  >
+                                    <span>{meal.calories} cal</span>
+                                    <span>•</span>
+                                    <span>P: {meal.protein}g</span>
+                                    <span>•</span>
+                                    <span>
+                                      <Clock size={12} className="inline" /> {meal.prepTime + meal.cookTime}min
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => removeMealFromSlot(day.value, mealType.value)}
+                                    className="w-full mt-2 px-3 py-2 rounded text-sm font-medium"
+                                    style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handleSelectMealSlot(day.value, mealType.value)}
+                                  className="w-full p-3 border border-dashed rounded flex items-center justify-center gap-2"
+                                  style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+                                >
+                                  <Utensils size={16} />
+                                  <span className="text-sm">Add {mealType.label}</span>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop View - Table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full border-collapse min-w-[800px]">
                     <thead>
                       <tr>
                         <th

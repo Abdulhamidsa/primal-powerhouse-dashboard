@@ -1,10 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+// This file is deprecated - use @/lib/prisma instead
+// Kept for backwards compatibility
+import { prisma } from './prisma';
 
-// Create a wrapper to handle TypeScript issues
-const createPrismaWrapper = () => {
-  const client = new PrismaClient();
-
-  return client as any;
-};
-
-export const prisma = createPrismaWrapper();
+export { prisma };

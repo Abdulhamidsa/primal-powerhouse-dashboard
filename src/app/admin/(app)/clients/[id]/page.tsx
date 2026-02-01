@@ -12,6 +12,8 @@ import { calculateBMI } from '@/helpers';
 import { ClientHeader } from '@/components/client-profile/ClientHeader';
 import { ClientQuickStats } from '@/components/client-profile/ClientQuickStats';
 import { VideosTab } from '@/components/client-profile/VideosTab';
+import { MealsTab } from '@/components/client-profile/MealsTab';
+import { useClientMeals } from '@/hooks/useClientMeals';
 
 export default function ClientProfilePage() {
   const params = useParams();
@@ -22,26 +24,40 @@ export default function ClientProfilePage() {
 
   const [client, setClient] = useState<Client | null>(null);
   const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
-  const [mealAssignments, setMealAssignments] = useState<MealAssignment[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  // Use custom hook for meal assignments
+  const { meals: mealAssignments, refresh: refreshMeals, isLoading: mealsLoading } = useClientMeals(clientId);
 
   const fetchClientData = async () => {
     try {
+      setFetchError(null);
       const response = await fetch(`/api/clients/${clientId}`);
       if (response.ok) {
         const clientData = await response.json();
         setClient(clientData);
         setSelectedClient(clientData);
+      } else {
+        console.error('Failed to fetch client:', response.status);
+        setFetchError(`Failed to fetch client data (${response.status})`);
       }
     } catch (error) {
       console.error('Error fetching client:', error);
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        setFetchError('Server connection failed. Please restart your development server.');
+      } else {
+        setFetchError('Failed to load client data');
+      }
     }
   };
 
   const fetchVideoAssignments = async () => {
     try {
+      setFetchError(null);
       const response = await fetch(`/api/video-assignments?clientId=${clientId}`);
       if (response.ok) {
         const assignments = await response.json();
@@ -49,73 +65,28 @@ export default function ClientProfilePage() {
       }
     } catch (error) {
       console.error('Error fetching video assignments:', error);
-    }
-  };
-
-  const fetchMealAssignments = async () => {
-    try {
-      const response = await fetch(`/api/meal-plans?clientId=${clientId}`);
-      if (!response.ok) {
-        console.warn('Failed to fetch meal plans');
-        setMealAssignments([]);
-        return;
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        setFetchError('Server connection failed. Please restart your development server.');
       }
-
-      const mealPlans = await response.json();
-      if (!Array.isArray(mealPlans)) {
-        console.warn('Meal plans response is not an array');
-        setMealAssignments([]);
-        return;
-      }
-
-      const allAssignments: MealAssignment[] = [];
-
-      mealPlans.forEach(
-        (plan: {
-          startDate: string;
-          endDate?: string;
-          mealAssignments?: {
-            id: string;
-            mealId: string;
-            notes?: string;
-            meal: MealAssignment['meal'];
-          }[];
-        }) => {
-          if (!plan.mealAssignments || !Array.isArray(plan.mealAssignments)) {
-            return;
-          }
-
-          plan.mealAssignments.forEach(
-            (assignment: { id: string; mealId: string; notes?: string; meal: MealAssignment['meal'] }) => {
-              allAssignments.push({
-                id: assignment.id,
-                mealId: assignment.mealId,
-                clientId: clientId,
-                assignedDate: new Date(plan.startDate),
-                dueDate: plan.endDate ? new Date(plan.endDate) : undefined,
-                status: 'assigned',
-                notes: assignment.notes,
-                meal: assignment.meal,
-              });
-            }
-          );
-        }
-      );
-
-      setMealAssignments(allAssignments);
-    } catch (error) {
-      console.error('Error fetching meal assignments:', error);
-      setMealAssignments([]);
     }
   };
 
   useEffect(() => {
-    if (clientId) {
+    if (clientId && !fetchError) {
       fetchClientData();
       fetchVideoAssignments();
-      fetchMealAssignments();
     }
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId]); // Only run when clientId changes
+
+  const handleRetry = () => {
+    setFetchError(null);
+    setIsRetrying(true);
+    fetchClientData();
+    fetchVideoAssignments();
+    refreshMeals(); // Use the hook's refresh function
+    setTimeout(() => setIsRetrying(false), 1000);
+  };
 
   const tabs: Array<{ key: TabKey; label: string; icon: JSX.Element }> = [
     { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
@@ -128,18 +99,65 @@ export default function ClientProfilePage() {
     return (
       <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
         <div className="flex items-center justify-center min-h-[60vh] px-4">
-          <div className="text-center">
-            <Users size={44} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
-            <p className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
-              Client not found
-            </p>
-            <Link
-              href="/clients"
-              className="mt-4 inline-flex items-center gap-1 text-sm"
-              style={{ color: 'var(--color-accent)' }}
-            >
-              <ChevronLeft size={16} /> Back to Clients
-            </Link>
+          <div className="text-center max-w-md">
+            {fetchError ? (
+              <div
+                className="p-6 rounded-lg border"
+                style={{
+                  background: 'var(--color-surface)',
+                  borderColor: 'var(--color-danger)',
+                }}
+              >
+                <div className="text-4xl mb-4">⚠️</div>
+                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-danger)' }}>
+                  Connection Error
+                </h2>
+                <p className="mb-4" style={{ color: 'var(--color-text-muted)' }}>
+                  {fetchError}
+                </p>
+                <button
+                  onClick={handleRetry}
+                  disabled={isRetrying}
+                  className="px-6 py-2 rounded-lg font-medium mb-4"
+                  style={{
+                    background: 'var(--color-accent)',
+                    color: 'var(--color-text-on-accent)',
+                    opacity: isRetrying ? 0.5 : 1,
+                  }}
+                >
+                  {isRetrying ? 'Retrying...' : '🔄 Retry Connection'}
+                </button>
+                <div
+                  className="text-xs text-left p-4 rounded"
+                  style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)' }}
+                >
+                  <p className="font-semibold mb-2">Troubleshooting:</p>
+                  <ol className="space-y-1 list-decimal list-inside">
+                    <li>Check if dev server is running on port 3000</li>
+                    <li>Verify DATABASE_URL has pooling params</li>
+                    <li>
+                      Restart: <code className="bg-gray-800 px-1 rounded">npm run dev</code>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Users size={44} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+                <p className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Loading client...
+                </p>
+              </>
+            )}
+            {!fetchError && (
+              <Link
+                href="/clients"
+                className="mt-4 inline-flex items-center gap-1 text-sm"
+                style={{ color: 'var(--color-accent)' }}
+              >
+                <ChevronLeft size={16} /> Back to Clients
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -415,9 +433,13 @@ export default function ClientProfilePage() {
         )}
 
         {activeTab === 'meals' && (
-          <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            MealsTab goes here.
-          </div>
+          <MealsTab
+            assignments={mealAssignments}
+            onAssign={() => {
+              setAssignModalType('meals');
+              setShowAssignModal(true);
+            }}
+          />
         )}
 
         {activeTab === 'progress' && (
@@ -447,7 +469,7 @@ export default function ClientProfilePage() {
           type={assignModalType}
           onAssignmentCompleteAction={() => {
             if (assignModalType === 'videos') fetchVideoAssignments();
-            else fetchMealAssignments();
+            else refreshMeals(); // Use the hook's refresh function
           }}
         />
       )}
