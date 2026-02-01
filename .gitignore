@@ -198,3 +198,5 @@ pids
 # Miscellaneous scripts and utilities
 file.js
 supabase-setup.sql
+
+seed.js
