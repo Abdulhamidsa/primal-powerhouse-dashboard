@@ -1,7 +1,8 @@
-import { CalendarDays, Utensils, FileText, PlusCircle, Trash2, Flame, Drumstick, Wheat, Droplet } from 'lucide-react';
-import { cx, iosCardStyle, iosPanel, iosPanelStyle } from '../../lib/ui';
+import { CalendarDays, Utensils, FileText, PlusCircle, Trash2 } from 'lucide-react';
+import { cx, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { MealAssignment } from '@/lib/client-page/types';
 import { JSX } from 'react/jsx-dev-runtime';
+import Image from 'next/image';
 
 export function MealsTab({
   assignments,
@@ -30,139 +31,142 @@ export function MealsTab({
       </div>
 
       {assignments.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {assignments.map(a => {
             if (!a.meal) return null;
 
             return (
-              <div key={a.id} className="border rounded-2xl p-4 transition shadow-sm" style={iosCardStyle}>
-                <div className="flex items-start gap-3">
-                  {/* Meal Icon */}
-                  <div
-                    className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 border"
-                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                  >
-                    <Utensils className="w-7 h-7" style={{ color: 'var(--color-accent)' }} />
-                  </div>
+              <div key={a.id} className="group relative">
+                <div
+                  className="rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] border flex flex-col h-full"
+                  style={{
+                    background: 'var(--color-surface)',
+                    borderColor: 'var(--color-border)',
+                  }}
+                >
+                  {/* Image Container */}
+                  <div className="relative w-full h-48 overflow-hidden" style={{ background: 'var(--color-bg)' }}>
+                    {'imageUrl' in a.meal && typeof a.meal.imageUrl === 'string' && a.meal.imageUrl.trim() !== '' ? (
+                      <Image
+                        src={a.meal.imageUrl as string}
+                        alt={a.meal.name}
+                        fill
+                        className="object-cover hover:scale-110 transition-transform duration-300"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ background: 'linear-gradient(135deg, var(--color-bg-alt), var(--color-bg))' }}
+                      >
+                        <Utensils className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
+                      </div>
+                    )}
 
-                  <div className="flex-1 min-w-0">
-                    {/* Meal Name */}
-                    <h4 className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                      {a.meal.name}
-                    </h4>
+                    {/* Remove Button Overlay */}
+                    {onRemove && (
+                      <button
+                        onClick={() => onRemove(a.id)}
+                        className="absolute top-3 right-3 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{
+                          background: 'rgba(0,0,0,0.7)',
+                          color: 'var(--color-danger)',
+                        }}
+                        title="Remove assignment"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
 
                     {/* Meal Type Badge */}
-                    <div className="mt-1">
+                    <div className="absolute top-3 left-3">
                       <span
-                        className="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium uppercase"
+                        className="px-3 py-1 rounded-full text-xs font-medium uppercase"
                         style={{
-                          background: 'var(--color-accent-muted)',
-                          color: 'var(--color-accent)',
+                          background: 'var(--color-accent)',
+                          color: 'var(--color-text-on-accent)',
                         }}
                       >
                         {a.meal.type}
                       </span>
                     </div>
+                  </div>
 
-                    {/* Macros Grid */}
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                      <div
-                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-                        style={{ background: 'rgba(255,255,255,0.04)' }}
-                      >
-                        <Flame size={12} style={{ color: 'var(--color-accent)' }} />
-                        <span style={{ color: 'var(--color-text-muted)' }}>
-                          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                            {a.meal.calories}
-                          </span>{' '}
-                          cal
+                  {/* Content Container */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    {/* Meal Name */}
+                    <h4 className="font-semibold text-lg mb-3 line-clamp-2" style={{ color: 'var(--color-text)' }}>
+                      {a.meal.name}
+                    </h4>
+
+                    {/* Nutrition Grid */}
+                    <div className="space-y-2 flex-1 mb-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                          Calories
+                        </span>
+                        <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {a.meal.calories}
                         </span>
                       </div>
-                      <div
-                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-                        style={{ background: 'rgba(255,255,255,0.04)' }}
-                      >
-                        <Drumstick size={12} style={{ color: '#ff6b6b' }} />
-                        <span style={{ color: 'var(--color-text-muted)' }}>
-                          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                            {a.meal.protein}
-                          </span>
-                          g
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                          Protein
+                        </span>
+                        <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {a.meal.protein}g
                         </span>
                       </div>
-                      <div
-                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-                        style={{ background: 'rgba(255,255,255,0.04)' }}
-                      >
-                        <Wheat size={12} style={{ color: '#f59e0b' }} />
-                        <span style={{ color: 'var(--color-text-muted)' }}>
-                          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                            {a.meal.carbs}
-                          </span>
-                          g
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                          Carbs
+                        </span>
+                        <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {a.meal.carbs}g
                         </span>
                       </div>
-                      <div
-                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
-                        style={{ background: 'rgba(255,255,255,0.04)' }}
-                      >
-                        <Droplet size={12} style={{ color: '#3b82f6' }} />
-                        <span style={{ color: 'var(--color-text-muted)' }}>
-                          <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                            {a.meal.fat}
-                          </span>
-                          g
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                          Fat
+                        </span>
+                        <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {a.meal.fat}g
                         </span>
                       </div>
                     </div>
 
                     {/* Assignment Date */}
-                    <div className="mt-2 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                    <div className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
                       <span className="inline-flex items-center gap-1">
-                        <CalendarDays size={10} /> Assigned: {new Date(a.assignedDate).toLocaleDateString()}
+                        <CalendarDays size={12} />
+                        Assigned: {new Date(a.assignedDate).toLocaleDateString()}
                       </span>
                     </div>
 
                     {/* Notes */}
                     {a.notes && (
                       <div
-                        className="mt-2 text-[11px] p-2 rounded-xl border"
+                        className="text-xs p-3 rounded-lg border mb-3"
                         style={{
                           background: 'rgba(255,255,255,0.04)',
                           borderColor: 'var(--color-border)',
-                          color: 'var(--color-accent)',
+                          color: 'var(--color-text-muted)',
                         }}
                       >
                         <div className="flex items-start gap-2">
-                          <FileText size={12} className="mt-[2px]" />
-                          <span className="leading-snug">{a.notes}</span>
+                          <FileText size={12} className="mt-0.5 flex-shrink-0" />
+                          <span className="leading-relaxed">{a.notes}</span>
                         </div>
                       </div>
                     )}
 
                     {/* Description */}
                     {a.meal.description && (
-                      <div className="mt-2 text-[11px] leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                         {a.meal.description}
-                      </div>
+                      </p>
                     )}
                   </div>
-
-                  {/* Remove Button */}
-                  {onRemove && (
-                    <button
-                      onClick={() => onRemove(a.id)}
-                      className="p-2 rounded-xl border transition active:scale-[0.99]"
-                      style={{
-                        background: 'rgba(255,255,255,0.04)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-accent)',
-                      }}
-                      title="Remove assignment"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
                 </div>
               </div>
             );

@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
  * Sets proper cache headers on a response to allow back/forward cache
  * while preventing stale personalized data
  */
-export function setCacheHeaders(response: NextResponse): NextResponse {
+export function setCacheHeaders<T>(response: NextResponse<T>): NextResponse<T> {
   response.headers.set('Cache-Control', 'private, no-cache, max-age=0, must-revalidate');
   return response;
 }

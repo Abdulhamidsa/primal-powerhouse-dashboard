@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,44 +10,181 @@
 !.yarn/releases
 !.yarn/versions
 
-# Package manager lock files (uncomment the one you use)
-# package-lock.json
-# pnpm-lock.yaml
-# yarn.lock
+# Package manager lock files
+package-lock.json
+# pnpm-lock.yaml  # Keep this for consistency
+# yarn.lock      # Keep this for consistency
 
 # Testing
-/coverage
+coverage/
 *.test.js
 *.test.ts
+*.test.jsx
+*.test.tsx
 *.spec.js
 *.spec.ts
+*.spec.jsx
+*.spec.tsx
 __tests__/
 .nyc_output
-coverage/
 *.lcov
+junit.xml
+test-results/
 
 # Next.js
-/.next/
-/out/
-/.next
 .next/
-.next
+out/
+build/
 
 # Production builds
-/build
-/dist
+dist/
 *.tgz
+*.tar.gz
 
 # Environment files
-.env*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
-!.env.production.example
+!.env.prod
 
 # Database files
 *.db
 *.sqlite
 *.sqlite3
-/prisma/dev.db*
+prisma/dev.db*
+prisma/migrations/migration_lock.toml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Turborepo
+.turbo
+
+# Sentry
+.sentryclirc
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+*.tgz
+*.tar.gz
+
+# Vercel
+.vercel
+
+# Docker
+.dockerignore
+Dockerfile*
+
+# Local development
+local/
+temp/
+tmp/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Credentials and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+credentials.json
+
+# User-specific files
+.user
+
+# AI and ML models
+*.pkl
+*.h5
+*.pb
+models/
+
+# Analytics and tracking
+.analytics
+
+# Lock files for different package managers (keep the one you use)
+# Comment out the lock file for your package manager:
+# package-lock.json     # npm
+# pnpm-lock.yaml       # pnpm  
+# yarn.lock            # yarn
 prisma/migrations/
 *.db-journal
 *.db-shm
