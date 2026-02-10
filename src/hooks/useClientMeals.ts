@@ -38,6 +38,9 @@ export function useClientMeals(clientId: string | null) {
             id: string;
             mealId: string;
             notes?: string;
+            dayOfWeek?: number;
+            mealType?: string;
+            portion?: number;
             meal: MealAssignment['meal'];
           }[];
         }) => {
@@ -46,7 +49,15 @@ export function useClientMeals(clientId: string | null) {
           }
 
           plan.mealAssignments.forEach(
-            (assignment: { id: string; mealId: string; notes?: string; meal: MealAssignment['meal'] }) => {
+            (assignment: {
+              id: string;
+              mealId: string;
+              notes?: string;
+              dayOfWeek?: number;
+              mealType?: string;
+              portion?: number;
+              meal: MealAssignment['meal'];
+            }) => {
               allAssignments.push({
                 id: assignment.id,
                 mealId: assignment.mealId,
@@ -55,6 +66,9 @@ export function useClientMeals(clientId: string | null) {
                 dueDate: plan.endDate ? new Date(plan.endDate) : undefined,
                 status: 'assigned',
                 notes: assignment.notes,
+                dayOfWeek: assignment.dayOfWeek,
+                mealType: assignment.mealType,
+                portion: assignment.portion,
                 meal: assignment.meal,
               });
             }

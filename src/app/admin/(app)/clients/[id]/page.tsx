@@ -7,12 +7,13 @@ import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
 import { Users, ChevronLeft, Film, Utensils, BarChart, Info } from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
-import { Client, MealAssignment, TabKey } from '@/lib/client-page/types';
+import { Client, TabKey } from '@/lib/client-page/types';
 import { calculateBMI } from '@/helpers';
 import { ClientHeader } from '@/components/client-profile/ClientHeader';
 import { ClientQuickStats } from '@/components/client-profile/ClientQuickStats';
 import { VideosTab } from '@/components/client-profile/VideosTab';
 import { MealsTab } from '@/components/client-profile/MealsTab';
+import { NutritionAnalytics } from '@/components/client-profile/NutritionAnalytics';
 import { useClientMeals } from '@/hooks/useClientMeals';
 
 export default function ClientProfilePage() {
@@ -31,7 +32,7 @@ export default function ClientProfilePage() {
   const [isRetrying, setIsRetrying] = useState(false);
 
   // Use custom hook for meal assignments
-  const { meals: mealAssignments, refresh: refreshMeals, isLoading: mealsLoading } = useClientMeals(clientId);
+  const { meals: mealAssignments, refresh: refreshMeals } = useClientMeals(clientId);
 
   const fetchClientData = async () => {
     try {
@@ -442,11 +443,7 @@ export default function ClientProfilePage() {
           />
         )}
 
-        {activeTab === 'progress' && (
-          <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            ProgressTab goes here.
-          </div>
-        )}
+        {activeTab === 'progress' && <NutritionAnalytics assignments={mealAssignments} />}
       </main>
 
       {selectedClient && (

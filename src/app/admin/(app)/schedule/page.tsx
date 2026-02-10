@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export default function SchedulePage() {
   return (

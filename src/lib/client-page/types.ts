@@ -32,6 +32,9 @@ export interface MealAssignment {
   dueDate?: Date;
   status: string;
   notes?: string;
+  dayOfWeek?: number;
+  mealType?: string;
+  portion?: number;
   meal: {
     id: string;
     name: string;
@@ -40,6 +43,7 @@ export interface MealAssignment {
     protein: number;
     carbs: number;
     fat: number;
+    fiber?: number;
     description?: string;
   };
 }
