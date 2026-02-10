@@ -4,44 +4,79 @@ import { AuthService, generateClientPassword } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, rememberMe } = (await request.json()) as {
+    const body = (await request.json()) as {
       email?: string;
       password?: string;
       rememberMe?: boolean;
     };
 
+    const rawEmail = String(body.email ?? '');
+    const rawPassword = String(body.password ?? '');
+    const rememberMe = Boolean(body.rememberMe);
+
+    const email = rawEmail.trim().toLowerCase();
+    const password = rawPassword; // do not trim unless you want spaces ignored
+
+    console.log('[USER LOGIN] input', {
+      rawEmail: JSON.stringify(rawEmail),
+      emailNormalized: email,
+      rawEmailLen: rawEmail.length,
+      passwordLen: rawPassword.length,
+      origin: request.headers.get('origin'),
+      ua: request.headers.get('user-agent'),
+      ipHint: request.headers.get('x-forwarded-for'),
+    });
+
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Email and password are required', code: 'MISSING_FIELDS' }, { status: 400 });
     }
 
     const client = await prisma.client.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email },
       include: { coach: { select: { name: true, email: true } } },
     });
 
+    console.log('[USER LOGIN] client lookup', {
+      found: Boolean(client),
+      storedEmail: client?.email,
+      storedEmailNormalized: client?.email ? client.email.trim().toLowerCase() : undefined,
+      hasPassword: Boolean(client?.password),
+    });
+
     if (!client) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid email or password', code: 'EMAIL_NOT_FOUND' }, { status: 401 });
     }
 
     let isValidPassword = false;
 
     if (client.password) {
       isValidPassword = await AuthService.verifyPassword(password, client.password);
+      console.log('[USER LOGIN] password check', { path: 'hashed', ok: isValidPassword });
     } else {
-      const defaultPassword = generateClientPassword(client.email);
+      const storedEmailNormalized = client.email.trim().toLowerCase();
+      const defaultPassword = generateClientPassword(storedEmailNormalized);
+
       isValidPassword = password === defaultPassword;
+
+      console.log('[USER LOGIN] password check', {
+        path: 'default',
+        ok: isValidPassword,
+        storedEmailNormalized,
+        passwordLen: password.length,
+        defaultPasswordLen: defaultPassword.length,
+      });
 
       if (isValidPassword) {
         const hashedPassword = await AuthService.hashPassword(password);
         await prisma.client.update({
           where: { id: client.id },
-          data: { password: hashedPassword },
+          data: { password: hashedPassword, email: storedEmailNormalized },
         });
       }
     }
 
     if (!isValidPassword) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid email or password', code: 'PASSWORD_MISMATCH' }, { status: 401 });
     }
 
     const token = AuthService.generateToken({
@@ -50,7 +85,7 @@ export async function POST(request: NextRequest) {
       type: 'client',
     });
 
-    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // example: 30d vs 1d
+    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24;
 
     const response = NextResponse.json({
       success: true,
@@ -68,6 +103,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('[USER LOGIN] error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }
