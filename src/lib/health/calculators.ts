@@ -18,10 +18,10 @@ export const HealthMetricsSchema = z.object({
   weightKg: z.coerce.number().min(30, 'Weight must be at least 30kg').max(250, 'Weight cannot exceed 250kg'),
   heightCm: z.coerce.number().min(120, 'Height must be at least 120cm').max(230, 'Height cannot exceed 230cm'),
   age: z.coerce.number().min(10, 'Age must be at least 10').max(100, 'Age cannot exceed 100'),
-  gender: z.enum(['male', 'female'], { errorMap: () => ({ message: 'Gender must be male or female' }) }),
-  activityLevel: z.enum(['LOW', 'MODERATE', 'HIGH', 'sedentary', 'light', 'moderate', 'very_active', 'athlete'], {
-    errorMap: () => ({ message: 'Invalid activity level' }),
-  }),
+  gender: z.enum(['male', 'female']).catch('male'),
+  activityLevel: z
+    .enum(['LOW', 'MODERATE', 'HIGH', 'sedentary', 'light', 'moderate', 'very_active', 'athlete'])
+    .catch('MODERATE'),
   goal: z.enum(['lose_fat', 'maintain', 'gain_muscle']).optional(),
   goalAggressiveness: z.enum(['conservative', 'standard', 'aggressive']).optional(),
 });
@@ -190,7 +190,7 @@ export async function calculateHealthMetrics(input: unknown): Promise<HealthMetr
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const messages = error.errors.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join('; ');
+      const messages = error.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join('; ');
       return { error: messages };
     }
     return { error: 'Failed to calculate health metrics' };

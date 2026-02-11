@@ -2,20 +2,14 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: clientId } = await params;
     const body = await request.json();
     const { notes } = body;
 
     if (!Array.isArray(notes)) {
-      return jsonWithCache(
-        { error: 'Notes must be an array' },
-        { status: 400 }
-      );
+      return jsonWithCache({ error: 'Notes must be an array' }, { status: 400 });
     }
 
     // Get the latest health metric record for this client
@@ -25,10 +19,7 @@ export async function POST(
     });
 
     if (!latestMetric) {
-      return jsonWithCache(
-        { error: 'No health metrics found for this client' },
-        { status: 404 }
-      );
+      return jsonWithCache({ error: 'No health metrics found for this client' }, { status: 404 });
     }
 
     // Update the notes
