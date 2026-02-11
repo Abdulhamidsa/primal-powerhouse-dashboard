@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { X, TrendingDown, TrendingUp, Activity, Flame, Beef, Wheat, Droplets, AlertCircle } from 'lucide-react';
+import { X, TrendingDown, TrendingUp, Activity } from 'lucide-react';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 
 interface HealthMetricsModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   clientId: string;
   clientName: string;
   clientData: {
@@ -21,7 +21,7 @@ interface HealthMetricsModalProps {
 
 export default function HealthMetricsModal({
   isOpen,
-  onClose,
+  onCloseAction,
   clientId,
   clientName,
   clientData,
@@ -32,7 +32,7 @@ export default function HealthMetricsModal({
   const [aggressiveness, setAggressiveness] = useState<'conservative' | 'standard' | 'aggressive'>('standard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<HealthMetricsOutput | null>(null);
+  const [, setResults] = useState<HealthMetricsOutput | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const handleCalculate = async (e: React.FormEvent) => {
@@ -69,20 +69,20 @@ export default function HealthMetricsModal({
 
   if (!isOpen) return null;
 
-  const getBMIColorClass = (category: string) => {
-    switch (category) {
-      case 'underweight':
-        return 'bg-blue-500/10 border-blue-500 text-blue-600';
-      case 'normal':
-        return 'bg-green-500/10 border-green-500 text-green-600';
-      case 'overweight':
-        return 'bg-orange-500/10 border-orange-500 text-orange-600';
-      case 'obese':
-        return 'bg-red-500/10 border-red-500 text-red-600';
-      default:
-        return 'bg-gray-500/10 border-gray-500 text-gray-600';
-    }
-  };
+  // const getBMIColorClass = (category: string) => {
+  //   switch (category) {
+  //     case 'underweight':
+  //       return 'bg-blue-500/10 border-blue-500 text-blue-600';
+  //     case 'normal':
+  //       return 'bg-green-500/10 border-green-500 text-green-600';
+  //     case 'overweight':
+  //       return 'bg-orange-500/10 border-orange-500 text-orange-600';
+  //     case 'obese':
+  //       return 'bg-red-500/10 border-red-500 text-red-600';
+  //     default:
+  //       return 'bg-gray-500/10 border-gray-500 text-gray-600';
+  //   }
+  // };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -106,7 +106,7 @@ export default function HealthMetricsModal({
               {clientName}
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-red-500/10 rounded-lg transition">
+          <button onClick={onCloseAction} className="p-2 hover:bg-red-500/10 rounded-lg transition">
             <X size={24} style={{ color: 'var(--color-text-muted)' }} />
           </button>
         </div>
