@@ -49,6 +49,7 @@ model Client {
   targetWeight        Float?
   height              Float?
   age                 Int?
+  gender              Gender?
   activityLevel       ActivityLevel?
   dietaryRestrictions String?
   goals               String?
@@ -58,6 +59,8 @@ model Client {
   nextSession         DateTime?
   sessionsCompleted   Int      @default(0)
   progressPhotos      String?
+  goalCalories        Int?
+  goalMacros          String? // JSON: {protein, carbs, fat}
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -70,8 +73,33 @@ model Client {
   meals             Meal[]
   feedback          Feedback[]
   sessions          Session[]
+  healthMetrics     HealthMetric[]
 
   @@map("clients")
+}
+
+model HealthMetric {
+  id              String   @id @default(cuid())
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  weight          Float
+  bmi             Float
+  bmr             Int
+  tdee            Int
+  recommendedCals Int
+  bmiCategory     String
+  goal            String?
+  
+  macros          String // JSON: {protein, carbs, fat}
+  notes           String? // feedback/warnings
+  
+  recordedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  
+  @@index([clientId])
+  @@index([recordedAt])
+  @@map("health_metrics")
 }
 
 model Meal {
@@ -246,6 +274,11 @@ model Feedback {
 /* =========================
    ENUMS
 ========================= */
+
+enum Gender {
+  MALE
+  FEMALE
+}
 
 enum Role {
   COACH

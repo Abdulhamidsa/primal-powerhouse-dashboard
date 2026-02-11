@@ -20,6 +20,8 @@ export interface Client {
   status: string;
   notes?: string;
   sessionsCompleted?: number;
+  goalCalories?: number;
+  goalMacros?: string; // JSON string: {protein, carbs, fat}
   createdAt: Date;
   updatedAt: Date;
 }
