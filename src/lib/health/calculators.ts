@@ -20,7 +20,7 @@ export const HealthMetricsSchema = z.object({
   age: z.coerce.number().min(10, 'Age must be at least 10').max(100, 'Age cannot exceed 100'),
   gender: z.enum(['male', 'female']).catch('male'),
   activityLevel: z
-    .enum(['LOW', 'MODERATE', 'HIGH', 'sedentary', 'light', 'moderate', 'very_active', 'athlete'])
+    .enum(['LOW', 'MODERATE', 'HIGH', 'sedentary', 'light', 'moderate', 'very_active', 'athlete'] as const)
     .catch('MODERATE'),
   goal: z.enum(['lose_fat', 'maintain', 'gain_muscle']).optional(),
   goalAggressiveness: z.enum(['conservative', 'standard', 'aggressive']).optional(),

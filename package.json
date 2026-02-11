@@ -9,6 +9,7 @@
     "db:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
     "db:studio:dev": "dotenv -e .env.dev -- prisma studio",
     "db:studio:prod": "dotenv -e .env.prod -- prisma studio",
+    "postinstall": "prisma generate",
     "build": "next build",
     "build:prod": "dotenv -e .env.prod -- next build",
     "start": "next start --turbo",
