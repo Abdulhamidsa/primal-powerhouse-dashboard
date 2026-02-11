@@ -337,3 +337,10 @@ file.js
 supabase-setup.sql
 
 seed.js
+
+
+all .md files except README.md
+*.md
+
+
+*fullSeed.ts

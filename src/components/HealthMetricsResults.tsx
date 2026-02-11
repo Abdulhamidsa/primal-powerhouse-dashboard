@@ -1,22 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Flame, Beef, Wheat, Droplets, AlertCircle, Trash2 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { Beef, Wheat, Droplets, AlertCircle, Trash2 } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 
 interface HealthMetricsResultsProps {
   clientId: string;
   metrics: HealthMetricsOutput;
-  onClose: () => void;
-  onSaveNotes: (notes: string[]) => void;
+  onCloseAction: () => void;
+  onSaveNotesAction: (notes: string[]) => void;
 }
 
 export function HealthMetricsResults({
   clientId,
   metrics,
-  onClose,
-  onSaveNotes,
+  onCloseAction,
+  onSaveNotesAction,
 }: HealthMetricsResultsProps) {
   const [notes, setNotes] = useState<string[]>(metrics.notes || []);
   const [newNote, setNewNote] = useState('');
@@ -38,7 +38,7 @@ export function HealthMetricsResults({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: updatedNotes }),
       });
-      onSaveNotes(updatedNotes);
+      onSaveNotesAction(updatedNotes);
     } catch (error) {
       console.error('Failed to save notes:', error);
     } finally {
@@ -57,7 +57,7 @@ export function HealthMetricsResults({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: updatedNotes }),
       });
-      onSaveNotes(updatedNotes);
+      onSaveNotesAction(updatedNotes);
     } catch (error) {
       console.error('Failed to save notes:', error);
     } finally {
@@ -94,7 +94,7 @@ export function HealthMetricsResults({
           📊 Health Metrics Results
         </h2>
         <button
-          onClick={onClose}
+          onClick={onCloseAction}
           className="px-4 py-2 rounded-lg font-semibold transition"
           style={{
             background: 'var(--color-accent)',
@@ -108,9 +108,7 @@ export function HealthMetricsResults({
       {/* Main Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* BMI Card */}
-        <div
-          className={`rounded-2xl border-2 p-6 text-center ${getBMIColorClass(metrics.bmiCategory)}`}
-        >
+        <div className={`rounded-2xl border-2 p-6 text-center ${getBMIColorClass(metrics.bmiCategory)}`}>
           <p className="text-sm font-medium opacity-75 mb-2">BMI</p>
           <p className="text-4xl font-bold mb-1">{metrics.bmi.toFixed(1)}</p>
           <p className="text-sm font-semibold capitalize">{metrics.bmiCategory}</p>
@@ -183,7 +181,10 @@ export function HealthMetricsResults({
             </div>
 
             {/* Visual BMI Bar */}
-            <div className="relative h-12 bg-gradient-to-r from-blue-500 via-green-500 via-orange-500 to-red-500 rounded-lg overflow-hidden border-2" style={{ borderColor: 'var(--color-border)' }}>
+            <div
+              className="relative h-12 bg-gradient-to-r from-blue-500 via-green-500 to-red-500 rounded-lg overflow-hidden border-2"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
               {/* Current BMI Marker */}
               <div
                 className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-10"
@@ -311,7 +312,7 @@ export function HealthMetricsResults({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
@@ -321,7 +322,7 @@ export function HealthMetricsResults({
                 <Cell fill="#ffd93d" />
               </Pie>
               <Tooltip
-                formatter={(value) => `${value} kcal`}
+                formatter={value => `${value} kcal`}
                 contentStyle={{
                   background: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',
@@ -358,7 +359,7 @@ export function HealthMetricsResults({
               {metrics.macros.protein}g
             </p>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-              {Math.round((metrics.macros.protein * 4) / metrics.recommendedCalories * 100)}% of total
+              {Math.round(((metrics.macros.protein * 4) / metrics.recommendedCalories) * 100)}% of total
             </p>
           </div>
 
@@ -387,7 +388,7 @@ export function HealthMetricsResults({
               {metrics.macros.carbs}g
             </p>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-              {Math.round((metrics.macros.carbs * 4) / metrics.recommendedCalories * 100)}% of total
+              {Math.round(((metrics.macros.carbs * 4) / metrics.recommendedCalories) * 100)}% of total
             </p>
           </div>
 
@@ -416,7 +417,7 @@ export function HealthMetricsResults({
               {metrics.macros.fat}g
             </p>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-              {Math.round((metrics.macros.fat * 9) / metrics.recommendedCalories * 100)}% of total
+              {Math.round(((metrics.macros.fat * 9) / metrics.recommendedCalories) * 100)}% of total
             </p>
           </div>
         </div>
@@ -433,7 +434,7 @@ export function HealthMetricsResults({
           <input
             type="text"
             value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
+            onChange={e => setNewNote(e.target.value)}
             onKeyDown={handleAddNote}
             disabled={isSaving}
             placeholder="Add a note and press Enter..."
@@ -487,10 +488,7 @@ export function HealthMetricsResults({
               borderColor: 'var(--color-border)',
             }}
           >
-            <AlertCircle
-              size={24}
-              style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }}
-            />
+            <AlertCircle size={24} style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }} />
             <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
               No notes yet. Add observations about this calculation!
             </p>

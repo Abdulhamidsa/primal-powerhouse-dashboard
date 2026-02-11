@@ -93,6 +93,7 @@ export default function ClientProfilePage() {
             bmiCategory: latest.bmiCategory,
             macros: JSON.parse(latest.macros),
             notes: latest.notes ? latest.notes.split('\n').filter((n: string) => n.trim()) : [],
+            isSafeToDeficit: latest.isSafeToDeficit,
           });
         }
       }
@@ -220,7 +221,9 @@ export default function ClientProfilePage() {
         <ClientQuickStats
           videosCount={videoAssignments.length}
           mealsCount={mealAssignments.length}
-          bmi={calculateBMI(client.currentWeight, client.height)}
+          bmi={
+            client.currentWeight && client.height ? calculateBMI(client.currentWeight, client.height).toString() : 'N/A'
+          }
           sessions={client.sessionsCompleted || 0}
         />
 
@@ -310,7 +313,7 @@ export default function ClientProfilePage() {
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
                   <span style={{ color: 'var(--color-text-muted)' }}>BMI</span>
                   <span style={{ color: 'var(--color-text)' }} className="font-medium">
-                    {calculateBMI(client.currentWeight, client.height)}
+                    {client.currentWeight && client.height ? calculateBMI(client.currentWeight, client.height) : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
@@ -445,17 +448,13 @@ export default function ClientProfilePage() {
             {/* Health Metrics */}
             <div className="md:col-span-2">
               <HealthMetricsWidget
-                bmi={
-                  client.currentWeight && client.height
-                    ? parseFloat(calculateBMI(client.currentWeight, client.height))
-                    : null
-                }
+                bmi={client.currentWeight && client.height ? calculateBMI(client.currentWeight, client.height) : null}
                 goalCalories={client.goalCalories ?? null}
                 goalMacros={client.goalMacros ? JSON.parse(client.goalMacros) : null}
                 bmiCategory={
                   client.currentWeight && client.height
                     ? (() => {
-                        const bmi = parseFloat(calculateBMI(client.currentWeight, client.height));
+                        const bmi = calculateBMI(client.currentWeight, client.height);
                         if (bmi < 18.5) return 'underweight';
                         if (bmi < 25) return 'normal';
                         if (bmi < 30) return 'overweight';
@@ -472,8 +471,8 @@ export default function ClientProfilePage() {
               <HealthMetricsResults
                 clientId={clientId}
                 metrics={healthMetricsResults}
-                onClose={() => setHealthMetricsResults(null)}
-                onSaveNotes={() => {
+                onCloseAction={() => setHealthMetricsResults(null)}
+                onSaveNotesAction={() => {
                   fetchClientData();
                 }}
               />
@@ -541,7 +540,7 @@ export default function ClientProfilePage() {
       {client && (
         <HealthMetricsModal
           isOpen={showHealthMetricsModal}
-          onClose={() => setShowHealthMetricsModal(false)}
+          onCloseAction={() => setShowHealthMetricsModal(false)}
           clientId={clientId}
           clientName={client.name}
           clientData={{
@@ -551,7 +550,7 @@ export default function ClientProfilePage() {
             gender: client.gender ?? null,
             activityLevel: client.activityLevel ?? null,
           }}
-          onSuccess={(metrics) => {
+          onSuccess={metrics => {
             setHealthMetricsResults(metrics);
             fetchClientData();
             fetchLatestHealthMetrics();
