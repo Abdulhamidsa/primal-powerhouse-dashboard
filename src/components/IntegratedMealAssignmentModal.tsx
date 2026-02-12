@@ -60,8 +60,8 @@ export default function IntegratedMealAssignmentModal({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(clientId || null);
   const [activeTab, setActiveTab] = useState<'select-meals' | 'schedule'>('select-meals');
-  const [selectedMealType, _setSelectedMealType] = useState<string | null>(null);
-  const [selectedDay, _setSelectedDay] = useState<number | null>(null);
+  const [selectedMealType, setSelectedMealType] = useState<string | 'all'>('all');
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   // State for personalization
   const [showPersonalizationModal, setShowPersonalizationModal] = useState(false);
@@ -205,7 +205,8 @@ export default function IntegratedMealAssignmentModal({
       console.log('Processing assignment:', assignment);
 
       // Handle different formats of mealType with proper null checking
-      if (!assignment || !assignment.mealType || !assignment.dayOfWeek) {
+      // Use strict checks to allow dayOfWeek = 0 (Sunday)
+      if (!assignment || !assignment.mealType || assignment.dayOfWeek === null || assignment.dayOfWeek === undefined) {
         console.warn('Invalid assignment data, skipping:', assignment);
         continue;
       }
@@ -223,18 +224,32 @@ export default function IntegratedMealAssignmentModal({
       // Check if we have meal data directly in the assignment
       if (assignment.meal) {
         console.log('Assignment has meal data:', assignment.meal.name);
+        // Check if this is a personalized meal and log the originalMealId
+        if (assignment.meal.isPersonalized && assignment.meal.originalMealId) {
+          console.log(`  → Personalized meal. Original meal ID: ${assignment.meal.originalMealId}`);
+        }
         // Add this meal to our collection to update the meals array
         mealsToAdd.push(assignment.meal);
       }
 
+      // Extract originalMealId from the meal data (not from assignment directly)
+      const originalMealId = assignment.meal?.originalMealId || assignment.originalMealId;
+
       mealMap[key] = {
         mealId: assignment.mealId,
-        isPersonalized: assignment.isPersonalized || false,
+        isPersonalized: assignment.meal?.isPersonalized || assignment.isPersonalized || false,
         // If the meal is already included in the assignment, use it
         meal: assignment.meal,
-        personalizedMeal: assignment.isPersonalized ? assignment.meal : undefined,
-        originalMealId: assignment.originalMealId,
+        personalizedMeal: assignment.meal?.isPersonalized ? assignment.meal : undefined,
+        // Get originalMealId from the meal object (this is where it's stored)
+        originalMealId: originalMealId,
       };
+
+      console.log(`  Mapped to slot ${key}:`, {
+        mealId: assignment.mealId,
+        isPersonalized: mealMap[key].isPersonalized,
+        originalMealId: originalMealId,
+      });
     }
 
     // Update our meals array with any meals from assignments
@@ -308,6 +323,25 @@ export default function IntegratedMealAssignmentModal({
       try {
         // Pass clientId to get personalized meals for this client
         mealsData = await DataService.getMeals(selectedClientId || clientId);
+
+        // Transform meals to ensure images array is populated from imageUrl if needed
+        mealsData = mealsData.map(meal => {
+          // If meal has imageUrl but no images array, convert it
+          if ((meal as any).imageUrl && (!meal.images || meal.images.length === 0)) {
+            return {
+              ...meal,
+              images: [(meal as any).imageUrl],
+            };
+          }
+          // If meal has images array, ensure it's not empty by checking imageUrl as fallback
+          if ((!meal.images || meal.images.length === 0) && (meal as any).imageUrl) {
+            return {
+              ...meal,
+              images: [(meal as any).imageUrl],
+            };
+          }
+          return meal;
+        });
       } catch (error) {
         console.error('Error fetching meals from API:', error);
 
@@ -490,13 +524,29 @@ export default function IntegratedMealAssignmentModal({
     }
   };
 
-  // Filter meals based on search term with null safety
-  const filteredMeals = meals.filter(
-    meal =>
-      (meal?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (meal?.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (meal?.tags || []).some(tag => (tag?.toLowerCase() || '').includes(searchTerm.toLowerCase()))
-  );
+  // Filter meals: only show original (non-personalized) meals, filter by type and search
+  const filteredMeals = meals.filter(meal => {
+    // First, exclude personalized meals - only show templates/originals
+    // Check if isPersonalized exists and is true
+    if ('isPersonalized' in meal && meal.isPersonalized === true) return false;
+
+    // Filter by meal type if one is selected
+    if (selectedMealType && selectedMealType !== 'all') {
+      const mealType = typeof meal.type === 'string' ? meal.type.toLowerCase() : '';
+      if (mealType !== selectedMealType.toLowerCase()) return false;
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesName = (meal?.name?.toLowerCase() || '').includes(searchLower);
+      const matchesDescription = (meal?.description?.toLowerCase() || '').includes(searchLower);
+      const matchesTags = (meal?.tags || []).some(tag => (tag?.toLowerCase() || '').includes(searchLower));
+      return matchesName || matchesDescription || matchesTags;
+    }
+
+    return true;
+  });
 
   // Get all meal IDs that are currently assigned (to prevent duplicates)
   const assignedMealIds = new Set(
@@ -505,15 +555,33 @@ export default function IntegratedMealAssignmentModal({
       .filter(Boolean)
   );
 
-  // Check if a meal is assigned to any slot
+  // Also track original meal IDs for personalized meals
+  const assignedOriginalMealIds = new Set(
+    Object.values(selectedMeals)
+      .map(selection => selection.originalMealId)
+      .filter(Boolean)
+  );
+
+  // Debug logging for assigned meals
+  console.log('Currently assigned meal IDs:', Array.from(assignedMealIds));
+  console.log('Currently assigned original meal IDs:', Array.from(assignedOriginalMealIds));
+
+  // Check if a meal is assigned to any slot (either directly or as the original of a personalized meal)
   const isMealAssigned = (mealId: string): boolean => {
-    return assignedMealIds.has(mealId);
+    const isAssigned = assignedMealIds.has(mealId) || assignedOriginalMealIds.has(mealId);
+    if (isAssigned) {
+      console.log(
+        `Meal ${mealId} is assigned (direct: ${assignedMealIds.has(mealId)}, as original: ${assignedOriginalMealIds.has(mealId)})`
+      );
+    }
+    return isAssigned;
   };
 
   // Get the slot where a meal is assigned (if any)
   const getMealAssignmentSlot = (mealId: string): { day: number; mealType: string } | null => {
     for (const [key, selection] of Object.entries(selectedMeals)) {
-      if (selection.mealId === mealId) {
+      // Check if this meal is directly assigned OR if this is the original of a personalized meal
+      if (selection.mealId === mealId || selection.originalMealId === mealId) {
         const [dayOfWeek, mealType] = key.split('_');
         return { day: parseInt(dayOfWeek), mealType };
       }
@@ -580,7 +648,8 @@ export default function IntegratedMealAssignmentModal({
             prepTime: personalizedMeal.prepTime,
             cookTime: personalizedMeal.cookTime,
             servings: personalizedMeal.servings,
-            imageUrl: personalizedMeal.images?.[0],
+            // Support both images array and imageUrl field
+            imageUrl: personalizedMeal.images?.[0] || (personalizedMeal as any).imageUrl || null,
             tags: personalizedMeal.tags,
             // Convert meal type to uppercase format to match Prisma enum
             type:
@@ -829,8 +898,8 @@ export default function IntegratedMealAssignmentModal({
       console.error('Invalid day or meal type', { dayOfWeek, mealType });
       return;
     }
-    _setSelectedDay(dayOfWeek);
-    _setSelectedMealType(mealType);
+    setSelectedDay(dayOfWeek);
+    setSelectedMealType(mealType);
     setActiveTab('select-meals');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -904,14 +973,11 @@ export default function IntegratedMealAssignmentModal({
         }
       }
 
-      // First, save any personalized meals that need to be saved
-      const personalizedMealPromises = Object.entries(selectedMeals)
-        .filter(([_, selection]) => selection.isPersonalized && selection.personalizedMeal)
-        .map(async ([key, selection]) => {
-          if (!selection.personalizedMeal) return null;
-
-          // If the meal was already saved to the database (in handleSavePersonalizedMeal),
-          // we can skip saving it again
+      // Create personalized copies for ALL meals being assigned (explicit personalizations + auto-personalization of regular meals)
+      // This ensures complete isolation: editing one client's meal doesn't affect others or templates
+      const personalizedMealPromises = Object.entries(selectedMeals).map(async ([key, selection]) => {
+        // For explicitly personalized meals
+        if (selection.isPersonalized && selection.personalizedMeal) {
           if (
             (!selection.needsSaving && !selection.personalizedMeal.id.includes('personalized-')) ||
             selection.alreadySaved === true
@@ -921,21 +987,9 @@ export default function IntegratedMealAssignmentModal({
           }
 
           try {
-            console.log('Saving personalized meal:', selection.personalizedMeal.name);
-            console.log('Original meal ID:', selection.originalMealId);
-
-            // Make sure we have the original meal ID to maintain the reference
+            console.log('Saving explicitly personalized meal:', selection.personalizedMeal.name);
             const originalId = selection.originalMealId || selection.personalizedMeal.id;
 
-            console.log('Using original meal ID for reference:', originalId);
-
-            // Find a valid coach ID to use for the meal creation
-            let coachId = 'clmermeye5001d7k2kwvec0tkv'; // Use a fallback ID
-            console.log('Using coach ID for personalized meal:', coachId);
-
-            // Save personalized meal with the PersonalizedMealService
-            // Pass the original meal ID to maintain the reference
-            // Use client-side safe API to create personalized meal
             const mealData = {
               name: selection.personalizedMeal.name,
               description: selection.personalizedMeal.description,
@@ -949,33 +1003,70 @@ export default function IntegratedMealAssignmentModal({
               prepTime: selection.personalizedMeal.prepTime,
               cookTime: selection.personalizedMeal.cookTime,
               servings: selection.personalizedMeal.servings,
-              imageUrl: selection.personalizedMeal.images?.[0],
+              // Support both images array and imageUrl field
+              imageUrl: selection.personalizedMeal.images?.[0] || selection.personalizedMeal.imageUrl || null,
               tags: selection.personalizedMeal.tags,
-              // Convert meal type to uppercase format to match Prisma enum
               type:
                 typeof selection.personalizedMeal.type === 'string'
                   ? selection.personalizedMeal.type.toUpperCase()
                   : selection.personalizedMeal.type,
-              coachId: coachId, // Use valid coach ID
             };
 
             const savedMeal = await clientApi.createPersonalizedMeal(mealData, selectedClientId, originalId);
-
-            // Format the response to match what the component expects
-            const result = {
-              meal: savedMeal,
-              client: { id: selectedClientId, name: 'Client' },
-            };
-
-            console.log('Successfully saved personalized meal:', result.meal.id);
-            return { key, mealId: result.meal.id };
+            console.log('Successfully saved explicitly personalized meal:', savedMeal.id);
+            return { key, mealId: savedMeal.id };
           } catch (error) {
-            console.error('Error saving personalized meal:', error);
-            console.warn('Continuing with other meals, will exclude this one from the plan');
-            // Don't alert, just return null so this meal gets excluded
+            console.error('Error saving explicitly personalized meal:', error);
             return null;
           }
-        });
+        }
+        // For non-personalized meals: AUTO-CREATE a personalized copy to ensure isolation
+        else if (!selection.isPersonalized && selection.mealId) {
+          try {
+            // Fetch the original meal to copy its data
+            console.log('Auto-creating personalized copy for meal:', selection.mealId);
+            const originalMeal = meals.find(m => m.id === selection.mealId);
+
+            if (!originalMeal) {
+              console.warn(`Original meal not found: ${selection.mealId}`);
+              return null;
+            }
+
+            // Create a personalized copy of the template meal
+            const mealData = {
+              name: originalMeal.name,
+              description: originalMeal.description || '',
+              ingredients: JSON.stringify(originalMeal.ingredients || []),
+              instructions: JSON.stringify(originalMeal.instructions || []),
+              calories: originalMeal.calories,
+              protein: originalMeal.protein,
+              carbs: originalMeal.carbs,
+              fat: originalMeal.fat,
+              fiber: originalMeal.fiber || 0,
+              prepTime: originalMeal.prepTime,
+              cookTime: originalMeal.cookTime,
+              servings: originalMeal.servings || 1,
+              // Support both images array and imageUrl field
+              imageUrl: originalMeal.images?.[0] || (originalMeal as any).imageUrl || null,
+              tags: JSON.stringify(originalMeal.tags || []),
+              type: typeof originalMeal.type === 'string' ? originalMeal.type.toUpperCase() : originalMeal.type,
+            };
+
+            const personalizedCopy = await clientApi.createPersonalizedMeal(
+              mealData,
+              selectedClientId,
+              selection.mealId
+            );
+            console.log('Auto-created personalized copy:', personalizedCopy.id, 'for original meal:', selection.mealId);
+            return { key, mealId: personalizedCopy.id, isAutoPersonalized: true };
+          } catch (error) {
+            console.error('Error auto-creating personalized meal copy:', error);
+            return null;
+          }
+        }
+
+        return null;
+      });
 
       console.log('Waiting for personalized meals to be saved...');
       const savedPersonalizedMeals = await Promise.all(personalizedMealPromises);
@@ -1000,49 +1091,36 @@ export default function IntegratedMealAssignmentModal({
 
       // Update meal assignments with the newly saved personalized meal IDs
       const finalMealAssignments = Object.entries(selectedMeals)
-        .map(([key, selection]) => {
+        .map(([key, _selection]) => {
           const [dayOfWeek, mealType] = key.split('_');
 
-          // If this was a personalized meal, find its saved ID
-          let mealId = selection.mealId;
-          if (selection.isPersonalized) {
-            const savedMeal = savedPersonalizedMeals.find(item => item?.key === key);
-            if (savedMeal) {
-              mealId = savedMeal.mealId;
-              console.log(`Using saved personalized meal ID ${mealId} for assignment ${key}`);
+          // Find the saved personalized meal (whether explicitly or auto-personalized)
+          const savedMeal = savedPersonalizedMeals.find(item => item?.key === key);
 
-              // Don't include temporary IDs in the final assignments
-              if (mealId.startsWith('personalized-')) {
-                console.warn(`Skipping assignment with temporary ID: ${mealId}`);
-                return null; // Will be filtered out below
-              }
-
-              // Return the assignment with the valid meal ID
-              return {
-                mealId,
-                dayOfWeek: parseInt(dayOfWeek),
-                mealType: mealType.toUpperCase() as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
-                portion: 1.0,
-                isPersonalized: selection.isPersonalized,
-                notes: selection.isPersonalized ? 'Personalized meal' : undefined,
-              };
-            } else {
-              console.warn(`No saved personalized meal found for assignment ${key}, will skip this meal`);
-              return null; // Will be filtered out below
-            }
+          if (!savedMeal || !savedMeal.mealId) {
+            console.warn(`No saved personalized meal found for assignment ${key}`);
+            return null;
           }
 
-          // Return the assignment with the original meal ID for non-personalized meals
+          const mealId = savedMeal.mealId;
+
+          // Skip if temporary ID
+          if (mealId.startsWith('personalized-')) {
+            console.warn(`Skipping assignment with temporary ID: ${mealId}`);
+            return null;
+          }
+
+          // All assignments now use personalized meal IDs (either explicitly or auto-personalized)
           return {
             mealId,
             dayOfWeek: parseInt(dayOfWeek),
             mealType: mealType.toUpperCase() as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
             portion: 1.0,
-            isPersonalized: selection.isPersonalized,
-            notes: selection.isPersonalized ? 'Personalized meal' : undefined,
+            isPersonalized: true, // All assignments now result in personalized meals
+            notes: savedMeal.isAutoPersonalized ? 'Auto-personalized copy' : 'Personalized meal',
           };
         })
-        // Filter out any null entries (failed personalized meals)
+        // Filter out any null entries (failed meal creations)
         .filter(assignment => assignment !== null && assignment.mealId) as Array<{
         mealId: string;
         dayOfWeek: number;
@@ -1701,30 +1779,54 @@ export default function IntegratedMealAssignmentModal({
               </div>
 
               {/* Filter by meal type */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {mealTypes.map(type => (
-                  <button
-                    key={type.value}
-                    className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
-                      selectedMealType === type.value ? 'border-2' : 'border'
-                    }`}
-                    style={{
-                      background:
-                        selectedMealType === type.value ? 'var(--color-accent-translucent)' : 'var(--color-bg-alt)',
-                      borderColor: selectedMealType === type.value ? 'var(--color-accent)' : 'var(--color-border)',
-                      color: selectedMealType === type.value ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                    }}
-                    onClick={() => {
-                      setSearchTerm(prevTerm => {
-                        if (prevTerm.includes(type.value)) return prevTerm;
-                        return prevTerm ? `${prevTerm} ${type.value}` : type.value;
-                      });
-                    }}
-                  >
-                    <span>{type.icon}</span>
-                    <span>{type.label}</span>
-                  </button>
-                ))}
+              <div className="mb-4">
+                <div
+                  className="rounded-xl p-3 border"
+                  style={{
+                    background: 'var(--color-surface)',
+                    borderColor: 'var(--color-border)',
+                  }}
+                >
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                    Filter by Meal Type
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setSelectedMealType('all')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border-2 ${
+                        selectedMealType === 'all'
+                          ? 'border-accent shadow-sm'
+                          : 'border-transparent hover:border-opacity-30 hover:border-accent'
+                      }`}
+                      style={{
+                        background: selectedMealType === 'all' ? 'var(--color-accent)' : 'rgba(255,255,255,0.04)',
+                        color: selectedMealType === 'all' ? 'var(--color-text)' : 'var(--color-text-muted)',
+                        borderColor: selectedMealType === 'all' ? 'var(--color-accent)' : 'var(--color-border)',
+                      }}
+                    >
+                      All Meals
+                    </button>
+                    {mealTypes.map(type => (
+                      <button
+                        key={type.value}
+                        onClick={() => setSelectedMealType(type.value)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 border-2 ${
+                          selectedMealType === type.value
+                            ? 'border-accent shadow-sm'
+                            : 'border-transparent hover:border-opacity-30 hover:border-accent'
+                        }`}
+                        style={{
+                          background: selectedMealType === type.value ? 'var(--color-black)' : 'rgba(255,255,255,0.04)',
+                          color: selectedMealType === type.value ? 'var(--color-text)' : 'var(--color-text-muted)',
+                          borderColor: selectedMealType === type.value ? 'var(--color-accent)' : 'var(--color-border)',
+                        }}
+                      >
+                        <span>{type.icon}</span>
+                        <span>{type.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Meals Grid */}
@@ -1744,28 +1846,41 @@ export default function IntegratedMealAssignmentModal({
                       className="border rounded-lg overflow-hidden"
                       style={{ borderColor: 'var(--color-border)' }}
                     >
-                      {meal.images && meal.images[0] && (
-                        <div
-                          className="h-40 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${meal.images[0]})`,
-                          }}
-                        />
-                      )}
+                      {/* Display image from either images array or imageUrl field */}
+                      {(() => {
+                        const imageSource = meal.images?.[0] || meal.imageUrl;
+                        return imageSource ? (
+                          <div
+                            className="h-40 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${imageSource})`,
+                            }}
+                          />
+                        ) : null;
+                      })()}
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h4 className="font-semibold flex-1">{meal.name}</h4>
-                          {isMealAssigned(meal.id) && (
-                            <div
-                              className="px-2 py-1 rounded text-xs font-medium whitespace-nowrap"
-                              style={{
-                                background: 'var(--color-success-bg)',
-                                color: 'var(--color-success)',
-                              }}
-                            >
-                              ✓ Assigned
-                            </div>
-                          )}
+                          {isMealAssigned(meal.id) &&
+                            (() => {
+                              const slot = getMealAssignmentSlot(meal.id);
+                              const dayName = slot ? daysOfWeek.find(d => d.value === slot.day)?.label : '';
+                              const mealTypeName = slot ? mealTypes.find(m => m.value === slot.mealType)?.label : '';
+                              return (
+                                <div
+                                  className="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap flex items-center gap-1.5 border-2"
+                                  style={{
+                                    background: 'rgba(34, 197, 94, 0.15)',
+                                    color: '#22c55e',
+                                    borderColor: '#22c55e',
+                                  }}
+                                  title={`Assigned to ${dayName} - ${mealTypeName}`}
+                                >
+                                  <Check size={14} />
+                                  <span>ASSIGNED</span>
+                                </div>
+                              );
+                            })()}
                         </div>
                         <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--color-text-muted)' }}>
                           {meal.description}
@@ -1832,9 +1947,7 @@ export default function IntegratedMealAssignmentModal({
                             }`}
                             style={{
                               background: isMealAssigned(meal.id) ? 'var(--color-bg-alt)' : 'var(--color-accent)',
-                              color: isMealAssigned(meal.id)
-                                ? 'var(--color-text-muted)'
-                                : 'var(--color-text-on-accent)',
+                              color: isMealAssigned(meal.id) ? 'var(--color-text-muted)' : 'var(--color-text-black)',
                             }}
                             title={
                               isMealAssigned(meal.id)

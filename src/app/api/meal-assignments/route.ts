@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
         mealPlanId: mealPlanId,
         mealId: mealId,
         mealType: mealType,
-        dayOfWeek: dayOfWeek || new Date().getDay(),
-        portion: portion || 1,
+        dayOfWeek: dayOfWeek ?? new Date().getDay(),
+        portion: portion ?? 1,
         notes: notes || 'Personalized meal',
       },
       include: {

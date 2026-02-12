@@ -506,6 +506,9 @@ export default function ClientProfilePage() {
               setAssignModalType('meals');
               setShowAssignModal(true);
             }}
+            onMealUpdated={async () => {
+              await refreshMeals();
+            }}
           />
         )}
 
