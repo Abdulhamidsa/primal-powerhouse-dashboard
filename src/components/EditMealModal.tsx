@@ -48,10 +48,10 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
       setFetchingMeal(true);
       try {
         const meal = await DataService.getMealById(mealId);
-        
+
         // Check if this is a personalized meal
         setIsPersonalizedMeal(meal.isPersonalized || false);
-        
+
         // If this is a TEMPLATE meal, check how many clients are using it
         if (!meal.isPersonalized) {
           try {
@@ -68,7 +68,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             console.error('Error checking template usage:', err);
           }
         }
-        
+
         // If personalized, fetch client name
         if (meal.isPersonalized && meal.clientId) {
           try {
@@ -79,7 +79,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             console.error('Error fetching client:', err);
           }
         }
-        
+
         setFormData({
           name: meal.name || '',
           type: meal.type || 'BREAKFAST',
@@ -95,7 +95,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
           servings: String(meal.servings || '1'),
           tags: Array.isArray(meal.tags) && meal.tags.length > 0 ? meal.tags : [''],
         });
-        
+
         setCurrentImageUrl(meal.imageUrl || '');
       } catch (error) {
         console.error('Error fetching meal:', error);
@@ -273,11 +273,11 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
         <div className="p-6 border-b border-zinc-700">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-zinc-100">Edit Meal</h2>
-            <button 
+            <button
               onClick={() => {
                 onCloseAction();
                 resetForm();
-              }} 
+              }}
               className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
             >
               <span className="text-2xl text-zinc-400">&times;</span>
@@ -306,10 +306,15 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   <div>
                     <h3 className="text-amber-400 font-semibold mb-1">Template Meal - Used by Multiple Clients</h3>
                     <p className="text-amber-300 text-sm mb-3">
-                      This is a meal template used by <strong>{templateUsageCount} client{templateUsageCount !== 1 ? 's' : ''}</strong>. Any changes you make here will affect ALL clients who have this meal assigned.
+                      This is a meal template used by{' '}
+                      <strong>
+                        {templateUsageCount} client{templateUsageCount !== 1 ? 's' : ''}
+                      </strong>
+                      . Any changes you make here will affect ALL clients who have this meal assigned.
                     </p>
                     <p className="text-amber-200 text-xs">
-                      💡 <strong>Tip:</strong> To avoid affecting other clients, edit meals from the individual client&apos;s profile instead. That will only modify that client&apos;s copy.
+                      💡 <strong>Tip:</strong> To avoid affecting other clients, edit meals from the individual
+                      client&apos;s profile instead. That will only modify that client&apos;s copy.
                     </p>
                   </div>
                 </div>
@@ -325,9 +330,15 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                     <h3 className="text-blue-400 font-semibold mb-1">Personalized Meal</h3>
                     <p className="text-blue-300 text-sm">
                       {clientName ? (
-                        <>This is a personalized copy for <strong>{clientName}</strong>. Your changes will <strong>only</strong> affect this client&apos;s version, not the original meal template.</>
+                        <>
+                          This is a personalized copy for <strong>{clientName}</strong>. Your changes will{' '}
+                          <strong>only</strong> affect this client&apos;s version, not the original meal template.
+                        </>
                       ) : (
-                        <>This is a personalized copy for a specific client. Your changes will <strong>only</strong> affect this client&apos;s version, not the original meal template.</>
+                        <>
+                          This is a personalized copy for a specific client. Your changes will <strong>only</strong>{' '}
+                          affect this client&apos;s version, not the original meal template.
+                        </>
                       )}
                     </p>
                   </div>
@@ -588,21 +599,15 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                 <div className="mb-4">
                   <p className="text-sm text-zinc-400 mb-2">Current image:</p>
                   <div className="relative w-32 h-32 rounded-lg border border-zinc-700 overflow-hidden">
-                    <NextImage 
-                      src={currentImageUrl} 
-                      alt="Current meal" 
-                      fill
-                      className="object-cover"
-                      sizes="128px"
-                    />
+                    <NextImage src={currentImageUrl} alt="Current meal" fill className="object-cover" sizes="128px" />
                   </div>
                 </div>
               )}
               <ImageUpload onFileSelectAction={handleImageSelect} onError={handleImageError} disabled={loading} />
               {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
               <p className="text-xs text-zinc-500 mt-2">
-                {selectedImageFile 
-                  ? 'New image will be uploaded when you update the meal' 
+                {selectedImageFile
+                  ? 'New image will be uploaded when you update the meal'
                   : 'Upload a new image to replace the current one'}
               </p>
             </div>
