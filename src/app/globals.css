@@ -7,17 +7,26 @@
    ========================================================= */
 @layer base {
   :root {
-    /* Theme variables */
-    --color-bg: #000000;
-    --color-surface: #0a0a0a;
-    --color-bg-alt: #1a1a1a;
-    --color-text: #ffffff;
+    /* Base */
+    --color-bg: #0d0d0d;
+    --color-surface: #141414;
+    --color-bg-alt: #1c1c1c;
+
+    /* Text */
+    --color-text: #f5f5f5;
     --color-text-black: #000000;
-    --color-text-muted: #888888;
-    --color-border: #1a1a1a;
-    --color-accent: #ffffff;
-    --color-accent-muted: rgba(255, 255, 255, 0.1);
-    --color-accent-translucent: rgba(255, 255, 255, 0.1);
+    --color-text-muted: #9ca3af;
+
+    /* Borders */
+    --color-border: #262626;
+
+    /* Accent (Primary Action Color) */
+    --color-accent: #904338; /* clean modern blue */
+    --color-text-on-accent: #ffffff;
+
+    /* Accent Variations */
+    --color-accent-muted: rgba(59, 130, 246, 0.15);
+    --color-accent-translucent: rgba(59, 130, 246, 0.08);
   }
 
   * {

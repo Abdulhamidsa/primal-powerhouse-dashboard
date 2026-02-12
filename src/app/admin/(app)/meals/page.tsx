@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import AddMealModal from '@/components/AddMealModal';
+import EditMealModal from '@/components/EditMealModal';
 import NewMealDetailModal from '@/components/NewMealDetailModal';
 import { DataService } from '@/services/dataService';
-import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users } from 'lucide-react';
+import { Utensils, Flame, BarChart, BarChart2, Sunrise, Sun, Moon, Apple, Clock, Users, Edit } from 'lucide-react';
 import { Meal as MealType, MealIngredient, MealInstruction } from '@/types/meal';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
@@ -34,6 +35,8 @@ export default function MealsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [mealToEdit, setMealToEdit] = useState<string | null>(null);
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [mealToDelete, setMealToDelete] = useState<string | null>(null);
@@ -111,6 +114,12 @@ export default function MealsPage() {
     const convertedMeal = convertToMealType(meal);
     setSelectedMeal(convertedMeal);
     setShowDetailModal(true);
+  };
+
+  const handleEditMeal = (mealId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMealToEdit(mealId);
+    setShowEditModal(true);
   };
 
   const handleDeleteMeal = async (mealId: string, e: React.MouseEvent) => {
@@ -403,8 +412,15 @@ export default function MealsPage() {
                     )}
                   </div>
 
-                  {/* Delete Button */}
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  {/* Action Buttons */}
+                  <div className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: 'var(--color-border)' }}>
+                    <button
+                      onClick={e => handleEditMeal(meal.id, e)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600/10 text-blue-500 hover:bg-blue-600/20 border border-blue-600/30 rounded-lg transition-colors font-medium text-sm"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Meal
+                    </button>
                     <button
                       onClick={e => handleDeleteMeal(meal.id, e)}
                       className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600/10 text-red-500 hover:bg-red-600/20 border border-red-600/30 rounded-lg transition-colors font-medium text-sm"
@@ -449,6 +465,17 @@ export default function MealsPage() {
 
       {/* Add Meal Modal */}
       <AddMealModal isOpen={showAddModal} onCloseAction={() => setShowAddModal(false)} onMealAddedAction={fetchMeals} />
+
+      {/* Edit Meal Modal */}
+      <EditMealModal
+        isOpen={showEditModal}
+        mealId={mealToEdit}
+        onCloseAction={() => {
+          setShowEditModal(false);
+          setMealToEdit(null);
+        }}
+        onMealUpdatedAction={fetchMeals}
+      />
 
       {/* Meal Detail Modal */}
       <NewMealDetailModal

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const meal = await prisma.meal.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!meal) {
@@ -26,13 +27,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { coachId, ...mealData } = body;
 
     const meal = await prisma.meal.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...mealData,
         ingredients: JSON.stringify(mealData.ingredients || []),
@@ -56,13 +58,33 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await prisma.meal.delete({
-      where: { id: params.id },
+    const { id } = await params;
+    
+    // First, check if the meal exists and if it's a personalized meal
+    const meal = await prisma.meal.findUnique({
+      where: { id },
+      select: { isPersonalized: true, originalMealId: true }
     });
 
-    return NextResponse.json({ message: 'Meal deleted successfully' });
+    if (!meal) {
+      return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
+    }
+
+    // Only allow deleting personalized meals, not original meals
+    if (!meal.isPersonalized) {
+      return NextResponse.json({ 
+        error: 'Cannot delete original meals. Only personalized meals can be deleted.' 
+      }, { status: 403 });
+    }
+
+    // Delete the personalized meal
+    await prisma.meal.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ message: 'Personalized meal deleted successfully' });
   } catch (error) {
     console.error('Error deleting meal:', error);
     return NextResponse.json({ error: 'Failed to delete meal' }, { status: 500 });

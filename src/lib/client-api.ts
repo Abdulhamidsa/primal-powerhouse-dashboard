@@ -186,5 +186,26 @@ export const clientApi = {
       console.error('Error assigning meal to client:', error);
       throw error;
     }
+  },
+
+  /**
+   * Delete a personalized meal (only personalized meals can be deleted, not originals)
+   */
+  async deleteMeal(mealId: string): Promise<void> {
+    try {
+      const response = await fetch(`/api/meals/${mealId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting meal:', error);
+      throw error;
+    }
   }
 };

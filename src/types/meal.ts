@@ -18,11 +18,16 @@ export interface Meal {
   servings: number;
   tags: string[];
   images: string[]; // Multiple images array
+  imageUrl?: string; // Single image URL from database
   difficulty: 'easy' | 'medium' | 'hard';
   equipment: string[]; // Required cooking equipment
   tips: string[]; // Cooking tips and notes
   nutritionNotes?: string; // Special nutrition information
   allergens: string[]; // Common allergens
+  isPersonalized?: boolean; // Whether this meal is personalized for a client
+  originalMealId?: string; // If personalized, the ID of the original meal
+  clientId?: string; // If personalized, the client ID
+  coachId?: string; // The coach who created this meal
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,12 +94,7 @@ export interface Client {
   gender?: 'male' | 'female' | 'other';
   height?: number; // in cm
   weight?: number; // in kg
-  activityLevel:
-    | 'sedentary'
-    | 'lightly_active'
-    | 'moderately_active'
-    | 'very_active'
-    | 'extremely_active';
+  activityLevel: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active';
   goals: string[]; // weight loss, muscle gain, maintenance, etc.
   dietaryRestrictions: string[];
   allergies: string[];

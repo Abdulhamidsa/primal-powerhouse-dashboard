@@ -8,19 +8,25 @@ import { VideoAssignment } from '@/types/video';
 import { Users, ChevronLeft, Film, Utensils, BarChart, Info } from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, TabKey } from '@/lib/client-page/types';
-import { calculateBMI } from '@/helpers';
+import { calculateBMI } from '@/lib/health/calculators';
 import { ClientHeader } from '@/components/client-profile/ClientHeader';
 import { ClientQuickStats } from '@/components/client-profile/ClientQuickStats';
 import { VideosTab } from '@/components/client-profile/VideosTab';
 import { MealsTab } from '@/components/client-profile/MealsTab';
 import { NutritionAnalytics } from '@/components/client-profile/NutritionAnalytics';
+import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
+import HealthMetricsModal from '@/components/HealthMetricsModal';
+import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { useClientMeals } from '@/hooks/useClientMeals';
+import type { HealthMetricsOutput } from '@/lib/health/calculators';
 
 export default function ClientProfilePage() {
   const params = useParams();
   const clientId = params.id as string;
 
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
+  const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const [client, setClient] = useState<Client | null>(null);
@@ -72,10 +78,35 @@ export default function ClientProfilePage() {
     }
   };
 
+  const fetchLatestHealthMetrics = async () => {
+    try {
+      const response = await fetch(`/api/clients/${clientId}/health-metrics?limit=1`);
+      if (response.ok) {
+        const metrics = await response.json();
+        if (metrics && metrics.length > 0) {
+          const latest = metrics[0];
+          setHealthMetricsResults({
+            bmi: latest.bmi,
+            bmr: latest.bmr,
+            tdee: latest.tdee,
+            recommendedCalories: latest.recommendedCals,
+            bmiCategory: latest.bmiCategory,
+            macros: JSON.parse(latest.macros),
+            notes: latest.notes ? latest.notes.split('\n').filter((n: string) => n.trim()) : [],
+            isSafeToDeficit: latest.isSafeToDeficit,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching health metrics:', error);
+    }
+  };
+
   useEffect(() => {
     if (clientId && !fetchError) {
       fetchClientData();
       fetchVideoAssignments();
+      fetchLatestHealthMetrics();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]); // Only run when clientId changes
@@ -190,20 +221,16 @@ export default function ClientProfilePage() {
         <ClientQuickStats
           videosCount={videoAssignments.length}
           mealsCount={mealAssignments.length}
-          bmi={calculateBMI(client.height, client.currentWeight)}
+          bmi={
+            client.currentWeight && client.height ? calculateBMI(client.currentWeight, client.height).toString() : 'N/A'
+          }
           sessions={client.sessionsCompleted || 0}
         />
 
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 w-full md:grid-cols-2 gap-6">
             {/* Personal Information */}
-            <div
-              className="rounded-2xl border shadow-sm p-6"
-              style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
+            <div className="rounded-2xl border shadow-sm p-6 bg-card">
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
                 Personal Information
               </h3>
@@ -248,13 +275,7 @@ export default function ClientProfilePage() {
             </div>
 
             {/* Physical Metrics */}
-            <div
-              className="rounded-2xl border shadow-sm p-6"
-              style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
+            <div className="rounded-2xl border shadow-sm p-6 bg-card">
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
                 Physical Metrics
               </h3>
@@ -280,7 +301,7 @@ export default function ClientProfilePage() {
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
                   <span style={{ color: 'var(--color-text-muted)' }}>BMI</span>
                   <span style={{ color: 'var(--color-text)' }} className="font-medium">
-                    {calculateBMI(client.height, client.currentWeight)}
+                    {client.currentWeight && client.height ? calculateBMI(client.currentWeight, client.height) : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
@@ -301,16 +322,8 @@ export default function ClientProfilePage() {
             </div>
 
             {/* Activity & Lifestyle */}
-            <div
-              className="rounded-2xl border shadow-sm p-6"
-              style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-                Activity & Lifestyle
-              </h3>
+            <div className="rounded-2xl border shadow-sm p-6 bg-card">
+              <h3 className="text-lg font-semibold mb-4">Activity & Lifestyle</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--color-text-muted)' }}>Activity Level</span>
@@ -411,6 +424,39 @@ export default function ClientProfilePage() {
                 </p>
               </div>
             )}
+
+            {/* Health Metrics */}
+            <div className="md:col-span-2">
+              <HealthMetricsWidget
+                bmi={client.currentWeight && client.height ? calculateBMI(client.currentWeight, client.height) : null}
+                goalCalories={client.goalCalories ?? null}
+                goalMacros={client.goalMacros ? JSON.parse(client.goalMacros) : null}
+                bmiCategory={
+                  client.currentWeight && client.height
+                    ? (() => {
+                        const bmi = calculateBMI(client.currentWeight, client.height);
+                        if (bmi < 18.5) return 'underweight';
+                        if (bmi < 25) return 'normal';
+                        if (bmi < 30) return 'overweight';
+                        return 'obese';
+                      })()
+                    : 'unknown'
+                }
+                onUpdate={() => setShowHealthMetricsModal(true)}
+              />
+            </div>
+
+            {/* Health Metrics Results */}
+            {healthMetricsResults && (
+              <HealthMetricsResults
+                clientId={clientId}
+                metrics={healthMetricsResults}
+                onCloseAction={() => setHealthMetricsResults(null)}
+                onSaveNotesAction={() => {
+                  fetchClientData();
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -440,6 +486,9 @@ export default function ClientProfilePage() {
               setAssignModalType('meals');
               setShowAssignModal(true);
             }}
+            onMealUpdated={async () => {
+              await refreshMeals();
+            }}
           />
         )}
 
@@ -467,6 +516,28 @@ export default function ClientProfilePage() {
           onAssignmentCompleteAction={() => {
             if (assignModalType === 'videos') fetchVideoAssignments();
             else refreshMeals(); // Use the hook's refresh function
+          }}
+        />
+      )}
+
+      {client && (
+        <HealthMetricsModal
+          isOpen={showHealthMetricsModal}
+          onCloseAction={() => setShowHealthMetricsModal(false)}
+          clientId={clientId}
+          clientName={client.name}
+          clientData={{
+            currentWeight: client.currentWeight ?? null,
+            height: client.height ?? null,
+            age: client.age ?? null,
+            gender: client.gender ?? null,
+            activityLevel: client.activityLevel ?? null,
+          }}
+          onSuccess={metrics => {
+            setHealthMetricsResults(metrics);
+            fetchClientData();
+            fetchLatestHealthMetrics();
+            setShowHealthMetricsModal(false);
           }}
         />
       )}

@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
   try {
     console.log('Meals API: FETCH ALL');
 
+    // Only fetch template meals (not personalized copies)
     const meals = await prisma.meal.findMany({
+      where: {
+        isPersonalized: false,
+      },
       orderBy: { createdAt: 'desc' },
     });
 

@@ -82,7 +82,7 @@ export function ClientHeader({
 
   return (
     <header
-      className="sticky top-0 z-40 border-b"
+      className="sticky top-0 z-40 border-b backdrop-blur-sm rounded-lg"
       style={{
         borderColor: 'var(--color-border)',
         background: 'rgba(20,20,20,0.62)',
@@ -90,7 +90,7 @@ export function ClientHeader({
         WebkitBackdropFilter: 'blur(18px)',
       }}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 ">
         {/* Top row */}
         <div className="flex items-start gap-3">
           {/* Back */}
@@ -121,7 +121,7 @@ export function ClientHeader({
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 min-w-0">
-                <h1 className="text-[15px] sm:text-lg font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                <h1 className=" sm:text-lg font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                   {client.name}
                 </h1>
 
@@ -142,10 +142,10 @@ export function ClientHeader({
 
         {/* Actions (mobile-first, iOS pill buttons) */}
         <div className="mt-3 sm:mt-4">
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
             <button
               onClick={onAssignVideosAction}
-              className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-2xl border text-[12px] sm:text-sm font-medium transition active:scale-[0.99]"
+              className="inline-flex w-fit items-center justify-center gap-2 px-3 py-2.5 rounded-2xl border text-[12px] sm:text-sm font-medium transition active:scale-[0.99]"
               style={{
                 background: 'rgba(255,255,255,0.04)',
                 borderColor: 'var(--color-border)',
@@ -154,12 +154,12 @@ export function ClientHeader({
             >
               <Film size={16} className="opacity-90" />
               <span className="hidden sm:inline">Assign Videos</span>
-              <span className="sm:hidden">Videos</span>
+              <span className="sm:hidden ">Videos</span>
             </button>
 
             <button
               onClick={onAssignMealsAction}
-              className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-2xl border text-[12px] sm:text-sm font-medium transition active:scale-[0.99]"
+              className="inline-flex w-fit items-center justify-center gap-2 px-3 py-2.5 rounded-2xl border text-[12px] sm:text-sm font-medium transition active:scale-[0.99]"
               style={{
                 background: 'rgba(255,255,255,0.04)',
                 borderColor: 'var(--color-border)',
@@ -173,7 +173,7 @@ export function ClientHeader({
 
             <button
               onClick={onMessageAction}
-              className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-2xl text-[12px] sm:text-sm font-semibold transition active:scale-[0.99]"
+              className="inline-flex w-fit items-center justify-center gap-2 px-3 py-2.5 rounded-2xl text-[12px] sm:text-sm font-semibold transition active:scale-[0.99]"
               style={{
                 background: 'linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))',
                 border: '1px solid rgba(255,255,255,0.14)',
@@ -188,7 +188,7 @@ export function ClientHeader({
         </div>
 
         {/* Tabs (iOS segmented control) */}
-        <div className="mt-3 sm:mt-4">
+        <div className="mt-3 sm:mt-4 w-full">
           <div
             className="w-full p-1 rounded-2xl border"
             style={{
@@ -196,7 +196,7 @@ export function ClientHeader({
               borderColor: 'var(--color-border)',
             }}
           >
-            <div className="grid grid-cols-4 gap-1">
+            <div className="flex items-center justify-around gap-1 overflow-x-auto no-scrollbar py-1 px-1">
               {tabs.map(t => {
                 const isActive = activeTab === t.key;
                 return (
@@ -204,7 +204,7 @@ export function ClientHeader({
                     key={t.key}
                     onClick={() => onTabChangeAction(t.key)}
                     className={cx(
-                      'flex items-center justify-center gap-2 px-2 py-2 rounded-xl text-[12px] sm:text-sm font-medium transition active:scale-[0.99]',
+                      'flex items-center justify-center gap-2 p-4 rounded-lg sm:text-sm font-medium transition active:scale-[0.99]',
                       isActive ? 'shadow-sm' : 'opacity-80 hover:opacity-100'
                     )}
                     style={{
@@ -215,7 +215,7 @@ export function ClientHeader({
                   >
                     <span style={{ color: isActive ? 'var(--color-accent)' : 'currentColor' }}>{t.icon}</span>
                     <span className="hidden sm:inline">{t.label}</span>
-                    <span className="sm:hidden">
+                    <span className="sm:hidden text-sm">
                       {t.key === 'overview'
                         ? 'Home'
                         : t.key === 'videos'
