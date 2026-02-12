@@ -14,7 +14,7 @@ export function ClientQuickStats({
 }) {
   return (
     <div className="mb-6 sm:mb-8">
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
+      <div className="grid gap-3 overflow-x-auto no-scrollbar sm:grid-cols-1 pb-2 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
         <Stat
           title="Assigned Videos"
           value={videosCount}

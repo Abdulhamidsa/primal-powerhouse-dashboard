@@ -324,7 +324,7 @@ export function HealthMetricsResults({
               <Tooltip
                 formatter={value => `${value} kcal`}
                 contentStyle={{
-                  background: 'var(--color-surface)',
+                  background: 'var(--color-accent)',
                   border: '1px solid var(--color-border)',
                   borderRadius: '8px',
                 }}

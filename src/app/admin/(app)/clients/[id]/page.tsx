@@ -228,15 +228,9 @@ export default function ClientProfilePage() {
         />
 
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 w-full md:grid-cols-2 gap-6">
             {/* Personal Information */}
-            <div
-              className="rounded-2xl border shadow-sm p-6"
-              style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
+            <div className="rounded-2xl border shadow-sm p-6 bg-card">
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
                 Personal Information
               </h3>
@@ -281,13 +275,7 @@ export default function ClientProfilePage() {
             </div>
 
             {/* Physical Metrics */}
-            <div
-              className="rounded-2xl border shadow-sm p-6"
-              style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
+            <div className="rounded-2xl border shadow-sm p-6 bg-card">
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
                 Physical Metrics
               </h3>
@@ -334,16 +322,8 @@ export default function ClientProfilePage() {
             </div>
 
             {/* Activity & Lifestyle */}
-            <div
-              className="rounded-2xl border shadow-sm p-6"
-              style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-                Activity & Lifestyle
-              </h3>
+            <div className="rounded-2xl border shadow-sm p-6 bg-card">
+              <h3 className="text-lg font-semibold mb-4">Activity & Lifestyle</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--color-text-muted)' }}>Activity Level</span>
