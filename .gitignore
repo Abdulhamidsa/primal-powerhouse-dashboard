@@ -346,3 +346,5 @@ all .md files except README.md
 *fullSeed.ts
 *test-payload.json
 *.*sql
+*.*js
+*.md

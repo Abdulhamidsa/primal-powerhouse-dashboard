@@ -174,7 +174,8 @@ export class DataService {
       body: JSON.stringify(mealData),
     });
     if (!response.ok) {
-      throw new Error('Failed to create meal');
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create meal');
     }
     return response.json();
   }
