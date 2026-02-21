@@ -66,6 +66,20 @@ export async function POST(request: NextRequest) {
 
     // Get or create default coach
     let userId = coachId;
+
+    // Validate provided coachId first; stale IDs from client should not break meal creation
+    if (userId) {
+      const existingUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+
+      if (!existingUser) {
+        console.warn(`Meals API: Provided coachId not found (${userId}). Falling back to default coach.`);
+        userId = undefined;
+      }
+    }
+
     if (!userId) {
       console.log('Meals API: Finding seeded coach for POST');
       // Try to find the seeded coach first
