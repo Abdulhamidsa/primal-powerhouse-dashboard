@@ -82,8 +82,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       if (assignmentCount > 0 || personalizedCopiesCount > 0) {
         return NextResponse.json(
           {
-            error:
-              'Cannot delete this meal because it is currently used in assignments or has personalized copies.',
+            error: 'Cannot delete this meal because it is currently used in assignments or has personalized copies.',
           },
           { status: 409 }
         );
