@@ -199,7 +199,21 @@ export class DataService {
       method: 'DELETE',
     });
     if (!response.ok) {
-      throw new Error('Failed to delete meal');
+      const errorText = await response.text();
+      let errorMessage = 'Failed to delete meal';
+
+      try {
+        const parsed = JSON.parse(errorText);
+        if (parsed?.error) {
+          errorMessage = parsed.error;
+        }
+      } catch {
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      }
+
+      throw new Error(errorMessage);
     }
     return response.json();
   }

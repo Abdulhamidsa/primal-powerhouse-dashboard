@@ -139,7 +139,7 @@ export default function MealsPage() {
       setMealToDelete(null);
     } catch (error) {
       console.error('Error deleting meal:', error);
-      alert('Failed to delete meal');
+      alert(error instanceof Error ? error.message : 'Failed to delete meal');
     } finally {
       setDeleting(false);
     }

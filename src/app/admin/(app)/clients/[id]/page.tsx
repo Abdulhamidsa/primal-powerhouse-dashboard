@@ -486,6 +486,15 @@ export default function ClientProfilePage() {
               setAssignModalType('meals');
               setShowAssignModal(true);
             }}
+            onRemove={async assignmentId => {
+              if (!confirm('Delete this meal assignment for this client?')) return;
+              try {
+                await fetch(`/api/meal-assignments/${assignmentId}`, { method: 'DELETE' });
+                await refreshMeals();
+              } catch (error) {
+                console.error('Error removing meal assignment:', error);
+              }
+            }}
             onMealUpdated={async () => {
               await refreshMeals();
             }}

@@ -142,7 +142,7 @@ export function ClientHeader({
 
         {/* Actions (mobile-first, iOS pill buttons) */}
         <div className="mt-3 sm:mt-4">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center flex-row gap-2 overflow-x-auto no-scrollbar py-1">
             <button
               onClick={onAssignVideosAction}
               className="inline-flex w-fit items-center justify-center gap-2 px-3 py-2.5 rounded-2xl border text-[12px] sm:text-sm font-medium transition active:scale-[0.99]"

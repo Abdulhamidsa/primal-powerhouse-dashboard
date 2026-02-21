@@ -4,7 +4,6 @@ import { MealAssignment } from '@/lib/client-page/types';
 import { JSX, useState } from 'react';
 import Image from 'next/image';
 import EditMealModal from '../EditMealModal';
-import { clientApi } from '@/lib/client-api';
 
 export function MealsTab({
   assignments,
@@ -19,7 +18,6 @@ export function MealsTab({
 }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [mealToEdit, setMealToEdit] = useState<string | null>(null);
-  const [isDeletingMeal, setIsDeletingMeal] = useState<string | null>(null);
   // Changed to use 'ALL' as default to always show all meals initially
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'LUNCH' | 'DINNER' | 'BREAKFAST' | 'SNACK'>('ALL');
 
@@ -64,28 +62,6 @@ export function MealsTab({
     }
   };
 
-  const handleDeleteMeal = async (mealId: string, mealName: string) => {
-    if (
-      !confirm(`Are you sure you want to delete "${mealName}"? This will permanently delete this personalized meal.`)
-    ) {
-      return;
-    }
-
-    setIsDeletingMeal(mealId);
-    try {
-      await clientApi.deleteMeal(mealId);
-
-      // Refresh the data
-      if (onMealUpdated) {
-        await onMealUpdated();
-      }
-    } catch (error) {
-      console.error('Error deleting meal:', error);
-      alert('Failed to delete meal. Please try again.');
-    } finally {
-      setIsDeletingMeal(null);
-    }
-  };
   return (
     <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
@@ -187,7 +163,7 @@ export function MealsTab({
                               background: 'rgba(0,0,0,0.7)',
                               color: 'var(--color-danger)',
                             }}
-                            title="Remove assignment"
+                            title="Delete assignment for this client"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -306,28 +282,12 @@ export function MealsTab({
                                 color: '#ef4444',
                                 border: '1px solid rgba(239, 68, 68, 0.3)',
                               }}
-                              title="Remove meal assignment"
+                              title="Delete assignment for this client only"
                             >
                               <Trash2 size={14} />
-                              Remove
+                              Delete
                             </button>
                           )}
-                          {'isPersonalized' in a.meal && a.meal.isPersonalized ? (
-                            <button
-                              onClick={() => handleDeleteMeal(a.meal.id, a.meal.name)}
-                              disabled={isDeletingMeal === a.meal.id}
-                              className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                              style={{
-                                background: 'rgba(239, 68, 68, 0.2)',
-                                color: '#dc2626',
-                                border: '1px solid rgba(220, 38, 38, 0.4)',
-                              }}
-                              title="Delete this personalized meal permanently"
-                            >
-                              <Trash2 size={14} />
-                              {isDeletingMeal === a.meal.id ? 'Deleting...' : 'Delete Meal'}
-                            </button>
-                          ) : null}
                         </div>
                       </div>
                     </div>

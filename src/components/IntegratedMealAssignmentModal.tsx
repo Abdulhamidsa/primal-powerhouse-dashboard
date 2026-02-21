@@ -86,23 +86,31 @@ export default function IntegratedMealAssignmentModal({
   useEffect(() => {
     if (isOpen) {
       fetchData();
-      checkExistingMealPlans();
+      checkExistingMealPlans(clientId || selectedClientId || undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, clientId]);
 
+  // When selecting a client inside the modal (without fixed clientId prop), reload existing plan assignments
+  useEffect(() => {
+    if (isOpen && !clientId && selectedClientId) {
+      checkExistingMealPlans(selectedClientId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, clientId, selectedClientId]);
+
   // Check for existing meal plans and load meal assignments
-  const checkExistingMealPlans = async () => {
-    if (clientId) {
+  const checkExistingMealPlans = async (targetClientId?: string) => {
+    if (targetClientId) {
       try {
-        console.log(`Checking for existing meal plans for client: ${clientId}`);
+        console.log(`Checking for existing meal plans for client: ${targetClientId}`);
 
         // Fetch existing meal plans for the client
-        const response = await fetch(`/api/clients/${clientId}/meal-plans`);
+        const response = await fetch(`/api/meal-plans?clientId=${targetClientId}`);
 
         // Check if we got a 404 - this could be because the API endpoint doesn't exist yet
         if (response.status === 404) {
-          console.warn('API endpoint not found: /api/clients/${clientId}/meal-plans');
+          console.warn(`API endpoint not found: /api/meal-plans?clientId=${targetClientId}`);
           console.warn('This is likely because the API route has not been created yet.');
           console.warn('Falling back to creating a new meal plan');
           initializeMealPlan();
@@ -111,7 +119,7 @@ export default function IntegratedMealAssignmentModal({
 
         if (response.ok) {
           const plans = await response.json();
-          console.log(`Found ${plans.length} meal plans for client ${clientId}`);
+          console.log(`Found ${plans.length} meal plans for client ${targetClientId}`);
 
           setExistingMealPlans(plans);
 
@@ -144,24 +152,8 @@ export default function IntegratedMealAssignmentModal({
               const assignments = activePlan.mealAssignments;
               processExistingMealAssignments(assignments);
             } else {
-              // Fetch meal assignments for this plan separately
-              try {
-                console.log(`Fetching meal assignments for plan: ${activePlan.id}`);
-                const assignmentsResponse = await fetch(`/api/meal-plans/${activePlan.id}/assignments`);
-
-                if (assignmentsResponse.ok) {
-                  const assignments = await assignmentsResponse.json();
-                  console.log('Loaded existing meal assignments:', assignments);
-                  processExistingMealAssignments(assignments);
-                } else {
-                  console.error('Failed to fetch meal assignments:', assignmentsResponse.status);
-                  console.error('Initializing empty meal plan');
-                  setSelectedMeals({}); // Start with empty selections
-                }
-              } catch (error) {
-                console.error('Error fetching meal assignments:', error);
-                setSelectedMeals({}); // Start with empty selections
-              }
+              console.log('Active plan has no meal assignments yet. Initializing empty selections.');
+              setSelectedMeals({}); // Start with empty selections
             }
           } else {
             console.log('No active meal plan found. Initializing new plan.');
@@ -630,10 +622,6 @@ export default function IntegratedMealAssignmentModal({
             throw new Error('No client selected for meal personalization');
           }
 
-          // Find a valid coach ID to use for the meal creation
-          let coachId = 'clmermeye5001d7k2kwvec0tkv'; // Use a fallback ID
-          console.log('Using coach ID for personalized meal:', coachId);
-
           // Use client-side safe API to create personalized meal
           const mealData = {
             name: personalizedMeal.name,
@@ -654,7 +642,6 @@ export default function IntegratedMealAssignmentModal({
             // Convert meal type to uppercase format to match Prisma enum
             type:
               typeof personalizedMeal.type === 'string' ? personalizedMeal.type.toUpperCase() : personalizedMeal.type,
-            coachId: coachId, // Use a valid coach ID from the database
           };
 
           const savedMeal = await clientApi.createPersonalizedMeal(
@@ -1048,7 +1035,7 @@ export default function IntegratedMealAssignmentModal({
               servings: originalMeal.servings || 1,
               // Support both images array and imageUrl field
               imageUrl: originalMeal.images?.[0] || (originalMeal as any).imageUrl || null,
-              tags: JSON.stringify(originalMeal.tags || []),
+              tags: originalMeal.tags || [],
               type: typeof originalMeal.type === 'string' ? originalMeal.type.toUpperCase() : originalMeal.type,
             };
 

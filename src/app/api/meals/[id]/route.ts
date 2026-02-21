@@ -61,30 +61,41 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    
-    // First, check if the meal exists and if it's a personalized meal
+
+    // First, check if the meal exists and whether it's personalized
     const meal = await prisma.meal.findUnique({
       where: { id },
-      select: { isPersonalized: true, originalMealId: true }
+      select: { isPersonalized: true, originalMealId: true },
     });
 
     if (!meal) {
       return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
     }
 
-    // Only allow deleting personalized meals, not original meals
+    // For original/template meals, only allow deletion when they are not used anywhere
     if (!meal.isPersonalized) {
-      return NextResponse.json({ 
-        error: 'Cannot delete original meals. Only personalized meals can be deleted.' 
-      }, { status: 403 });
+      const [assignmentCount, personalizedCopiesCount] = await Promise.all([
+        prisma.mealAssignment.count({ where: { mealId: id } }),
+        prisma.meal.count({ where: { originalMealId: id } }),
+      ]);
+
+      if (assignmentCount > 0 || personalizedCopiesCount > 0) {
+        return NextResponse.json(
+          {
+            error:
+              'Cannot delete this meal because it is currently used in assignments or has personalized copies.',
+          },
+          { status: 409 }
+        );
+      }
     }
 
-    // Delete the personalized meal
+    // Delete meal (personalized or unused template)
     await prisma.meal.delete({
       where: { id },
     });
 
-    return NextResponse.json({ message: 'Personalized meal deleted successfully' });
+    return NextResponse.json({ message: 'Meal deleted successfully' });
   } catch (error) {
     console.error('Error deleting meal:', error);
     return NextResponse.json({ error: 'Failed to delete meal' }, { status: 500 });
