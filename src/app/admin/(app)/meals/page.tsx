@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import AddMealModal from '@/components/AddMealModal';
+import MealBuilderModal from '@/components/MealBuilderModal';
 import EditMealModal from '@/components/EditMealModal';
 import NewMealDetailModal from '@/components/NewMealDetailModal';
 import { DataService } from '@/services/dataService';
@@ -35,6 +36,7 @@ export default function MealsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [mealToEdit, setMealToEdit] = useState<string | null>(null);
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
@@ -151,13 +153,22 @@ export default function MealsPage() {
           <div>
             <h1 className="text-4xl font-bold text-zinc-100 mb-2">Meal Management</h1>
             <p className="text-zinc-400">Create and manage nutritious meal plans for your clients</p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="mt-4 sm:mt-0 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 shadow-lg hover:shadow-xl"
-            >
-              <span className="text-xl">+</span>
-              Add New Meal
-            </button>
+            <div className="mt-4 sm:mt-0 flex gap-3 flex-col sm:flex-row">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 shadow-lg hover:shadow-xl"
+              >
+                <span className="text-xl">+</span>
+                Create Manually
+              </button>
+              <button
+                onClick={() => setShowBuilderModal(true)}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 shadow-lg hover:shadow-xl"
+              >
+                <span className="text-xl">🍽️</span>
+                Build from Ingredients
+              </button>
+            </div>
           </div>
         </div>
 
@@ -465,6 +476,13 @@ export default function MealsPage() {
 
       {/* Add Meal Modal */}
       <AddMealModal isOpen={showAddModal} onCloseAction={() => setShowAddModal(false)} onMealAddedAction={fetchMeals} />
+
+      {/* Meal Builder Modal */}
+      <MealBuilderModal
+        isOpen={showBuilderModal}
+        onCloseAction={() => setShowBuilderModal(false)}
+        onMealCreatedAction={fetchMeals}
+      />
 
       {/* Edit Meal Modal */}
       <EditMealModal
