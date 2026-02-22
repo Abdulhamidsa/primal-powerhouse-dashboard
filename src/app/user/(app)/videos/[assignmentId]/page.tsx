@@ -27,6 +27,11 @@ interface VideoAssignment {
   video: Video;
 }
 
+function formatDuration(seconds: number) {
+  const mins = Math.max(1, Math.floor(seconds / 60));
+  return `${mins} min`;
+}
+
 export default function UserVideoDetailPage() {
   const params = useParams<{ assignmentId: string }>();
   const assignmentId = params.assignmentId;
@@ -86,8 +91,8 @@ export default function UserVideoDetailPage() {
   if (error || !assignment) {
     return (
       <div className="space-y-4">
-        <Link href="/user/videos" className="inline-flex items-center text-sm text-primary hover:underline">
-          ← Back to videos
+        <Link href="/user/training" className="inline-flex items-center text-sm text-primary hover:underline">
+          ← Back to training
         </Link>
         <div className="bg-card border border-border rounded-xl p-6 text-destructive">{error ?? 'Video not found'}</div>
       </div>
@@ -96,8 +101,8 @@ export default function UserVideoDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/user/videos" className="inline-flex items-center text-sm text-primary hover:underline">
-        ← Back to videos
+      <Link href="/user/training" className="inline-flex items-center text-sm text-primary hover:underline">
+        ← Back to training
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -141,7 +146,7 @@ export default function UserVideoDetailPage() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-muted rounded-lg p-3">
                 <p className="text-muted-foreground">Duration</p>
-                <p className="font-semibold text-foreground">{assignment.video.duration} min</p>
+                <p className="font-semibold text-foreground">{formatDuration(assignment.video.duration)}</p>
               </div>
               <div className="bg-muted rounded-lg p-3">
                 <p className="text-muted-foreground">Difficulty</p>

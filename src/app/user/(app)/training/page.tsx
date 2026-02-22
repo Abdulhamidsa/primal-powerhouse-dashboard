@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import VideoPlayerModal from '@/components/VideoPlayerModal';
+import Link from 'next/link';
 import { format } from 'date-fns';
 
 interface Video {
@@ -70,14 +70,14 @@ function Segmented({
 function Thumb({ src, alt }: { src?: string; alt: string }) {
   if (src) {
     return (
-      <div className="relative h-16 w-24 sm:h-16 sm:w-24 overflow-hidden rounded-2xl border border-border bg-muted">
-        <Image src={src} alt={alt} fill sizes="96px" className="object-cover" />
+      <div className="relative h-20 w-28 sm:h-24 sm:w-32 overflow-hidden rounded-2xl border border-border bg-muted">
+        <Image src={src} alt={alt} fill sizes="128px" className="object-cover" />
       </div>
     );
   }
 
   return (
-    <div className="h-16 w-24 overflow-hidden rounded-2xl border border-border bg-muted flex items-center justify-center">
+    <div className="h-20 w-28 sm:h-24 sm:w-32 overflow-hidden rounded-2xl border border-border bg-muted flex items-center justify-center">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="opacity-60">
         <path d="M10.5 8.5V15.5L16 12L10.5 8.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
         <path
@@ -92,8 +92,6 @@ function Thumb({ src, alt }: { src?: string; alt: string }) {
 
 export default function UserTrainingPage() {
   const [assignments, setAssignments] = useState<VideoAssignment[]>([]);
-  const [selectedVideo, setSelectedVideo] = useState<VideoAssignment | null>(null);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [coachInfo, setCoachInfo] = useState<CoachInfo | null>(null);
 
@@ -124,27 +122,6 @@ export default function UserTrainingPage() {
     } catch (error) {
       console.error('Error fetching user videos:', error);
     }
-  };
-
-  const markVideoCompleted = async (assignmentId: string) => {
-    try {
-      const response = await fetch('/api/user/videos/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignmentId }),
-      });
-
-      if (response.ok) {
-        setAssignments(prev => prev.map(a => (a.id === assignmentId ? { ...a, isCompleted: true } : a)));
-      }
-    } catch (error) {
-      console.error('Error marking video as completed:', error);
-    }
-  };
-
-  const openVideoModal = (assignment: VideoAssignment) => {
-    setSelectedVideo(assignment);
-    setIsVideoModalOpen(true);
   };
 
   const allTags = useMemo(
@@ -201,14 +178,16 @@ export default function UserTrainingPage() {
                 >
                   {/* Make it stack on very small screens */}
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                      type="button"
-                      onClick={() => openVideoModal(assignment)}
+                    <Link
+                      href={`/user/videos/${assignment.id}`}
                       className="shrink-0 self-start"
                       aria-label={`Open ${assignment.video.title}`}
                     >
-                      <Thumb src={assignment.video.thumbnailUrl} alt={assignment.video.title} />
-                    </button>
+                      <Thumb
+                        src={assignment.video.thumbnailUrl || assignment.video.videoUrl}
+                        alt={assignment.video.title}
+                      />
+                    </Link>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
@@ -255,21 +234,12 @@ export default function UserTrainingPage() {
 
                       {/* actions: stack on phone */}
                       <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2">
-                        <button
-                          onClick={() => openVideoModal(assignment)}
-                          className="w-full sm:w-auto px-4 py-2 rounded-2xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                        <Link
+                          href={`/user/videos/${assignment.id}`}
+                          className="w-full sm:w-auto px-4 py-2 rounded-2xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors text-center"
                         >
-                          Watch
-                        </button>
-
-                        {!assignment.isCompleted && (
-                          <button
-                            onClick={() => markVideoCompleted(assignment.id)}
-                            className="w-full sm:w-auto px-4 py-2 rounded-2xl border border-border bg-background/50 text-sm text-foreground hover:bg-muted transition-colors"
-                          >
-                            Mark done
-                          </button>
-                        )}
+                          Show full page
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -277,22 +247,6 @@ export default function UserTrainingPage() {
               );
             })}
           </div>
-        )}
-
-        {selectedVideo && isVideoModalOpen && (
-          <VideoPlayerModal
-            video={{
-              title: selectedVideo.video.title,
-              description: selectedVideo.video.description,
-              videoUrl: selectedVideo.video.videoUrl,
-              duration: selectedVideo.video.duration,
-              difficulty: selectedVideo.video.difficulty,
-            }}
-            isOpen={false}
-            onCloseAction={function (): void {
-              throw new Error('Function not implemented.');
-            }}
-          />
         )}
       </div>
 
