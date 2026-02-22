@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
 
-/**
- * Sets proper cache headers on a response to allow back/forward cache
- * while preventing stale personalized data
- */
 export function setCacheHeaders<T>(response: NextResponse<T>): NextResponse<T> {
-  response.headers.set('Cache-Control', 'private, no-cache, max-age=0, must-revalidate');
+  // Let Next unstable_cache + revalidateTag be the only server cache.
+  // Let SWR be the client cache.
+  // Prevent browser/proxy caching from fighting the system.
+  response.headers.set('Cache-Control', 'private, no-store');
   return response;
 }
 
-/**
- * Wraps a JSON response with proper cache headers
- */
 export function jsonWithCache<T>(data: T, init?: ResponseInit): NextResponse<T> {
   const response = NextResponse.json(data, init);
   return setCacheHeaders(response);

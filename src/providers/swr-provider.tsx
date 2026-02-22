@@ -9,9 +9,9 @@ export function SwrProvider({ children }: { children: React.ReactNode }) {
       value={{
         fetcher,
         revalidateOnFocus: false,
-        revalidateOnReconnect: true,
+        revalidateOnReconnect: false,
         keepPreviousData: true,
-        shouldRetryOnError: err => err.status !== 401 && err.status !== 403,
+        shouldRetryOnError: (err: any) => err?.status !== 401 && err?.status !== 403,
         errorRetryCount: 2,
       }}
     >

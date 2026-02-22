@@ -50,6 +50,7 @@ export async function fetcher<T>(url: string, init: RequestInit = {}): Promise<T
       ...init,
       body: finalBody,
       credentials: 'include',
+      cache: 'no-store',
       headers,
     });
   } catch (e) {
