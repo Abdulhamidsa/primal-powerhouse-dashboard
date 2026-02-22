@@ -141,7 +141,20 @@ export class OpenFoodFactsService {
   private static normalizeUSDAFoods(foods: NormalizedFoodItem[]): FoodItem[] {
     return foods
       .map(food => {
-        const { fdcId, name, nutrientsPer100g, flags, dataType, category, brand, ingredientsText, tags } = food;
+        const {
+          fdcId,
+          name,
+          nutrientsPer100g,
+          flags,
+          dataType,
+          category,
+          brand,
+          ingredientsText,
+          tags,
+          servingUnit,
+          gramsPerUnit,
+          displayUnitLabel,
+        } = food;
 
         const hasIncompleteData =
           flags?.incompleteNutrition ??
@@ -166,6 +179,9 @@ export class OpenFoodFactsService {
           hasIncompleteData,
           tags: tags ?? [],
           imageUrl: undefined, // USDA search doesn't provide images
+          servingUnit,
+          gramsPerUnit: gramsPerUnit ?? null,
+          displayUnitLabel: displayUnitLabel ?? null,
         };
       })
       .filter(item => item.name && item.name.trim().length > 0 && item.id);

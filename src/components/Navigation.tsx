@@ -225,7 +225,7 @@ export default function Navigation({
           )}
         </main>
 
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg">
           <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto mb-6">
             {navItems.map(item => (
               <MobileTabItem key={item.href} item={item} active={isActivePath(pathname, item.href)} />

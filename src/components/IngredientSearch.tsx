@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useOpenFoodFactsSearch } from '@/hooks/useOpenFoodFactsSearch';
 import IngredientResultItem from './IngredientResultItem';
 import type { FoodItem, SelectedIngredient } from '@/types/openFoodFacts';
+import { resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
 
 interface IngredientSearchProps {
   onAddIngredientAction: (ingredient: SelectedIngredient) => void;
@@ -13,12 +14,8 @@ interface IngredientSearchProps {
 export default function IngredientSearch({ onAddIngredientAction, selectedIds }: IngredientSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [allowedCategories, setAllowedCategories] = useState(
-    'Cereal Grains and Pasta,Vegetables and Vegetable Products,Fruits and Fruit Juices,Nuts and Seeds,Legumes and Legume Products,Poultry Products,Beef Products,Pork Products,Fish, Finfish, and Shellfish Products,Dairy and Egg Products'
-  );
-  const [excludedNameTerms, setExcludedNameTerms] = useState(
-    'snack,cake,cracker,babyfood,cereal,bread,muffin,bagel,bar,chips'
-  );
+  const [allowedCategories, setAllowedCategories] = useState('');
+  const [excludedNameTerms, setExcludedNameTerms] = useState('');
   const [allowedDataTypes, setAllowedDataTypes] = useState({
     foundation: true,
     srLegacy: true,
@@ -86,15 +83,23 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
       return tags.includes('dry');
     }
 
-    // Default: exclude branded/processed unless explicitly requested
-    return !tags.includes('branded') && !tags.includes('processed');
+    return true;
   });
 
   const handleAddIngredient = useCallback(
     (foodItem: FoodItem) => {
+      const resolvedUnit = resolveIngredientUnitByName(foodItem.name);
+      const effectiveServingUnit = foodItem.servingUnit ?? resolvedUnit?.servingUnit;
+      const gramsPerPiece = foodItem.gramsPerUnit ?? resolvedUnit?.gramsPerUnit ?? 0;
+      const hasPieceUnit = effectiveServingUnit === 'piece' && gramsPerPiece > 0;
       const selectedIngredient: SelectedIngredient = {
         ...foodItem,
-        grams: 100, // Default to 100g
+        grams: hasPieceUnit ? Math.round(gramsPerPiece) : 100,
+        servingUnit: hasPieceUnit ? 'piece' : effectiveServingUnit,
+        gramsPerUnit: hasPieceUnit ? gramsPerPiece : foodItem.gramsPerUnit,
+        displayUnitLabel: hasPieceUnit
+          ? (foodItem.displayUnitLabel ?? resolvedUnit?.displayUnitLabel ?? 'piece')
+          : foodItem.displayUnitLabel,
       };
       onAddIngredientAction(selectedIngredient);
     },

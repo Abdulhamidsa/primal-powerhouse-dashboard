@@ -61,6 +61,9 @@ export interface FoodItem {
   hasIncompleteData: boolean;
   tags?: string[];
   imageUrl?: string;
+  servingUnit?: 'g' | 'piece';
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
 }
 
 export interface SelectedIngredient extends FoodItem {

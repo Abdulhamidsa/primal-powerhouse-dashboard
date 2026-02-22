@@ -163,6 +163,17 @@ export default function UserVideosPage() {
               key={assignment.id}
               className="bg-card p-6 rounded-lg border border-border hover:shadow-md transition-shadow"
             >
+              {isImageDemo(assignment.video.videoUrl) && (
+                <div className="mb-4 rounded-lg overflow-hidden border border-border bg-black/20">
+                  <img
+                    src={assignment.video.videoUrl}
+                    alt={assignment.video.title}
+                    className="w-full h-56 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg text-foreground mb-1">{assignment.video.title}</h3>
@@ -225,7 +236,7 @@ export default function UserVideosPage() {
                   rel="noopener noreferrer"
                   className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-center hover:bg-primary/90 transition-colors"
                 >
-                  Watch Video
+                  {isImageDemo(assignment.video.videoUrl) ? 'Open HD Exercise Demo' : 'Watch Video'}
                 </a>
                 {!assignment.isCompleted && (
                   <button
@@ -242,4 +253,8 @@ export default function UserVideosPage() {
       )}
     </div>
   );
+}
+
+function isImageDemo(url: string): boolean {
+  return /\.(gif|webp|png|jpg|jpeg)$/i.test(url);
 }

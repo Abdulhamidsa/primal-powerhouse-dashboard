@@ -2,6 +2,7 @@
 
 import { computeNutritionForGrams } from '@/utils/nutritionCalculations';
 import type { SelectedIngredient } from '@/types/openFoodFacts';
+import { resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
 
 interface SelectedIngredientRowProps {
   ingredient: SelectedIngredient;
@@ -14,6 +15,13 @@ export default function SelectedIngredientRow({
   onUpdateGramsAction,
   onRemoveAction,
 }: SelectedIngredientRowProps) {
+  const resolvedUnit = resolveIngredientUnitByName(ingredient.name);
+  const effectiveServingUnit = ingredient.servingUnit ?? resolvedUnit?.servingUnit ?? 'g';
+  const gramsPerUnit = ingredient.gramsPerUnit ?? resolvedUnit?.gramsPerUnit ?? 0;
+  const canUsePieceInput = effectiveServingUnit === 'piece' && gramsPerUnit > 0;
+  const displayUnitLabel = ingredient.displayUnitLabel || resolvedUnit?.displayUnitLabel || 'piece';
+  const pieceCount = canUsePieceInput ? Math.max(1, Math.round((ingredient.grams / gramsPerUnit) * 100) / 100) : 0;
+
   // Calculate nutrition for the selected grams
   const nutrition = computeNutritionForGrams(
     {
@@ -45,17 +53,42 @@ export default function SelectedIngredientRow({
         </button>
       </div>
 
-      {/* Grams Input */}
+      {/* Quantity Input */}
       <div className="flex items-center gap-3">
-        <label className="text-xs text-zinc-400 uppercase tracking-wide">Grams:</label>
-        <input
-          type="number"
-          value={ingredient.grams}
-          onChange={e => onUpdateGramsAction(Number(e.target.value))}
-          min="1"
-          max="9999"
-          className="w-20 px-3 py-2 bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-        />
+        <label className="text-xs text-zinc-400 uppercase tracking-wide">
+          {canUsePieceInput ? 'Quantity:' : 'Grams:'}
+        </label>
+        {canUsePieceInput ? (
+          <>
+            <input
+              type="number"
+              value={pieceCount}
+              onChange={e => {
+                const nextPieces = Math.max(1, Number(e.target.value));
+                const nextGrams = Math.round(nextPieces * gramsPerUnit * 100) / 100;
+                onUpdateGramsAction(nextGrams);
+              }}
+              min="1"
+              step="1"
+              className="w-24 px-3 py-2 bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+            <span className="text-xs text-zinc-400">
+              {displayUnitLabel}
+              {pieceCount > 1 ? 's' : ''}
+            </span>
+            <span className="text-xs text-zinc-500">(≈{Math.round(gramsPerUnit)}g each)</span>
+            <span className="text-xs text-zinc-500">({ingredient.grams}g total)</span>
+          </>
+        ) : (
+          <input
+            type="number"
+            value={ingredient.grams}
+            onChange={e => onUpdateGramsAction(Number(e.target.value))}
+            min="1"
+            max="9999"
+            className="w-20 px-3 py-2 bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          />
+        )}
       </div>
 
       {/* Macro Preview */}

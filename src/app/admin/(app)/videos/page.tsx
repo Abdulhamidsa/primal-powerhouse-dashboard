@@ -1,51 +1,55 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Video, VideoCategory, DifficultyLevel } from '@/types/video';
+import { useState } from 'react';
+import { Video } from '@/types/video';
 import NewAddVideoModal from '@/components/NewAddVideoModal';
-import VideoCard from '@/components/VideoCard';
+// import VideoCard from '@/components/VideoCard';
 import NewVideoDetailModal from '@/components/NewVideoDetailModal';
-import VideoFilters from '@/components/VideoFilters';
+// import VideoFilters from '@/components/VideoFilters';
 import AssignVideosModal from '@/components/AssignVideosModal';
+import ExerciseDbLibraryPanel from '@/features/exercises/components/ExerciseDbLibraryPanel';
+import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isAssigningExercise, setIsAssigningExercise] = useState<string | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [selectedVideos, setSelectedVideos] = useState<Video[]>([]);
-  const [filters, setFilters] = useState({
-    category: 'all' as VideoCategory | 'all',
-    difficulty: 'all' as DifficultyLevel | 'all',
-    search: '',
-  });
+  const [activeTab, setActiveTab] = useState<'exercises' | 'videos'>('exercises');
+  // const [filters] = useState({
+  //   category: 'all' as VideoCategory | 'all',
+  //   difficulty: 'all' as DifficultyLevel | 'all',
+  //   search: '',
+  // });
 
-  const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.category !== 'all') params.append('category', filters.category);
-      if (filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
+  // const fetchVideos = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const params = new URLSearchParams();
+  //     if (filters.category !== 'all') params.append('category', filters.category);
+  //     if (filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
 
-      const response = await fetch(`/api/videos?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setVideos(data);
-      } else {
-        console.error('Failed to fetch videos');
-      }
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     const response = await fetch(`/api/videos?${params}`);
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setVideos(data);
+  //     } else {
+  //       console.error('Failed to fetch videos');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching videos:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchVideos();
-  });
+  // useEffect(() => {
+  //   fetchVideos();
+  // });
 
   const handleAddVideo = (video: Video) => {
     setVideos([video, ...videos]);
@@ -70,13 +74,13 @@ export default function VideosPage() {
     }
   };
 
-  const handleVideoSelect = (video: Video) => {
-    if (selectedVideos.find(v => v.id === video.id)) {
-      setSelectedVideos(selectedVideos.filter(v => v.id !== video.id));
-    } else {
-      setSelectedVideos([...selectedVideos, video]);
-    }
-  };
+  // const handleVideoSelect = (video: Video) => {
+  //   if (selectedVideos.find(v => v.id === video.id)) {
+  //     setSelectedVideos(selectedVideos.filter(v => v.id !== video.id));
+  //   } else {
+  //     setSelectedVideos([...selectedVideos, video]);
+  //   }
+  // };
 
   const handleBulkAssign = () => {
     if (selectedVideos.length === 0) {
@@ -86,19 +90,44 @@ export default function VideosPage() {
     setIsAssignModalOpen(true);
   };
 
-  const filteredVideos = videos.filter(
-    video =>
-      video.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-      video.description?.toLowerCase().includes(filters.search.toLowerCase())
-  );
+  const handleAssignExercise = async (exercise: ExerciseDbExercise) => {
+    try {
+      setIsAssigningExercise(exercise.exerciseId);
 
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}min`;
-    const hours = Math.floor(seconds / 3600);
-    const remainingMinutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${remainingMinutes}min`;
+      const response = await fetch('/api/videos/import-exercise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(exercise),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to import exercise for assignment');
+      }
+
+      const importedVideo: Video = await response.json();
+      setSelectedVideos([importedVideo]);
+      setIsAssignModalOpen(true);
+    } catch (error) {
+      console.error('Error assigning exercise:', error);
+      alert('Could not assign this exercise. Please try again.');
+    } finally {
+      setIsAssigningExercise(null);
+    }
   };
+
+  // const filteredVideos = videos.filter(
+  //   video =>
+  //     video.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+  //     video.description?.toLowerCase().includes(filters.search.toLowerCase())
+  // );
+
+  // const formatDuration = (seconds: number) => {
+  //   const minutes = Math.floor(seconds / 60);
+  //   if (minutes < 60) return `${minutes}min`;
+  //   const hours = Math.floor(seconds / 3600);
+  //   const remainingMinutes = Math.floor((seconds % 3600) / 60);
+  //   return `${hours}h ${remainingMinutes}min`;
+  // };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -141,11 +170,37 @@ export default function VideosPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <VideoFilters filters={filters} onFiltersChange={setFilters} videosCount={filteredVideos.length} />
+        <div className="mb-6 flex items-center gap-3">
+          {/* <button
+            type="button"
+            onClick={() => setActiveTab('videos')}
+            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              activeTab === 'videos'
+                ? 'bg-blue-600 border-blue-500 text-white'
+                : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+            }`}
+          >
+            My Videos
+          </button> */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('exercises')}
+            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              activeTab === 'exercises'
+                ? 'bg-blue-600 border-blue-500 text-white'
+                : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+            }`}
+          >
+            ExerciseDB
+          </button>
+        </div>
+
+        {/* {activeTab === 'videos' && (
+          <VideoFilters filters={filters} onFiltersChange={setFilters} videosCount={filteredVideos.length} />
+        )} */}
 
         {/* Videos Grid */}
-        {loading ? (
+        {/* {activeTab === 'videos' && (loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-white rounded-xl shadow-sm border animate-pulse">
@@ -214,16 +269,25 @@ export default function VideosPage() {
               />
             ))}
           </div>
+        ))} */}
+
+        {activeTab === 'exercises' && (
+          <ExerciseDbLibraryPanel
+            onAssignExerciseAction={handleAssignExercise}
+            assigningExerciseId={isAssigningExercise}
+          />
         )}
 
         {/* Modals */}
-        <NewAddVideoModal
-          isOpen={isAddModalOpen}
-          onCloseAction={() => setIsAddModalOpen(false)}
-          onVideoAddedAction={handleAddVideo}
-        />
+        {activeTab === 'videos' && (
+          <NewAddVideoModal
+            isOpen={isAddModalOpen}
+            onCloseAction={() => setIsAddModalOpen(false)}
+            onVideoAddedAction={handleAddVideo}
+          />
+        )}
 
-        {selectedVideo && (
+        {activeTab === 'videos' && selectedVideo && (
           <NewVideoDetailModal
             video={selectedVideo}
             isOpen={isDetailModalOpen}

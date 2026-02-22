@@ -5,6 +5,7 @@
 
 import type { USDAFood, NormalizedFoodItem, USDAFoodNutrient } from '@/types/usda';
 import { computeFoodTags } from '@/helpers/computeFoodTags';
+import { resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
 
 // USDA Nutrient IDs for common macronutrients
 const NUTRIENT_IDS = {
@@ -66,6 +67,65 @@ function kjToKcal(kj: number): number {
 
 function roundToTwo(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function normalizeText(value: string | null | undefined): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+function getPieceMetadata(usdaFood: USDAFood): {
+  servingUnit?: 'piece';
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
+} {
+  const fallbackUnit = resolveIngredientUnitByName(usdaFood.description);
+  const foodPortions = Array.isArray(usdaFood.foodPortions) ? usdaFood.foodPortions : [];
+
+  const preferredPortion = foodPortions.find(portion => {
+    const gramWeight = portion.gramWeight ?? null;
+    if (gramWeight === null || gramWeight <= 0) {
+      return false;
+    }
+
+    const modifier = normalizeText(portion.modifier);
+    const measureUnitName = normalizeText(portion.measureUnit?.name);
+    const measureUnitAbbreviation = normalizeText(portion.measureUnit?.abbreviation);
+    const source = `${modifier} ${measureUnitName} ${measureUnitAbbreviation}`;
+
+    const hasPieceMarker = /\b(piece|whole|unit|each|egg)\b/.test(source);
+    const hasNonPieceMarker = /\b(cup|tbsp|tablespoon|tsp|teaspoon|slice|serving|ounce|oz|gram|g|ml)\b/.test(source);
+
+    return hasPieceMarker && !hasNonPieceMarker;
+  });
+
+  if (preferredPortion?.gramWeight && preferredPortion.gramWeight > 0) {
+    const amount = preferredPortion.amount ?? 1;
+    const gramsPerUnit = amount > 0 ? preferredPortion.gramWeight / amount : preferredPortion.gramWeight;
+
+    if (fallbackUnit?.displayUnitLabel === 'egg' && (gramsPerUnit < 30 || gramsPerUnit > 80)) {
+      return {
+        servingUnit: 'piece',
+        gramsPerUnit: fallbackUnit.gramsPerUnit,
+        displayUnitLabel: fallbackUnit.displayUnitLabel,
+      };
+    }
+
+    return {
+      servingUnit: 'piece',
+      gramsPerUnit: roundToTwo(gramsPerUnit),
+      displayUnitLabel: fallbackUnit?.displayUnitLabel ?? 'piece',
+    };
+  }
+
+  if (fallbackUnit) {
+    return {
+      servingUnit: 'piece',
+      gramsPerUnit: fallbackUnit.gramsPerUnit,
+      displayUnitLabel: fallbackUnit.displayUnitLabel,
+    };
+  }
+
+  return {};
 }
 
 function normalizeServingUnit(unit: string | null | undefined): string {
@@ -148,6 +208,7 @@ export function mapUSDANutrientsToPer100g(usdaFood: USDAFood): NormalizedFoodIte
   const ingredientsText = usdaFood.ingredients ?? null;
 
   const nutrition = normalizeNutrients(usdaFood);
+  const pieceMetadata = getPieceMetadata(usdaFood);
 
   const normalized: NormalizedFoodItem = {
     fdcId,
@@ -168,6 +229,9 @@ export function mapUSDANutrientsToPer100g(usdaFood: USDAFood): NormalizedFoodIte
       caloriesEstimated: nutrition.caloriesEstimated,
     },
     tags: [],
+    servingUnit: pieceMetadata.servingUnit,
+    gramsPerUnit: pieceMetadata.gramsPerUnit ?? null,
+    displayUnitLabel: pieceMetadata.displayUnitLabel ?? null,
   };
 
   normalized.tags = computeFoodTags(normalized);
@@ -369,20 +433,24 @@ export function applyFilters(
       return false;
     }
 
-    if (!candidate.category) {
-      return false;
-    }
+    if (allowedCategoriesLower.length > 0) {
+      if (!candidate.category) {
+        return false;
+      }
 
-    const categoryLower = candidate.category.toLowerCase();
-    const matchesCategory = allowedCategoriesLower.some(category => categoryLower.includes(category));
-    if (!matchesCategory) {
-      return false;
+      const categoryLower = candidate.category.toLowerCase();
+      const matchesCategory = allowedCategoriesLower.some(category => categoryLower.includes(category));
+      if (!matchesCategory) {
+        return false;
+      }
     }
 
     const nameTokens = tokenize(candidate.name);
-    const hasExcludedTerm = excludedTerms.some(term => nameTokens.includes(term));
-    if (hasExcludedTerm) {
-      return false;
+    if (excludedTerms.length > 0) {
+      const hasExcludedTerm = excludedTerms.some(term => nameTokens.includes(term));
+      if (hasExcludedTerm) {
+        return false;
+      }
     }
 
     const hasCookedInName = COOKED_TERMS.some(term => nameTokens.includes(term));

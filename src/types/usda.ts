@@ -47,6 +47,15 @@ export interface USDAFood {
   };
   servingSize?: number | null;
   servingSizeUnit?: string | null;
+  foodPortions?: Array<{
+    gramWeight?: number | null;
+    modifier?: string | null;
+    amount?: number | null;
+    measureUnit?: {
+      name?: string | null;
+      abbreviation?: string | null;
+    } | null;
+  }>;
   publicationDate?: string;
   [key: string]: any;
 }
@@ -77,4 +86,7 @@ export interface NormalizedFoodItem {
     caloriesEstimated: boolean;
   };
   tags: string[];
+  servingUnit?: 'g' | 'piece';
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
 }

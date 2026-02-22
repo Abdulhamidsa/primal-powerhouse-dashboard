@@ -131,31 +131,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const defaultCategories = [
-      'Cereal Grains and Pasta',
-      'Vegetables and Vegetable Products',
-      'Fruits and Fruit Juices',
-      'Nuts and Seeds',
-      'Legumes and Legume Products',
-      'Poultry Products',
-      'Beef Products',
-      'Pork Products',
-      'Fish, Finfish, and Shellfish Products',
-      'Dairy and Egg Products',
-    ];
+    const defaultCategories: string[] = [];
 
-    const defaultExcludedTerms = [
-      'snack',
-      'cake',
-      'cracker',
-      'babyfood',
-      'cereal',
-      'bread',
-      'muffin',
-      'bagel',
-      'bar',
-      'chips',
-    ];
+    const defaultExcludedTerms: string[] = [];
 
     const allowedCategories = allowedCategoriesParam
       ? allowedCategoriesParam
