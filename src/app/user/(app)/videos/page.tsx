@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Video {
   id: string;
@@ -41,22 +42,6 @@ export default function UserVideosPage() {
       console.error('Error fetching user videos:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const markVideoCompleted = async (assignmentId: string) => {
-    try {
-      const response = await fetch(`/api/user/videos/${assignmentId}/complete`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        setVideoAssignments(prev =>
-          prev.map(assignment => (assignment.id === assignmentId ? { ...assignment, isCompleted: true } : assignment))
-        );
-      }
-    } catch (error) {
-      console.error('Error marking video as completed:', error);
     }
   };
 
@@ -232,22 +217,12 @@ export default function UserVideosPage() {
               )}
 
               <div className="flex space-x-3">
-                <a
-                  href={assignment.video.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={`/user/videos/${assignment.id}`}
                   className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-center hover:bg-primary/90 transition-colors"
                 >
-                  {isImageDemo(assignment.video.videoUrl) ? 'Open HD Exercise Demo' : 'Watch Video'}
-                </a>
-                {!assignment.isCompleted && (
-                  <button
-                    onClick={() => markVideoCompleted(assignment.id)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Mark Complete
-                  </button>
-                )}
+                  {isImageDemo(assignment.video.videoUrl) ? 'Open Exercise Page' : 'Open Video Page'}
+                </Link>
               </div>
             </div>
           ))}
