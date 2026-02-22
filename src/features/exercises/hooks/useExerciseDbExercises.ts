@@ -48,16 +48,16 @@ export function useExerciseDbExercises({
       sortBy,
       sortOrder,
     ],
-    () =>
+    ([, o, l, q, m, e, b, sBy, sOrder]) =>
       getExerciseDbExercises({
-        offset,
-        limit,
-        q: trimmedQuery,
-        muscles: trimmedMuscles,
-        equipment: trimmedEquipment,
-        bodyParts: trimmedBodyParts,
-        sortBy,
-        sortOrder,
+        offset: o as number,
+        limit: l as number,
+        q: q as string,
+        muscles: m as string,
+        equipment: e as string,
+        bodyParts: b as string,
+        sortBy: sBy as any,
+        sortOrder: sOrder as any,
       }),
     {
       revalidateOnFocus: false,

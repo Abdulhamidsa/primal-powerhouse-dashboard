@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { fetcher } from '@/lib/fetcher';
 import type { ApiError } from '@/lib/fetcher';
 import { MEAL_TYPES, MealAssignment, MealsTab, MealType } from '..';
 
@@ -9,15 +8,10 @@ export function useUserMeals() {
   const [activeMealType, setActiveMealType] = useState<MealType>('BREAKFAST');
 
   const todaySWR = useSWR<Record<string, MealAssignment | undefined>, ApiError>(
-    '/api/user/meals/today',
-    url => fetcher(url),
-    { revalidateOnFocus: true }
+    activeTab === 'today' ? '/api/user/meals/today' : null
   );
 
-  const allSWR = useSWR<MealAssignment[], ApiError>('/api/user/meals', url => fetcher(url), {
-    revalidateOnFocus: true,
-  });
-
+  const allSWR = useSWR<MealAssignment[], ApiError>(activeTab === 'all' ? '/api/user/meals' : null);
   const error = activeTab === 'today' ? todaySWR.error : allSWR.error;
 
   const isLoading = activeTab === 'today' ? !todaySWR.data && todaySWR.isLoading : !allSWR.data && allSWR.isLoading;

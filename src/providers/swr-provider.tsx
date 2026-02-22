@@ -11,6 +11,7 @@ export function SwrProvider({ children }: { children: React.ReactNode }) {
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         keepPreviousData: true,
+        dedupingInterval: 60_000,
         shouldRetryOnError: (err: any) => err?.status !== 401 && err?.status !== 403,
         errorRetryCount: 2,
       }}
