@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { DifficultyLevel, VideoCategory } from '@prisma/client';
+import { invalidateVideoCaches } from '@/lib/cache-tags';
 
 interface ExerciseImportPayload {
   exerciseId: string;
@@ -71,6 +72,8 @@ export async function POST(request: NextRequest) {
       instructions: video.instructions ? JSON.parse(video.instructions) : [],
       tips: video.tips ? JSON.parse(video.tips) : [],
     };
+
+    invalidateVideoCaches({ videoId: video.id });
 
     return jsonWithCache(parsedVideo, { status: existingVideo ? 200 : 201 });
   } catch (error) {

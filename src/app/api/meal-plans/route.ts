@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, clientMealPlansTag, invalidateMealCaches } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,18 +13,23 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Client ID is required' }, { status: 400 });
     }
 
-    const mealPlans = await prisma.mealPlan.findMany({
-      where: { clientId },
-      include: {
-        mealAssignments: {
+    const mealPlans = await unstable_cache(
+      async () =>
+        prisma.mealPlan.findMany({
+          where: { clientId },
           include: {
-            meal: true,
+            mealAssignments: {
+              include: {
+                meal: true,
+              },
+              orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
+            },
           },
-          orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+          orderBy: { createdAt: 'desc' },
+        }),
+      [`meal-plans:${clientId}`],
+      { tags: [CACHE_TAGS.mealPlans, clientMealPlansTag(clientId)], revalidate: false }
+    )();
 
     return jsonWithCache(mealPlans);
   } catch (error) {
@@ -191,6 +198,11 @@ export async function POST(request: NextRequest) {
 
       console.log('Meal plan created successfully:', mealPlan.id);
       console.log('Created assignments:', createdAssignments.length);
+      invalidateMealCaches({
+        mealPlanId: mealPlan.id,
+        clientId,
+      });
+
       return jsonWithCache(completeMealPlan);
     } catch (dbError) {
       console.error('Database error creating meal plan:', dbError);

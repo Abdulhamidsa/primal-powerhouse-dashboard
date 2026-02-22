@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, clientVideoAssignmentsTag, userVideosTag, videoAssignmentTag } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,15 +15,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const assignment = await prisma.videoAssignment.findFirst({
-      where: {
-        id,
-        clientId: user.userId,
-      },
-      include: {
-        video: true,
-      },
-    });
+    const assignment = await unstable_cache(
+      async () =>
+        prisma.videoAssignment.findFirst({
+          where: {
+            id,
+            clientId: user.userId,
+          },
+          include: {
+            video: true,
+          },
+        }),
+      [`user-video-assignment:${user.userId}:${id}`],
+      {
+        tags: [
+          CACHE_TAGS.userVideos,
+          CACHE_TAGS.videoAssignments,
+          userVideosTag(user.userId),
+          clientVideoAssignmentsTag(user.userId),
+          videoAssignmentTag(id),
+        ],
+        revalidate: false,
+      }
+    )();
 
     if (!assignment) {
       return NextResponse.json({ error: 'Video assignment not found' }, { status: 404 });

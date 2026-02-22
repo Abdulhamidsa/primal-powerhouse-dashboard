@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, clientVideoAssignmentsTag, userVideosTag } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,15 +19,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all video assignments for the user
-    const videoAssignments = await prisma.videoAssignment.findMany({
-      where: {
-        clientId: user.userId,
-      },
-      include: {
-        video: true,
-      },
-      orderBy: { assignedDate: 'desc' },
-    });
+    const videoAssignments = await unstable_cache(
+      async () =>
+        prisma.videoAssignment.findMany({
+          where: {
+            clientId: user.userId,
+          },
+          include: {
+            video: true,
+          },
+          orderBy: { assignedDate: 'desc' },
+        }),
+      [`user-videos:${user.userId}`],
+      {
+        tags: [
+          CACHE_TAGS.userVideos,
+          CACHE_TAGS.videoAssignments,
+          userVideosTag(user.userId),
+          clientVideoAssignmentsTag(user.userId),
+        ],
+        revalidate: false,
+      }
+    )();
 
     return jsonWithCache(videoAssignments);
   } catch (error) {

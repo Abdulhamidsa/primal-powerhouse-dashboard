@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TAGS, invalidateMealCaches, mealTag } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const meal = await prisma.meal.findUnique({
-      where: { id },
-    });
+    const meal = await unstable_cache(
+      async () =>
+        prisma.meal.findUnique({
+          where: { id },
+        }),
+      [`meal:${id}`],
+      { tags: [CACHE_TAGS.meals, mealTag(id)], revalidate: false }
+    )();
 
     if (!meal) {
       return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
@@ -93,6 +100,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await prisma.meal.delete({
       where: { id },
     });
+
+    invalidateMealCaches({ mealId: id });
 
     return NextResponse.json({ message: 'Meal deleted successfully' });
   } catch (error) {

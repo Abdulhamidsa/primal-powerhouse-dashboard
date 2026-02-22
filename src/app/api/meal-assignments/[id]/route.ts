@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MealType } from '@prisma/client';
+import { invalidateMealCaches } from '@/lib/cache-tags';
 
 type PatchBody = {
   notes?: string | null;
@@ -31,6 +32,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       include: { meal: true, mealPlan: true },
     });
 
+    invalidateMealCaches({
+      mealId: assignment.mealId,
+      mealPlanId: assignment.mealPlanId,
+      mealAssignmentId: assignment.id,
+    });
+
     return NextResponse.json(assignment);
   } catch (error) {
     console.error('Error updating meal assignment:', error);
@@ -42,7 +49,13 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
   try {
     const { id } = params;
 
-    await prisma.mealAssignment.delete({ where: { id } });
+    const assignment = await prisma.mealAssignment.delete({ where: { id } });
+
+    invalidateMealCaches({
+      mealId: assignment.mealId,
+      mealPlanId: assignment.mealPlanId,
+      mealAssignmentId: assignment.id,
+    });
 
     return NextResponse.json({ message: 'Meal assignment deleted successfully' });
   } catch (error) {

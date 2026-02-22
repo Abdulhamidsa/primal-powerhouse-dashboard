@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { invalidateVideoCaches } from '@/lib/cache-tags';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -50,6 +51,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         : null,
     };
 
+    invalidateVideoCaches({
+      videoId: assignment.videoId,
+      clientId: assignment.clientId,
+      videoAssignmentId: assignment.id,
+      userId: assignment.clientId,
+    });
+
     return NextResponse.json(parsedAssignment);
   } catch (error) {
     console.error('Error updating video assignment:', error);
@@ -66,8 +74,15 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     const { id } = await params;
 
-    await prisma.videoAssignment.delete({
+    const assignment = await prisma.videoAssignment.delete({
       where: { id },
+    });
+
+    invalidateVideoCaches({
+      videoId: assignment.videoId,
+      clientId: assignment.clientId,
+      videoAssignmentId: assignment.id,
+      userId: assignment.clientId,
     });
 
     return NextResponse.json({ message: 'Video assignment deleted successfully' });

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TAGS, clientVideoAssignmentsTag, invalidateVideoCaches } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,13 +12,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Client ID is required' }, { status: 400 });
     }
 
-    const assignments = await prisma.videoAssignment.findMany({
-      where: { clientId },
-      include: {
-        video: true,
-      },
-      orderBy: { assignedDate: 'desc' },
-    });
+    const assignments = await unstable_cache(
+      async () =>
+        prisma.videoAssignment.findMany({
+          where: { clientId },
+          include: {
+            video: true,
+          },
+          orderBy: { assignedDate: 'desc' },
+        }),
+      [`video-assignments:${clientId}`],
+      {
+        tags: [CACHE_TAGS.videoAssignments, clientVideoAssignmentsTag(clientId)],
+        revalidate: false,
+      }
+    )();
 
     // Parse JSON fields in videos
     const parsedAssignments = assignments.map((assignment: (typeof assignments)[number]) => ({
@@ -67,6 +77,13 @@ export async function POST(request: NextRequest) {
         });
 
         results.push(assignment);
+
+        invalidateVideoCaches({
+          videoId,
+          clientId,
+          videoAssignmentId: assignment.id,
+          userId: clientId,
+        });
       }
 
       return NextResponse.json(
@@ -118,6 +135,13 @@ export async function POST(request: NextRequest) {
           }
         : null,
     };
+
+    invalidateVideoCaches({
+      videoId,
+      clientId,
+      videoAssignmentId: assignment.id,
+      userId: clientId,
+    });
 
     return NextResponse.json(parsedAssignment, { status: 201 });
   } catch (error) {

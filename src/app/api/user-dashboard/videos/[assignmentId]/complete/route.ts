@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma';
+import { invalidateVideoCaches } from '@/lib/cache-tags';
 export async function POST(request: NextRequest, { params }: { params: Promise<{ assignmentId: string }> }) {
   try {
     const { error, user } = await requireAuth(request);
@@ -33,6 +34,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       include: {
         video: true,
       },
+    });
+
+    invalidateVideoCaches({
+      videoId: updatedAssignment.videoId,
+      clientId: updatedAssignment.clientId,
+      videoAssignmentId: updatedAssignment.id,
+      userId: updatedAssignment.clientId,
     });
 
     return NextResponse.json(updatedAssignment);

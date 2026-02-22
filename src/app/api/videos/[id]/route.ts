@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, invalidateVideoCaches, videoTag } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
-    const video = await prisma.video.findUnique({
-      where: { id },
-    });
+    const video = await unstable_cache(
+      async () =>
+        prisma.video.findUnique({
+          where: { id },
+        }),
+      [`video:${id}`],
+      { tags: [CACHE_TAGS.videos, videoTag(id)], revalidate: false }
+    )();
 
     if (!video) {
       return NextResponse.json({ error: 'Video not found' }, { status: 404 });
@@ -59,6 +66,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       tips: video.tips ? JSON.parse(video.tips) : [],
     };
 
+    invalidateVideoCaches({ videoId: video.id });
+
     return NextResponse.json(parsedVideo);
   } catch (error) {
     console.error('Error updating video:', error);
@@ -73,6 +82,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await prisma.video.delete({
       where: { id },
     });
+
+    invalidateVideoCaches({ videoId: id });
 
     return NextResponse.json({ message: 'Video deleted successfully' });
   } catch (error) {

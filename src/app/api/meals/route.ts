@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, invalidateMealCaches } from '@/lib/cache-tags';
 
 function safeJsonArray(value: string | null) {
   if (!value) return [];
@@ -16,13 +18,17 @@ export async function GET(_request: NextRequest) {
   try {
     console.log('Meals API: FETCH ALL');
 
-    // Only fetch template meals (not personalized copies)
-    const meals = await prisma.meal.findMany({
-      where: {
-        isPersonalized: false,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const meals = await unstable_cache(
+      async () =>
+        prisma.meal.findMany({
+          where: {
+            isPersonalized: false,
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+      ['meals:list:templates'],
+      { tags: [CACHE_TAGS.meals], revalidate: false }
+    )();
 
     const parsedMeals = meals.map(meal => ({
       ...meal,
@@ -200,6 +206,11 @@ export async function POST(request: NextRequest) {
       instructions: createdMeal.instructions ? JSON.parse(createdMeal.instructions) : [],
       tags: createdMeal.tags ? JSON.parse(createdMeal.tags) : [],
     };
+
+    invalidateMealCaches({
+      mealId: createdMeal.id,
+      clientId: createdMeal.clientId ?? undefined,
+    });
 
     return jsonWithCache(parsedMeal, { status: 201 });
   } catch (error) {

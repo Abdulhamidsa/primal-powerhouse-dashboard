@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { invalidateMealCaches } from '@/lib/cache-tags';
 
 export async function POST(request: NextRequest) {
   try {
@@ -98,6 +99,13 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Created meal assignment:', assignment.id);
+    invalidateMealCaches({
+      mealId: assignment.mealId,
+      mealPlanId: assignment.mealPlanId,
+      clientId,
+      mealAssignmentId: assignment.id,
+    });
+
     return jsonWithCache(assignment);
   } catch (error) {
     console.error('Error creating meal assignment:', error);

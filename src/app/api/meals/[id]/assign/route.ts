@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { invalidateMealCaches } from '@/lib/cache-tags';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -54,6 +55,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     console.log(`Created personalized meal ${personalizedMeal.id} from ${originalMeal.id} for client ${clientId}`);
+
+    invalidateMealCaches({
+      mealId: originalMeal.id,
+      clientId,
+    });
 
     return NextResponse.json({
       message: 'Meal assigned successfully (personalized copy created)',

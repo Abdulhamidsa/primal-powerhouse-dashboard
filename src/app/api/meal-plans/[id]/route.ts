@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TAGS, invalidateMealCaches, mealPlanTag } from '@/lib/cache-tags';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -9,15 +11,20 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   try {
-    const mealPlan = await prisma.mealPlan.findUnique({
-      where: { id },
-      include: {
-        mealAssignments: {
-          include: { meal: true },
-          orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
-        },
-      },
-    });
+    const mealPlan = await unstable_cache(
+      async () =>
+        prisma.mealPlan.findUnique({
+          where: { id },
+          include: {
+            mealAssignments: {
+              include: { meal: true },
+              orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
+            },
+          },
+        }),
+      [`meal-plan:${id}`],
+      { tags: [CACHE_TAGS.mealPlans, mealPlanTag(id)], revalidate: false }
+    )();
 
     if (!mealPlan) {
       return NextResponse.json({ error: 'Meal plan not found' }, { status: 404 });
@@ -134,6 +141,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     });
 
     console.log(`[Meal Plan Update] Successfully updated meal plan ${id}`);
+    invalidateMealCaches({
+      mealPlanId: id,
+      clientId: updatedMealPlan?.clientId,
+    });
+
     return NextResponse.json(updatedMealPlan);
   } catch (error) {
     console.error('[Meal Plan Update] Error updating meal plan:', error);
@@ -148,7 +160,14 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   try {
+    const existing = await prisma.mealPlan.findUnique({ where: { id }, select: { clientId: true } });
     await prisma.mealPlan.delete({ where: { id } });
+
+    invalidateMealCaches({
+      mealPlanId: id,
+      clientId: existing?.clientId,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting meal plan:', error);

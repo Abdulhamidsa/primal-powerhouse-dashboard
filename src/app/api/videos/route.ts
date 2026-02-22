@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, invalidateVideoCaches } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,10 +52,17 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Videos API: Fetching videos with conditions:', whereConditions);
-    const videos = await prisma.video.findMany({
-      where: whereConditions,
-      orderBy: { createdAt: 'desc' },
-    });
+    const cacheKey = ['videos:list', String(userId), String(category ?? 'all'), String(difficulty ?? 'all')];
+
+    const videos = await unstable_cache(
+      async () =>
+        prisma.video.findMany({
+          where: whereConditions,
+          orderBy: { createdAt: 'desc' },
+        }),
+      cacheKey,
+      { tags: [CACHE_TAGS.videos], revalidate: false }
+    )();
 
     console.log('Videos API: Found videos:', videos.length);
     // Parse JSON fields
@@ -136,6 +145,8 @@ export async function POST(request: NextRequest) {
       instructions: video.instructions ? JSON.parse(video.instructions) : [],
       tips: video.tips ? JSON.parse(video.tips) : [],
     };
+
+    invalidateVideoCaches({ videoId: video.id });
 
     return jsonWithCache(parsedVideo, { status: 201 });
   } catch (error) {
