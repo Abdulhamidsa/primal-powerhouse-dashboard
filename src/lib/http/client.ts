@@ -20,5 +20,6 @@ export const httpClient = {
       method: 'PATCH',
       body: body == null ? undefined : JSON.stringify(body),
     }),
-  delete: <T>(url: string, init?: Omit<RequestInit, 'method'>) => request<T>(url, { ...(init ?? {}), method: 'DELETE' }),
+  delete: <T>(url: string, init?: Omit<RequestInit, 'method'>) =>
+    request<T>(url, { ...(init ?? {}), method: 'DELETE' }),
 };

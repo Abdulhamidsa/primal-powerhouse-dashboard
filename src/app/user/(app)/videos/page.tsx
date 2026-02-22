@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Video {
   id: string;
@@ -164,11 +165,12 @@ export default function UserVideosPage() {
               className="bg-card p-6 rounded-lg border border-border hover:shadow-md transition-shadow"
             >
               {isImageDemo(assignment.video.videoUrl) && (
-                <div className="mb-4 rounded-lg overflow-hidden border border-border bg-black/20">
-                  <img
+                <div className="mb-4 rounded-lg overflow-hidden border border-border bg-black/20 relative w-full h-56">
+                  <Image
                     src={assignment.video.videoUrl}
                     alt={assignment.video.title}
-                    className="w-full h-56 object-contain"
+                    fill
+                    className="object-contain"
                     loading="lazy"
                   />
                 </div>

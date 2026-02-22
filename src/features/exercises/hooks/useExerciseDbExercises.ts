@@ -70,14 +70,15 @@ export function useExerciseDbExercises({
     exercises: data?.data ?? [],
     metadata: data?.metadata,
     isLoading,
-    error: error instanceof Error ? error.message : data?.error ?? null,
+    error: error instanceof Error ? error.message : (data?.error ?? null),
     refresh: mutate,
   };
 }
 
 export function useExerciseDbFilterOptions() {
-  const { data, error, isLoading, mutate } = useSWR<ExerciseDbOptionsResponse>('exercise-db-options', () =>
-    getExerciseDbFilterOptions(),
+  const { data, error, isLoading, mutate } = useSWR<ExerciseDbOptionsResponse>(
+    'exercise-db-options',
+    () => getExerciseDbFilterOptions(),
     {
       revalidateOnFocus: false,
       revalidateIfStale: false,
@@ -88,7 +89,7 @@ export function useExerciseDbFilterOptions() {
   return {
     options: data?.data ?? { muscles: [], equipments: [], bodyParts: [] },
     isLoading,
-    error: error instanceof Error ? error.message : data?.error ?? null,
+    error: error instanceof Error ? error.message : (data?.error ?? null),
     refresh: mutate,
   };
 }
@@ -107,7 +108,7 @@ export function useExerciseDbExercise(exerciseId: string) {
   return {
     exercise: data?.data ?? null,
     isLoading,
-    error: error instanceof Error ? error.message : data?.error ?? null,
+    error: error instanceof Error ? error.message : (data?.error ?? null),
     refresh: mutate,
   };
 }
