@@ -10,8 +10,9 @@ export function SwrProvider({ children }: { children: React.ReactNode }) {
         fetcher,
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
-        keepPreviousData: true,
+        revalidateOnMount: false,
         dedupingInterval: 60_000,
+        keepPreviousData: true,
         shouldRetryOnError: (err: any) => err?.status !== 401 && err?.status !== 403,
         errorRetryCount: 2,
       }}
