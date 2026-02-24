@@ -6,12 +6,14 @@ import Image from 'next/image';
 import NewAddClientModal from '@/components/NewAddClientModal';
 import { useClients } from '@/hooks/useClients';
 import { Users, Flame, BarChart, Target, Activity, Clock, Mail, Phone, Scale, Calendar } from 'lucide-react';
+import { useAdminWeeklyCheckInStatuses } from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
 
 export default function ClientsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const { clients, isLoading: loading, mutate: fetchClients } = useClients();
+  const { statuses: weeklyStatuses } = useAdminWeeklyCheckInStatuses(clients.map(client => client.id));
 
   const filteredClients = statusFilter === 'ALL' ? clients : clients.filter(client => client.status === statusFilter);
 
@@ -27,6 +29,30 @@ export default function ClientsPage() {
     return difference > 0
       ? `${Math.abs(difference).toFixed(1)} kg to lose`
       : `${Math.abs(difference).toFixed(1)} kg to gain`;
+  };
+
+  const getWeeklyCheckInStatusStyles = (status: 'completed' | 'due' | 'overdue' | undefined) => {
+    if (status === 'completed') {
+      return {
+        label: 'Check-In Completed',
+        bg: 'var(--color-accent-muted)',
+        color: 'var(--color-accent)',
+      };
+    }
+
+    if (status === 'overdue') {
+      return {
+        label: 'Check-In Overdue',
+        bg: 'var(--color-danger-muted, var(--color-bg-alt))',
+        color: 'var(--color-danger)',
+      };
+    }
+
+    return {
+      label: 'Check-In Due',
+      bg: 'var(--color-bg-alt)',
+      color: 'var(--color-text-muted)',
+    };
   };
 
   return (
@@ -302,6 +328,28 @@ export default function ClientsPage() {
                       <Activity size={16} />
                       {client.activityLevel} Activity
                     </span>
+                  </div>
+
+                  <div className="mb-4">
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit"
+                      style={{
+                        background: getWeeklyCheckInStatusStyles(weeklyStatuses[client.id]?.status).bg,
+                        color: getWeeklyCheckInStatusStyles(weeklyStatuses[client.id]?.status).color,
+                      }}
+                    >
+                      {getWeeklyCheckInStatusStyles(weeklyStatuses[client.id]?.status).label}
+                    </span>
+                    <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      Last check-in:{' '}
+                      {(() => {
+                        const lastSubmittedAt = weeklyStatuses[client.id]?.lastSubmittedAt;
+                        if (typeof lastSubmittedAt === 'string') {
+                          return new Date(lastSubmittedAt).toLocaleDateString();
+                        }
+                        return 'None';
+                      })()}
+                    </p>
                   </div>
 
                   {/* Goals */}

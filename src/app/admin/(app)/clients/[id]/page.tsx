@@ -19,6 +19,10 @@ import HealthMetricsModal from '@/components/HealthMetricsModal';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { useClientMeals } from '@/hooks/useClientMeals';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
+import {
+  useAdminClientWeeklyCheckIns,
+  useAdminWeeklyCheckInActions,
+} from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
 
 export default function ClientProfilePage() {
   const params = useParams();
@@ -36,9 +40,19 @@ export default function ClientProfilePage() {
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetText, setResetText] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [deletingCheckInId, setDeletingCheckInId] = useState<string | null>(null);
 
   // Use custom hook for meal assignments
   const { meals: mealAssignments, refresh: refreshMeals } = useClientMeals(clientId);
+  const {
+    data: weeklyCheckInData,
+    isLoading: isWeeklyCheckInsLoading,
+    error: weeklyCheckInError,
+  } = useAdminClientWeeklyCheckIns(clientId);
+  const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(clientId);
 
   const fetchClientData = async () => {
     try {
@@ -126,6 +140,65 @@ export default function ClientProfilePage() {
     { key: 'meals', label: 'Meals', icon: <Utensils size={16} /> },
     { key: 'progress', label: 'Progress', icon: <BarChart size={16} /> },
   ];
+
+  const getWeeklyStatusStyles = (status: 'completed' | 'due' | 'overdue') => {
+    if (status === 'completed') {
+      return {
+        bg: 'var(--color-accent-muted)',
+        color: 'var(--color-accent)',
+        label: 'Completed',
+      };
+    }
+
+    if (status === 'overdue') {
+      return {
+        bg: 'var(--color-danger-muted, var(--color-bg-alt))',
+        color: 'var(--color-danger)',
+        label: 'Overdue',
+      };
+    }
+
+    return {
+      bg: 'var(--color-bg-alt)',
+      color: 'var(--color-text-muted)',
+      label: 'Due',
+    };
+  };
+
+  const handleDeleteCheckIn = async (checkInId: string) => {
+    const confirmed = window.confirm('Delete this weekly check-in entry? This cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      setDeletingCheckInId(checkInId);
+      await deleteCheckIn(checkInId);
+    } catch (error) {
+      console.error('Failed to delete weekly check-in:', error);
+      window.alert('Failed to delete weekly check-in. Please try again.');
+    } finally {
+      setDeletingCheckInId(null);
+    }
+  };
+
+  const handleResetAllCheckIns = async () => {
+    if (resetText !== 'RESET') {
+      window.alert('Please type RESET exactly to confirm.');
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      const result = await resetAll();
+      setShowResetModal(false);
+      setResetText('');
+      window.alert(`Reset complete. Deleted ${result.deletedCount} weekly check-in entries.`);
+    } catch (error) {
+      console.error('Failed to reset weekly check-ins:', error);
+      window.alert('Failed to reset weekly check-ins. Please try again.');
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   if (!client) {
     return (
@@ -457,6 +530,103 @@ export default function ClientProfilePage() {
                 }}
               />
             )}
+
+            <div
+              className="rounded-2xl border shadow-sm p-6 md:col-span-2"
+              style={{
+                background: 'var(--color-surface)',
+                borderColor: 'var(--color-border)',
+              }}
+            >
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Weekly Check-Ins
+                </h3>
+                {weeklyCheckInData?.currentWeek ? (
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: getWeeklyStatusStyles(weeklyCheckInData.currentWeek.status).bg,
+                      color: getWeeklyStatusStyles(weeklyCheckInData.currentWeek.status).color,
+                    }}
+                  >
+                    {getWeeklyStatusStyles(weeklyCheckInData.currentWeek.status).label}
+                  </span>
+                ) : null}
+              </div>
+
+              <div
+                className="flex items-center justify-between text-sm mb-4"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                <span>
+                  Current week:{' '}
+                  {weeklyCheckInData?.currentWeek?.weekStartDate
+                    ? new Date(weeklyCheckInData.currentWeek.weekStartDate).toLocaleDateString()
+                    : 'N/A'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(true)}
+                  disabled={isWeeklyCheckInsLoading || !weeklyCheckInData?.checkIns?.length}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity"
+                  style={{
+                    background: 'var(--color-bg-alt)',
+                    color: 'var(--color-danger)',
+                    opacity: isWeeklyCheckInsLoading || !weeklyCheckInData?.checkIns?.length ? 0.5 : 1,
+                  }}
+                >
+                  Reset All
+                </button>
+              </div>
+
+              {isWeeklyCheckInsLoading ? (
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                  Loading weekly check-ins...
+                </p>
+              ) : weeklyCheckInError ? (
+                <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
+                  Failed to load weekly check-ins.
+                </p>
+              ) : weeklyCheckInData?.checkIns?.length ? (
+                <div className="space-y-2">
+                  {weeklyCheckInData.checkIns.map(checkIn => (
+                    <div
+                      key={checkIn.id}
+                      className="rounded-lg border p-3 flex items-center justify-between gap-3"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                          Week of {new Date(checkIn.weekStartDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                          Submitted {new Date(checkIn.submittedAt).toLocaleDateString()} • Energy {checkIn.energyRating}
+                          /5 • Training {checkIn.trainingAdherence}%
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCheckIn(checkIn.id)}
+                        disabled={deletingCheckInId === checkIn.id}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity"
+                        style={{
+                          background: 'var(--color-surface)',
+                          color: 'var(--color-danger)',
+                          opacity: deletingCheckInId === checkIn.id ? 0.5 : 1,
+                        }}
+                      >
+                        {deletingCheckInId === checkIn.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                  No weekly check-ins found for this client yet.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
@@ -549,6 +719,63 @@ export default function ClientProfilePage() {
             setShowHealthMetricsModal(false);
           }}
         />
+      )}
+
+      {showResetModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.5)' }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border p-6"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+              Reset Weekly Check-Ins
+            </h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>
+              This will permanently delete all weekly check-in entries for this client. Type RESET to confirm.
+            </p>
+            <input
+              type="text"
+              value={resetText}
+              onChange={event => setResetText(event.target.value)}
+              placeholder="Type RESET"
+              className="w-full rounded-lg px-3 py-2 mb-4 border"
+              style={{
+                background: 'var(--color-bg-alt)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text)',
+              }}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowResetModal(false);
+                  setResetText('');
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleResetAllCheckIns}
+                disabled={isResetting}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  background: 'var(--color-danger)',
+                  color: 'var(--color-text-on-accent)',
+                  opacity: isResetting ? 0.6 : 1,
+                }}
+              >
+                {isResetting ? 'Resetting...' : 'Reset All'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <style jsx global>{`
