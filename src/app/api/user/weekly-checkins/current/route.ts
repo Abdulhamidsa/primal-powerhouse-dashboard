@@ -3,10 +3,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import {
-  weekStartDateSchema,
-  weeklyCheckInUpsertSchema,
-} from '@/features/weekly-checkin/schemas/weeklyCheckIn.schema';
+import { weekStartDateSchema, weeklyCheckInUpsertSchema } from '@/features/weekly-checkin/schemas/weeklyCheckIn.schema';
 
 const weekStartSearchSchema = z.object({
   weekStartDate: weekStartDateSchema,

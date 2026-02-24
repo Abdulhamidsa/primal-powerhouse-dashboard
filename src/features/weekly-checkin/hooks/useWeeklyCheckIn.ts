@@ -17,9 +17,8 @@ export function useWeeklyCheckInCurrentWeek() {
   const weekStartDate = getCurrentWeekStartDateKey();
   const key = buildWeeklyCheckInCurrentUrl(weekStartDate);
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<WeeklyCheckInCurrentResponse, ApiError>(
-    key,
-    () => getWeeklyCheckInCurrent(weekStartDate)
+  const { data, error, isLoading, isValidating, mutate } = useSWR<WeeklyCheckInCurrentResponse, ApiError>(key, () =>
+    getWeeklyCheckInCurrent(weekStartDate)
   );
 
   return {

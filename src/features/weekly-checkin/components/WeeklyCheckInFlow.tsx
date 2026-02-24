@@ -448,7 +448,6 @@ export function WeeklyCheckInFlow() {
               )}
             </div>
           </div>
-
         </CardContent>
       </Card>
 
