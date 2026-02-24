@@ -74,6 +74,7 @@ model Client {
   feedback          Feedback[]
   sessions          Session[]
   healthMetrics     HealthMetric[]
+  weeklyCheckIns    WeeklyCheckIn[]
 
   @@map("clients")
 }
@@ -269,6 +270,36 @@ model Feedback {
   createdAt DateTime @default(now())
 
   @@map("feedback")
+}
+
+model WeeklyCheckIn {
+  id                  String   @id @default(cuid())
+  clientId            String
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  weekStartDate       DateTime
+  submittedAt         DateTime @default(now())
+
+  weightKg            Float?
+  waistCm             Float?
+  trainingAdherence   Int
+  nutritionAdherence  Int
+  energyRating        Int
+  stressRating        Int?
+  hungerRating        Int?
+  digestionRating     Int?
+  sleepHours          Float?
+  strengthUpdate      String?
+  blockerText         String?
+  notes               String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([clientId, weekStartDate])
+  @@index([clientId])
+  @@index([weekStartDate])
+  @@map("weekly_check_ins")
 }
 
 /* =========================

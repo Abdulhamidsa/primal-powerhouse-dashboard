@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Apple, UtensilsCrossed, Video, MessageSquare, Zap, Sun, Cloud } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
+import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCheckInCard';
 
 const MOTIVATIONAL_QUOTES = [
   'The only bad workout is the one that did not happen.',
@@ -91,6 +92,9 @@ export default function UserDashboardPage() {
           </div>
           <p className="text-muted-foreground">Welcome back to your fitness journey</p>
         </div>
+
+        {/* Daily Motivation Quote */}
+        <WeeklyCheckInCard />
 
         {/* Daily Motivation Quote */}
         <div className="rounded-3xl border border-border bg-gradient-to-br from-accent/10 to-background p-6">
