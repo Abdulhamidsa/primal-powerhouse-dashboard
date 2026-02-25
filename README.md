@@ -1,60 +1,185 @@
 # Primal Powerhouse Dashboard
 
-A comprehensive fitness coaching dashboard with meal planning, client management, and workout tracking.
+Primal Powerhouse Dashboard is a coaching platform for fitness businesses that need to manage clients, deliver training and nutrition plans, and keep engagement high with structured weekly follow-up.
 
-## 🚀 Quick Deploy to Vercel
+This repository contains both the coach/admin workspace and the client-facing experience.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Abdulhamidsa/primal-powerhouse-dashboard)
+## Product Summary
 
-## 📋 Environment Variables for Vercel
+### What this app is
 
-Set these in your Vercel dashboard:
+A full-stack fitness coaching system where coaches can:
+
+- Manage client profiles and progress data
+- Build and assign meal plans
+- Curate and assign training videos/exercises
+- Track key health metrics (BMI, BMR, TDEE, macros)
+- Monitor weekly client check-ins and adherence
+
+Clients can:
+
+- Log in to a dedicated client app
+- View assigned meals and recipes
+- View assigned training content
+- Complete weekly check-ins
+- Receive coach messages and motivation
+
+### Core value proposition
+
+- **For coaching businesses:** run operations from one dashboard instead of fragmented tools
+- **For clients:** a clean, mobile-friendly portal with clear daily actions
+- **For scale:** role-based architecture, API-first backend, and PostgreSQL persistence
+
+## Feature Inventory (What You Have So Far)
+
+### 1) Role-Based Platform
+
+- Separate **admin/coach** and **client** areas
+- Route protection and auth middleware by role
+- Subdomain-aware login flow support (`admin.*` vs client domain flow)
+
+### 2) Client Management
+
+- Client profiles with key personal and coaching data
+- Active/inactive status management
+- Session history and scheduling fields
+- Motivational messaging from coach to client
+
+### 3) Meal System
+
+- Meal library with macros (calories, protein, carbs, fat, fiber)
+- Meal creation and editing
+- Meal planner and assignment workflows
+- Personalized meal support per client
+- Client-side meal view with today/all filters and recipe details
+
+### 4) Training & Video Delivery
+
+- Video library management
+- ExerciseDB integration path for importing/assigning exercises
+- Video assignment to clients with status/progress fields
+- Client training page with tags, difficulty, duration, and completion state
+
+### 5) Health Metrics Engine
+
+- Coach workflow to calculate and save:
+  - BMI
+  - BMR (Mifflin-St Jeor)
+  - TDEE
+  - Goal calories
+  - Macro targets
+- Stored history of health metric snapshots per client
+- Safety checks and guided notes for coaching adjustments
+
+### 6) Weekly Check-In System
+
+- Client weekly check-in submission flow
+- Structured adherence and recovery signals (training, nutrition, stress, sleep, etc.)
+- Admin-side check-in status views (completed/due/overdue)
+- Reset/delete operations for check-in management
+
+### 7) Dashboards & Analytics
+
+- Admin dashboard with business and activity summaries:
+  - total/active clients
+  - meals/workouts/videos counts
+  - recent activity and session indicators
+- Client dashboard with quick actions, coach message, and motivation surfaces
+
+### 8) Media & Integrations
+
+- Cloudinary integration for media upload/delete flows
+- USDA food API integration points for nutrition-related lookups
+
+## Tech Stack
+
+- **Frontend:** Next.js 15 (App Router), React 19, TypeScript
+- **Styling/UI:** Tailwind CSS, Radix primitives, custom component system
+- **Backend:** Next.js API routes
+- **Data layer:** Prisma ORM + PostgreSQL
+- **Validation:** Zod
+- **Data fetching patterns:** SWR + feature-based hooks
+- **Media:** Cloudinary
+
+## Data Model Highlights
+
+Main entities currently implemented in Prisma:
+
+- `User` (coach/admin)
+- `Client`
+- `Meal`, `MealPlan`, `MealAssignment`
+- `Video`, `VideoAssignment`
+- `Workout`, `Session`
+- `HealthMetric`
+- `WeeklyCheckIn`
+- `Feedback`
+
+This gives you a strong foundation for measurable, longitudinal coaching (plans + adherence + outcomes over time).
+
+## Project Structure (High-Level)
+
+- `src/app` — routes, pages, and API endpoints
+- `src/features` — feature modules (API wrappers, hooks, schemas, types, components)
+- `src/components` — shared UI and screens
+- `src/lib` — auth, HTTP client, Prisma, utilities
+- `prisma` — schema and database evolution
+
+## Local Development
+
+### 1) Install dependencies
 
 ```bash
-DATABASE_URL="file:./prod.db"
-NEXTAUTH_SECRET="your-random-secret-key"
+pnpm install
 ```
 
-## 🛠️ Local Development
+### 2) Configure environment
+
+Copy `.env.example` and set values for your environment.
+
+Minimum required:
 
 ```bash
-# Install dependencies
-npm install
-
-# Generate Prisma client
-npx prisma generate
-
-# Push database schema
-npx prisma db push
-
-# Seed sample data (optional)
-npm run db:seed
-
-# Start development server
-npm run dev
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+JWT_SECRET="replace-with-strong-secret"
 ```
 
-## 📱 Features
+Optional (feature-dependent):
 
-- **Client Management**: Track client profiles, goals, and progress
-- **Meal Planning**: Assign meals with nutrition tracking
-- **Workout Library**: Manage exercise routines
-- **Dashboard Analytics**: View key performance metrics
-- **Responsive Design**: Mobile-friendly interface
+- Cloudinary keys for image/media workflows
+- `USDA_FDC_API_KEY` for food database endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3) Prepare database
 
-## Learn More
+```bash
+pnpm prisma generate
+pnpm prisma db push
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 4) Run app
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Positioning for a Marketing Website
 
-## Deploy on Vercel
+If you want to sell this product, your current strongest messaging pillars are:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **All-in-one coaching OS** (clients, meals, training, check-ins)
+2. **Outcome-driven coaching** (health metrics + weekly adherence loop)
+3. **Great client experience** (simple mobile-first dashboard)
+4. **Business-ready foundation** (role-based architecture + scalable backend)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Current Status
+
+The app already includes substantial production-style functionality across both coach and client experiences. The repository also contains deployment/setup documents for infrastructure and environment migration workflows.
+
+---
+
+If useful, the next step can be a dedicated **MARKETING_README.md** or website copy pack with:
+
+- homepage hero copy
+- feature section copy
+- pricing table draft
+- FAQ and objection handling
