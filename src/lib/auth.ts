@@ -116,7 +116,7 @@ export class AuthService {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'strict' as const,
       path: '/',
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
@@ -144,7 +144,7 @@ export class AuthService {
     const clearOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'strict' as const,
       path: '/',
       maxAge: 0,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
