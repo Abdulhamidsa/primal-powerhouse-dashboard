@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 import { Salad, CheckCircle2 } from 'lucide-react';
-import {
-  useDailyNutritionToday,
-  useUpsertDailyNutrition,
-} from '@/features/daily-nutrition/hooks/useDailyNutrition';
+import { useDailyNutritionToday, useUpsertDailyNutrition } from '@/features/daily-nutrition/hooks/useDailyNutrition';
 import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
 
 const OPTIONS: Array<{ status: DailyNutritionStatus; label: string; helper: string }> = [
-  { status: 'ON_PLAN', label: 'On Plan', helper: 'Stuck to today\'s meal plan' },
+  { status: 'ON_PLAN', label: 'On Plan', helper: "Stuck to today's meal plan" },
   { status: 'PARTIAL', label: 'Partial', helper: 'Mostly on plan with small deviations' },
   { status: 'OFF_PLAN', label: 'Off Plan', helper: 'Could not follow the plan today' },
 ];
@@ -41,7 +38,10 @@ export function DailyNutritionCard() {
   };
 
   return (
-    <div className="rounded-3xl border p-6" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+    <div
+      className="rounded-3xl border p-6"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
       <div className="flex items-start gap-3 mb-4">
         <Salad className="w-6 h-6 mt-0.5" style={{ color: 'var(--color-accent)' }} />
         <div>

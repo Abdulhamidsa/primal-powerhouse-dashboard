@@ -116,7 +116,9 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
             Risk Status
           </p>
-          <span className={`inline-flex mt-2 px-2.5 py-1 rounded-full text-xs border ${riskPillClass(data.currentWeek.riskStatus)}`}>
+          <span
+            className={`inline-flex mt-2 px-2.5 py-1 rounded-full text-xs border ${riskPillClass(data.currentWeek.riskStatus)}`}
+          >
             {riskLabel(data.currentWeek.riskStatus)}
           </span>
         </div>
@@ -173,11 +175,15 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
                   <td className="py-2">
                     <span className="inline-flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
                       {trendIcon(row.trend)}
-                      {row.trendDelta == null ? 'No Data' : `${row.trendDelta > 0 ? '+' : ''}${row.trendDelta.toFixed(0)}%`}
+                      {row.trendDelta == null
+                        ? 'No Data'
+                        : `${row.trendDelta > 0 ? '+' : ''}${row.trendDelta.toFixed(0)}%`}
                     </span>
                   </td>
                   <td className="py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs border ${riskPillClass(row.riskStatus)}`}>
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded-full text-xs border ${riskPillClass(row.riskStatus)}`}
+                    >
                       {riskLabel(row.riskStatus)}
                     </span>
                   </td>

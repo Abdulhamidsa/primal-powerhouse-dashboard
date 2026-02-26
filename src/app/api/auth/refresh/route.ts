@@ -4,7 +4,8 @@ import { AuthService, requireAuth } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const requestedRoleHeader = request.headers.get('x-auth-role');
-    const requestedRole = requestedRoleHeader === 'admin' || requestedRoleHeader === 'client' ? requestedRoleHeader : undefined;
+    const requestedRole =
+      requestedRoleHeader === 'admin' || requestedRoleHeader === 'client' ? requestedRoleHeader : undefined;
 
     const { user, error } = requireAuth(request, requestedRole);
 

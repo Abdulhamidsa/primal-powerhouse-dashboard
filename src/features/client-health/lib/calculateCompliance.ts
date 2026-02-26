@@ -43,10 +43,14 @@ function getTrainingSource(input: ComplianceInput): 'daily_logs' | 'video_assign
   return 'none';
 }
 
-function calculateNutritionCompliance(input: ComplianceInput): { value: number | null; source: 'daily_logs' | 'weekly_checkin' | 'none' } {
+function calculateNutritionCompliance(input: ComplianceInput): {
+  value: number | null;
+  source: 'daily_logs' | 'weekly_checkin' | 'none';
+} {
   if (input.dailyNutritionEntries.length > 0) {
     const average =
-      input.dailyNutritionEntries.reduce((sum, entry) => sum + entry.percentage, 0) / input.dailyNutritionEntries.length;
+      input.dailyNutritionEntries.reduce((sum, entry) => sum + entry.percentage, 0) /
+      input.dailyNutritionEntries.length;
     return { value: round(average), source: 'daily_logs' };
   }
 
@@ -84,7 +88,10 @@ function classifyRisk(overallCompliance: number | null): ComplianceRiskStatus {
   return 'at_risk';
 }
 
-function getTrend(current: number | null, previous: number | null): { trend: ComplianceTrend; trendDelta: number | null } {
+function getTrend(
+  current: number | null,
+  previous: number | null
+): { trend: ComplianceTrend; trendDelta: number | null } {
   if (current == null || previous == null) {
     return { trend: 'no_data', trendDelta: null };
   }

@@ -2,16 +2,13 @@
 
 import { useState } from 'react';
 import { Dumbbell, CheckCircle2 } from 'lucide-react';
-import {
-  useDailyTrainingToday,
-  useUpsertDailyTraining,
-} from '@/features/daily-training/hooks/useDailyTraining';
+import { useDailyTrainingToday, useUpsertDailyTraining } from '@/features/daily-training/hooks/useDailyTraining';
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
 const OPTIONS: Array<{ status: DailyTrainingStatus; label: string; helper: string }> = [
   { status: 'DONE', label: 'Done', helper: 'Completed all planned training' },
-  { status: 'PARTIAL', label: 'Partial', helper: 'Completed part of today\'s training' },
-  { status: 'MISSED', label: 'Missed', helper: 'Did not complete today\'s training' },
+  { status: 'PARTIAL', label: 'Partial', helper: "Completed part of today's training" },
+  { status: 'MISSED', label: 'Missed', helper: "Did not complete today's training" },
 ];
 
 function statusLabel(status: DailyTrainingStatus): string {
@@ -41,7 +38,10 @@ export function DailyTrainingCard() {
   };
 
   return (
-    <div className="rounded-3xl border p-6" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+    <div
+      className="rounded-3xl border p-6"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
       <div className="flex items-start gap-3 mb-4">
         <Dumbbell className="w-6 h-6 mt-0.5" style={{ color: 'var(--color-accent)' }} />
         <div>

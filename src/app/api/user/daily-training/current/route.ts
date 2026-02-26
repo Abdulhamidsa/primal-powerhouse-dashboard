@@ -2,10 +2,7 @@ import { NextRequest } from 'next/server';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import {
-  dayDateKeySchema,
-  upsertDailyTrainingSchema,
-} from '@/features/daily-training/schemas/dailyTraining.schema';
+import { dayDateKeySchema, upsertDailyTrainingSchema } from '@/features/daily-training/schemas/dailyTraining.schema';
 
 function parseDateKeyUtc(dateKey: string): Date {
   const [year, month, day] = dateKey.split('-').map(Number);

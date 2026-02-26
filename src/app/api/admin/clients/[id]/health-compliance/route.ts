@@ -2,11 +2,12 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
+import { calculateWeeklyCompliance, type ComplianceInput } from '@/features/client-health/lib/calculateCompliance';
 import {
-  calculateWeeklyCompliance,
-  type ComplianceInput,
-} from '@/features/client-health/lib/calculateCompliance';
-import { getCurrentWeekStartDateKey, getWeekStartMondayLocal, toDateKeyLocal } from '@/features/weekly-checkin/utils/week';
+  getCurrentWeekStartDateKey,
+  getWeekStartMondayLocal,
+  toDateKeyLocal,
+} from '@/features/weekly-checkin/utils/week';
 import type { DailyNutritionEntry, DailyTrainingEntry } from '@/features/client-health/types/clientHealth.types';
 import { clientHealthResponseSchema } from '@/features/client-health/schemas/clientHealth.schema';
 
@@ -41,7 +42,9 @@ function getRecentWeekStartKeys(count: number): string[] {
   return keys;
 }
 
-function mapDailyNutritionEntries(logs: Array<{ dayDate: Date; status: 'ON_PLAN' | 'PARTIAL' | 'OFF_PLAN' }>): DailyNutritionEntry[] {
+function mapDailyNutritionEntries(
+  logs: Array<{ dayDate: Date; status: 'ON_PLAN' | 'PARTIAL' | 'OFF_PLAN' }>
+): DailyNutritionEntry[] {
   return logs.map(log => {
     const percentage = log.status === 'ON_PLAN' ? 100 : log.status === 'PARTIAL' ? 60 : 0;
     return {
@@ -52,7 +55,9 @@ function mapDailyNutritionEntries(logs: Array<{ dayDate: Date; status: 'ON_PLAN'
   });
 }
 
-function mapDailyTrainingEntries(logs: Array<{ dayDate: Date; status: 'DONE' | 'PARTIAL' | 'MISSED' }>): DailyTrainingEntry[] {
+function mapDailyTrainingEntries(
+  logs: Array<{ dayDate: Date; status: 'DONE' | 'PARTIAL' | 'MISSED' }>
+): DailyTrainingEntry[] {
   return logs.map(log => {
     const percentage = log.status === 'DONE' ? 100 : log.status === 'PARTIAL' ? 60 : 0;
     return {
@@ -178,19 +183,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       })
     );
 
-    const history = weeklyRows.reduce((acc, row, index) => {
-      const previous = acc[index - 1]?.overallCompliance ?? null;
-      const computed = calculateWeeklyCompliance(row, previous);
-      acc.push(computed);
-      return acc;
-    }, [] as ReturnType<typeof calculateWeeklyCompliance>[]);
+    const history = weeklyRows.reduce(
+      (acc, row, index) => {
+        const previous = acc[index - 1]?.overallCompliance ?? null;
+        const computed = calculateWeeklyCompliance(row, previous);
+        acc.push(computed);
+        return acc;
+      },
+      [] as ReturnType<typeof calculateWeeklyCompliance>[]
+    );
 
     const currentWeekKey = getCurrentWeekStartDateKey();
     const currentWeek = history.find(item => item.weekStartDate === currentWeekKey) ?? history[0];
 
     const knownScores = history.map(item => item.overallCompliance).filter((score): score is number => score != null);
     const averageCompliance =
-      knownScores.length > 0 ? Math.round((knownScores.reduce((sum, score) => sum + score, 0) / knownScores.length) * 10) / 10 : null;
+      knownScores.length > 0
+        ? Math.round((knownScores.reduce((sum, score) => sum + score, 0) / knownScores.length) * 10) / 10
+        : null;
 
     const summary = {
       totalActiveClients: activeClientsCount,

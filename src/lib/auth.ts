@@ -60,7 +60,12 @@ export class AuthService {
   }
 
   static getTokenFromRequest(request: NextRequest): string | null {
-    return request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+    return (
+      request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ??
+      request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ??
+      request.cookies.get(AUTH_COOKIE_NAME)?.value ??
+      null
+    );
   }
 
   static getTokenFromRequestForRole(request: NextRequest, role?: 'admin' | 'client'): string | null {
@@ -68,7 +73,9 @@ export class AuthService {
       return request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
     }
     if (role === 'client') {
-      return request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+      return (
+        request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null
+      );
     }
     return this.getTokenFromRequest(request);
   }
@@ -152,7 +159,10 @@ export class AuthService {
 /**
  * Middleware helper for API routes
  */
-export function requireAuth(request: NextRequest, role?: 'admin' | 'client'): { error?: string; user?: AuthTokenPayload } {
+export function requireAuth(
+  request: NextRequest,
+  role?: 'admin' | 'client'
+): { error?: string; user?: AuthTokenPayload } {
   const user = AuthService.validateRequestAuth(request, role);
   if (!user) return { error: 'Unauthorized' };
   if (role && user.type !== role) return { error: 'Unauthorized' };

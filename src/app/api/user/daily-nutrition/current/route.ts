@@ -2,10 +2,7 @@ import { NextRequest } from 'next/server';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import {
-  dayDateKeySchema,
-  upsertDailyNutritionSchema,
-} from '@/features/daily-nutrition/schemas/dailyNutrition.schema';
+import { dayDateKeySchema, upsertDailyNutritionSchema } from '@/features/daily-nutrition/schemas/dailyNutrition.schema';
 
 function parseDateKeyUtc(dateKey: string): Date {
   const [year, month, day] = dateKey.split('-').map(Number);
