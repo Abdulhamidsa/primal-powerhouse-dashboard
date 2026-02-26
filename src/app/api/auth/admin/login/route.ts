@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,14 +57,14 @@ export async function POST(request: NextRequest) {
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     });
 
     return response;
   } catch (error) {
-    console.error('[ADMIN LOGIN] error:', error);
+    console.error('[ADMIN LOGIN] error:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart2, Utensils, Users, Flame, Apple, BarChart, User } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, Apple, BarChart, User, Shield } from 'lucide-react';
 
 type NavItem = {
   name: string;
@@ -71,6 +71,12 @@ const userNavItems: NavItem[] = [
     href: '/user/profile',
     icon: User,
     description: 'My profile',
+  },
+  {
+    name: 'Privacy',
+    href: '/user/privacy',
+    icon: Shield,
+    description: 'Privacy & data',
   },
 ];
 

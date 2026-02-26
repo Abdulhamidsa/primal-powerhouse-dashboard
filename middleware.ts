@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSubdomainFromHostname } from '@/lib/subdomain';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const AUTH_COOKIE_NAME = 'auth-token';
 const JWT_SECRET = process.env.JWT_SECRET || '';
@@ -9,6 +10,7 @@ type AuthPayload = {
   userId: string;
   email: string;
   type: 'client' | 'admin';
+  iat?: number;
   exp?: number;
 };
 
@@ -33,7 +35,7 @@ async function verifyJwt(token: string): Promise<AuthPayload | null> {
     if (payload.exp && Date.now() >= payload.exp * 1000) return null;
     return payload;
   } catch (error) {
-    console.error('[AUTH] Middleware JWT verify failed:', error);
+    console.error('[AUTH] Middleware JWT verify failed:', safeErrorMessage(error));
     return null;
   }
 }

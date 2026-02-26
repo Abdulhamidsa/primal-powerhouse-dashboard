@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { weekStartDateSchema, weeklyCheckInUpsertSchema } from '@/features/weekly-checkin/schemas/weeklyCheckIn.schema';
+import { decryptOrFallback, encryptField } from '@/lib/security/field-crypto';
 
 const weekStartSearchSchema = z.object({
   weekStartDate: weekStartDateSchema,
@@ -17,23 +18,18 @@ function formatDateKeyUtc(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function serializeCheckIn(record: {
-  id: string;
-  weekStartDate: Date;
-  submittedAt: Date;
-  weightKg: number | null;
-  waistCm: number | null;
-  trainingAdherence: number;
-  nutritionAdherence: number;
-  energyRating: number;
-  stressRating: number | null;
-  hungerRating: number | null;
-  digestionRating: number | null;
-  sleepHours: number | null;
-  strengthUpdate: string | null;
-  blockerText: string | null;
-  notes: string | null;
-}) {
+function shouldKeepPlaintext(): boolean {
+  return process.env.PRIVACY_ENCRYPTION_STRICT !== 'true';
+}
+
+function serializeCheckIn(record: any) {
+  const strengthUpdate =
+    decryptOrFallback(record.strengthUpdateEncrypted, `weeklyCheckIn:${record.id}:strengthUpdate`) ??
+    record.strengthUpdate;
+  const blockerText =
+    decryptOrFallback(record.blockerTextEncrypted, `weeklyCheckIn:${record.id}:blockerText`) ?? record.blockerText;
+  const notes = decryptOrFallback(record.notesEncrypted, `weeklyCheckIn:${record.id}:notes`) ?? record.notes;
+
   return {
     id: record.id,
     weekStartDate: formatDateKeyUtc(record.weekStartDate),
@@ -47,9 +43,9 @@ function serializeCheckIn(record: {
     hungerRating: record.hungerRating,
     digestionRating: record.digestionRating,
     sleepHours: record.sleepHours,
-    strengthUpdate: record.strengthUpdate,
-    blockerText: record.blockerText,
-    notes: record.notes,
+    strengthUpdate,
+    blockerText,
+    notes,
   };
 }
 
@@ -71,7 +67,7 @@ export async function GET(request: NextRequest) {
     const weekStartDate = parsedQuery.data.weekStartDate;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
 
-    const checkIn = await prisma.weeklyCheckIn.findUnique({
+    const checkIn = await (prisma as any).weeklyCheckIn.findUnique({
       where: {
         clientId_weekStartDate: {
           clientId: user.userId,
@@ -79,6 +75,21 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+
+    if (checkIn && (!checkIn.strengthUpdateEncrypted || !checkIn.blockerTextEncrypted || !checkIn.notesEncrypted)) {
+      await (prisma as any).weeklyCheckIn.update({
+        where: { id: checkIn.id },
+        data: {
+          strengthUpdateEncrypted: checkIn.strengthUpdate
+            ? encryptField(checkIn.strengthUpdate, `weeklyCheckIn:${checkIn.id}:strengthUpdate`)
+            : null,
+          blockerTextEncrypted: checkIn.blockerText
+            ? encryptField(checkIn.blockerText, `weeklyCheckIn:${checkIn.id}:blockerText`)
+            : null,
+          notesEncrypted: checkIn.notes ? encryptField(checkIn.notes, `weeklyCheckIn:${checkIn.id}:notes`) : null,
+        },
+      });
+    }
 
     return jsonWithCache({
       weekStartDate,
@@ -107,7 +118,7 @@ export async function PUT(request: NextRequest) {
     const { weekStartDate, payload } = parsed.data;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
 
-    const record = await prisma.weeklyCheckIn.upsert({
+    const record = await (prisma as any).weeklyCheckIn.upsert({
       where: {
         clientId_weekStartDate: {
           clientId: user.userId,
@@ -125,9 +136,18 @@ export async function PUT(request: NextRequest) {
         hungerRating: payload.hungerRating,
         digestionRating: payload.digestionRating,
         sleepHours: payload.sleepHours ?? null,
-        strengthUpdate: payload.strengthUpdate ?? null,
-        blockerText: payload.blockerText ?? null,
-        notes: payload.notes ?? null,
+        strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
+        blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
+        notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
+        strengthUpdateEncrypted: payload.strengthUpdate
+          ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
+          : null,
+        blockerTextEncrypted: payload.blockerText
+          ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
+          : null,
+        notesEncrypted: payload.notes
+          ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
+          : null,
       },
       create: {
         clientId: user.userId,
@@ -142,9 +162,18 @@ export async function PUT(request: NextRequest) {
         hungerRating: payload.hungerRating,
         digestionRating: payload.digestionRating,
         sleepHours: payload.sleepHours ?? null,
-        strengthUpdate: payload.strengthUpdate ?? null,
-        blockerText: payload.blockerText ?? null,
-        notes: payload.notes ?? null,
+        strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
+        blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
+        notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
+        strengthUpdateEncrypted: payload.strengthUpdate
+          ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
+          : null,
+        blockerTextEncrypted: payload.blockerText
+          ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
+          : null,
+        notesEncrypted: payload.notes
+          ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
+          : null,
       },
     });
 

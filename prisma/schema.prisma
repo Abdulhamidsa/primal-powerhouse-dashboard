@@ -55,12 +55,25 @@ model Client {
   goals               String?
   notes               String?
   motivationalMessage String?
+  phoneEncrypted               String?
+  dietaryRestrictionsEncrypted String?
+  goalsEncrypted               String?
+  notesEncrypted               String?
+  motivationalMessageEncrypted String?
   lastSession         DateTime?
   nextSession         DateTime?
   sessionsCompleted   Int      @default(0)
   progressPhotos      String?
   goalCalories        Int?
   goalMacros          String? // JSON: {protein, carbs, fat}
+  consentAnalytics              Boolean   @default(false)
+  consentMarketingNotifications Boolean   @default(false)
+  consentOptionalTracking       Boolean   @default(false)
+  privacyUpdatedAt              DateTime?
+  deactivatedAt                 DateTime?
+  anonymizedAt                  DateTime?
+  deletionScheduledFor          DateTime?
+  deletedAt                     DateTime?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -75,6 +88,8 @@ model Client {
   sessions          Session[]
   healthMetrics     HealthMetric[]
   weeklyCheckIns    WeeklyCheckIn[]
+  privacyExportJobs PrivacyExportJob[]
+  deletionRequests  DeletionRequest[]
 
   @@map("clients")
 }
@@ -94,6 +109,7 @@ model HealthMetric {
   
   macros          String // JSON: {protein, carbs, fat}
   notes           String? // feedback/warnings
+  notesEncrypted  String?
   
   recordedAt      DateTime @default(now())
   createdAt       DateTime @default(now())
@@ -265,6 +281,7 @@ model Session {
 model Feedback {
   id        String   @id @default(cuid())
   message   String
+  messageEncrypted String?
   clientId  String
   client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -292,6 +309,9 @@ model WeeklyCheckIn {
   strengthUpdate      String?
   blockerText         String?
   notes               String?
+  strengthUpdateEncrypted String?
+  blockerTextEncrypted    String?
+  notesEncrypted          String?
 
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -300,6 +320,65 @@ model WeeklyCheckIn {
   @@index([clientId])
   @@index([weekStartDate])
   @@map("weekly_check_ins")
+}
+
+model PrivacyExportJob {
+  id                String   @id @default(cuid())
+  clientId          String
+  client            Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status            PrivacyExportStatus @default(PENDING)
+  format            PrivacyExportFormat @default(JSON_AND_CSV)
+  requestedAt       DateTime @default(now())
+  completedAt       DateTime?
+  expiresAt         DateTime
+  downloadTokenHash String?
+  downloadCount     Int      @default(0)
+  downloadedAt      DateTime?
+  payloadJson       String?
+  csvBundleJson     String?
+  storageKey        String?
+  error             String?
+
+  @@index([clientId])
+  @@index([expiresAt])
+  @@map("privacy_export_jobs")
+}
+
+model DeletionRequest {
+  id                   String   @id @default(cuid())
+  clientId             String
+  client               Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status               DeletionRequestStatus @default(REQUESTED)
+  requestedAt          DateTime @default(now())
+  gracePeriodDays      Int      @default(30)
+  scheduledHardDeleteAt DateTime
+  anonymizedAt         DateTime?
+  finalizedAt          DateTime?
+  cancelledAt          DateTime?
+  reason               String?
+  metadata             String?
+
+  @@index([clientId])
+  @@index([scheduledHardDeleteAt])
+  @@map("deletion_requests")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actorRole    String?
+  targetUserId String?
+  action       String
+  ipHash       String?
+  userAgent    String?
+  metadata     String?
+  createdAt    DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetUserId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 /* =========================
@@ -369,4 +448,23 @@ enum DifficultyLevel {
   INTERMEDIATE
   ADVANCED
   EXPERT
+}
+
+enum PrivacyExportStatus {
+  PENDING
+  READY
+  FAILED
+  EXPIRED
+}
+
+enum PrivacyExportFormat {
+  JSON
+  JSON_AND_CSV
+}
+
+enum DeletionRequestStatus {
+  REQUESTED
+  ANONYMIZED
+  FINALIZED
+  CANCELLED
 }

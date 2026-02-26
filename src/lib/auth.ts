@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type { NextRequest, NextResponse } from 'next/server';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const TOKEN_EXPIRY = '30d';
@@ -12,6 +13,8 @@ export interface AuthTokenPayload {
   userId: string;
   email: string;
   type: 'client' | 'admin';
+  iat?: number;
+  exp?: number;
 }
 
 export interface AuthUser {
@@ -49,7 +52,7 @@ export class AuthService {
     try {
       return jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
     } catch (error) {
-      console.error('Token verification failed:', error);
+      console.error('Token verification failed:', safeErrorMessage(error));
       return null;
     }
   }
@@ -94,7 +97,7 @@ export class AuthService {
     response.cookies.set(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
@@ -117,7 +120,7 @@ export class AuthService {
     response.cookies.set(AUTH_COOKIE_NAME, '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 0,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
