@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { Apple, UtensilsCrossed, Video, MessageSquare, Zap, Sun, Cloud } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
 import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCheckInCard';
+import { DailyNutritionCard } from '@/features/daily-nutrition/components/DailyNutritionCard';
+import { DailyTrainingCard } from '@/features/daily-training/components/DailyTrainingCard';
 
 const MOTIVATIONAL_QUOTES = [
   'The only bad workout is the one that did not happen.',
@@ -95,6 +97,10 @@ export default function UserDashboardPage() {
 
         {/* Daily Motivation Quote */}
         <WeeklyCheckInCard />
+
+        <DailyNutritionCard />
+
+        <DailyTrainingCard />
 
         {/* Daily Motivation Quote */}
         <div className="rounded-3xl border border-border bg-gradient-to-br from-accent/10 to-background p-6">

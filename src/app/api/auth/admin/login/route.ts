@@ -33,13 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Generate token
-    const token = AuthService.generateToken({
-      userId: user.id,
-      email: user.email,
-      type: 'admin',
-    });
-
     // Create response
     const response = NextResponse.json({
       success: true,
@@ -53,14 +46,18 @@ export async function POST(request: NextRequest) {
       redirect: '/admin/dashboard',
     });
 
-    // Set cookie via response headers
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-    });
+    AuthService.setAuthCookieOnResponse(
+      response,
+      {
+        userId: user.id,
+        email: user.email,
+        type: 'admin',
+      },
+      {
+        rememberMe: true,
+        requestHost: request.headers.get('host') ?? undefined,
+      }
+    );
 
     return response;
   } catch (error) {

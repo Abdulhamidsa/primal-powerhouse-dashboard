@@ -88,6 +88,8 @@ model Client {
   sessions          Session[]
   healthMetrics     HealthMetric[]
   weeklyCheckIns    WeeklyCheckIn[]
+  dailyNutritionLogs DailyNutritionLog[]
+  dailyTrainingLogs DailyTrainingLog[]
   privacyExportJobs PrivacyExportJob[]
   deletionRequests  DeletionRequest[]
 
@@ -322,6 +324,40 @@ model WeeklyCheckIn {
   @@map("weekly_check_ins")
 }
 
+model DailyNutritionLog {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dayDate    DateTime
+  status     DailyNutritionStatus
+  note       String?
+  submittedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([clientId, dayDate])
+  @@index([clientId])
+  @@index([dayDate])
+  @@map("daily_nutrition_logs")
+}
+
+model DailyTrainingLog {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dayDate     DateTime
+  status      DailyTrainingStatus
+  note        String?
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([clientId, dayDate])
+  @@index([clientId])
+  @@index([dayDate])
+  @@map("daily_training_logs")
+}
+
 model PrivacyExportJob {
   id                String   @id @default(cuid())
   clientId          String
@@ -467,4 +503,16 @@ enum DeletionRequestStatus {
   ANONYMIZED
   FINALIZED
   CANCELLED
+}
+
+enum DailyNutritionStatus {
+  ON_PLAN
+  PARTIAL
+  OFF_PLAN
+}
+
+enum DailyTrainingStatus {
+  DONE
+  PARTIAL
+  MISSED
 }

@@ -4,6 +4,8 @@ import { getSubdomainFromHostname } from '@/lib/subdomain';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const AUTH_COOKIE_NAME = 'auth-token';
+const ADMIN_AUTH_COOKIE_NAME = 'auth-token-admin';
+const CLIENT_AUTH_COOKIE_NAME = 'auth-token-client';
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
 type AuthPayload = {
@@ -73,12 +75,19 @@ export async function middleware(request: NextRequest) {
   // Keep subdomain for "/" routing only
   const subdomain = getSubdomainFromHostname(hostname);
 
-  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-  const payload = token ? await verifyJwt(token) : null;
+  const adminToken = request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ?? null;
+  const clientToken = request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? null;
+  const legacyToken = request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+
+  const adminPayload = adminToken ? await verifyJwt(adminToken) : null;
+  const clientPayload = clientToken ? await verifyJwt(clientToken) : null;
+  const legacyPayload = legacyToken ? await verifyJwt(legacyToken) : null;
+
+  const payload = adminPayload ?? clientPayload ?? legacyPayload;
 
   const isAuthenticated = Boolean(payload);
-  const isAdmin = payload?.type === 'admin';
-  const isClient = payload?.type === 'client';
+  const isAdmin = Boolean(adminPayload || payload?.type === 'admin');
+  const isClient = Boolean(clientPayload || payload?.type === 'client');
 
   // Allow API + PWA assets
   if (isApiPath(pathname) || isPwaAsset(pathname)) {

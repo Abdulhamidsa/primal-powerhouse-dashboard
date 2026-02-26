@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { AuthService, AUTH_COOKIE_NAME } from '@/lib/auth';
+import { AuthService } from '@/lib/auth';
 
 export type Role = 'client' | 'admin';
 
@@ -13,12 +13,7 @@ export type ApiAuthUser = {
 };
 
 export function requireApiAuth(request: NextRequest, role?: Role) {
-  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
-  if (!token) {
-    return { ok: false as const, res: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
-  }
-
-  const payload = AuthService.verifyToken(token) as ApiAuthUser | null;
+  const payload = AuthService.validateRequestAuth(request, role) as ApiAuthUser | null;
   if (!payload) {
     return { ok: false as const, res: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
   }

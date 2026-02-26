@@ -11,53 +11,61 @@ export async function GET(request: NextRequest) {
 
     const client = await (prisma as any).client.findUnique({
       where: { id: auth.user.userId },
-      select: {
-        consentAnalytics: true,
-        consentMarketingNotifications: true,
-        consentOptionalTracking: true,
-      },
     });
 
     if (!client) {
       return jsonWithCache({ error: 'Client not found' }, { status: 404 });
     }
 
+    const privacyExportJobModel = (prisma as any).privacyExportJob;
+    const deletionRequestModel = (prisma as any).deletionRequest;
+
     const [exportJobs, activeDeletionRequest] = await Promise.all([
-      (prisma as any).privacyExportJob.findMany({
-        where: { clientId: auth.user.userId },
-        orderBy: { requestedAt: 'desc' },
-        take: 5,
-        select: {
-          id: true,
-          status: true,
-          requestedAt: true,
-          completedAt: true,
-          expiresAt: true,
-          downloadedAt: true,
-          downloadCount: true,
-        },
-      }),
-      (prisma as any).deletionRequest.findFirst({
-        where: {
-          clientId: auth.user.userId,
-          status: { in: ['REQUESTED', 'ANONYMIZED'] },
-        },
-        orderBy: { requestedAt: 'desc' },
-        select: {
-          id: true,
-          status: true,
-          requestedAt: true,
-          scheduledHardDeleteAt: true,
-          gracePeriodDays: true,
-        },
-      }),
+      privacyExportJobModel
+        ? privacyExportJobModel.findMany({
+            where: { clientId: auth.user.userId },
+            orderBy: { requestedAt: 'desc' },
+            take: 5,
+            select: {
+              id: true,
+              status: true,
+              requestedAt: true,
+              completedAt: true,
+              expiresAt: true,
+              downloadedAt: true,
+              downloadCount: true,
+            },
+          })
+        : [],
+      deletionRequestModel
+        ? deletionRequestModel.findFirst({
+            where: {
+              clientId: auth.user.userId,
+              status: { in: ['REQUESTED', 'ANONYMIZED'] },
+            },
+            orderBy: { requestedAt: 'desc' },
+            select: {
+              id: true,
+              status: true,
+              requestedAt: true,
+              scheduledHardDeleteAt: true,
+              gracePeriodDays: true,
+            },
+          })
+        : null,
     ]);
+
+    const typedClient = client as {
+      consentAnalytics?: boolean;
+      consentMarketingNotifications?: boolean;
+      consentOptionalTracking?: boolean;
+    };
 
     return jsonWithCache({
       consents: {
-        analytics: Boolean(client.consentAnalytics),
-        marketingNotifications: Boolean(client.consentMarketingNotifications),
-        optionalTracking: Boolean(client.consentOptionalTracking),
+        analytics: Boolean(typedClient.consentAnalytics),
+        marketingNotifications: Boolean(typedClient.consentMarketingNotifications),
+        optionalTracking: Boolean(typedClient.consentOptionalTracking),
       },
       exportJobs: exportJobs.map((job: any) => ({
         ...job,

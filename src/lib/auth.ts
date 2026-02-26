@@ -8,6 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-i
 const TOKEN_EXPIRY = '30d';
 
 export const AUTH_COOKIE_NAME = 'auth-token';
+export const ADMIN_AUTH_COOKIE_NAME = 'auth-token-admin';
+export const CLIENT_AUTH_COOKIE_NAME = 'auth-token-client';
 
 export interface AuthTokenPayload {
   userId: string;
@@ -58,11 +60,21 @@ export class AuthService {
   }
 
   static getTokenFromRequest(request: NextRequest): string | null {
-    return request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+    return request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
   }
 
-  static validateRequestAuth(request: NextRequest): AuthTokenPayload | null {
-    const token = this.getTokenFromRequest(request);
+  static getTokenFromRequestForRole(request: NextRequest, role?: 'admin' | 'client'): string | null {
+    if (role === 'admin') {
+      return request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+    }
+    if (role === 'client') {
+      return request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+    }
+    return this.getTokenFromRequest(request);
+  }
+
+  static validateRequestAuth(request: NextRequest, role?: 'admin' | 'client'): AuthTokenPayload | null {
+    const token = this.getTokenFromRequestForRole(request, role);
     if (!token) return null;
     return this.verifyToken(token);
   }
@@ -94,14 +106,19 @@ export class AuthService {
     // Only set domain in production AND when not on localhost/IP
     const shouldSetDomain = Boolean(cookieDomain) && process.env.NODE_ENV === 'production' && !isLocalhost;
 
-    response.cookies.set(AUTH_COOKIE_NAME, token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
-    });
+    };
+
+    const roleCookieName = payload.type === 'admin' ? ADMIN_AUTH_COOKIE_NAME : CLIENT_AUTH_COOKIE_NAME;
+
+    response.cookies.set(roleCookieName, token, cookieOptions);
+    response.cookies.set(AUTH_COOKIE_NAME, token, cookieOptions);
   }
 
   static clearAuthCookieOnResponse(
@@ -117,23 +134,28 @@ export class AuthService {
 
     const shouldSetDomain = Boolean(cookieDomain) && process.env.NODE_ENV === 'production' && !isLocalhost;
 
-    response.cookies.set(AUTH_COOKIE_NAME, '', {
+    const clearOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
       maxAge: 0,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
-    });
+    };
+
+    response.cookies.set(AUTH_COOKIE_NAME, '', clearOptions);
+    response.cookies.set(ADMIN_AUTH_COOKIE_NAME, '', clearOptions);
+    response.cookies.set(CLIENT_AUTH_COOKIE_NAME, '', clearOptions);
   }
 }
 
 /**
  * Middleware helper for API routes
  */
-export function requireAuth(request: NextRequest): { error?: string; user?: AuthTokenPayload } {
-  const user = AuthService.validateRequestAuth(request);
+export function requireAuth(request: NextRequest, role?: 'admin' | 'client'): { error?: string; user?: AuthTokenPayload } {
+  const user = AuthService.validateRequestAuth(request, role);
   if (!user) return { error: 'Unauthorized' };
+  if (role && user.type !== role) return { error: 'Unauthorized' };
   return { user };
 }
 

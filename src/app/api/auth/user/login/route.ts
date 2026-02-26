@@ -45,12 +45,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const token = AuthService.generateToken({
-      userId: client.id,
-      email: client.email,
-      type: 'client',
-    });
-
     const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // example: 30d vs 1d
 
     const response = NextResponse.json({
@@ -58,13 +52,18 @@ export async function POST(request: NextRequest) {
       user: { id: client.id, name: client.name, email: client.email, coach: client.coach },
     });
 
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge,
-    });
+    AuthService.setAuthCookieOnResponse(
+      response,
+      {
+        userId: client.id,
+        email: client.email,
+        type: 'client',
+      },
+      {
+        rememberMe: maxAge > 60 * 60 * 24,
+        requestHost: request.headers.get('host') ?? undefined,
+      }
+    );
 
     return response;
   } catch (error) {

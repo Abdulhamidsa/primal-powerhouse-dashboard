@@ -13,9 +13,13 @@ export function useAuthRefresh() {
     // Function to refresh token
     const refreshToken = async () => {
       try {
+        const pathname = window.location.pathname || '';
+        const authRole = pathname.startsWith('/admin') ? 'admin' : pathname.startsWith('/user') ? 'client' : undefined;
+
         const response = await fetch('/api/auth/refresh', {
           method: 'POST',
           credentials: 'include',
+          headers: authRole ? { 'x-auth-role': authRole } : undefined,
         });
 
         if (response.ok) {

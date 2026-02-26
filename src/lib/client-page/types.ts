@@ -50,4 +50,4 @@ export interface MealAssignment {
   };
 }
 
-export type TabKey = 'overview' | 'videos' | 'meals' | 'progress';
+export type TabKey = 'overview' | 'videos' | 'meals' | 'progress' | 'client-health';

@@ -12,6 +12,16 @@ function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
 }
 
+function isSchemaMismatchError(error: unknown): boolean {
+  const message = String(error);
+  return (
+    message.includes('Unknown argument') ||
+    message.includes('Unknown field') ||
+    message.includes('Unknown arg') ||
+    message.includes('Invalid `prisma.client.update()` invocation')
+  );
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const csrf = assertSameOrigin(request);
@@ -33,15 +43,21 @@ export async function PUT(request: NextRequest) {
 
     const { analytics, marketingNotifications, optionalTracking } = parsed.data;
 
-    await (prisma as any).client.update({
-      where: { id: auth.user.userId },
-      data: {
-        consentAnalytics: analytics,
-        consentMarketingNotifications: marketingNotifications,
-        consentOptionalTracking: optionalTracking,
-        privacyUpdatedAt: new Date(),
-      },
-    });
+    try {
+      await (prisma as any).client.update({
+        where: { id: auth.user.userId },
+        data: {
+          consentAnalytics: analytics,
+          consentMarketingNotifications: marketingNotifications,
+          consentOptionalTracking: optionalTracking,
+          privacyUpdatedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      if (!isSchemaMismatchError(error)) {
+        throw error;
+      }
+    }
 
     await logAuditEvent({
       actorId: auth.user.userId,

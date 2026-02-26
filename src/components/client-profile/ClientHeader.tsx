@@ -222,7 +222,9 @@ export function ClientHeader({
                           ? 'Vid'
                           : t.key === 'meals'
                             ? 'Meals'
-                            : 'Prog'}
+                            : t.key === 'client-health'
+                              ? 'Health'
+                              : 'Prog'}
                     </span>
                   </button>
                 );

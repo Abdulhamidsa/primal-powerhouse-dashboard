@@ -9,6 +9,34 @@ function shouldKeepPlaintext(): boolean {
   return process.env.PRIVACY_ENCRYPTION_STRICT !== 'true';
 }
 
+function isMissingFieldEncryptionKeyError(error: unknown): boolean {
+  return String(error).includes('Field encryption key is not configured');
+}
+
+function encryptIfAvailable(value: string | null, context: string): string | null {
+  if (!value) return null;
+  try {
+    return encryptField(value, context);
+  } catch (error) {
+    if (isMissingFieldEncryptionKeyError(error)) return null;
+    throw error;
+  }
+}
+
+function decryptWithPlaintextFallback(
+  encryptedValue: string | null,
+  plaintextValue: string | null,
+  context: string
+): string | null {
+  if (!encryptedValue) return plaintextValue;
+  try {
+    return decryptOrFallback(encryptedValue, context) ?? plaintextValue;
+  } catch (error) {
+    if (isMissingFieldEncryptionKeyError(error)) return plaintextValue;
+    throw error;
+  }
+}
+
 function normalizeJsonString(value: unknown): string | null {
   if (value == null) return null;
   if (typeof value === 'string') return value;
@@ -47,34 +75,46 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         (!client.phoneEncrypted && client.phone) ||
         (!client.motivationalMessageEncrypted && client.motivationalMessage)
       ) {
-        await (prisma as any).client.update({
-          where: { id: client.id },
-          data: {
-            notesEncrypted: client.notes ? encryptField(client.notes, `client:${client.id}:notes`) : null,
-            goalsEncrypted: client.goals ? encryptField(client.goals, `client:${client.id}:goals`) : null,
-            dietaryRestrictionsEncrypted: client.dietaryRestrictions
-              ? encryptField(client.dietaryRestrictions, `client:${client.id}:dietaryRestrictions`)
-              : null,
-            phoneEncrypted: client.phone ? encryptField(client.phone, `client:${client.id}:phone`) : null,
-            motivationalMessageEncrypted: client.motivationalMessage
-              ? encryptField(client.motivationalMessage, `client:${client.id}:motivationalMessage`)
-              : null,
-          },
-        });
+        try {
+          await (prisma as any).client.update({
+            where: { id: client.id },
+            data: {
+              notesEncrypted: encryptIfAvailable(client.notes, `client:${client.id}:notes`),
+              goalsEncrypted: encryptIfAvailable(client.goals, `client:${client.id}:goals`),
+              dietaryRestrictionsEncrypted: encryptIfAvailable(
+                client.dietaryRestrictions,
+                `client:${client.id}:dietaryRestrictions`
+              ),
+              phoneEncrypted: encryptIfAvailable(client.phone, `client:${client.id}:phone`),
+              motivationalMessageEncrypted: encryptIfAvailable(
+                client.motivationalMessage,
+                `client:${client.id}:motivationalMessage`
+              ),
+            },
+          });
+        } catch (error) {
+          if (!isMissingFieldEncryptionKeyError(error)) {
+            throw error;
+          }
+        }
       }
 
-      const goalsRaw = decryptOrFallback(client.goalsEncrypted, `client:${client.id}:goals`) ?? client.goals;
-      const dietaryRaw =
-        decryptOrFallback(client.dietaryRestrictionsEncrypted, `client:${client.id}:dietaryRestrictions`) ??
-        client.dietaryRestrictions;
+      const goalsRaw = decryptWithPlaintextFallback(client.goalsEncrypted, client.goals, `client:${client.id}:goals`);
+      const dietaryRaw = decryptWithPlaintextFallback(
+        client.dietaryRestrictionsEncrypted,
+        client.dietaryRestrictions,
+        `client:${client.id}:dietaryRestrictions`
+      );
 
       const clientData = {
         ...client,
-        phone: decryptOrFallback(client.phoneEncrypted, `client:${client.id}:phone`) ?? client.phone,
-        notes: decryptOrFallback(client.notesEncrypted, `client:${client.id}:notes`) ?? client.notes,
-        motivationalMessage:
-          decryptOrFallback(client.motivationalMessageEncrypted, `client:${client.id}:motivationalMessage`) ??
+        phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${client.id}:phone`),
+        notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${client.id}:notes`),
+        motivationalMessage: decryptWithPlaintextFallback(
+          client.motivationalMessageEncrypted,
           client.motivationalMessage,
+          `client:${client.id}:motivationalMessage`
+        ),
         goals: goalsRaw ? JSON.parse(goalsRaw) : [],
         dietaryRestrictions: dietaryRaw ? JSON.parse(dietaryRaw) : [],
         progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
@@ -126,13 +166,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       notes: shouldKeepPlaintext() ? notesRaw : null,
       motivationalMessage: shouldKeepPlaintext() ? motivationalRaw : null,
       phone: shouldKeepPlaintext() ? phoneRaw : null,
-      goalsEncrypted: goalsRaw ? encryptField(goalsRaw, `client:${id}:goals`) : null,
-      dietaryRestrictionsEncrypted: dietaryRaw ? encryptField(dietaryRaw, `client:${id}:dietaryRestrictions`) : null,
-      notesEncrypted: notesRaw ? encryptField(notesRaw, `client:${id}:notes`) : null,
-      motivationalMessageEncrypted: motivationalRaw
-        ? encryptField(motivationalRaw, `client:${id}:motivationalMessage`)
-        : null,
-      phoneEncrypted: phoneRaw ? encryptField(phoneRaw, `client:${id}:phone`) : null,
+      goalsEncrypted: encryptIfAvailable(goalsRaw, `client:${id}:goals`),
+      dietaryRestrictionsEncrypted: encryptIfAvailable(dietaryRaw, `client:${id}:dietaryRestrictions`),
+      notesEncrypted: encryptIfAvailable(notesRaw, `client:${id}:notes`),
+      motivationalMessageEncrypted: encryptIfAvailable(motivationalRaw, `client:${id}:motivationalMessage`),
+      phoneEncrypted: encryptIfAvailable(phoneRaw, `client:${id}:phone`),
     };
 
     const client = await (prisma as any).client.update({
@@ -141,18 +179,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     // Parse JSON fields for response
-    const goals = decryptOrFallback(client.goalsEncrypted, `client:${id}:goals`) ?? client.goals;
-    const dietary =
-      decryptOrFallback(client.dietaryRestrictionsEncrypted, `client:${id}:dietaryRestrictions`) ??
-      client.dietaryRestrictions;
+    const goals = decryptWithPlaintextFallback(client.goalsEncrypted, client.goals, `client:${id}:goals`);
+    const dietary = decryptWithPlaintextFallback(
+      client.dietaryRestrictionsEncrypted,
+      client.dietaryRestrictions,
+      `client:${id}:dietaryRestrictions`
+    );
 
     const clientData = {
       ...client,
-      phone: decryptOrFallback(client.phoneEncrypted, `client:${id}:phone`) ?? client.phone,
-      notes: decryptOrFallback(client.notesEncrypted, `client:${id}:notes`) ?? client.notes,
-      motivationalMessage:
-        decryptOrFallback(client.motivationalMessageEncrypted, `client:${id}:motivationalMessage`) ??
+      phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${id}:phone`),
+      notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${id}:notes`),
+      motivationalMessage: decryptWithPlaintextFallback(
+        client.motivationalMessageEncrypted,
         client.motivationalMessage,
+        `client:${id}:motivationalMessage`
+      ),
       goals: goals ? JSON.parse(goals) : [],
       dietaryRestrictions: dietary ? JSON.parse(dietary) : [],
       progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],

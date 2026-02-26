@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
-import { Users, ChevronLeft, Film, Utensils, BarChart, Info } from 'lucide-react';
+import { Users, ChevronLeft, Film, Utensils, BarChart, Info, Activity } from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, TabKey } from '@/lib/client-page/types';
 import { calculateBMI } from '@/lib/health/calculators';
@@ -14,6 +14,7 @@ import { ClientQuickStats } from '@/components/client-profile/ClientQuickStats';
 import { VideosTab } from '@/components/client-profile/VideosTab';
 import { MealsTab } from '@/components/client-profile/MealsTab';
 import { NutritionAnalytics } from '@/components/client-profile/NutritionAnalytics';
+import { ClientHealthTab } from '@/features/client-health/components/ClientHealthTab';
 import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
@@ -138,6 +139,7 @@ export default function ClientProfilePage() {
     { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
     { key: 'videos', label: 'Videos', icon: <Film size={16} /> },
     { key: 'meals', label: 'Meals', icon: <Utensils size={16} /> },
+    { key: 'client-health', label: 'Health', icon: <Activity size={16} /> },
     { key: 'progress', label: 'Progress', icon: <BarChart size={16} /> },
   ];
 
@@ -672,6 +674,8 @@ export default function ClientProfilePage() {
         )}
 
         {activeTab === 'progress' && <NutritionAnalytics assignments={mealAssignments} />}
+
+        {activeTab === 'client-health' && <ClientHealthTab clientId={clientId} />}
       </main>
 
       {selectedClient && (
