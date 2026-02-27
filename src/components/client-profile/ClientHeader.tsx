@@ -82,7 +82,7 @@ export function ClientHeader({
 
   return (
     <header
-      className="sticky top-0 z-40 border-b backdrop-blur-sm rounded-lg"
+      className=" z-40 border-b backdrop-blur-sm rounded-lg"
       style={{
         borderColor: 'var(--color-border)',
         background: 'rgba(20,20,20,0.62)',
@@ -204,7 +204,7 @@ export function ClientHeader({
                     key={t.key}
                     onClick={() => onTabChangeAction(t.key)}
                     className={cx(
-                      'flex items-center justify-center gap-2 p-4 rounded-lg sm:text-sm font-medium transition active:scale-[0.99]',
+                      'flex items-center flex-wrap justify-center gap-2 p-2 rounded-lg sm:text-sm font-medium transition active:scale-[0.99]',
                       isActive ? 'shadow-sm' : 'opacity-80 hover:opacity-100'
                     )}
                     style={{
