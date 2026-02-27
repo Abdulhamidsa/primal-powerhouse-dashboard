@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -66,6 +66,9 @@ const userNavItems: NavItem[] = [
     icon: Flame,
     description: 'Workout videos',
   },
+];
+
+const userAccountMenuItems: NavItem[] = [
   {
     name: 'Profile',
     href: '/user/profile',
@@ -154,12 +157,38 @@ export default function Navigation({
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
 
   useEffect(() => {
     if (window.innerWidth < 1024) setCollapsed(true);
   }, []);
+
+  useEffect(() => {
+    setAccountMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      if (!accountMenuRef.current) return;
+      const target = event.target as Node;
+      if (!accountMenuRef.current.contains(target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [accountMenuOpen]);
 
   const dashboardPath = userType === 'admin' ? '/admin/dashboard' : '/user/dashboard';
 
@@ -215,12 +244,57 @@ export default function Navigation({
       </aside>
 
       <div className="flex-1 flex flex-col min-h-0">
-        <header className="lg:hidden flex items-center justify-center p-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-          <div className="flex items-center space-x-2">
-            <Link href={dashboardPath} className="w-20 h-16 rounded-lg flex items-center justify-center cursor-pointer">
-              <Image src="/logo.png" alt="Logo" width={100} height={100} />
+        <header
+          className={[
+            'flex items-center justify-between px-8 p-2 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20',
+            userType === 'admin' ? 'lg:hidden' : '',
+          ].join(' ')}
+        >
+          <div className="flex items-center gap-3">
+            <Link href={dashboardPath} className="w-16 h-16 rounded-lg flex items-center justify-center cursor-pointer">
+              <Image src="/logo.png" alt="Logo" width={80} height={80} />
             </Link>
           </div>
+
+          {userType === 'user' ? (
+            <div ref={accountMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setAccountMenuOpen(v => !v)}
+                aria-label="Open account menu"
+                className="inline-flex border rounded-full items-center p-2 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <User size={18} />
+              </button>
+
+              {accountMenuOpen && (
+                <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-card p-1.5 shadow-lg">
+                  {userAccountMenuItems.map(item => {
+                    const Icon = item.icon;
+                    const active = isActivePath(pathname, item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={[
+                          'flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors',
+                          active
+                            ? 'bg-muted/60 text-foreground'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                        ].join(' ')}
+                      >
+                        <Icon size={15} />
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div />
+          )}
         </header>
 
         <main className="flex-1 overflow-y-auto lg:p-6 bg-background pb-24 lg:pb-6">

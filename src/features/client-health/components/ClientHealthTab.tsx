@@ -3,7 +3,10 @@
 import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUp, Search } from 'lucide-react';
 import { useClientHealth } from '@/features/client-health/hooks/useClientHealth';
-import type { WeeklyComplianceBreakdown } from '@/features/client-health/types/clientHealth.types';
+import type {
+  DailyComplianceBreakdown,
+  WeeklyComplianceBreakdown,
+} from '@/features/client-health/types/clientHealth.types';
 
 function formatPercent(value: number | null): string {
   if (value == null) return 'No Data';
@@ -30,21 +33,27 @@ function riskLabel(status: WeeklyComplianceBreakdown['riskStatus']): string {
   return 'No Data';
 }
 
+function formatDateLabel(dateKey: string): string {
+  const date = new Date(`${dateKey}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return dateKey;
+  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 export function ClientHealthTab({ clientId }: { clientId: string }) {
   const { data, isLoading, error } = useClientHealth(clientId);
   const [query, setQuery] = useState('');
 
   const history = useMemo(() => {
-    const source = data?.history ?? [];
+    const source = data?.dailyHistory ?? [];
     if (!query.trim()) return source;
 
     const term = query.toLowerCase();
     return source.filter(row => {
-      const week = row.weekStartDate.toLowerCase();
+      const date = row.dateKey.toLowerCase();
       const risk = riskLabel(row.riskStatus).toLowerCase();
-      return week.includes(term) || risk.includes(term);
+      return date.includes(term) || risk.includes(term);
     });
-  }, [data?.history, query]);
+  }, [data?.dailyHistory, query]);
 
   if (isLoading) {
     return (
@@ -103,7 +112,7 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
         >
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            Weekly Check-In
+            Check-In Completion
           </p>
           <p className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
             {formatPercent(data.currentWeek.checkInCompliance)}
@@ -130,14 +139,14 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
       >
         <div className="flex items-center justify-between gap-3 mb-4">
           <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-            Weekly Trend History
+            Daily Compliance History
           </h3>
           <div className="relative">
             <Search size={14} className="absolute left-2.5 top-2.5" style={{ color: 'var(--color-text-muted)' }} />
             <input
               value={query}
               onChange={event => setQuery(event.target.value)}
-              placeholder="Search weeks or risk"
+              placeholder="Search date or risk"
               className="pl-8 pr-3 py-2 text-sm rounded-lg border"
               style={{
                 background: 'var(--color-bg-alt)',
@@ -152,7 +161,7 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b" style={{ color: 'var(--color-text-muted)', borderColor: 'var(--color-border)' }}>
-                <th className="text-left py-2">Week</th>
+                <th className="text-left py-2">Date</th>
                 <th className="text-left py-2">Training</th>
                 <th className="text-left py-2">Nutrition</th>
                 <th className="text-left py-2">Overall</th>
@@ -162,13 +171,13 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
               </tr>
             </thead>
             <tbody>
-              {history.map(row => (
+              {history.map((row: DailyComplianceBreakdown) => (
                 <tr
-                  key={row.weekStartDate}
+                  key={row.dateKey}
                   className="border-b"
                   style={{ color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
                 >
-                  <td className="py-2">{row.weekStartDate}</td>
+                  <td className="py-2">{formatDateLabel(row.dateKey)}</td>
                   <td className="py-2">{formatPercent(row.trainingCompliance)}</td>
                   <td className="py-2">{formatPercent(row.nutritionCompliance)}</td>
                   <td className="py-2">{formatPercent(row.overallCompliance)}</td>

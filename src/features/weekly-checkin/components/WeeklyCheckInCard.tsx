@@ -20,14 +20,14 @@ export function WeeklyCheckInCard() {
   const { checkIn, status, isLoading } = useWeeklyCheckInCurrentWeek();
 
   if (isLoading) {
-    return <div className="h-40 w-full animate-pulse rounded-3xl border border-border bg-card" />;
+    return <div className="h-40 w-full animate-pulse rounded-3xl border border-border/70 bg-card/80" />;
   }
 
   const dueLabel = status === 'overdue' ? 'Overdue' : status === 'due' ? 'Due' : 'Completed';
 
   if (!checkIn) {
     return (
-      <Card className="rounded-3xl border-border">
+      <Card className="rounded-3xl border-border/70 bg-card/90">
         <CardHeader className="space-y-3 pb-3">
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2">
@@ -48,7 +48,7 @@ export function WeeklyCheckInCard() {
   }
 
   return (
-    <Card className="rounded-3xl border-border">
+    <Card className="rounded-3xl border-border/70 bg-card/90">
       <CardHeader className="space-y-3 pb-2">
         <div className="flex items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2">
@@ -60,7 +60,7 @@ export function WeeklyCheckInCard() {
         <CardDescription>Submitted {formatDateLabel(checkIn.submittedAt)}</CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/20 p-3">
+        <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-3">
           <div className="inline-flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-accent" />
             <p className="text-sm font-medium text-foreground">Weekly check-in completed</p>

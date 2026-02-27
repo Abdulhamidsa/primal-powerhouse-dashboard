@@ -51,7 +51,7 @@ function serializeCheckIn(record: any) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request);
+    const { error, user } = requireAuth(request, 'client');
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request);
+    const { error, user } = requireAuth(request, 'client');
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -184,6 +184,12 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error('[WEEKLY_CHECKIN_PUT] Failed:', error);
+
+    const message = String(error);
+    if (message.includes('Foreign key constraint') || message.includes('P2003')) {
+      return jsonWithCache({ error: 'Client profile not found for this session' }, { status: 400 });
+    }
+
     return jsonWithCache({ error: 'Failed to save weekly check-in' }, { status: 500 });
   }
 }

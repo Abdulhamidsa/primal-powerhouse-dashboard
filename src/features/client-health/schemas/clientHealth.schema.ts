@@ -22,6 +22,17 @@ export const weeklyComplianceBreakdownSchema = z.object({
   }),
 });
 
+export const dailyComplianceBreakdownSchema = z.object({
+  dateKey: z.string(),
+  trainingCompliance: z.number(),
+  nutritionCompliance: z.number(),
+  overallCompliance: z.number(),
+  riskStatus: complianceRiskStatusSchema,
+  trend: complianceTrendSchema,
+  trendDelta: z.number().nullable(),
+  lastCheckInDate: z.string().nullable(),
+});
+
 export const clientHealthResponseSchema = z.object({
   client: z.object({
     id: z.string(),
@@ -37,4 +48,5 @@ export const clientHealthResponseSchema = z.object({
   }),
   currentWeek: weeklyComplianceBreakdownSchema,
   history: z.array(weeklyComplianceBreakdownSchema),
+  dailyHistory: z.array(dailyComplianceBreakdownSchema),
 });

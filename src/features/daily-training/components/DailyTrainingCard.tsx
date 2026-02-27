@@ -39,22 +39,30 @@ export function DailyTrainingCard() {
 
   return (
     <div
-      className="rounded-3xl border p-6"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      className="rounded-3xl border p-4 md:p-5"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-card)' }}
     >
-      <div className="flex items-start gap-3 mb-4">
-        <Dumbbell className="w-6 h-6 mt-0.5" style={{ color: 'var(--color-accent)' }} />
+      <div className="mb-4 flex items-start gap-3">
+        <div
+          className="grid h-9 w-9 place-items-center rounded-full"
+          style={{ background: 'var(--color-accent-muted)' }}
+        >
+          <Dumbbell className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
+        </div>
         <div>
-          <p className="text-sm font-medium" style={{ color: 'var(--color-accent)' }}>
-            Today Training Check
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+            Training
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            How did training go today?
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            Mark today&apos;s status.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div
+        className="grid grid-cols-3 gap-2 rounded-2xl"
+        style={{ background: 'var(--color-bg-alt)', padding: '0.35rem' }}
+      >
         {OPTIONS.map(option => {
           const isActive = selectedStatus === option.status;
           return (
@@ -63,25 +71,22 @@ export function DailyTrainingCard() {
               type="button"
               disabled={isLoading || isSaving}
               onClick={() => handleSelect(option.status)}
-              className="rounded-2xl border p-4 text-left transition active:scale-[0.99]"
+              className="rounded-xl border px-2 py-2.5 text-center transition active:scale-[0.99]"
               style={{
                 borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                background: isActive ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+                background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
                 opacity: isLoading || isSaving ? 0.7 : 1,
               }}
             >
-              <p className="font-semibold" style={{ color: 'var(--color-text)' }}>
+              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                 {option.label}
-              </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                {option.helper}
               </p>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-3 min-h-5">
+      <div className="mt-3 min-h-5 px-1">
         {errorMessage ? (
           <p className="text-xs" style={{ color: 'var(--color-danger)' }}>
             {errorMessage}

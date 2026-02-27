@@ -3,8 +3,7 @@
 import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { useUserData } from '@/hooks/useUserData';
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Apple, UtensilsCrossed, Video, MessageSquare, Zap, Sun, Cloud } from 'lucide-react';
+import { CalendarDays, MessageSquare, Sparkles, Sun, Cloud } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
 import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCheckInCard';
 import { DailyNutritionCard } from '@/features/daily-nutrition/components/DailyNutritionCard';
@@ -25,11 +24,8 @@ const MOTIVATIONAL_QUOTES = [
 
 export default function UserDashboardPage() {
   const { user, error, isLoading } = useUserData();
-  const router = useRouter();
   const [dailyQuote, setDailyQuote] = useState('');
   const [greeting, setGreeting] = useState({ text: '', icon: null as React.ReactNode });
-
-  console.log('User data:', user, 'Error:', error);
 
   useMotivationNotification(user?.motivationalMessage);
 
@@ -80,104 +76,96 @@ export default function UserDashboardPage() {
   }
 
   const firstName = user?.name?.split(' ')[0] || 'Member';
+  const todayLabel = new Date().toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+  const coachMessage = user?.motivationalMessage ?? null;
 
   return (
-    <div className="px-4 py-6 md:px-6">
-      <div className="mx-auto max-w-2xl space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            {greeting.icon && <div className="w-8 h-8 text-accent">{greeting.icon}</div>}
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              {greeting.text}, {firstName}!
-            </h1>
-          </div>
-          <p className="text-muted-foreground">Welcome back to your fitness journey</p>
-        </div>
+    <div className="px-4 py-5 md:px-6 md:py-7">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-accent/20 via-card to-background px-5 py-6 md:px-7 md:py-8">
+          <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-accent/20 blur-3xl" />
+          <div className="pointer-events-none absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-accent/10 blur-2xl" />
 
-        {/* Daily Motivation Quote */}
-        <WeeklyCheckInCard />
-
-        <DailyNutritionCard />
-
-        <DailyTrainingCard />
-
-        {/* Daily Motivation Quote */}
-        <div className="rounded-3xl border border-border bg-gradient-to-br from-accent/10 to-background p-6">
-          <div className="flex items-start gap-3">
-            <Zap className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
-            <div>
-              <p className="text-sm font-medium text-accent mb-2">Today&apos;s Motivation</p>
-              <p className="text-lg font-semibold text-foreground leading-relaxed">&quot;{dailyQuote}&quot;</p>
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-3">
+                {greeting.icon && (
+                  <div className="grid h-9 w-9 place-items-center rounded-full border border-border/70 bg-background/70 text-accent">
+                    {greeting.icon}
+                  </div>
+                )}
+                <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                  {greeting.text}, {firstName}.
+                </h1>
+              </div>
+              <p className="text-sm text-foreground/80">Your daily compliance overview is ready.</p>
+            </div>
+            <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur">
+              <CalendarDays size={14} />
+              {todayLabel}
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Coach Message */}
-        {user?.motivationalMessage && (
-          <div className="rounded-3xl border border-border bg-card p-6">
-            <div className="flex items-start gap-3">
-              <MessageSquare className="w-6 h-6 text-foreground/60 flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Message from your coach</p>
-                <p className="text-foreground leading-relaxed">{user.motivationalMessage}</p>
+        <main className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <section className="space-y-6 xl:col-span-8">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today</p>
+                <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
+                  Complete both cards
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <DailyNutritionCard />
+                <DailyTrainingCard />
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            onClick={() => router.push('/user/meals')}
-            className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <UtensilsCrossed className="w-6 h-6 text-foreground/60 group-hover:text-accent transition-colors" />
-              <span className="text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                →
-              </span>
+            <div className="space-y-3">
+              <p className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Weekly Check-In
+              </p>
+              <WeeklyCheckInCard />
             </div>
-            <h3 className="font-semibold text-foreground">My Meals</h3>
-            <p className="text-xs text-muted-foreground mt-1">View your meal plans</p>
-          </button>
+          </section>
 
-          <button
-            onClick={() => router.push('/user/training')}
-            className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Video className="w-6 h-6 text-foreground/60 group-hover:text-accent transition-colors" />
-              <span className="text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                →
-              </span>
+          <aside className="space-y-4 xl:col-span-4">
+            <div className="rounded-3xl border border-border/70 bg-gradient-to-br from-accent/15 via-background to-background p-5">
+              <div className="flex items-start gap-3">
+                <MessageSquare className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-accent mb-1">Coach Inbox</p>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {coachMessage || 'No new coach messages right now.'}
+                  </p>
+                </div>
+              </div>
             </div>
-            <h3 className="font-semibold text-foreground">Training</h3>
-            <p className="text-xs text-muted-foreground mt-1">View your workouts</p>
-          </button>
 
-          <button
-            onClick={() => router.push('/user/profile')}
-            className="group rounded-3xl border border-border bg-card p-6 text-left transition-all hover:border-accent hover:shadow-md active:scale-95 md:col-span-2"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Apple className="w-6 h-6 text-foreground/60 group-hover:text-accent transition-colors" />
-              <span className="text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                →
-              </span>
+            <div className="rounded-3xl border border-border/70 bg-card/80 p-5">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-accent mb-1">Daily Motivation</p>
+                  <p className="text-sm text-foreground leading-relaxed">&quot;{dailyQuote}&quot;</p>
+                </div>
+              </div>
             </div>
-            <h3 className="font-semibold text-foreground">Profile</h3>
-            <p className="text-xs text-muted-foreground mt-1">Manage your info</p>
-          </button>
-        </div>
 
-        {/* Motivational Banner */}
-        <div className="rounded-3xl border border-border bg-gradient-to-r from-accent/5 via-transparent to-accent/5 p-6 text-center">
-          <p className="text-sm text-foreground/70">
-            <span className="font-semibold text-foreground">Every action you take</span> brings you closer to your
-            goals. You&apos;ve got this!
-          </p>
-        </div>
+            <div className="rounded-2xl border border-border/70 bg-gradient-to-r from-accent/10 via-transparent to-accent/10 px-4 py-3">
+              <p className="text-xs text-foreground/70">
+                <span className="font-semibold text-foreground">Consistency over intensity.</span> Keep logging daily,
+                one day at a time.
+              </p>
+            </div>
+          </aside>
+        </main>
       </div>
     </div>
   );

@@ -37,6 +37,17 @@ export type WeeklyComplianceBreakdown = {
   };
 };
 
+export type DailyComplianceBreakdown = {
+  dateKey: string;
+  trainingCompliance: number;
+  nutritionCompliance: number;
+  overallCompliance: number;
+  riskStatus: ComplianceRiskStatus;
+  trend: ComplianceTrend;
+  trendDelta: number | null;
+  lastCheckInDate: string | null;
+};
+
 export type ClientHealthSummary = {
   totalActiveClients: number;
   clientsAtRisk: number;
@@ -54,4 +65,5 @@ export type ClientHealthResponse = {
   summary: ClientHealthSummary;
   currentWeek: WeeklyComplianceBreakdown;
   history: WeeklyComplianceBreakdown[];
+  dailyHistory: DailyComplianceBreakdown[];
 };
