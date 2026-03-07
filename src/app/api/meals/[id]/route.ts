@@ -172,6 +172,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const view = searchParams.get('view');
+    const referer = request.headers.get('referer') ?? '';
+
+    let fromUserPage = false;
+    if (referer) {
+      try {
+        const refererPath = new URL(referer).pathname;
+        fromUserPage = refererPath.startsWith('/user');
+      } catch {
+        fromUserPage = false;
+      }
+    }
     const meal = await unstable_cache(
       async () =>
         prisma.meal.findUnique({
@@ -216,7 +227,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     };
 
     const authUser = AuthService.validateRequestAuth(request);
-    if (view === 'client' || authUser?.type === 'client') {
+    if (view === 'client' || authUser?.type === 'client' || fromUserPage) {
       return NextResponse.json({
         ...parsedMeal,
         ingredients: ingredients.map(toClientDisplayIngredient).filter(Boolean),
