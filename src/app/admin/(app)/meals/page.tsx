@@ -30,7 +30,7 @@ interface Meal {
         displayUnitLabel?: string | null;
       }
   >;
-  instructions: string[];
+  instructions: Array<string | { id?: string; step?: number; instruction?: string }>;
   prepTime: number;
   cookTime: number;
   servings: number;
@@ -96,12 +96,22 @@ export default function MealsPage() {
       };
     });
 
-    // Convert string instructions to MealInstruction objects
-    const instructionsConverted: MealInstruction[] = meal.instructions.map((ins, index) => ({
-      id: `ins-${index}`,
-      step: index + 1,
-      instruction: ins,
-    }));
+    // Support both legacy string instructions and newer object instruction payloads.
+    const instructionsConverted: MealInstruction[] = meal.instructions.map((ins, index) => {
+      if (typeof ins === 'string') {
+        return {
+          id: `ins-${index}`,
+          step: index + 1,
+          instruction: ins,
+        };
+      }
+
+      return {
+        id: ins.id || `ins-${index}`,
+        step: typeof ins.step === 'number' ? ins.step : index + 1,
+        instruction: typeof ins.instruction === 'string' ? ins.instruction : '',
+      };
+    });
 
     return {
       id: meal.id,

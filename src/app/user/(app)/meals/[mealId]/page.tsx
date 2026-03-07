@@ -14,8 +14,8 @@ interface Meal {
   carbs: number;
   fat: number;
   fiber?: number;
-  ingredients?: string | string[];
-  instructions?: string | string[];
+  ingredients?: unknown;
+  instructions?: unknown;
   prepTime?: number;
   cookTime?: number;
   servings: number;
@@ -60,8 +60,7 @@ export default function MealDetailPage() {
     return `${hours}h${remainingMinutes > 0 ? ` ${remainingMinutes}m` : ''}`;
   };
 
-  const fallback =
-    'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=60';
+  const fallback = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=60';
 
   const imageSrc = meal?.imageUrl?.trim() ? meal.imageUrl : fallback;
 
@@ -279,11 +278,15 @@ function StatRow({ icon, label, value }: { icon?: React.ReactNode; label: string
   );
 }
 
-function normalizeToList(value?: string | string[]) {
+function normalizeToList(value?: unknown): string[] {
   if (!value) return [];
 
   if (Array.isArray(value)) {
-    return value.map(v => String(v).trim()).filter(Boolean);
+    return value.flatMap(item => normalizeObjectOrPrimitive(item)).filter(Boolean);
+  }
+
+  if (typeof value === 'object') {
+    return normalizeObjectOrPrimitive(value);
   }
 
   const raw = String(value).trim();
@@ -313,4 +316,46 @@ function normalizeToList(value?: string | string[]) {
     .filter(Boolean);
 
   return comma.length > 1 ? comma : [raw];
+}
+
+function normalizeObjectOrPrimitive(item: unknown): string[] {
+  if (item === null || item === undefined) return [];
+
+  if (typeof item === 'string') {
+    const trimmed = item.trim();
+    return trimmed ? [trimmed] : [];
+  }
+
+  if (typeof item === 'number' || typeof item === 'boolean') {
+    return [String(item)];
+  }
+
+  if (typeof item !== 'object') return [];
+
+  const record = item as Record<string, unknown>;
+
+  const instruction = toCleanString(record.instruction);
+  if (instruction) return [instruction];
+
+  const name = toCleanString(record.name);
+  const amount = toCleanString(record.amount);
+  const unit = toCleanString(record.unit);
+  const notes = toCleanString(record.notes);
+
+  const base = [amount, unit, name].filter(Boolean).join(' ').trim();
+  if (base) {
+    return [notes ? `${base} (${notes})` : base];
+  }
+
+  const fallback = Object.values(record)
+    .map(value => (typeof value === 'string' || typeof value === 'number' ? String(value).trim() : ''))
+    .filter(Boolean)
+    .join(' - ');
+
+  return fallback ? [fallback] : [];
+}
+
+function toCleanString(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
 }
