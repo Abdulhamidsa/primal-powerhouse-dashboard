@@ -51,7 +51,11 @@ function isValidSlotMealType(value: string): value is (typeof mealTypes)[number]
 
 function normalizeIngredientForPersistence(ingredient: unknown): unknown {
   if (typeof ingredient === 'string') {
-    return ingredient;
+    const trimmed = ingredient.trim();
+    if (!trimmed || trimmed === '[object Object]') {
+      return '';
+    }
+    return trimmed;
   }
 
   if (!ingredient || typeof ingredient !== 'object') {
@@ -59,7 +63,14 @@ function normalizeIngredientForPersistence(ingredient: unknown): unknown {
   }
 
   const value = ingredient as Record<string, unknown>;
-  const name = typeof value.name === 'string' ? value.name : '';
+  const nestedIngredient =
+    value.ingredient && typeof value.ingredient === 'object' && !Array.isArray(value.ingredient)
+      ? (value.ingredient as Record<string, unknown>)
+      : null;
+
+  const name =
+    (typeof value.name === 'string' ? value.name : '') ||
+    (typeof nestedIngredient?.name === 'string' ? nestedIngredient.name : '');
   const amount = typeof value.amount === 'number' ? value.amount : null;
   const unit = typeof value.unit === 'string' ? value.unit : null;
 
@@ -77,6 +88,27 @@ function normalizeIngredientForPersistence(ingredient: unknown): unknown {
   }
 
   return name;
+}
+
+function normalizeInstructionForPersistence(instruction: unknown): string {
+  if (typeof instruction === 'string') {
+    const trimmed = instruction.trim();
+    return trimmed && trimmed !== '[object Object]' ? trimmed : '';
+  }
+
+  if (!instruction || typeof instruction !== 'object') {
+    return '';
+  }
+
+  const value = instruction as Record<string, unknown>;
+  const direct =
+    (typeof value.instruction === 'string' ? value.instruction : '') ||
+    (typeof value.stepText === 'string' ? value.stepText : '') ||
+    (typeof value.text === 'string' ? value.text : '') ||
+    (typeof value.description === 'string' ? value.description : '');
+
+  const trimmed = direct.trim();
+  return trimmed && trimmed !== '[object Object]' ? trimmed : '';
 }
 
 interface IntegratedMealAssignmentModalProps {
@@ -688,7 +720,9 @@ export default function IntegratedMealAssignmentModal({
             ingredients: Array.isArray(personalizedMeal.ingredients)
               ? personalizedMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
               : [],
-            instructions: JSON.stringify(personalizedMeal.instructions),
+            instructions: Array.isArray(personalizedMeal.instructions)
+              ? personalizedMeal.instructions.map(normalizeInstructionForPersistence).filter(Boolean)
+              : [],
             calories: personalizedMeal.calories,
             protein: personalizedMeal.protein,
             carbs: personalizedMeal.carbs,
@@ -1050,7 +1084,9 @@ export default function IntegratedMealAssignmentModal({
               ingredients: Array.isArray(selection.personalizedMeal.ingredients)
                 ? selection.personalizedMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
                 : [],
-              instructions: JSON.stringify(selection.personalizedMeal.instructions),
+              instructions: Array.isArray(selection.personalizedMeal.instructions)
+                ? selection.personalizedMeal.instructions.map(normalizeInstructionForPersistence).filter(Boolean)
+                : [],
               calories: selection.personalizedMeal.calories,
               protein: selection.personalizedMeal.protein,
               carbs: selection.personalizedMeal.carbs,
@@ -1095,7 +1131,9 @@ export default function IntegratedMealAssignmentModal({
               ingredients: Array.isArray(originalMeal.ingredients)
                 ? originalMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
                 : [],
-              instructions: JSON.stringify(originalMeal.instructions || []),
+              instructions: Array.isArray(originalMeal.instructions)
+                ? originalMeal.instructions.map(normalizeInstructionForPersistence).filter(Boolean)
+                : [],
               calories: originalMeal.calories,
               protein: originalMeal.protein,
               carbs: originalMeal.carbs,

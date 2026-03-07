@@ -290,7 +290,12 @@ function normalizeToList(value?: unknown): string[] {
   }
 
   const raw = String(value).trim();
-  if (!raw) return [];
+  if (!raw || isObjectObjectToken(raw)) return [];
+
+  const parsedEmbeddedJson = tryParseJson(raw);
+  if (parsedEmbeddedJson !== undefined) {
+    return normalizeToList(parsedEmbeddedJson);
+  }
 
   // Try to split common formats:
   // - newline separated
@@ -323,7 +328,14 @@ function normalizeObjectOrPrimitive(item: unknown): string[] {
 
   if (typeof item === 'string') {
     const trimmed = item.trim();
-    return trimmed ? [trimmed] : [];
+    if (!trimmed || isObjectObjectToken(trimmed)) return [];
+
+    const parsedEmbeddedJson = tryParseJson(trimmed);
+    if (parsedEmbeddedJson !== undefined) {
+      return normalizeToList(parsedEmbeddedJson);
+    }
+
+    return [trimmed];
   }
 
   if (typeof item === 'number' || typeof item === 'boolean') {
@@ -334,13 +346,19 @@ function normalizeObjectOrPrimitive(item: unknown): string[] {
 
   const record = item as Record<string, unknown>;
 
-  const instruction = toCleanString(record.instruction);
+  // Some assignment flows persist a nested ingredient payload, e.g. { ingredient: { name, amount, unit }, amount, unit }
+  const nestedIngredient = toRecord(record.ingredient);
+
+  const instruction = toCleanString(record.instruction) || toCleanString(record.stepText);
   if (instruction) return [instruction];
 
-  const name = toCleanString(record.name);
-  const amount = toCleanString(record.amount);
-  const unit = toCleanString(record.unit);
-  const notes = toCleanString(record.notes);
+  const name =
+    toCleanString(record.name) ||
+    toCleanString(nestedIngredient?.name) ||
+    toCleanString((nestedIngredient?.ingredient as Record<string, unknown> | undefined)?.name);
+  const amount = toCleanString(record.amount) || toCleanString(nestedIngredient?.amount);
+  const unit = toCleanString(record.unit) || toCleanString(nestedIngredient?.unit);
+  const notes = toCleanString(record.notes) || toCleanString(nestedIngredient?.notes);
 
   const base = [amount, unit, name].filter(Boolean).join(' ').trim();
   if (base) {
@@ -349,13 +367,37 @@ function normalizeObjectOrPrimitive(item: unknown): string[] {
 
   const fallback = Object.values(record)
     .map(value => (typeof value === 'string' || typeof value === 'number' ? String(value).trim() : ''))
-    .filter(Boolean)
+    .filter(value => Boolean(value) && !isObjectObjectToken(value))
     .join(' - ');
 
   return fallback ? [fallback] : [];
 }
 
+function tryParseJson(raw: string): unknown | undefined {
+  const trimmed = raw.trim();
+  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return undefined;
+  }
+}
+
+function isObjectObjectToken(value: string): boolean {
+  return value.trim().toLowerCase() === '[object object]';
+}
+
 function toCleanString(value: unknown): string {
   if (value === null || value === undefined) return '';
-  return String(value).trim();
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  return '';
+}
+
+function toRecord(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  return value as Record<string, unknown>;
 }

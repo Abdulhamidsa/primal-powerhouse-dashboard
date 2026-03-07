@@ -206,7 +206,8 @@ export default function AssignPersonalizedMealsModal({
         const normalizeIngredient = (ingredient: unknown) => {
           if (typeof ingredient === 'string') {
             // Keep legacy plain-text ingredients compatible.
-            return ingredient;
+            const trimmed = ingredient.trim();
+            return trimmed && trimmed !== '[object Object]' ? trimmed : '';
           }
 
           if (!ingredient || typeof ingredient !== 'object') {
@@ -214,7 +215,14 @@ export default function AssignPersonalizedMealsModal({
           }
 
           const value = ingredient as Record<string, unknown>;
-          const name = typeof value.name === 'string' ? value.name : '';
+          const nestedIngredient =
+            value.ingredient && typeof value.ingredient === 'object' && !Array.isArray(value.ingredient)
+              ? (value.ingredient as Record<string, unknown>)
+              : null;
+
+          const name =
+            (typeof value.name === 'string' ? value.name : '') ||
+            (typeof nestedIngredient?.name === 'string' ? nestedIngredient.name : '');
           const amount = typeof value.amount === 'number' ? value.amount : null;
           const unit = typeof value.unit === 'string' ? value.unit : null;
 
@@ -234,6 +242,27 @@ export default function AssignPersonalizedMealsModal({
           return name;
         };
 
+        const normalizeInstruction = (instruction: unknown): string => {
+          if (typeof instruction === 'string') {
+            const trimmed = instruction.trim();
+            return trimmed && trimmed !== '[object Object]' ? trimmed : '';
+          }
+
+          if (!instruction || typeof instruction !== 'object') {
+            return '';
+          }
+
+          const value = instruction as Record<string, unknown>;
+          const direct =
+            (typeof value.instruction === 'string' ? value.instruction : '') ||
+            (typeof value.stepText === 'string' ? value.stepText : '') ||
+            (typeof value.text === 'string' ? value.text : '') ||
+            (typeof value.description === 'string' ? value.description : '');
+
+          const trimmed = direct.trim();
+          return trimmed && trimmed !== '[object Object]' ? trimmed : '';
+        };
+
         // Convert Meal to PersonalizedMealInput by adding required fields
         // and handling the specific format requirements
         const mealInput = {
@@ -243,7 +272,7 @@ export default function AssignPersonalizedMealsModal({
             ? personalizedMeal.ingredients.map(normalizeIngredient).filter(Boolean)
             : [],
           instructions: Array.isArray(personalizedMeal.instructions)
-            ? personalizedMeal.instructions.map(inst => (typeof inst === 'string' ? inst : inst.instruction))
+            ? personalizedMeal.instructions.map(normalizeInstruction).filter(Boolean)
             : [],
           calories: personalizedMeal.calories,
           protein: personalizedMeal.protein,
