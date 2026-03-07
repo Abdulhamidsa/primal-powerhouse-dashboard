@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     console.log('Today meals API called');
 
     // Use the existing auth system
-    const { error, user } = await requireAuth(request);
+    const { error, user } = await requireAuth(request, 'client');
 
     console.log('Auth result for meals:', { error, user });
 

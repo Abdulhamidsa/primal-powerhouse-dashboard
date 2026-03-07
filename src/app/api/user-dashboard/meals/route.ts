@@ -4,7 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
-    const { error, user } = await requireAuth(request);
+    const { error, user } = await requireAuth(request, 'client');
 
     if (error || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

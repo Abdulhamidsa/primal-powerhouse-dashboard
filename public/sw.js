@@ -1,5 +1,5 @@
 const APP_CACHE_PREFIX = 'primal-powerhouse';
-const CACHE_VERSION = 'v2'; // bump this on deploys when you want a hard refresh
+const CACHE_VERSION = 'v3'; // bumped to force refresh of stale JS bundles after meal detail rendering fixes
 const CACHE_NAME = `${APP_CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];
