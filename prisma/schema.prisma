@@ -447,6 +447,29 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model IngredientMacroRefreshJob {
+  id                   String @id @default(cuid())
+  foodId               String
+  requestedById        String
+  status               IngredientMacroRefreshStatus @default(PENDING)
+  scope                IngredientMacroRefreshScope @default(ALL)
+  affectedMealsCount   Int @default(0)
+  processedMealsCount  Int @default(0)
+  failedMealsCount     Int @default(0)
+  nextOffset           Int @default(0)
+  failedMealErrorsJson String?
+  error                String?
+  requestedAt          DateTime @default(now())
+  startedAt            DateTime?
+  completedAt          DateTime?
+  updatedAt            DateTime @updatedAt
+
+  @@index([foodId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("ingredient_macro_refresh_jobs")
+}
+
 /* =========================
    ENUMS
 ========================= */
@@ -562,4 +585,16 @@ enum FoodSource {
 enum FoodBaseUnit {
   HUNDRED_G
   UNIT
+}
+
+enum IngredientMacroRefreshStatus {
+  PENDING
+  RUNNING
+  READY
+  FAILED
+}
+
+enum IngredientMacroRefreshScope {
+  ALL
+  TEMPLATES_ONLY
 }
