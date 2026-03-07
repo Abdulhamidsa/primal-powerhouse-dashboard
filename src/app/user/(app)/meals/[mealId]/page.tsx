@@ -37,7 +37,7 @@ export default function MealDetailPage() {
 
   const fetchMealDetails = async () => {
     try {
-      const response = await fetch(`/api/meals/${params.mealId}`);
+      const response = await fetch(`/api/meals/${params.mealId}?view=client`);
       if (!response.ok) {
         setMeal(null);
         return;

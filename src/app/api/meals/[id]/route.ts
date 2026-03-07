@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { CACHE_TAGS, invalidateMealCaches, mealTag } from '@/lib/cache-tags';
+import { AuthService } from '@/lib/auth';
 
 function isObjectObjectToken(value: unknown): boolean {
   return typeof value === 'string' && value.trim().toLowerCase() === '[object object]';
@@ -144,9 +145,33 @@ function isCorruptedList(list: unknown[]): boolean {
   return list.length > 0 && list.every(item => typeof item === 'string' && isObjectObjectToken(item));
 }
 
+function toClientDisplayIngredient(entry: unknown): string {
+  if (typeof entry === 'string') {
+    const trimmed = entry.trim();
+    return trimmed && !isObjectObjectToken(trimmed) ? trimmed : '';
+  }
+
+  if (!entry || typeof entry !== 'object') {
+    return '';
+  }
+
+  const value = entry as Record<string, unknown>;
+  const amount = typeof value.amount === 'number' ? value.amount : null;
+  const unit = typeof value.unit === 'string' ? value.unit.trim() : '';
+  const name = typeof value.name === 'string' ? value.name.trim() : '';
+  const notes = typeof value.notes === 'string' ? value.notes.trim() : '';
+
+  const base = [amount !== null ? String(amount) : '', unit, name].filter(Boolean).join(' ').trim();
+  if (!base) return '';
+
+  return notes ? `${base} (${notes})` : base;
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const view = searchParams.get('view');
     const meal = await unstable_cache(
       async () =>
         prisma.meal.findUnique({
@@ -189,6 +214,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       instructions,
       tags: normalizeTags(meal.tags),
     };
+
+    const authUser = AuthService.validateRequestAuth(request);
+    if (view === 'client' || authUser?.type === 'client') {
+      return NextResponse.json({
+        ...parsedMeal,
+        ingredients: ingredients.map(toClientDisplayIngredient).filter(Boolean),
+      });
+    }
 
     return NextResponse.json(parsedMeal);
   } catch (error) {
