@@ -336,20 +336,20 @@ export default function MealPersonalization({
   };
 
   // Handler for adding a new ingredient
-  const addIngredient = () => {
-    if (personalizedMeal) {
-      const newIngredient: MealIngredient = {
-        id: `ingredient-${Date.now()}`,
-        name: '',
-        amount: 100,
-        unit: 'g',
-      };
+  // const addIngredient = () => {
+  //   if (personalizedMeal) {
+  //     const newIngredient: MealIngredient = {
+  //       id: `ingredient-${Date.now()}`,
+  //       name: '',
+  //       amount: 100,
+  //       unit: 'g',
+  //     };
 
-      const nextIngredients = [...personalizedMeal.ingredients, newIngredient];
-      updateMealProperty('ingredients', nextIngredients);
-      updateMealMacros(nextIngredients);
-    }
-  };
+  //     const nextIngredients = [...personalizedMeal.ingredients, newIngredient];
+  //     updateMealProperty('ingredients', nextIngredients);
+  //     updateMealMacros(nextIngredients);
+  //   }
+  // };
 
   // Handler for updating an instruction
   const updateInstruction = (index: number, field: keyof MealInstruction, value: any) => {
@@ -962,7 +962,7 @@ export default function MealPersonalization({
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
               <p className="text-xs sm:mr-auto" style={{ color: 'var(--color-text-muted)' }}>
-                Changes are saved only when you click "Save Personalized Meal".
+                Changes are saved only when you click Save Personalized Meal.
               </p>
               <button
                 onClick={onCloseAction}
