@@ -20,7 +20,16 @@ interface Meal {
   carbs: number;
   fat: number;
   fiber: number;
-  ingredients: string[];
+  ingredients: Array<
+    | string
+    | {
+        foodId?: string;
+        name?: string;
+        grams?: number;
+        unit?: string;
+        displayUnitLabel?: string | null;
+      }
+  >;
   instructions: string[];
   prepTime: number;
   cookTime: number;
@@ -69,12 +78,23 @@ export default function MealsPage() {
   // Function to convert our Meal interface to the MealType interface for the NewMealDetailModal
   const convertToMealType = (meal: Meal): MealType => {
     // Convert string ingredients to MealIngredient objects
-    const ingredientsConverted: MealIngredient[] = meal.ingredients.map((ing, index) => ({
-      id: `ing-${index}`,
-      name: ing,
-      amount: 1,
-      unit: 'serving',
-    }));
+    const ingredientsConverted: MealIngredient[] = meal.ingredients.map((ing, index) => {
+      if (typeof ing === 'string') {
+        return {
+          id: `ing-${index}`,
+          name: ing,
+          amount: 1,
+          unit: 'serving',
+        };
+      }
+
+      return {
+        id: ing.foodId || `ing-${index}`,
+        name: ing.name || `Ingredient ${index + 1}`,
+        amount: typeof ing.grams === 'number' ? ing.grams : 1,
+        unit: ing.unit || 'g',
+      };
+    });
 
     // Convert string instructions to MealInstruction objects
     const instructionsConverted: MealInstruction[] = meal.instructions.map((ins, index) => ({
@@ -166,7 +186,7 @@ export default function MealsPage() {
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 shadow-lg hover:shadow-xl"
               >
                 <span className="text-xl">🍽️</span>
-                Build from Ingredients
+                Add Meal Template
               </button>
             </div>
           </div>

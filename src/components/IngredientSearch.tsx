@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useOpenFoodFactsSearch } from '@/hooks/useOpenFoodFactsSearch';
+import { useCallback, useMemo, useState } from 'react';
+import { useFoods } from '@/features/foods/hooks/useFoods';
 import IngredientResultItem from './IngredientResultItem';
 import type { FoodItem, SelectedIngredient } from '@/types/openFoodFacts';
 import { resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
+import type { FoodRecord } from '@/features/foods/types/food.types';
 
 interface IngredientSearchProps {
   onAddIngredientAction: (ingredient: SelectedIngredient) => void;
@@ -14,62 +15,42 @@ interface IngredientSearchProps {
 export default function IngredientSearch({ onAddIngredientAction, selectedIds }: IngredientSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [allowedCategories, setAllowedCategories] = useState('');
-  const [excludedNameTerms, setExcludedNameTerms] = useState('');
-  const [allowedDataTypes, setAllowedDataTypes] = useState({
-    foundation: true,
-    srLegacy: true,
-  });
-  const [formFilter, setFormFilter] = useState<'all' | 'raw' | 'dry' | 'cooked' | 'processed'>('all');
-  const { results, isLoading, error, search } = useOpenFoodFactsSearch();
+  const searchParams = useMemo(() => {
+    const trimmed = searchQuery.trim();
+    return {
+      q: trimmed,
+      isActive: true,
+      limit: 40,
+    } as const;
+  }, [searchQuery]);
 
-  const handleSearch = useCallback(
-    (query: string, includeBranded = false) => {
-      setSearchQuery(query);
-      const allowedTypes = [
-        ...(allowedDataTypes.foundation ? ['Foundation'] : []),
-        ...(allowedDataTypes.srLegacy ? ['SR Legacy'] : []),
-      ];
+  const { items, isLoading, error } = useFoods(searchParams);
 
-      search(query, {
-        includeBranded,
-        allowedCategories: allowedCategories
-          .split(',')
-          .map(term => term.trim())
-          .filter(Boolean),
-        excludedNameTerms: excludedNameTerms
-          .split(',')
-          .map(term => term.trim())
-          .filter(Boolean),
-        allowedDataTypes: allowedTypes as Array<'Foundation' | 'SR Legacy'>,
-        form: formFilter,
-      });
-    },
-    [search, allowedCategories, excludedNameTerms, allowedDataTypes, formFilter]
+  const mappedItems: FoodItem[] = useMemo(
+    () =>
+      items.map((item: FoodRecord) => ({
+        id: item.id,
+        name: item.name,
+        brand: null,
+        dataType: item.source,
+        category: item.category,
+        ingredientsText: null,
+        kcalPer100g: item.caloriesKcal,
+        proteinPer100g: item.proteinG,
+        carbsPer100g: item.carbsG,
+        fatPer100g: item.fatG,
+        fiberPer100g: item.fiberG,
+        hasIncompleteData: false,
+        tags: [item.category, item.state],
+        servingUnit: item.baseUnit === 'unit' ? 'piece' : 'g',
+        gramsPerUnit: item.gramsPerUnit,
+        displayUnitLabel: item.displayUnitLabel,
+      })),
+    [items]
   );
 
-  const handleFilterChange = useCallback(
-    (filter: string) => {
-      setActiveFilter(filter);
-
-      const includeBranded = filter === 'packaged';
-      if (searchQuery.trim().length >= 3) {
-        handleSearch(searchQuery, includeBranded);
-      }
-    },
-    [handleSearch, searchQuery]
-  );
-
-  const filteredResults = results.filter(item => {
+  const filteredResults = mappedItems.filter(item => {
     const tags = item.tags || [];
-
-    if (activeFilter === 'packaged') {
-      return tags.includes('branded');
-    }
-
-    if (activeFilter === 'processed') {
-      return tags.includes('processed');
-    }
 
     if (activeFilter === 'raw') {
       return tags.includes('raw');
@@ -81,6 +62,10 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
 
     if (activeFilter === 'dry') {
       return tags.includes('dry');
+    }
+
+    if (activeFilter === 'as_sold') {
+      return tags.includes('as_sold');
     }
 
     return true;
@@ -114,24 +99,10 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
           <input
             type="text"
             value={searchQuery}
-            onChange={e => handleSearch(e.target.value, activeFilter === 'packaged')}
-            placeholder="e.g., chicken breast, rice, spinach..."
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="e.g., chicken, rice, spinach..."
             className="flex-1 px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-zinc-500"
           />
-          <button
-            onClick={() => handleSearch(searchQuery, activeFilter === 'packaged')}
-            disabled={isLoading || searchQuery.trim().length < 3}
-            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Searching...</span>
-              </>
-            ) : (
-              'Search'
-            )}
-          </button>
         </div>
       </div>
 
@@ -145,7 +116,7 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
       {/* Error State */}
       {error && !isLoading && searchQuery && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-          <p className="text-sm text-amber-500">{error}</p>
+          <p className="text-sm text-amber-500">{error.message || 'Search failed'}</p>
         </div>
       )}
 
@@ -156,13 +127,12 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
           { key: 'raw', label: 'Raw' },
           { key: 'cooked', label: 'Cooked' },
           { key: 'dry', label: 'Dry' },
-          { key: 'packaged', label: 'Packaged' },
-          { key: 'processed', label: 'Processed' },
+          { key: 'as_sold', label: 'As Sold' },
         ].map(filter => (
           <button
             key={filter.key}
             type="button"
-            onClick={() => handleFilterChange(filter.key)}
+            onClick={() => setActiveFilter(filter.key)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
               activeFilter === filter.key
                 ? 'bg-blue-600 border-blue-500 text-white'
@@ -172,61 +142,6 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
             {filter.label}
           </button>
         ))}
-      </div>
-
-      <div className="grid grid-cols-1 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1">Allowed Categories</label>
-          <input
-            type="text"
-            value={allowedCategories}
-            onChange={e => setAllowedCategories(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg text-xs"
-            placeholder="Comma-separated categories"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1">Excluded Terms</label>
-          <input
-            type="text"
-            value={excludedNameTerms}
-            onChange={e => setExcludedNameTerms(e.target.value)}
-            className="w-full px-3 py-2 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg text-xs"
-            placeholder="Comma-separated terms"
-          />
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <label className="flex items-center gap-2 text-xs text-zinc-300">
-            <input
-              type="checkbox"
-              checked={allowedDataTypes.foundation}
-              onChange={e => setAllowedDataTypes(prev => ({ ...prev, foundation: e.target.checked }))}
-            />
-            Foundation
-          </label>
-          <label className="flex items-center gap-2 text-xs text-zinc-300">
-            <input
-              type="checkbox"
-              checked={allowedDataTypes.srLegacy}
-              onChange={e => setAllowedDataTypes(prev => ({ ...prev, srLegacy: e.target.checked }))}
-            />
-            SR Legacy
-          </label>
-          <label className="flex items-center gap-2 text-xs text-zinc-300">
-            Form:
-            <select
-              value={formFilter}
-              onChange={e => setFormFilter(e.target.value as 'all' | 'raw' | 'dry' | 'cooked' | 'processed')}
-              className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs"
-            >
-              <option value="all">All</option>
-              <option value="raw">Raw</option>
-              <option value="dry">Dry</option>
-              <option value="cooked">Cooked</option>
-              <option value="processed">Processed</option>
-            </select>
-          </label>
-        </div>
       </div>
 
       {/* Results */}
@@ -252,15 +167,15 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
       {!isLoading && searchQuery && filteredResults.length === 0 && !error && (
         <div className="text-center py-6 text-zinc-400">
           <p>No ingredients found</p>
-          <p className="text-xs mt-2">Try a different search term</p>
+          <p className="text-xs mt-2">Try a different term or add a new ingredient</p>
         </div>
       )}
 
       {/* Initial State */}
-      {!isLoading && !searchQuery && results.length === 0 && (
+      {!isLoading && !searchQuery && mappedItems.length === 0 && (
         <div className="text-center py-6 text-zinc-400">
           <p className="text-sm">Start typing to search for ingredients</p>
-          <p className="text-xs mt-2">Powered by USDA FoodData Central</p>
+          <p className="text-xs mt-2">Searching your internal ingredients database</p>
         </div>
       )}
     </div>

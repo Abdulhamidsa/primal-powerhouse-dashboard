@@ -58,6 +58,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       tags: meal.tags ? JSON.parse(meal.tags) : [],
     };
 
+    invalidateMealCaches({
+      mealId: meal.id,
+      clientId: meal.clientId ?? undefined,
+    });
+
     return NextResponse.json(parsedMeal);
   } catch (error) {
     console.error('Error updating meal:', error);

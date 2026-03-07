@@ -7,6 +7,8 @@ import IngredientSearch from './IngredientSearch';
 import SelectedIngredientRow from './SelectedIngredientRow';
 import TotalsPanel from './TotalsPanel';
 import type { SelectedIngredient } from '@/types/openFoodFacts';
+import FoodForm from '@/features/foods/components/FoodForm';
+import ImageUpload from '@/components/ImageUpload';
 
 interface MealBuilderModalProps {
   isOpen: boolean;
@@ -29,6 +31,9 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadError, setUploadError] = useState<string>('');
+  const [showFoodFormModal, setShowFoodFormModal] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [instructions, setInstructions] = useState<string[]>(['']);
 
   const selectedIds = useMemo(() => new Set(state.selectedIngredients.map(ing => ing.id)), [state.selectedIngredients]);
 
@@ -49,6 +54,9 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     if (state.servings < 1) {
       newErrors.servings = 'Servings must be at least 1';
     }
+    if (instructions.filter(instruction => instruction.trim()).length === 0) {
+      newErrors.instructions = 'At least one instruction is required';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -67,10 +75,51 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       setLoading(true);
       setUploadError('');
 
-      // Build ingredients string from selected ingredients
-      const ingredientsStr = state.selectedIngredients
-        .map(ing => `${ing.name} (${ing.grams}g)${ing.brand ? ` - ${ing.brand}` : ''}`)
-        .join(', ');
+      const templateIngredients = state.selectedIngredients.map(ing => {
+        const unit = ing.servingUnit ?? 'g';
+        const gramsPerUnit = ing.gramsPerUnit ?? null;
+        const quantityAmount =
+          unit === 'piece' && gramsPerUnit && gramsPerUnit > 0
+            ? Math.round((ing.grams / gramsPerUnit) * 100) / 100
+            : ing.grams;
+
+        return {
+          foodId: ing.id,
+          name: ing.name,
+          amount: quantityAmount,
+          grams: ing.grams,
+          unit,
+          gramsPerUnit,
+          displayUnitLabel: ing.displayUnitLabel ?? null,
+          nutritionPer100g: {
+            caloriesKcal: ing.kcalPer100g ?? 0,
+            proteinG: ing.proteinPer100g ?? 0,
+            carbsG: ing.carbsPer100g ?? 0,
+            fatG: ing.fatPer100g ?? 0,
+            fiberG: ing.fiberPer100g ?? 0,
+          },
+        };
+      });
+
+      let imageUrl: string | undefined;
+      if (selectedImageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', selectedImageFile);
+        uploadFormData.append('folder', 'meals');
+
+        const uploadResponse = await fetch('/api/cloudinary/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse.json();
+          throw new Error(error.details || error.error || 'Failed to upload image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.data.url;
+      }
 
       // Create meal using existing service (same as manual form)
       const mealData = {
@@ -81,16 +130,13 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         carbs: totals.carbs,
         fat: totals.fat,
         fiber: totals.fiber || 0,
-        ingredients: state.selectedIngredients.map(ing => ing.name),
-        instructions: [
-          `Built from ingredients using Meal Builder. Total of ${state.selectedIngredients.length} ingredient(s).`,
-          `Detailed ingredients: ${ingredientsStr}`,
-        ],
+        ingredients: templateIngredients,
+        instructions: instructions.filter(instruction => instruction.trim()),
         prepTime: 0,
         cookTime: 0,
         servings: state.servings,
         tags: ['built-from-ingredients', ...state.tags].filter(Boolean),
-        imageUrl: state.imageUrl || undefined,
+        imageUrl,
       };
 
       console.log('Creating meal from builder:', mealData);
@@ -99,6 +145,8 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       onMealCreatedAction();
       onCloseAction();
       resetForm();
+      setInstructions(['']);
+      setSelectedImageFile(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create meal';
       setUploadError(message);
@@ -112,6 +160,18 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     removeIngredient(ingredientId);
   };
 
+  const handleInstructionChange = (index: number, value: string) => {
+    setInstructions(prev => prev.map((item, i) => (i === index ? value : item)));
+  };
+
+  const addInstruction = () => {
+    setInstructions(prev => [...prev, '']);
+  };
+
+  const removeInstruction = (index: number) => {
+    setInstructions(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black backdrop-blur-sm p-2 sm:p-6">
       <div className="w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
@@ -119,7 +179,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         <div className="flex items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-950/80 px-4 py-4 sm:px-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-zinc-100">Build Meal</h2>
-            <p className="text-xs sm:text-sm text-zinc-400">Create a meal from USDA ingredients</p>
+            <p className="text-xs sm:text-sm text-zinc-400">Create a meal template from your ingredients database</p>
           </div>
           <button
             type="button"
@@ -193,9 +253,30 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
               </div>
             </div>
 
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-zinc-100 mb-4">Meal Image</h3>
+              <ImageUpload
+                onFileSelectAction={file => {
+                  setSelectedImageFile(file);
+                  setUploadError('');
+                }}
+                onError={setUploadError}
+                disabled={loading}
+              />
+            </div>
+
             {/* Ingredient Search */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-zinc-100 mb-4">Add Ingredients</h3>
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-zinc-100">Add Ingredients</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowFoodFormModal(true)}
+                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
+                >
+                  + Add Ingredient
+                </button>
+              </div>
               <IngredientSearch
                 onAddIngredientAction={(ingredient: SelectedIngredient) => addIngredient(ingredient)}
                 selectedIds={selectedIds}
@@ -221,6 +302,46 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                 {errors.ingredients && <p className="text-xs text-red-400 mt-2">{errors.ingredients}</p>}
               </div>
             )}
+
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-zinc-100">Instructions</h3>
+                <button
+                  type="button"
+                  onClick={addInstruction}
+                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
+                >
+                  + Add Step
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {instructions.map((instruction, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <span className="px-3 py-2 bg-zinc-800 rounded-lg text-xs font-medium text-zinc-300 min-w-[40px] text-center">
+                      {index + 1}
+                    </span>
+                    <input
+                      type="text"
+                      value={instruction}
+                      onChange={e => handleInstructionChange(index, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-zinc-700 bg-zinc-950 text-zinc-100 rounded-lg"
+                      placeholder="e.g., Cook rice and grill chicken"
+                    />
+                    {instructions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeInstruction(index)}
+                        className="px-3 py-2 text-red-400 hover:bg-zinc-800 rounded-lg"
+                      >
+                        x
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {errors.instructions && <p className="text-xs text-red-400 mt-2">{errors.instructions}</p>}
+            </div>
 
             {/* Totals Panel */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
@@ -249,12 +370,14 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                 disabled={loading || state.selectedIngredients.length === 0}
                 className="w-full sm:flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Meal'}
+                {loading ? 'Creating...' : 'Create Template Meal'}
               </button>
             </div>
           </div>
         </form>
       </div>
+
+      <FoodForm isOpen={showFoodFormModal} onCloseAction={() => setShowFoodFormModal(false)} />
     </div>
   );
 }

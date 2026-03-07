@@ -158,7 +158,9 @@ export class DataService {
   }
 
   static async getMealById(id: string) {
-    const response = await fetch(`${this.baseUrl}/meals/${id}`);
+    const response = await fetch(`${this.baseUrl}/meals/${id}`, {
+      cache: 'no-store',
+    });
     if (!response.ok) {
       throw new Error('Meal not found');
     }

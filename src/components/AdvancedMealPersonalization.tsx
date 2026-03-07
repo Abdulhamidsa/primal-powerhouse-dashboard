@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Meal, MealIngredient, MealInstruction } from '@/types/meal';
 import { Utensils, Sunrise, Sun, Moon, Apple, Save, X } from 'lucide-react';
+import IngredientSearch from './IngredientSearch';
+import type { SelectedIngredient } from '@/types/openFoodFacts';
 
 interface MealPersonalizationProps {
   meal: Meal;
@@ -23,11 +25,226 @@ export default function MealPersonalization({
   const [personalizedMeal, setPersonalizedMeal] = useState<Meal | null>(null);
   const [, setSelectedImage] = useState<string>('');
 
+  const calculateNutritionFromIngredients = (ingredients: MealIngredient[]) => {
+    let calories = 0;
+    let protein = 0;
+    let carbs = 0;
+    let fat = 0;
+    let fiber = 0;
+    let hasStructuredNutrition = false;
+
+    ingredients.forEach(ingredient => {
+      const typedIngredient = ingredient as MealIngredient & {
+        gramsPerUnit?: number | null;
+        nutritionPer100g?: {
+          caloriesKcal?: number;
+          proteinG?: number;
+          carbsG?: number;
+          fatG?: number;
+          fiberG?: number;
+        };
+      };
+
+      const nutrition = typedIngredient.nutritionPer100g;
+      if (!nutrition) return;
+
+      const rawAmount = Number(ingredient.amount) || 0;
+      const amountGrams =
+        ingredient.unit === 'piece' && (typedIngredient.gramsPerUnit ?? 0) > 0
+          ? rawAmount * Number(typedIngredient.gramsPerUnit)
+          : rawAmount;
+
+      if (amountGrams <= 0) return;
+
+      hasStructuredNutrition = true;
+      const ratio = amountGrams / 100;
+      calories += (nutrition.caloriesKcal ?? 0) * ratio;
+      protein += (nutrition.proteinG ?? 0) * ratio;
+      carbs += (nutrition.carbsG ?? 0) * ratio;
+      fat += (nutrition.fatG ?? 0) * ratio;
+      fiber += (nutrition.fiberG ?? 0) * ratio;
+    });
+
+    if (!hasStructuredNutrition) return null;
+
+    return {
+      calories: Math.round(calories),
+      protein: Math.round(protein * 10) / 10,
+      carbs: Math.round(carbs * 10) / 10,
+      fat: Math.round(fat * 10) / 10,
+      fiber: Math.round(fiber * 10) / 10,
+    };
+  };
+
+  const normalizeIngredient = (ingredient: unknown, index: number): MealIngredient => {
+    if (ingredient && typeof ingredient === 'object') {
+      const value = ingredient as Record<string, unknown>;
+
+      const normalized: MealIngredient & {
+        foodId?: string;
+        gramsPerUnit?: number | null;
+        displayUnitLabel?: string | null;
+        nutritionPer100g?: {
+          caloriesKcal?: number;
+          proteinG?: number;
+          carbsG?: number;
+          fatG?: number;
+          fiberG?: number;
+        };
+      } = {
+        id: typeof value.id === 'string' && value.id ? value.id : `ingredient-${Date.now()}-${index}`,
+        name: typeof value.name === 'string' ? value.name : '',
+        amount:
+          typeof value.amount === 'number'
+            ? value.amount
+            : typeof value.grams === 'number' && value.unit === 'piece' && typeof value.gramsPerUnit === 'number'
+              ? Math.round((value.grams / value.gramsPerUnit) * 100) / 100
+              : typeof value.grams === 'number'
+                ? value.grams
+                : 0,
+        unit: typeof value.unit === 'string' ? value.unit : 'g',
+        notes: typeof value.notes === 'string' ? value.notes : undefined,
+      };
+
+      if (typeof value.foodId === 'string') normalized.foodId = value.foodId;
+      if (typeof value.gramsPerUnit === 'number' || value.gramsPerUnit === null) {
+        normalized.gramsPerUnit = value.gramsPerUnit as number | null;
+      }
+      if (typeof value.displayUnitLabel === 'string' || value.displayUnitLabel === null) {
+        normalized.displayUnitLabel = value.displayUnitLabel as string | null;
+      }
+      if (value.nutritionPer100g && typeof value.nutritionPer100g === 'object') {
+        const nutrition = value.nutritionPer100g as Record<string, unknown>;
+        normalized.nutritionPer100g = {
+          caloriesKcal: typeof nutrition.caloriesKcal === 'number' ? nutrition.caloriesKcal : 0,
+          proteinG: typeof nutrition.proteinG === 'number' ? nutrition.proteinG : 0,
+          carbsG: typeof nutrition.carbsG === 'number' ? nutrition.carbsG : 0,
+          fatG: typeof nutrition.fatG === 'number' ? nutrition.fatG : 0,
+          fiberG: typeof nutrition.fiberG === 'number' ? nutrition.fiberG : 0,
+        };
+      }
+
+      return normalized;
+    }
+
+    if (typeof ingredient === 'string') {
+      return {
+        id: `ingredient-${Date.now()}-${index}`,
+        name: ingredient,
+        amount: 0,
+        unit: 'g',
+      };
+    }
+
+    return {
+      id: `ingredient-${Date.now()}-${index}`,
+      name: '',
+      amount: 0,
+      unit: 'g',
+    };
+  };
+
+  const addIngredientFromCatalog = (ingredient: SelectedIngredient) => {
+    if (!personalizedMeal) return;
+
+    const ingredientWithNutrition: MealIngredient & {
+      foodId: string;
+      gramsPerUnit?: number | null;
+      displayUnitLabel?: string | null;
+      nutritionPer100g: {
+        caloriesKcal: number;
+        proteinG: number;
+        carbsG: number;
+        fatG: number;
+        fiberG: number;
+      };
+    } = {
+      id: `ingredient-${Date.now()}-${ingredient.id}`,
+      foodId: ingredient.id,
+      name: ingredient.name,
+      amount: ingredient.servingUnit === 'piece' ? 1 : ingredient.grams || 100,
+      unit: ingredient.servingUnit === 'piece' ? 'piece' : 'g',
+      gramsPerUnit: ingredient.gramsPerUnit ?? null,
+      displayUnitLabel: ingredient.displayUnitLabel ?? null,
+      nutritionPer100g: {
+        caloriesKcal: ingredient.kcalPer100g ?? 0,
+        proteinG: ingredient.proteinPer100g ?? 0,
+        carbsG: ingredient.carbsPer100g ?? 0,
+        fatG: ingredient.fatPer100g ?? 0,
+        fiberG: ingredient.fiberPer100g ?? 0,
+      },
+    };
+
+    const nextIngredients = [...personalizedMeal.ingredients, ingredientWithNutrition];
+    updateMealProperty('ingredients', nextIngredients);
+    updateMealMacros(nextIngredients);
+  };
+
+  const normalizeInstruction = (instruction: unknown, index: number): MealInstruction => {
+    if (instruction && typeof instruction === 'object') {
+      const value = instruction as Record<string, unknown>;
+      return {
+        id: typeof value.id === 'string' && value.id ? value.id : `instruction-${Date.now()}-${index}`,
+        step: typeof value.step === 'number' ? value.step : index + 1,
+        instruction: typeof value.instruction === 'string' ? value.instruction : '',
+      };
+    }
+
+    if (typeof instruction === 'string') {
+      return {
+        id: `instruction-${Date.now()}-${index}`,
+        step: index + 1,
+        instruction,
+      };
+    }
+
+    return {
+      id: `instruction-${Date.now()}-${index}`,
+      step: index + 1,
+      instruction: '',
+    };
+  };
+
+  const normalizeMeal = (sourceMeal: Meal): Meal => {
+    const copy = JSON.parse(JSON.stringify(sourceMeal)) as Meal;
+
+    return {
+      ...copy,
+      name: copy.name ?? '',
+      description: copy.description ?? '',
+      type: copy.type ?? 'breakfast',
+      calories: Number(copy.calories ?? 0),
+      protein: Number(copy.protein ?? 0),
+      carbs: Number(copy.carbs ?? 0),
+      fat: Number(copy.fat ?? 0),
+      fiber: Number(copy.fiber ?? 0),
+      sodium: Number(copy.sodium ?? 0),
+      sugar: Number(copy.sugar ?? 0),
+      cholesterol: Number(copy.cholesterol ?? 0),
+      prepTime: Number(copy.prepTime ?? 0),
+      cookTime: Number(copy.cookTime ?? 0),
+      servings: Number(copy.servings ?? 1),
+      ingredients: Array.isArray(copy.ingredients)
+        ? copy.ingredients.map((ingredient, index) => normalizeIngredient(ingredient, index))
+        : [],
+      instructions: Array.isArray(copy.instructions)
+        ? copy.instructions.map((instruction, index) => normalizeInstruction(instruction, index))
+        : [],
+      tags: Array.isArray(copy.tags) ? copy.tags.filter(tag => typeof tag === 'string') : [],
+      images: Array.isArray(copy.images) ? copy.images.filter(image => typeof image === 'string') : [],
+      equipment: Array.isArray(copy.equipment) ? copy.equipment.filter(item => typeof item === 'string') : [],
+      tips: Array.isArray(copy.tips) ? copy.tips.filter(item => typeof item === 'string') : [],
+      allergens: Array.isArray(copy.allergens) ? copy.allergens.filter(item => typeof item === 'string') : [],
+      createdAt: copy.createdAt ? new Date(copy.createdAt) : new Date(),
+      updatedAt: copy.updatedAt ? new Date(copy.updatedAt) : new Date(),
+    };
+  };
+
   // Initialize the personalized meal when the original meal changes
   useEffect(() => {
     if (meal) {
-      // Deep clone the meal to avoid modifying the original
-      const mealClone = JSON.parse(JSON.stringify(meal)) as Meal;
+      // Normalize incoming data so all form inputs stay controlled.
+      const mealClone = normalizeMeal(meal);
 
       // Generate a new ID for the personalized meal
       mealClone.id = `personalized-${meal.id}-${Date.now()}`;
@@ -48,31 +265,37 @@ export default function MealPersonalization({
         console.log('Saving personalized meal:', personalizedMeal);
         console.log('Original meal ID:', meal.id);
 
+        const calculatedNutrition = calculateNutritionFromIngredients(personalizedMeal.ingredients);
+        const mealToSave: Meal = {
+          ...personalizedMeal,
+          ...(calculatedNutrition ?? {}),
+        };
+
         // Update timestamps
-        personalizedMeal.updatedAt = new Date();
+        mealToSave.updatedAt = new Date();
 
         // Make sure all numeric values are properly converted to numbers
-        personalizedMeal.calories = Number(personalizedMeal.calories);
-        personalizedMeal.protein = Number(personalizedMeal.protein);
-        personalizedMeal.carbs = Number(personalizedMeal.carbs);
-        personalizedMeal.fat = Number(personalizedMeal.fat);
-        if (personalizedMeal.fiber !== undefined) {
-          personalizedMeal.fiber = Number(personalizedMeal.fiber);
+        mealToSave.calories = Number(mealToSave.calories);
+        mealToSave.protein = Number(mealToSave.protein);
+        mealToSave.carbs = Number(mealToSave.carbs);
+        mealToSave.fat = Number(mealToSave.fat);
+        if (mealToSave.fiber !== undefined) {
+          mealToSave.fiber = Number(mealToSave.fiber);
         }
-        if (personalizedMeal.sugar !== undefined) {
-          personalizedMeal.sugar = Number(personalizedMeal.sugar);
+        if (mealToSave.sugar !== undefined) {
+          mealToSave.sugar = Number(mealToSave.sugar);
         }
-        if (personalizedMeal.prepTime !== undefined) {
-          personalizedMeal.prepTime = Number(personalizedMeal.prepTime);
+        if (mealToSave.prepTime !== undefined) {
+          mealToSave.prepTime = Number(mealToSave.prepTime);
         }
-        if (personalizedMeal.cookTime !== undefined) {
-          personalizedMeal.cookTime = Number(personalizedMeal.cookTime);
+        if (mealToSave.cookTime !== undefined) {
+          mealToSave.cookTime = Number(mealToSave.cookTime);
         }
-        personalizedMeal.servings = Number(personalizedMeal.servings);
+        mealToSave.servings = Number(mealToSave.servings);
 
         // Call the save callback with the personalized meal and client ID
         console.log('Calling onSaveAction with personalized meal');
-        await onSaveAction(personalizedMeal, clientId);
+        await onSaveAction(mealToSave, clientId);
 
         // Log successful save
         console.log('Personalized meal saved successfully');
@@ -107,26 +330,8 @@ export default function MealPersonalization({
         [field]: value,
       };
 
-      // Recalculate macros if amount changed
-      if (field === 'amount') {
-        // This is a simple recalculation. In a real app you might have a more sophisticated formula
-
-        // Update meal macros based on the ingredient change
-        // This is simplified - real calculation would depend on ingredient nutritional data
-        updateMealMacros();
-      }
-
       updateMealProperty('ingredients', updatedIngredients);
-    }
-  };
-
-  // Handler for deleting an ingredient
-  const deleteIngredient = (index: number) => {
-    if (personalizedMeal) {
-      const updatedIngredients = [...personalizedMeal.ingredients];
-      updatedIngredients.splice(index, 1);
-      updateMealProperty('ingredients', updatedIngredients);
-      updateMealMacros();
+      updateMealMacros(updatedIngredients);
     }
   };
 
@@ -136,11 +341,13 @@ export default function MealPersonalization({
       const newIngredient: MealIngredient = {
         id: `ingredient-${Date.now()}`,
         name: '',
-        amount: 1,
+        amount: 100,
         unit: 'g',
       };
 
-      updateMealProperty('ingredients', [...personalizedMeal.ingredients, newIngredient]);
+      const nextIngredients = [...personalizedMeal.ingredients, newIngredient];
+      updateMealProperty('ingredients', nextIngredients);
+      updateMealMacros(nextIngredients);
     }
   };
 
@@ -186,14 +393,21 @@ export default function MealPersonalization({
   };
 
   // Update all macros based on ingredients
-  const updateMealMacros = () => {
+  const updateMealMacros = (ingredientsOverride?: MealIngredient[]) => {
     if (!personalizedMeal) return;
 
-    // In a real app, you would calculate this based on a nutrition database
-    // This is just a placeholder for demonstration
+    const ingredients = ingredientsOverride ?? personalizedMeal.ingredients;
+    const calculatedNutrition = calculateNutritionFromIngredients(ingredients);
+    if (!calculatedNutrition) return;
 
-    // For now, we'll just keep the existing macros
-    // In a real app, you would recalculate this based on the ingredients
+    setPersonalizedMeal(prev => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        ...calculatedNutrition,
+      };
+    });
   };
 
   // Icon for meal type
@@ -213,6 +427,15 @@ export default function MealPersonalization({
   };
 
   if (!personalizedMeal) return null;
+
+  const servingsNumber = Math.max(1, Number(personalizedMeal.servings) || 1);
+  const perServing = {
+    calories: Math.round((Number(personalizedMeal.calories) || 0) / servingsNumber),
+    protein: Math.round(((Number(personalizedMeal.protein) || 0) / servingsNumber) * 10) / 10,
+    carbs: Math.round(((Number(personalizedMeal.carbs) || 0) / servingsNumber) * 10) / 10,
+    fat: Math.round(((Number(personalizedMeal.fat) || 0) / servingsNumber) * 10) / 10,
+    fiber: Math.round(((Number(personalizedMeal.fiber) || 0) / servingsNumber) * 10) / 10,
+  };
 
   return (
     <div
@@ -246,18 +469,6 @@ export default function MealPersonalization({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
-              style={{
-                background: 'var(--color-accent)',
-                color: 'var(--color-text-on-accent)',
-              }}
-            >
-              <Save size={18} />
-              Save For Client
-            </button>
-
-            <button
               onClick={onCloseAction}
               className="p-2 rounded-lg hover:bg-opacity-10 transition-colors"
               style={{ color: 'var(--color-text-muted)' }}
@@ -269,6 +480,80 @@ export default function MealPersonalization({
         </div>
 
         <div className="p-6">
+          <div
+            className="sticky top-16 z-10 rounded-xl border p-3 mb-6 backdrop-blur"
+            style={{
+              borderColor: 'var(--color-border)',
+              background: 'color-mix(in srgb, var(--color-surface) 92%, transparent)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+                Live Totals
+              </p>
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                Per serving (servings: {servingsNumber})
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              <div className="rounded-lg p-2 text-center" style={{ background: 'var(--color-bg-alt)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  kcal
+                </p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  {personalizedMeal.calories}
+                </p>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {perServing.calories}/serv
+                </p>
+              </div>
+              <div className="rounded-lg p-2 text-center" style={{ background: 'var(--color-bg-alt)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  Protein
+                </p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  {personalizedMeal.protein}g
+                </p>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {perServing.protein}g/serv
+                </p>
+              </div>
+              <div className="rounded-lg p-2 text-center" style={{ background: 'var(--color-bg-alt)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  Carbs
+                </p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  {personalizedMeal.carbs}g
+                </p>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {perServing.carbs}g/serv
+                </p>
+              </div>
+              <div className="rounded-lg p-2 text-center" style={{ background: 'var(--color-bg-alt)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  Fat
+                </p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  {personalizedMeal.fat}g
+                </p>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {perServing.fat}g/serv
+                </p>
+              </div>
+              <div className="rounded-lg p-2 text-center" style={{ background: 'var(--color-bg-alt)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  Fiber
+                </p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  {personalizedMeal.fiber}g
+                </p>
+                <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {perServing.fiber}g/serv
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Name and Description */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -276,7 +561,7 @@ export default function MealPersonalization({
               <input
                 type="text"
                 value={personalizedMeal.name}
-                onChange={e => updateMealProperty('name', e.target.value)}
+                readOnly
                 className="w-full p-2 border rounded"
                 style={{
                   background: 'var(--color-bg-alt)',
@@ -290,7 +575,7 @@ export default function MealPersonalization({
               <label className="block text-sm font-medium mb-2">Meal Type</label>
               <select
                 value={personalizedMeal.type}
-                onChange={e => updateMealProperty('type', e.target.value as any)}
+                disabled
                 className="w-full p-2 border rounded"
                 style={{
                   background: 'var(--color-bg-alt)',
@@ -310,7 +595,7 @@ export default function MealPersonalization({
             <label className="block text-sm font-medium mb-2">Description</label>
             <textarea
               value={personalizedMeal.description}
-              onChange={e => updateMealProperty('description', e.target.value)}
+              readOnly
               rows={3}
               className="w-full p-2 border rounded"
               style={{
@@ -329,7 +614,7 @@ export default function MealPersonalization({
                 type="number"
                 min="0"
                 value={personalizedMeal.prepTime}
-                onChange={e => updateMealProperty('prepTime', parseInt(e.target.value) || 0)}
+                readOnly
                 className="w-full p-2 border rounded"
                 style={{
                   background: 'var(--color-bg-alt)',
@@ -345,7 +630,7 @@ export default function MealPersonalization({
                 type="number"
                 min="0"
                 value={personalizedMeal.cookTime}
-                onChange={e => updateMealProperty('cookTime', parseInt(e.target.value) || 0)}
+                readOnly
                 className="w-full p-2 border rounded"
                 style={{
                   background: 'var(--color-bg-alt)',
@@ -361,7 +646,7 @@ export default function MealPersonalization({
                 type="number"
                 min="1"
                 value={personalizedMeal.servings}
-                onChange={e => updateMealProperty('servings', parseInt(e.target.value) || 1)}
+                readOnly
                 className="w-full p-2 border rounded"
                 style={{
                   background: 'var(--color-bg-alt)',
@@ -383,7 +668,7 @@ export default function MealPersonalization({
                   type="number"
                   min="0"
                   value={personalizedMeal.calories}
-                  onChange={e => updateMealProperty('calories', parseInt(e.target.value) || 0)}
+                  readOnly
                   className="w-full p-2 border rounded"
                   style={{
                     background: 'var(--color-bg-alt)',
@@ -399,7 +684,7 @@ export default function MealPersonalization({
                   type="number"
                   min="0"
                   value={personalizedMeal.protein}
-                  onChange={e => updateMealProperty('protein', parseInt(e.target.value) || 0)}
+                  readOnly
                   className="w-full p-2 border rounded"
                   style={{
                     background: 'var(--color-bg-alt)',
@@ -415,7 +700,7 @@ export default function MealPersonalization({
                   type="number"
                   min="0"
                   value={personalizedMeal.carbs}
-                  onChange={e => updateMealProperty('carbs', parseInt(e.target.value) || 0)}
+                  readOnly
                   className="w-full p-2 border rounded"
                   style={{
                     background: 'var(--color-bg-alt)',
@@ -431,7 +716,7 @@ export default function MealPersonalization({
                   type="number"
                   min="0"
                   value={personalizedMeal.fat}
-                  onChange={e => updateMealProperty('fat', parseInt(e.target.value) || 0)}
+                  readOnly
                   className="w-full p-2 border rounded"
                   style={{
                     background: 'var(--color-bg-alt)',
@@ -447,7 +732,7 @@ export default function MealPersonalization({
                   type="number"
                   min="0"
                   value={personalizedMeal.fiber}
-                  onChange={e => updateMealProperty('fiber', parseInt(e.target.value) || 0)}
+                  readOnly
                   className="w-full p-2 border rounded"
                   style={{
                     background: 'var(--color-bg-alt)',
@@ -463,7 +748,7 @@ export default function MealPersonalization({
                   type="number"
                   min="0"
                   value={personalizedMeal.sugar}
-                  onChange={e => updateMealProperty('sugar', parseInt(e.target.value) || 0)}
+                  readOnly
                   className="w-full p-2 border rounded"
                   style={{
                     background: 'var(--color-bg-alt)',
@@ -479,16 +764,25 @@ export default function MealPersonalization({
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Ingredients</h3>
-              <button
-                onClick={addIngredient}
-                className="flex items-center gap-1 px-3 py-1 rounded text-sm"
-                style={{
-                  background: 'var(--color-accent-translucent)',
-                  color: 'var(--color-accent)',
-                }}
-              >
-                Add Ingredient
-              </button>
+            </div>
+
+            <div className="mb-4 rounded-lg border p-4" style={{ borderColor: 'var(--color-border)' }}>
+              <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
+                Add new ingredients from your database. This only updates this personalized meal.
+              </p>
+              <IngredientSearch
+                onAddIngredientAction={addIngredientFromCatalog}
+                selectedIds={
+                  new Set(
+                    personalizedMeal.ingredients
+                      .map(ingredient => {
+                        const typed = ingredient as MealIngredient & { foodId?: string };
+                        return typed.foodId;
+                      })
+                      .filter((foodId): foodId is string => Boolean(foodId))
+                  )
+                }
+              />
             </div>
 
             <div className="space-y-3">
@@ -503,7 +797,7 @@ export default function MealPersonalization({
                     <input
                       type="text"
                       value={ingredient.name}
-                      onChange={e => updateIngredient(index, 'name', e.target.value)}
+                      readOnly
                       className="w-full p-1 border rounded text-sm"
                       style={{
                         background: 'var(--color-surface)',
@@ -535,7 +829,7 @@ export default function MealPersonalization({
                     <input
                       type="text"
                       value={ingredient.unit}
-                      onChange={e => updateIngredient(index, 'unit', e.target.value)}
+                      readOnly
                       className="w-full p-1 border rounded text-sm"
                       style={{
                         background: 'var(--color-surface)',
@@ -546,13 +840,9 @@ export default function MealPersonalization({
                   </div>
 
                   <div className="col-span-1 sm:col-span-2 flex items-end justify-end h-full">
-                    <button
-                      onClick={() => deleteIngredient(index)}
-                      className="p-1 rounded hover:bg-red-500 hover:bg-opacity-10 transition-colors"
-                      style={{ color: 'var(--color-danger)' }}
-                    >
-                      <X size={18} />
-                    </button>
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      Measure only
+                    </span>
                   </div>
                 </div>
               ))}
@@ -635,14 +925,7 @@ export default function MealPersonalization({
                 type="text"
                 placeholder="Add tags separated by commas (e.g. healthy, high-protein, quick)"
                 value={personalizedMeal.tags.join(', ')}
-                onChange={e => {
-                  const tagsString = e.target.value;
-                  const tagsArray = tagsString
-                    .split(',')
-                    .map(tag => tag.trim())
-                    .filter(tag => tag !== '');
-                  updateMealProperty('tags', tagsArray);
-                }}
+                readOnly
                 className="w-full p-2 border rounded"
                 style={{
                   background: 'var(--color-bg-alt)',
@@ -663,27 +946,27 @@ export default function MealPersonalization({
                   }}
                 >
                   #{tag}
-                  <button
-                    onClick={() => {
-                      const updatedTags = [...personalizedMeal.tags];
-                      updatedTags.splice(index, 1);
-                      updateMealProperty('tags', updatedTags);
-                    }}
-                    className="hover:text-opacity-80"
-                  >
-                    <X size={14} />
-                  </button>
                 </span>
               ))}
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end mt-8 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
-            <div className="flex gap-3">
+          <div
+            className="sticky bottom-0 z-10 mt-8 pt-4 border-t"
+            style={{
+              borderColor: 'var(--color-border)',
+              background: 'color-mix(in srgb, var(--color-surface) 94%, transparent)',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
+              <p className="text-xs sm:mr-auto" style={{ color: 'var(--color-text-muted)' }}>
+                Changes are saved only when you click "Save Personalized Meal".
+              </p>
               <button
                 onClick={onCloseAction}
-                className="px-4 py-2 rounded-lg"
+                className="px-4 py-2 rounded-lg w-full sm:w-auto"
                 style={{
                   background: 'var(--color-bg-alt)',
                   color: 'var(--color-text)',
@@ -694,7 +977,7 @@ export default function MealPersonalization({
 
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg w-full sm:w-auto"
                 style={{
                   background: 'var(--color-accent)',
                   color: 'var(--color-text-on-accent)',

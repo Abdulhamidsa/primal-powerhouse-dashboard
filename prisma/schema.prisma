@@ -32,6 +32,7 @@ model User {
   workouts  Workout[]
   videos    Video[]
   sessions  Session[]
+  foodsCreated Food[]
 
   @@map("users")
 }
@@ -151,6 +152,35 @@ model Meal {
   mealAssignments MealAssignment[]
 
   @@map("meals")
+}
+
+model Food {
+  id               String       @id @default(cuid())
+  name             String
+  category         String
+  state            FoodState
+  caloriesKcal     Float
+  proteinG         Float
+  carbsG           Float
+  fatG             Float
+  fiberG           Float?
+  source           FoodSource   @default(SYSTEM)
+  isActive         Boolean      @default(true)
+  sourceRef        String?
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  baseUnit         FoodBaseUnit @default(HUNDRED_G)
+  gramsPerUnit     Float?
+  displayUnitLabel String?
+  createdById      String?
+  createdBy        User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([name])
+  @@index([category])
+  @@index([isActive])
+  @@map("foods")
 }
 
 model Video {
@@ -515,4 +545,21 @@ enum DailyTrainingStatus {
   DONE
   PARTIAL
   MISSED
+}
+
+enum FoodState {
+  RAW
+  DRY
+  AS_SOLD
+  COOKED
+}
+
+enum FoodSource {
+  SYSTEM
+  CUSTOM
+}
+
+enum FoodBaseUnit {
+  HUNDRED_G
+  UNIT
 }

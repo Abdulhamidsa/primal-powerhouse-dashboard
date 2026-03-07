@@ -1,10 +1,48 @@
 import { Meal, MealType } from '@/types/meal';
 import { clientApi } from '@/lib/client-api';
 
+function normalizeIngredientForPersistence(ingredient: unknown): unknown {
+  if (typeof ingredient === 'string') {
+    return ingredient;
+  }
+
+  if (!ingredient || typeof ingredient !== 'object') {
+    return '';
+  }
+
+  const value = ingredient as Record<string, unknown>;
+  const name = typeof value.name === 'string' ? value.name : '';
+  const amount = typeof value.amount === 'number' ? value.amount : null;
+  const unit = typeof value.unit === 'string' ? value.unit : null;
+
+  // Preserve structured ingredient snapshots used by personalization recalculation.
+  if ('foodId' in value || 'nutritionPer100g' in value || 'grams' in value) {
+    return value;
+  }
+
+  if (!name) {
+    return '';
+  }
+
+  if (amount !== null && unit) {
+    return `${amount} ${unit} ${name}`;
+  }
+
+  return name;
+}
+
 /**
  * Helper service for handling meal personalization and assignment workflows
  */
 export class MealAssignmentService {
+  private static normalizeMealType(value: string): 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK' | null {
+    const normalized = value.toUpperCase();
+    if (normalized === 'BREAKFAST' || normalized === 'LUNCH' || normalized === 'DINNER' || normalized === 'SNACK') {
+      return normalized;
+    }
+    return null;
+  }
+
   /**
    * Personalize and assign a meal to a client
    *
@@ -36,7 +74,9 @@ export class MealAssignmentService {
       const mealData = {
         name: personalizedMeal.name,
         description: personalizedMeal.description,
-        ingredients: JSON.stringify(personalizedMeal.ingredients),
+        ingredients: Array.isArray(personalizedMeal.ingredients)
+          ? personalizedMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
+          : [],
         instructions: JSON.stringify(personalizedMeal.instructions),
         calories: personalizedMeal.calories,
         protein: personalizedMeal.protein,
@@ -114,17 +154,40 @@ export class MealAssignmentService {
       console.log('Meal assignments to process:', mealAssignments.length);
 
       // Convert meal types to uppercase if needed and remove isPersonalized field
-      const formattedAssignments = mealAssignments.map(({ mealId, dayOfWeek, mealType, portion }) => {
-        console.log('Formatting assignment:', { mealId, dayOfWeek, mealType });
-        return {
-          mealId,
-          dayOfWeek,
-          mealType,
-          portion,
-        };
-      });
+      const formattedAssignments = mealAssignments
+        .map(({ mealId, dayOfWeek, mealType, portion }) => {
+          const normalizedMealType = MealAssignmentService.normalizeMealType(mealType);
+          console.log('Formatting assignment:', { mealId, dayOfWeek, mealType, normalizedMealType });
+
+          if (!normalizedMealType) {
+            console.warn('Skipping assignment with invalid mealType:', { mealId, dayOfWeek, mealType });
+            return null;
+          }
+
+          return {
+            mealId,
+            dayOfWeek,
+            mealType: normalizedMealType,
+            portion,
+          };
+        })
+        .filter(
+          (
+            assignment
+          ): assignment is {
+            mealId: string;
+            dayOfWeek: number;
+            mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+            portion: number;
+          } => assignment !== null
+        );
 
       console.log('Formatted assignments:', formattedAssignments);
+
+      if (formattedAssignments.length === 0) {
+        throw new Error('No valid meal assignments to create meal plan.');
+      }
+
       console.log('Calling DataService.createMealPlan');
 
       // Make direct API call instead of using the DataService
@@ -195,17 +258,39 @@ export class MealAssignmentService {
       console.log('Meal assignments to process:', mealAssignments.length);
 
       // Convert meal types to uppercase if needed and remove isPersonalized field
-      const formattedAssignments = mealAssignments.map(({ mealId, dayOfWeek, mealType, portion }) => {
-        console.log('Formatting assignment:', { mealId, dayOfWeek, mealType });
-        return {
-          mealId,
-          dayOfWeek,
-          mealType,
-          portion,
-        };
-      });
+      const formattedAssignments = mealAssignments
+        .map(({ mealId, dayOfWeek, mealType, portion }) => {
+          const normalizedMealType = MealAssignmentService.normalizeMealType(mealType);
+          console.log('Formatting assignment:', { mealId, dayOfWeek, mealType, normalizedMealType });
+
+          if (!normalizedMealType) {
+            console.warn('Skipping assignment with invalid mealType:', { mealId, dayOfWeek, mealType });
+            return null;
+          }
+
+          return {
+            mealId,
+            dayOfWeek,
+            mealType: normalizedMealType,
+            portion,
+          };
+        })
+        .filter(
+          (
+            assignment
+          ): assignment is {
+            mealId: string;
+            dayOfWeek: number;
+            mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+            portion: number;
+          } => assignment !== null
+        );
 
       console.log('Formatted assignments:', formattedAssignments);
+
+      if (formattedAssignments.length === 0) {
+        throw new Error('No valid meal assignments to update meal plan.');
+      }
 
       // Make direct API call to update the meal plan
       const response = await fetch(`/api/meal-plans/${mealPlanId}`, {

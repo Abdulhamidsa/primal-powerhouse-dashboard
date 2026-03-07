@@ -5,7 +5,23 @@ import { Meal, Client } from '@/types/meal';
 import { DataService } from '@/services/dataService';
 import { clientApi } from '@/lib/client-api';
 import { MealAssignmentService } from '@/services/mealAssignmentService';
-import { X, Search, Calendar, Edit, User, Check, Clock, Users, Utensils, Save } from 'lucide-react';
+import {
+  X,
+  Search,
+  Calendar,
+  Edit,
+  User,
+  Check,
+  Clock,
+  Users,
+  Utensils,
+  Save,
+  Sunrise,
+  Sun,
+  Moon,
+  Apple,
+  AlertCircle,
+} from 'lucide-react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 
 // Days of week configuration
@@ -21,11 +37,47 @@ const daysOfWeek = [
 
 // Meal types with icons
 const mealTypes = [
-  { value: 'breakfast', label: 'Breakfast', icon: '🌅' },
-  { value: 'lunch', label: 'Lunch', icon: '☀️' },
-  { value: 'dinner', label: 'Dinner', icon: '🌙' },
-  { value: 'snack', label: 'Snack', icon: '🍎' },
+  { value: 'breakfast', label: 'Breakfast', icon: Sunrise },
+  { value: 'lunch', label: 'Lunch', icon: Sun },
+  { value: 'dinner', label: 'Dinner', icon: Moon },
+  { value: 'snack', label: 'Snack', icon: Apple },
 ] as const;
+
+const validMealTypeValues = mealTypes.map(type => type.value);
+
+function isValidSlotMealType(value: string): value is (typeof mealTypes)[number]['value'] {
+  return validMealTypeValues.includes(value as (typeof mealTypes)[number]['value']);
+}
+
+function normalizeIngredientForPersistence(ingredient: unknown): unknown {
+  if (typeof ingredient === 'string') {
+    return ingredient;
+  }
+
+  if (!ingredient || typeof ingredient !== 'object') {
+    return '';
+  }
+
+  const value = ingredient as Record<string, unknown>;
+  const name = typeof value.name === 'string' ? value.name : '';
+  const amount = typeof value.amount === 'number' ? value.amount : null;
+  const unit = typeof value.unit === 'string' ? value.unit : null;
+
+  // Preserve structured ingredient snapshots used for live macro recalculation.
+  if ('foodId' in value || 'nutritionPer100g' in value || 'grams' in value) {
+    return value;
+  }
+
+  if (!name) {
+    return '';
+  }
+
+  if (amount !== null && unit) {
+    return `${amount} ${unit} ${name}`;
+  }
+
+  return name;
+}
 
 interface IntegratedMealAssignmentModalProps {
   isOpen: boolean;
@@ -60,7 +112,8 @@ export default function IntegratedMealAssignmentModal({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClientId, setSelectedClientId] = useState<string | null>(clientId || null);
   const [activeTab, setActiveTab] = useState<'select-meals' | 'schedule'>('select-meals');
-  const [selectedMealType, setSelectedMealType] = useState<string | 'all'>('all');
+  const [selectedMealType, setSelectedMealType] = useState<string | null>(null);
+  const [mealTypeFilter, setMealTypeFilter] = useState<string | 'all'>('all');
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   // State for personalization
@@ -523,9 +576,9 @@ export default function IntegratedMealAssignmentModal({
     if ('isPersonalized' in meal && meal.isPersonalized === true) return false;
 
     // Filter by meal type if one is selected
-    if (selectedMealType && selectedMealType !== 'all') {
+    if (mealTypeFilter && mealTypeFilter !== 'all') {
       const mealType = typeof meal.type === 'string' ? meal.type.toLowerCase() : '';
-      if (mealType !== selectedMealType.toLowerCase()) return false;
+      if (mealType !== mealTypeFilter.toLowerCase()) return false;
     }
 
     // Filter by search term
@@ -602,6 +655,12 @@ export default function IntegratedMealAssignmentModal({
 
       // If we have a day and meal type selected, assign the personalized meal to that slot
       if (selectedDay !== null && selectedMealType !== null && selectedClientId) {
+        if (!isValidSlotMealType(selectedMealType)) {
+          console.error('Invalid selected meal type for slot assignment:', selectedMealType);
+          alert('Please select a valid meal slot from the schedule before personalizing.');
+          return;
+        }
+
         const key = `${selectedDay}_${selectedMealType}`;
 
         console.log('Adding personalized meal to slot:', key);
@@ -626,7 +685,9 @@ export default function IntegratedMealAssignmentModal({
           const mealData = {
             name: personalizedMeal.name,
             description: personalizedMeal.description,
-            ingredients: JSON.stringify(personalizedMeal.ingredients),
+            ingredients: Array.isArray(personalizedMeal.ingredients)
+              ? personalizedMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
+              : [],
             instructions: JSON.stringify(personalizedMeal.instructions),
             calories: personalizedMeal.calories,
             protein: personalizedMeal.protein,
@@ -742,6 +803,11 @@ export default function IntegratedMealAssignmentModal({
   // Assign a meal to a slot without personalization
   const handleAssignMeal = (meal: Meal) => {
     if (selectedDay !== null && selectedMealType !== null) {
+      if (!isValidSlotMealType(selectedMealType)) {
+        alert('Please select a valid meal slot from the schedule before assigning.');
+        return;
+      }
+
       // Check if this meal is already assigned somewhere
       if (isMealAssigned(meal.id)) {
         const assignmentSlot = getMealAssignmentSlot(meal.id);
@@ -887,6 +953,7 @@ export default function IntegratedMealAssignmentModal({
     }
     setSelectedDay(dayOfWeek);
     setSelectedMealType(mealType);
+    setMealTypeFilter(mealType);
     setActiveTab('select-meals');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -980,7 +1047,9 @@ export default function IntegratedMealAssignmentModal({
             const mealData = {
               name: selection.personalizedMeal.name,
               description: selection.personalizedMeal.description,
-              ingredients: JSON.stringify(selection.personalizedMeal.ingredients),
+              ingredients: Array.isArray(selection.personalizedMeal.ingredients)
+                ? selection.personalizedMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
+                : [],
               instructions: JSON.stringify(selection.personalizedMeal.instructions),
               calories: selection.personalizedMeal.calories,
               protein: selection.personalizedMeal.protein,
@@ -1023,7 +1092,9 @@ export default function IntegratedMealAssignmentModal({
             const mealData = {
               name: originalMeal.name,
               description: originalMeal.description || '',
-              ingredients: JSON.stringify(originalMeal.ingredients || []),
+              ingredients: Array.isArray(originalMeal.ingredients)
+                ? originalMeal.ingredients.map(normalizeIngredientForPersistence).filter(Boolean)
+                : [],
               instructions: JSON.stringify(originalMeal.instructions || []),
               calories: originalMeal.calories,
               protein: originalMeal.protein,
@@ -1080,6 +1151,11 @@ export default function IntegratedMealAssignmentModal({
       const finalMealAssignments = Object.entries(selectedMeals)
         .map(([key, _selection]) => {
           const [dayOfWeek, mealType] = key.split('_');
+
+          if (!isValidSlotMealType(mealType)) {
+            console.warn(`Skipping invalid meal assignment key: ${key}`);
+            return null;
+          }
 
           // Find the saved personalized meal (whether explicitly or auto-personalized)
           const savedMeal = savedPersonalizedMeals.find(item => item?.key === key);
@@ -1217,12 +1293,38 @@ export default function IntegratedMealAssignmentModal({
     }
   };
 
+  const selectedMealEntries = Object.entries(selectedMeals);
+  const totalSelectedMeals = selectedMealEntries.length;
+  const personalizedMealsCount = Object.values(selectedMeals).filter(selection => selection.isPersonalized).length;
+  const totalAssignedCalories = selectedMealEntries.reduce((total, [_key, selection]) => {
+    const meal =
+      selection.isPersonalized && selection.personalizedMeal
+        ? selection.personalizedMeal
+        : meals.find(m => m.id === selection.mealId);
+
+    return total + (meal?.calories || 0);
+  }, 0);
+  const averageDailyCalories = totalSelectedMeals > 0 ? Math.round(totalAssignedCalories / 7) : 0;
+  const durationLabel =
+    startDate && endDate
+      ? `${Math.max(
+          1,
+          Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+        )} days`
+      : 'Ongoing';
+
+  const isClientReady = Boolean(selectedClientId);
+  const isPlanNameReady = Boolean(planName.trim());
+  const isStartDateReady = Boolean(startDate);
+  const hasMealsReady = totalSelectedMeals > 0;
+  const canSubmitMealPlan = !loading && isClientReady && isPlanNameReady && isStartDateReady && hasMealsReady;
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-start overflow-y-auto">
       <div
-        className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl m-4 w-full max-w-6xl max-h-[calc(100vh-2rem)] overflow-y-auto"
+        className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl m-2 sm:m-4 w-full max-w-7xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)] overflow-y-auto"
         style={{
           background: 'var(--color-surface)',
           borderColor: 'var(--color-border)',
@@ -1346,400 +1448,410 @@ export default function IntegratedMealAssignmentModal({
           )}
 
           {activeTab === 'schedule' ? (
-            <div>
-              {/* Meal Plan Details */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Meal Plan Details</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Plan Name</label>
-                    <input
-                      type="text"
-                      value={planName}
-                      onChange={e => setPlanName(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      style={{
-                        background: 'var(--color-bg-alt)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-text)',
-                      }}
-                      placeholder="Enter meal plan name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Start Date</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={e => setStartDate(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      style={{
-                        background: 'var(--color-bg-alt)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-text)',
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">End Date (Optional)</label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={e => setEndDate(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      style={{
-                        background: 'var(--color-bg-alt)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-text)',
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Notes (Optional)</label>
-                    <textarea
-                      value={notes}
-                      onChange={e => setNotes(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      style={{
-                        background: 'var(--color-bg-alt)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-text)',
-                      }}
-                      rows={2}
-                      placeholder="Add any notes about this meal plan"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Meal Schedule */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Weekly Meal Schedule</h3>
-
-                {/* Mobile View - Cards */}
-                <div className="block lg:hidden space-y-4">
-                  {daysOfWeek.map(day => (
-                    <div
-                      key={day.value}
-                      className="border rounded-lg p-4"
-                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
-                    >
-                      <h4 className="font-semibold mb-3 text-lg">{day.label}</h4>
-                      <div className="space-y-2">
-                        {mealTypes.map(mealType => {
-                          const meal = getMealForSlot(day.value, mealType.value);
-                          return (
-                            <div
-                              key={`${day.value}_${mealType.value}`}
-                              className="border rounded-lg p-3"
-                              style={{ borderColor: 'var(--color-border)' }}
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-sm flex items-center gap-2">
-                                  <span>{mealType.icon}</span>
-                                  <span>{mealType.label}</span>
-                                </span>
-                                {meal && selectedMeals[`${day.value}_${mealType.value}`]?.isPersonalized && (
-                                  <span
-                                    className="text-xs px-2 py-0.5 rounded"
-                                    style={{
-                                      background: 'var(--color-accent-translucent)',
-                                      color: 'var(--color-accent)',
-                                    }}
-                                  >
-                                    Custom
-                                  </span>
-                                )}
-                              </div>
-                              {meal ? (
-                                <div className="space-y-2">
-                                  <div className="font-medium">{meal.name}</div>
-                                  <div
-                                    className="flex items-center gap-3 text-xs"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                  >
-                                    <span>{meal.calories} cal</span>
-                                    <span>•</span>
-                                    <span>P: {meal.protein}g</span>
-                                    <span>•</span>
-                                    <span>
-                                      <Clock size={12} className="inline" /> {meal.prepTime + meal.cookTime}min
-                                    </span>
-                                  </div>
-                                  <button
-                                    onClick={() => removeMealFromSlot(day.value, mealType.value)}
-                                    className="w-full mt-2 px-3 py-2 rounded text-sm font-medium"
-                                    style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}
-                                  >
-                                    Remove
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => handleSelectMealSlot(day.value, mealType.value)}
-                                  className="w-full p-3 border border-dashed rounded flex items-center justify-center gap-2"
-                                  style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
-                                >
-                                  <Utensils size={16} />
-                                  <span className="text-sm">Add {mealType.label}</span>
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6">
+              <div className="space-y-6 min-w-0">
+                <div
+                  className="rounded-xl border p-4 sm:p-5"
+                  style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                >
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Calendar size={18} />
+                    Meal Plan Details
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Plan Name</label>
+                      <input
+                        type="text"
+                        value={planName}
+                        onChange={e => setPlanName(e.target.value)}
+                        className="w-full p-2.5 border rounded-lg"
+                        style={{
+                          background: 'var(--color-surface)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-text)',
+                        }}
+                        placeholder="Enter meal plan name"
+                      />
                     </div>
-                  ))}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Start Date</label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={e => setStartDate(e.target.value)}
+                        className="w-full p-2.5 border rounded-lg"
+                        style={{
+                          background: 'var(--color-surface)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-text)',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">End Date (Optional)</label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={e => setEndDate(e.target.value)}
+                        className="w-full p-2.5 border rounded-lg"
+                        style={{
+                          background: 'var(--color-surface)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-text)',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Notes (Optional)</label>
+                      <textarea
+                        value={notes}
+                        onChange={e => setNotes(e.target.value)}
+                        className="w-full p-2.5 border rounded-lg"
+                        style={{
+                          background: 'var(--color-surface)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-text)',
+                        }}
+                        rows={2}
+                        placeholder="Add any notes about this meal plan"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Desktop View - Table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full border-collapse min-w-[800px]">
-                    <thead>
-                      <tr>
-                        <th
-                          className="p-3 text-left font-medium border"
-                          style={{
-                            background: 'var(--color-bg-alt)',
-                            borderColor: 'var(--color-border)',
-                            color: 'var(--color-text)',
-                          }}
-                        >
-                          Day
-                        </th>
-                        {mealTypes.map(mealType => (
-                          <th
-                            key={mealType.value}
-                            className="p-3 text-center font-medium border min-w-[180px]"
-                            style={{
-                              background: 'var(--color-bg-alt)',
-                              borderColor: 'var(--color-border)',
-                              color: 'var(--color-text)',
-                            }}
-                          >
-                            <div className="flex items-center justify-center gap-2">
-                              <span>{mealType.icon}</span>
-                              <span>{mealType.label}</span>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {daysOfWeek.map(day => (
-                        <tr key={day.value}>
-                          <td
-                            className="p-3 font-medium border"
-                            style={{
-                              background: 'var(--color-bg-alt)',
-                              borderColor: 'var(--color-border)',
-                              color: 'var(--color-text)',
-                            }}
-                          >
-                            {day.label}
-                          </td>
+                <div
+                  className="rounded-xl border p-4 sm:p-5"
+                  style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h3 className="text-lg font-semibold">Weekly Meal Schedule</h3>
+                    <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                      Select a slot to assign or personalize a meal.
+                    </p>
+                  </div>
+
+                  <div className="block xl:hidden space-y-4">
+                    {daysOfWeek.map(day => (
+                      <div
+                        key={day.value}
+                        className="border rounded-lg p-4"
+                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+                      >
+                        <h4 className="font-semibold mb-3 text-base sm:text-lg">{day.label}</h4>
+                        <div className="space-y-2">
                           {mealTypes.map(mealType => {
+                            const MealTypeIcon = mealType.icon;
                             const meal = getMealForSlot(day.value, mealType.value);
                             return (
-                              <td
+                              <div
                                 key={`${day.value}_${mealType.value}`}
-                                className="p-2 border"
+                                className="border rounded-lg p-3"
                                 style={{ borderColor: 'var(--color-border)' }}
                               >
-                                {meal ? (
-                                  <div className="p-2 rounded relative" style={{ background: 'var(--color-bg-alt)' }}>
-                                    <div className="font-medium mb-1">{meal.name}</div>
-                                    <div className="flex items-center text-xs gap-3 mb-1">
-                                      <span style={{ color: 'var(--color-text-muted)' }}>{meal.calories} cal</span>
-                                      <span style={{ color: 'var(--color-text-muted)' }}>P: {meal.protein}g</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 mt-2 justify-between">
-                                      <div
-                                        className="flex items-center gap-1 text-xs"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                      >
-                                        <Clock size={12} />
-                                        <span>{meal.prepTime + meal.cookTime} min</span>
-                                      </div>
-
-                                      {selectedMeals[`${day.value}_${mealType.value}`]?.isPersonalized && (
-                                        <div
-                                          className="text-xs px-1 py-0.5 rounded"
-                                          style={{
-                                            background: 'var(--color-accent-translucent)',
-                                            color: 'var(--color-accent)',
-                                          }}
-                                        >
-                                          Personalized
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {/* Remove button */}
-                                    <button
-                                      onClick={() => removeMealFromSlot(day.value, mealType.value)}
-                                      className="absolute top-1 right-1 p-1 rounded-full hover:bg-red-500 hover:bg-opacity-10"
-                                      style={{ color: 'var(--color-danger)' }}
-                                      aria-label="Remove meal"
+                                <div className="flex items-center justify-between mb-2 gap-2">
+                                  <span className="font-medium text-sm flex items-center gap-2 min-w-0">
+                                    <MealTypeIcon size={14} className="shrink-0" />
+                                    <span className="truncate">{mealType.label}</span>
+                                  </span>
+                                  {meal && selectedMeals[`${day.value}_${mealType.value}`]?.isPersonalized && (
+                                    <span
+                                      className="text-xs px-2 py-0.5 rounded whitespace-nowrap"
+                                      style={{
+                                        background: 'var(--color-accent-translucent)',
+                                        color: 'var(--color-accent)',
+                                      }}
                                     >
-                                      <X size={14} />
-                                    </button>
+                                      Personalized
+                                    </span>
+                                  )}
+                                </div>
+                                {meal ? (
+                                  <div className="space-y-2">
+                                    <div className="font-medium break-words">{meal.name}</div>
+                                    <div
+                                      className="flex flex-wrap items-center gap-2 text-xs"
+                                      style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                      <span>{meal.calories} cal</span>
+                                      <span>P: {meal.protein}g</span>
+                                      <span className="flex items-center gap-1">
+                                        <Clock size={12} />
+                                        {meal.prepTime + meal.cookTime} min
+                                      </span>
+                                    </div>
+                                    <div className="flex gap-2 pt-1">
+                                      <button
+                                        onClick={() => handleSelectMealSlot(day.value, mealType.value)}
+                                        className="flex-1 px-3 py-2 rounded text-sm font-medium border"
+                                        style={{
+                                          borderColor: 'var(--color-border)',
+                                          color: 'var(--color-text)',
+                                          background: 'var(--color-surface)',
+                                        }}
+                                      >
+                                        Change
+                                      </button>
+                                      <button
+                                        onClick={() => removeMealFromSlot(day.value, mealType.value)}
+                                        className="flex-1 px-3 py-2 rounded text-sm font-medium"
+                                        style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
                                   </div>
                                 ) : (
                                   <button
                                     onClick={() => handleSelectMealSlot(day.value, mealType.value)}
-                                    className="w-full p-3 border border-dashed rounded flex flex-col items-center justify-center gap-1 hover:bg-opacity-5 transition-colors"
-                                    style={{
-                                      borderColor: 'var(--color-border)',
-                                      color: 'var(--color-text-muted)',
-                                    }}
+                                    className="w-full p-3 border border-dashed rounded flex items-center justify-center gap-2"
+                                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
                                   >
                                     <Utensils size={16} />
-                                    <span className="text-xs">Add {mealType.label}</span>
+                                    <span className="text-sm">Add {mealType.label}</span>
                                   </button>
                                 )}
-                              </td>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hidden xl:block overflow-x-auto">
+                    <table className="w-full border-collapse min-w-[920px]">
+                      <thead>
+                        <tr>
+                          <th
+                            className="p-3 text-left font-medium border"
+                            style={{
+                              background: 'var(--color-surface)',
+                              borderColor: 'var(--color-border)',
+                              color: 'var(--color-text)',
+                            }}
+                          >
+                            Day
+                          </th>
+                          {mealTypes.map(mealType => {
+                            const MealTypeIcon = mealType.icon;
+                            return (
+                              <th
+                                key={mealType.value}
+                                className="p-3 text-center font-medium border min-w-[200px]"
+                                style={{
+                                  background: 'var(--color-surface)',
+                                  borderColor: 'var(--color-border)',
+                                  color: 'var(--color-text)',
+                                }}
+                              >
+                                <div className="flex items-center justify-center gap-2">
+                                  <MealTypeIcon size={14} />
+                                  <span>{mealType.label}</span>
+                                </div>
+                              </th>
                             );
                           })}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {daysOfWeek.map(day => (
+                          <tr key={day.value}>
+                            <td
+                              className="p-3 font-medium border align-top"
+                              style={{
+                                background: 'var(--color-surface)',
+                                borderColor: 'var(--color-border)',
+                                color: 'var(--color-text)',
+                              }}
+                            >
+                              {day.label}
+                            </td>
+                            {mealTypes.map(mealType => {
+                              const meal = getMealForSlot(day.value, mealType.value);
+                              return (
+                                <td
+                                  key={`${day.value}_${mealType.value}`}
+                                  className="p-2 border align-top"
+                                  style={{ borderColor: 'var(--color-border)' }}
+                                >
+                                  {meal ? (
+                                    <div
+                                      className="p-3 rounded-lg relative"
+                                      style={{ background: 'var(--color-surface)' }}
+                                    >
+                                      <div className="font-medium mb-1 break-words pr-7">{meal.name}</div>
+                                      <div className="flex flex-wrap items-center text-xs gap-2 mb-2">
+                                        <span style={{ color: 'var(--color-text-muted)' }}>{meal.calories} cal</span>
+                                        <span style={{ color: 'var(--color-text-muted)' }}>P: {meal.protein}g</span>
+                                        <span
+                                          className="flex items-center gap-1"
+                                          style={{ color: 'var(--color-text-muted)' }}
+                                        >
+                                          <Clock size={12} />
+                                          {meal.prepTime + meal.cookTime} min
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <button
+                                          onClick={() => handleSelectMealSlot(day.value, mealType.value)}
+                                          className="text-xs px-2 py-1 rounded border"
+                                          style={{
+                                            borderColor: 'var(--color-border)',
+                                            color: 'var(--color-text)',
+                                            background: 'transparent',
+                                          }}
+                                        >
+                                          Change
+                                        </button>
+                                        {selectedMeals[`${day.value}_${mealType.value}`]?.isPersonalized && (
+                                          <div
+                                            className="text-xs px-2 py-0.5 rounded"
+                                            style={{
+                                              background: 'var(--color-accent-translucent)',
+                                              color: 'var(--color-accent)',
+                                            }}
+                                          >
+                                            Personalized
+                                          </div>
+                                        )}
+                                      </div>
+                                      <button
+                                        onClick={() => removeMealFromSlot(day.value, mealType.value)}
+                                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-500 hover:bg-opacity-10"
+                                        style={{ color: 'var(--color-danger)' }}
+                                        aria-label="Remove meal"
+                                      >
+                                        <X size={14} />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleSelectMealSlot(day.value, mealType.value)}
+                                      className="w-full p-4 border border-dashed rounded flex flex-col items-center justify-center gap-2 transition-colors"
+                                      style={{
+                                        borderColor: 'var(--color-border)',
+                                        color: 'var(--color-text-muted)',
+                                        background: 'var(--color-surface)',
+                                      }}
+                                    >
+                                      <Utensils size={16} />
+                                      <span className="text-xs">Add {mealType.label}</span>
+                                    </button>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
-              {/* Summary */}
-              <div
-                className="mb-6 p-4 rounded-lg border"
-                style={{
-                  background: 'var(--color-bg-alt)',
-                  borderColor: Object.keys(selectedMeals).length > 0 ? 'var(--color-accent)' : 'var(--color-border)',
-                  boxShadow:
-                    Object.keys(selectedMeals).length > 0 ? '0 0 8px rgba(var(--color-accent-rgb), 0.3)' : 'none',
-                }}
-              >
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <span>Meal Plan Summary</span>
-                  {Object.keys(selectedMeals).length > 0 && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: 'var(--color-accent)', color: 'var(--color-text-on-accent)' }}
-                    >
-                      {Object.keys(selectedMeals).length} meals ready to save
-                    </span>
-                  )}
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span style={{ color: 'var(--color-text-muted)' }}>Total Meals:</span>
-                    <span className="ml-2 font-medium">{Object.keys(selectedMeals).length}</span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--color-text-muted)' }}>Avg Daily Calories:</span>
-                    <span className="ml-2 font-medium">
-                      {Object.values(selectedMeals).length > 0
-                        ? Math.round(
-                            Object.entries(selectedMeals).reduce((total, [_key, selection]) => {
-                              const meal =
-                                selection.isPersonalized && selection.personalizedMeal
-                                  ? selection.personalizedMeal
-                                  : meals.find(m => m.id === selection.mealId);
-
-                              return total + (meal?.calories || 0);
-                            }, 0) / 7
-                          )
-                        : 0}
-                    </span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--color-text-muted)' }}>Personalized Meals:</span>
-                    <span className="ml-2 font-medium">
-                      {Object.values(selectedMeals).filter(selection => selection.isPersonalized).length}
-                    </span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--color-text-muted)' }}>Duration:</span>
-                    <span className="ml-2 font-medium">
-                      {startDate && endDate
-                        ? `${Math.ceil(
-                            (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
-                          )} days`
-                        : 'Ongoing'}
-                    </span>
-                  </div>
-                </div>
-
-                {Object.keys(selectedMeals).length > 0 && (
-                  <div className="mt-3 text-sm italic" style={{ color: 'var(--color-accent)' }}>
-                    Don&apos;t forget to click &quot;Create Meal Plan&quot; to save your selections!
-                  </div>
-                )}
-              </div>
-
-              {/* Instructions and Submit Button */}
-              <div className="flex flex-col gap-4">
+              <aside className="xl:sticky xl:top-20 h-fit space-y-4">
                 <div
-                  className="p-4 rounded-lg border-2 border-dashed"
+                  className="rounded-xl border p-4"
                   style={{
-                    borderColor: 'var(--color-accent)',
-                    background: 'var(--color-accent-translucent)',
+                    background: 'var(--color-bg-alt)',
+                    borderColor: hasMealsReady ? 'var(--color-accent)' : 'var(--color-border)',
                   }}
                 >
-                  <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Save size={18} style={{ color: 'var(--color-accent)' }} />
-                    <span style={{ color: 'var(--color-accent)' }}>Important: Save Your Meal Plan</span>
-                  </h4>
-                  <p className="text-sm" style={{ color: 'var(--color-text)' }}>
-                    Your meal assignments will not be saved until you click the &quot;Create Meal Plan&quot; button
-                    below. Make sure all your meals are assigned correctly before saving.
-                  </p>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <h4 className="font-semibold">Meal Plan Summary</h4>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full whitespace-nowrap"
+                      style={{
+                        background: hasMealsReady ? 'var(--color-accent)' : 'var(--color-surface)',
+                        color: hasMealsReady ? 'var(--color-text-on-accent)' : 'var(--color-text-muted)',
+                      }}
+                    >
+                      {totalSelectedMeals} selected
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
+                      <div style={{ color: 'var(--color-text-muted)' }}>Total Meals</div>
+                      <div className="text-base font-semibold">{totalSelectedMeals}</div>
+                    </div>
+                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
+                      <div style={{ color: 'var(--color-text-muted)' }}>Avg Calories</div>
+                      <div className="text-base font-semibold">{averageDailyCalories}</div>
+                    </div>
+                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
+                      <div style={{ color: 'var(--color-text-muted)' }}>Personalized</div>
+                      <div className="text-base font-semibold">{personalizedMealsCount}</div>
+                    </div>
+                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
+                      <div style={{ color: 'var(--color-text-muted)' }}>Duration</div>
+                      <div className="text-base font-semibold">{durationLabel}</div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex flex-col items-center">
-                  {Object.keys(selectedMeals).length > 0 && (
-                    <div
-                      className="w-full max-w-lg text-center mb-4 p-3 rounded-lg animate-slide-down"
-                      style={{ background: 'var(--color-accent-translucent)' }}
-                    >
-                      <p className="font-semibold text-sm" style={{ color: 'var(--color-accent)' }}>
-                        You&apos;ve selected {Object.keys(selectedMeals).length} meal(s). Click below to save all
-                        assignments.
-                      </p>
+                <div
+                  className="rounded-xl border p-4"
+                  style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                >
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <AlertCircle size={16} style={{ color: 'var(--color-accent)' }} />
+                    Ready To Save
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Client selected</span>
+                      <span style={{ color: isClientReady ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                        {isClientReady ? 'Done' : 'Missing'}
+                      </span>
                     </div>
-                  )}
+                    <div className="flex items-center justify-between">
+                      <span>Plan name</span>
+                      <span style={{ color: isPlanNameReady ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                        {isPlanNameReady ? 'Done' : 'Missing'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Start date</span>
+                      <span style={{ color: isStartDateReady ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                        {isStartDateReady ? 'Done' : 'Missing'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>At least 1 meal</span>
+                      <span style={{ color: hasMealsReady ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+                        {hasMealsReady ? 'Done' : 'Missing'}
+                      </span>
+                    </div>
+                  </div>
 
                   <button
                     onClick={handleSubmitMealPlan}
-                    disabled={
-                      loading || !selectedClientId || !planName || !startDate || Object.keys(selectedMeals).length === 0
-                    }
-                    className={`px-8 py-4 rounded-lg flex items-center gap-3 text-lg font-bold ${
-                      loading || !selectedClientId || !planName || !startDate || Object.keys(selectedMeals).length === 0
-                        ? 'opacity-50 cursor-not-allowed'
-                        : Object.keys(selectedMeals).length > 0
-                          ? 'animate-pulse hover:animate-none hover:scale-105 transition-transform'
-                          : ''
+                    disabled={!canSubmitMealPlan}
+                    className={`w-full mt-4 px-5 py-3 rounded-lg flex items-center justify-center gap-2 text-base font-semibold ${
+                      !canSubmitMealPlan ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 transition-opacity'
                     }`}
                     style={{
                       background: 'var(--color-accent)',
                       color: 'var(--color-text-on-accent)',
-                      boxShadow:
-                        Object.keys(selectedMeals).length > 0
-                          ? '0 8px 16px rgba(0, 0, 0, 0.2)'
-                          : '0 4px 6px rgba(0, 0, 0, 0.1)',
                     }}
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <Save size={24} />
+                        <Save size={18} />
                         {isEditingExistingPlan || hasExistingActivePlan ? 'Update Meal Plan' : 'Create Meal Plan'}
                       </>
                     )}
                   </button>
+
+                  <p className="mt-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    Changes are saved only after you click this button.
+                  </p>
                 </div>
-              </div>
+              </aside>
             </div>
           ) : (
             // Meal Selection Interface
@@ -1779,39 +1891,42 @@ export default function IntegratedMealAssignmentModal({
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => setSelectedMealType('all')}
+                      onClick={() => setMealTypeFilter('all')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border-2 ${
-                        selectedMealType === 'all'
+                        mealTypeFilter === 'all'
                           ? 'border-accent shadow-sm'
                           : 'border-transparent hover:border-opacity-30 hover:border-accent'
                       }`}
                       style={{
-                        background: selectedMealType === 'all' ? 'var(--color-accent)' : 'rgba(255,255,255,0.04)',
-                        color: selectedMealType === 'all' ? 'var(--color-text)' : 'var(--color-text-muted)',
-                        borderColor: selectedMealType === 'all' ? 'var(--color-accent)' : 'var(--color-border)',
+                        background: mealTypeFilter === 'all' ? 'var(--color-accent)' : 'rgba(255,255,255,0.04)',
+                        color: mealTypeFilter === 'all' ? 'var(--color-text)' : 'var(--color-text-muted)',
+                        borderColor: mealTypeFilter === 'all' ? 'var(--color-accent)' : 'var(--color-border)',
                       }}
                     >
                       All Meals
                     </button>
-                    {mealTypes.map(type => (
-                      <button
-                        key={type.value}
-                        onClick={() => setSelectedMealType(type.value)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 border-2 ${
-                          selectedMealType === type.value
-                            ? 'border-accent shadow-sm'
-                            : 'border-transparent hover:border-opacity-30 hover:border-accent'
-                        }`}
-                        style={{
-                          background: selectedMealType === type.value ? 'var(--color-black)' : 'rgba(255,255,255,0.04)',
-                          color: selectedMealType === type.value ? 'var(--color-text)' : 'var(--color-text-muted)',
-                          borderColor: selectedMealType === type.value ? 'var(--color-accent)' : 'var(--color-border)',
-                        }}
-                      >
-                        <span>{type.icon}</span>
-                        <span>{type.label}</span>
-                      </button>
-                    ))}
+                    {mealTypes.map(type => {
+                      const TypeIcon = type.icon;
+                      return (
+                        <button
+                          key={type.value}
+                          onClick={() => setMealTypeFilter(type.value)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 border-2 ${
+                            mealTypeFilter === type.value
+                              ? 'border-accent shadow-sm'
+                              : 'border-transparent hover:border-opacity-30 hover:border-accent'
+                          }`}
+                          style={{
+                            background: mealTypeFilter === type.value ? 'var(--color-black)' : 'rgba(255,255,255,0.04)',
+                            color: mealTypeFilter === type.value ? 'var(--color-text)' : 'var(--color-text-muted)',
+                            borderColor: mealTypeFilter === type.value ? 'var(--color-accent)' : 'var(--color-border)',
+                          }}
+                        >
+                          <TypeIcon size={14} />
+                          <span>{type.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

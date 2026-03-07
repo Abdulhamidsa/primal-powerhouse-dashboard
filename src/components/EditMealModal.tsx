@@ -4,6 +4,31 @@ import { useState, useEffect } from 'react';
 import NextImage from 'next/image';
 import { DataService } from '@/services/dataService';
 import ImageUpload from '@/components/ImageUpload';
+import IngredientSearch from '@/components/IngredientSearch';
+import type { SelectedIngredient } from '@/types/openFoodFacts';
+
+type EditableIngredient = {
+  id: string;
+  name: string;
+  amount: number;
+  unit: string;
+  foodId?: string;
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
+  nutritionPer100g?: {
+    caloriesKcal?: number;
+    proteinG?: number;
+    carbsG?: number;
+    fatG?: number;
+    fiberG?: number;
+  };
+};
+
+type EditableInstruction = {
+  id: string;
+  step: number;
+  instruction: string;
+};
 
 interface EditMealModalProps {
   isOpen: boolean;
@@ -30,8 +55,8 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     carbs: '',
     fat: '',
     fiber: '',
-    ingredients: [''],
-    instructions: [''],
+    ingredients: [] as EditableIngredient[],
+    instructions: [] as EditableInstruction[],
     prepTime: '',
     cookTime: '',
     servings: '1',
@@ -39,6 +64,164 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const servingsNumber = Math.max(1, Number(formData.servings) || 1);
+  const totalsPreview = {
+    calories: Number(formData.calories) || 0,
+    protein: Number(formData.protein) || 0,
+    carbs: Number(formData.carbs) || 0,
+    fat: Number(formData.fat) || 0,
+    fiber: Number(formData.fiber) || 0,
+  };
+  const perServingPreview = {
+    calories: Math.round(totalsPreview.calories / servingsNumber),
+    protein: Math.round((totalsPreview.protein / servingsNumber) * 10) / 10,
+    carbs: Math.round((totalsPreview.carbs / servingsNumber) * 10) / 10,
+    fat: Math.round((totalsPreview.fat / servingsNumber) * 10) / 10,
+    fiber: Math.round((totalsPreview.fiber / servingsNumber) * 10) / 10,
+  };
+
+  const recalculateNutritionFields = (ingredients: EditableIngredient[]) => {
+    let calories = 0;
+    let protein = 0;
+    let carbs = 0;
+    let fat = 0;
+    let fiber = 0;
+    let hasStructuredNutrition = false;
+
+    ingredients.forEach(ingredient => {
+      if (!ingredient.nutritionPer100g) return;
+
+      // Amount is treated as grams by default; piece inputs use gramsPerUnit conversion.
+      const grams =
+        ingredient.unit === 'piece' && (ingredient.gramsPerUnit ?? 0) > 0
+          ? (Number(ingredient.amount) || 0) * Number(ingredient.gramsPerUnit)
+          : Number(ingredient.amount) || 0;
+
+      if (grams <= 0) return;
+
+      hasStructuredNutrition = true;
+      const ratio = grams / 100;
+      calories += (ingredient.nutritionPer100g.caloriesKcal ?? 0) * ratio;
+      protein += (ingredient.nutritionPer100g.proteinG ?? 0) * ratio;
+      carbs += (ingredient.nutritionPer100g.carbsG ?? 0) * ratio;
+      fat += (ingredient.nutritionPer100g.fatG ?? 0) * ratio;
+      fiber += (ingredient.nutritionPer100g.fiberG ?? 0) * ratio;
+    });
+
+    if (!hasStructuredNutrition) {
+      return null;
+    }
+
+    return {
+      calories: String(Math.round(calories)),
+      protein: String(Math.round(protein * 10) / 10),
+      carbs: String(Math.round(carbs * 10) / 10),
+      fat: String(Math.round(fat * 10) / 10),
+      fiber: String(Math.round(fiber * 10) / 10),
+    };
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const nextNutrition = recalculateNutritionFields(formData.ingredients);
+    if (!nextNutrition) return;
+
+    setFormData(prev => {
+      if (
+        prev.calories === nextNutrition.calories &&
+        prev.protein === nextNutrition.protein &&
+        prev.carbs === nextNutrition.carbs &&
+        prev.fat === nextNutrition.fat &&
+        prev.fiber === nextNutrition.fiber
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        ...nextNutrition,
+      };
+    });
+  }, [formData.ingredients, isOpen]);
+
+  const normalizeIngredient = (ingredient: unknown, index: number): EditableIngredient => {
+    if (ingredient && typeof ingredient === 'object') {
+      const value = ingredient as Record<string, unknown>;
+      const nutrition =
+        value.nutritionPer100g && typeof value.nutritionPer100g === 'object'
+          ? (value.nutritionPer100g as Record<string, unknown>)
+          : null;
+
+      return {
+        id: typeof value.id === 'string' && value.id ? value.id : `ingredient-${Date.now()}-${index}`,
+        name: typeof value.name === 'string' ? value.name : '',
+        amount:
+          typeof value.amount === 'number'
+            ? value.amount
+            : typeof value.grams === 'number' && value.unit === 'piece' && typeof value.gramsPerUnit === 'number'
+              ? Math.round((value.grams / value.gramsPerUnit) * 100) / 100
+              : typeof value.grams === 'number'
+                ? value.grams
+                : 0,
+        unit: typeof value.unit === 'string' ? value.unit : 'g',
+        foodId: typeof value.foodId === 'string' ? value.foodId : undefined,
+        gramsPerUnit: typeof value.gramsPerUnit === 'number' ? value.gramsPerUnit : null,
+        displayUnitLabel: typeof value.displayUnitLabel === 'string' ? value.displayUnitLabel : null,
+        nutritionPer100g: nutrition
+          ? {
+              caloriesKcal: typeof nutrition.caloriesKcal === 'number' ? nutrition.caloriesKcal : 0,
+              proteinG: typeof nutrition.proteinG === 'number' ? nutrition.proteinG : 0,
+              carbsG: typeof nutrition.carbsG === 'number' ? nutrition.carbsG : 0,
+              fatG: typeof nutrition.fatG === 'number' ? nutrition.fatG : 0,
+              fiberG: typeof nutrition.fiberG === 'number' ? nutrition.fiberG : 0,
+            }
+          : undefined,
+      };
+    }
+
+    if (typeof ingredient === 'string') {
+      return {
+        id: `ingredient-${Date.now()}-${index}`,
+        name: ingredient,
+        amount: 100,
+        unit: 'g',
+      };
+    }
+
+    return {
+      id: `ingredient-${Date.now()}-${index}`,
+      name: '',
+      amount: 100,
+      unit: 'g',
+    };
+  };
+
+  const normalizeInstruction = (instruction: unknown, index: number): EditableInstruction => {
+    if (instruction && typeof instruction === 'object') {
+      const value = instruction as Record<string, unknown>;
+      return {
+        id: typeof value.id === 'string' && value.id ? value.id : `instruction-${Date.now()}-${index}`,
+        step: typeof value.step === 'number' ? value.step : index + 1,
+        instruction: typeof value.instruction === 'string' ? value.instruction : '',
+      };
+    }
+
+    if (typeof instruction === 'string') {
+      return {
+        id: `instruction-${Date.now()}-${index}`,
+        step: index + 1,
+        instruction,
+      };
+    }
+
+    return {
+      id: `instruction-${Date.now()}-${index}`,
+      step: index + 1,
+      instruction: '',
+    };
+  };
 
   // Fetch meal data when modal opens
   useEffect(() => {
@@ -88,8 +271,14 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
           carbs: String(meal.carbs || ''),
           fat: String(meal.fat || ''),
           fiber: String(meal.fiber || ''),
-          ingredients: Array.isArray(meal.ingredients) && meal.ingredients.length > 0 ? meal.ingredients : [''],
-          instructions: Array.isArray(meal.instructions) && meal.instructions.length > 0 ? meal.instructions : [''],
+          ingredients:
+            Array.isArray(meal.ingredients) && meal.ingredients.length > 0
+              ? meal.ingredients.map((ingredient: unknown, index: number) => normalizeIngredient(ingredient, index))
+              : [normalizeIngredient('', 0)],
+          instructions:
+            Array.isArray(meal.instructions) && meal.instructions.length > 0
+              ? meal.instructions.map((instruction: unknown, index: number) => normalizeInstruction(instruction, index))
+              : [normalizeInstruction('', 0)],
           prepTime: String(meal.prepTime || ''),
           cookTime: String(meal.cookTime || ''),
           servings: String(meal.servings || '1'),
@@ -122,9 +311,9 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     if (!formData.fat || isNaN(Number(formData.fat))) newErrors.fat = 'Valid fat amount required';
     if (!formData.prepTime || isNaN(Number(formData.prepTime))) newErrors.prepTime = 'Valid prep time required';
     if (!formData.cookTime || isNaN(Number(formData.cookTime))) newErrors.cookTime = 'Valid cook time required';
-    if (formData.ingredients.filter(ing => ing.trim()).length === 0)
+    if (formData.ingredients.filter(ingredient => ingredient.name.trim()).length === 0)
       newErrors.ingredients = 'At least one ingredient required';
-    if (formData.instructions.filter(inst => inst.trim()).length === 0)
+    if (formData.instructions.filter(instruction => instruction.instruction.trim()).length === 0)
       newErrors.instructions = 'At least one instruction required';
 
     setErrors(newErrors);
@@ -170,16 +359,42 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
       }
 
       // Update meal data with processed values
+      const cleanedIngredients = formData.ingredients.filter(ingredient => ingredient.name.trim());
+      const recalculatedNutrition = recalculateNutritionFields(cleanedIngredients);
+
       const mealData = {
         name: formData.name.trim(),
         type: formData.type,
-        calories: Number(formData.calories),
-        protein: Number(formData.protein),
-        carbs: Number(formData.carbs),
-        fat: Number(formData.fat),
-        fiber: Number(formData.fiber) || 0,
-        ingredients: formData.ingredients.filter(ing => ing.trim()),
-        instructions: formData.instructions.filter(inst => inst.trim()),
+        calories: recalculatedNutrition ? Number(recalculatedNutrition.calories) : Number(formData.calories),
+        protein: recalculatedNutrition ? Number(recalculatedNutrition.protein) : Number(formData.protein),
+        carbs: recalculatedNutrition ? Number(recalculatedNutrition.carbs) : Number(formData.carbs),
+        fat: recalculatedNutrition ? Number(recalculatedNutrition.fat) : Number(formData.fat),
+        fiber: recalculatedNutrition ? Number(recalculatedNutrition.fiber) : Number(formData.fiber) || 0,
+        ingredients: cleanedIngredients.map(ingredient => {
+          const effectiveGrams =
+            ingredient.unit === 'piece' && (ingredient.gramsPerUnit ?? 0) > 0
+              ? (Number(ingredient.amount) || 0) * Number(ingredient.gramsPerUnit)
+              : Number(ingredient.amount) || 0;
+
+          return {
+            id: ingredient.id,
+            foodId: ingredient.foodId,
+            name: ingredient.name,
+            amount: Number(ingredient.amount) || 0,
+            grams: Math.round(effectiveGrams * 100) / 100,
+            unit: ingredient.unit || 'g',
+            gramsPerUnit: ingredient.gramsPerUnit ?? null,
+            displayUnitLabel: ingredient.displayUnitLabel ?? null,
+            nutritionPer100g: ingredient.nutritionPer100g,
+          };
+        }),
+        instructions: formData.instructions
+          .filter(instruction => instruction.instruction.trim())
+          .map((instruction, index) => ({
+            id: instruction.id,
+            step: index + 1,
+            instruction: instruction.instruction,
+          })),
         prepTime: Number(formData.prepTime),
         cookTime: Number(formData.cookTime),
         servings: Number(formData.servings),
@@ -211,8 +426,8 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
       carbs: '',
       fat: '',
       fiber: '',
-      ingredients: [''],
-      instructions: [''],
+      ingredients: [],
+      instructions: [],
       prepTime: '',
       cookTime: '',
       servings: '1',
@@ -235,21 +450,21 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     }
   };
 
-  const handleArrayChange = (field: 'ingredients' | 'instructions' | 'tags', index: number, value: string) => {
+  const handleArrayChange = (field: 'tags', index: number, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: prev[field].map((item, i) => (i === index ? value : item)),
     }));
   };
 
-  const addArrayItem = (field: 'ingredients' | 'instructions' | 'tags') => {
+  const addArrayItem = (field: 'tags') => {
     setFormData(prev => ({
       ...prev,
       [field]: [...prev[field], ''],
     }));
   };
 
-  const removeArrayItem = (field: 'ingredients' | 'instructions' | 'tags', index: number) => {
+  const removeArrayItem = (field: 'tags', index: number) => {
     if (formData[field].length > 1) {
       setFormData(prev => ({
         ...prev,
@@ -265,6 +480,124 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
 
   const handleImageError = (error: string) => {
     setUploadError(error);
+  };
+
+  const addIngredientFromDb = (ingredient: SelectedIngredient) => {
+    setFormData(prev => {
+      const ingredients = [
+        ...prev.ingredients,
+        {
+          id: `ingredient-${Date.now()}-${ingredient.id}`,
+          foodId: ingredient.id,
+          name: ingredient.name,
+          amount: ingredient.servingUnit === 'piece' ? 1 : ingredient.grams || 100,
+          unit: ingredient.servingUnit === 'piece' ? 'piece' : 'g',
+          gramsPerUnit: ingredient.gramsPerUnit ?? null,
+          displayUnitLabel: ingredient.displayUnitLabel ?? null,
+          nutritionPer100g: {
+            caloriesKcal: ingredient.kcalPer100g ?? 0,
+            proteinG: ingredient.proteinPer100g ?? 0,
+            carbsG: ingredient.carbsPer100g ?? 0,
+            fatG: ingredient.fatPer100g ?? 0,
+            fiberG: ingredient.fiberPer100g ?? 0,
+          },
+        },
+      ];
+
+      const nextNutrition = recalculateNutritionFields(ingredients);
+      return {
+        ...prev,
+        ingredients,
+        ...(nextNutrition ?? {}),
+      };
+    });
+  };
+
+  const updateIngredientField = (index: number, field: keyof EditableIngredient, value: string | number) => {
+    setFormData(prev => {
+      const ingredients = prev.ingredients.map((ingredient, i) =>
+        i === index ? { ...ingredient, [field]: value } : ingredient
+      );
+      const nextNutrition = recalculateNutritionFields(ingredients);
+
+      return {
+        ...prev,
+        ingredients,
+        ...(nextNutrition ?? {}),
+      };
+    });
+  };
+
+  const addIngredientRow = () => {
+    setFormData(prev => {
+      const ingredients = [
+        ...prev.ingredients,
+        {
+          id: `ingredient-${Date.now()}-${prev.ingredients.length}`,
+          name: '',
+          amount: 100,
+          unit: 'g',
+        },
+      ];
+      const nextNutrition = recalculateNutritionFields(ingredients);
+      return {
+        ...prev,
+        ingredients,
+        ...(nextNutrition ?? {}),
+      };
+    });
+  };
+
+  const removeIngredientRow = (index: number) => {
+    setFormData(prev => {
+      const ingredients =
+        prev.ingredients.length > 1 ? prev.ingredients.filter((_, i) => i !== index) : prev.ingredients;
+      const nextNutrition = recalculateNutritionFields(ingredients);
+      return {
+        ...prev,
+        ingredients,
+        ...(nextNutrition ?? {}),
+      };
+    });
+  };
+
+  const updateInstructionField = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      instructions: prev.instructions.map((instruction, i) =>
+        i === index ? { ...instruction, instruction: value } : instruction
+      ),
+    }));
+  };
+
+  const addInstructionRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      instructions: [
+        ...prev.instructions,
+        {
+          id: `instruction-${Date.now()}-${prev.instructions.length}`,
+          step: prev.instructions.length + 1,
+          instruction: '',
+        },
+      ],
+    }));
+  };
+
+  const removeInstructionRow = (index: number) => {
+    setFormData(prev => {
+      if (prev.instructions.length <= 1) return prev;
+      const next = prev.instructions
+        .filter((_, i) => i !== index)
+        .map((instruction, i) => ({
+          ...instruction,
+          step: i + 1,
+        }));
+      return {
+        ...prev,
+        instructions: next,
+      };
+    });
   };
 
   return (
@@ -297,6 +630,40 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{errors.general}</div>
             )}
+
+            <div className="sticky top-0 z-20 rounded-xl border border-zinc-700 bg-zinc-900/95 backdrop-blur p-3 shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold tracking-wide text-zinc-300 uppercase">Live Totals</p>
+                <p className="text-xs text-zinc-400">Per serving shown below (servings: {servingsNumber})</p>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <p className="text-[10px] text-zinc-400">kcal</p>
+                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.calories}</p>
+                  <p className="text-[10px] text-zinc-500">{perServingPreview.calories}/serv</p>
+                </div>
+                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <p className="text-[10px] text-zinc-400">Protein</p>
+                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.protein}g</p>
+                  <p className="text-[10px] text-zinc-500">{perServingPreview.protein}g/serv</p>
+                </div>
+                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <p className="text-[10px] text-zinc-400">Carbs</p>
+                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.carbs}g</p>
+                  <p className="text-[10px] text-zinc-500">{perServingPreview.carbs}g/serv</p>
+                </div>
+                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <p className="text-[10px] text-zinc-400">Fat</p>
+                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fat}g</p>
+                  <p className="text-[10px] text-zinc-500">{perServingPreview.fat}g/serv</p>
+                </div>
+                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <p className="text-[10px] text-zinc-400">Fiber</p>
+                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fiber}g</p>
+                  <p className="text-[10px] text-zinc-500">{perServingPreview.fiber}g/serv</p>
+                </div>
+              </div>
+            </div>
 
             {/* Template Meal Warning */}
             {showTemplateWarning && !isPersonalizedMeal && (
@@ -384,7 +751,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   <input
                     type="number"
                     value={formData.calories}
-                    onChange={e => handleInputChange('calories', e.target.value)}
+                    readOnly
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-800 text-zinc-100 ${errors.calories ? 'border-red-500' : 'border-zinc-700'}`}
                     placeholder="450"
                   />
@@ -396,7 +763,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   <input
                     type="number"
                     value={formData.protein}
-                    onChange={e => handleInputChange('protein', e.target.value)}
+                    readOnly
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-800 text-zinc-100 ${errors.protein ? 'border-red-500' : 'border-zinc-700'}`}
                     placeholder="25"
                   />
@@ -408,7 +775,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   <input
                     type="number"
                     value={formData.carbs}
-                    onChange={e => handleInputChange('carbs', e.target.value)}
+                    readOnly
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-800 text-zinc-100 ${errors.carbs ? 'border-red-500' : 'border-zinc-700'}`}
                     placeholder="30"
                   />
@@ -420,7 +787,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   <input
                     type="number"
                     value={formData.fat}
-                    onChange={e => handleInputChange('fat', e.target.value)}
+                    readOnly
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-800 text-zinc-100 ${errors.fat ? 'border-red-500' : 'border-zinc-700'}`}
                     placeholder="15"
                   />
@@ -432,7 +799,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   <input
                     type="number"
                     value={formData.fiber}
-                    onChange={e => handleInputChange('fiber', e.target.value)}
+                    readOnly
                     className="w-full px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="8"
                   />
@@ -483,28 +850,67 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-zinc-100">Ingredients *</h3>
-                <button
-                  type="button"
-                  onClick={() => addArrayItem('ingredients')}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                >
-                  + Add Ingredient
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={addIngredientRow}
+                    className="px-4 py-2 bg-zinc-700 text-zinc-100 rounded-lg hover:bg-zinc-600 transition-colors text-sm"
+                  >
+                    + Manual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // keeps consistent with personalized flow: add from DB search section below
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    + From DB (search below)
+                  </button>
+                </div>
               </div>
+
+              <div className="mb-4 rounded-lg border border-zinc-700 p-3 bg-zinc-850">
+                <IngredientSearch
+                  onAddIngredientAction={addIngredientFromDb}
+                  selectedIds={
+                    new Set(
+                      formData.ingredients
+                        .map(ingredient => ingredient.foodId)
+                        .filter((foodId): foodId is string => Boolean(foodId))
+                    )
+                  }
+                />
+              </div>
+
               <div className="space-y-2">
                 {formData.ingredients.map((ingredient, index) => (
                   <div key={index} className="flex gap-2">
                     <input
                       type="text"
-                      value={ingredient}
-                      onChange={e => handleArrayChange('ingredients', index, e.target.value)}
-                      className="flex-1 px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., 6 oz chicken breast"
+                      value={ingredient.name}
+                      onChange={e => updateIngredientField(index, 'name', e.target.value)}
+                      className="flex-1 px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg"
+                      placeholder="Ingredient name"
+                    />
+                    <input
+                      type="number"
+                      value={ingredient.amount}
+                      onChange={e => updateIngredientField(index, 'amount', Number(e.target.value) || 0)}
+                      className="w-28 px-3 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg"
+                      placeholder="grams"
+                    />
+                    <input
+                      type="text"
+                      value={ingredient.unit}
+                      onChange={e => updateIngredientField(index, 'unit', e.target.value)}
+                      className="w-24 px-3 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg"
+                      placeholder="unit"
                     />
                     {formData.ingredients.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeArrayItem('ingredients', index)}
+                        onClick={() => removeIngredientRow(index)}
                         className="px-3 py-3 text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
                       >
                         ✕
@@ -522,7 +928,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                 <h3 className="text-lg font-semibold text-zinc-100">Instructions *</h3>
                 <button
                   type="button"
-                  onClick={() => addArrayItem('instructions')}
+                  onClick={addInstructionRow}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
                 >
                   + Add Step
@@ -536,15 +942,15 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                     </span>
                     <input
                       type="text"
-                      value={instruction}
-                      onChange={e => handleArrayChange('instructions', index, e.target.value)}
+                      value={instruction.instruction}
+                      onChange={e => updateInstructionField(index, e.target.value)}
                       className="flex-1 px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="e.g., Season chicken with salt and pepper"
                     />
                     {formData.instructions.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeArrayItem('instructions', index)}
+                        onClick={() => removeInstructionRow(index)}
                         className="px-3 py-3 text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
                       >
                         ✕

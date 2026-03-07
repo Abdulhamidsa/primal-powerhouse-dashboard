@@ -203,15 +203,44 @@ export default function AssignPersonalizedMealsModal({
       if (clientId) {
         setLoading(true);
 
+        const normalizeIngredient = (ingredient: unknown) => {
+          if (typeof ingredient === 'string') {
+            // Keep legacy plain-text ingredients compatible.
+            return ingredient;
+          }
+
+          if (!ingredient || typeof ingredient !== 'object') {
+            return '';
+          }
+
+          const value = ingredient as Record<string, unknown>;
+          const name = typeof value.name === 'string' ? value.name : '';
+          const amount = typeof value.amount === 'number' ? value.amount : null;
+          const unit = typeof value.unit === 'string' ? value.unit : null;
+
+          // Preserve structured ingredients (foodId, nutritionPer100g, etc.) when present.
+          if ('foodId' in value || 'nutritionPer100g' in value || 'grams' in value) {
+            return value;
+          }
+
+          if (!name) {
+            return '';
+          }
+
+          if (amount !== null && unit) {
+            return `${amount} ${unit} ${name}`;
+          }
+
+          return name;
+        };
+
         // Convert Meal to PersonalizedMealInput by adding required fields
         // and handling the specific format requirements
         const mealInput = {
           name: personalizedMeal.name,
           description: personalizedMeal.description || '',
           ingredients: Array.isArray(personalizedMeal.ingredients)
-            ? personalizedMeal.ingredients.map(ing =>
-                typeof ing === 'string' ? ing : `${ing.amount} ${ing.unit} ${ing.name}`
-              )
+            ? personalizedMeal.ingredients.map(normalizeIngredient).filter(Boolean)
             : [],
           instructions: Array.isArray(personalizedMeal.instructions)
             ? personalizedMeal.instructions.map(inst => (typeof inst === 'string' ? inst : inst.instruction))
