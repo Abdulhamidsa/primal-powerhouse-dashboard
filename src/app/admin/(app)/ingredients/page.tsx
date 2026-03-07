@@ -289,7 +289,9 @@ export default function IngredientsPage() {
               </p>
 
               {editError ? (
-                <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">{editError}</div>
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">
+                  {editError}
+                </div>
               ) : null}
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -367,8 +369,8 @@ export default function IngredientsPage() {
           <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl p-6 space-y-4">
             <h3 className="text-lg font-semibold text-zinc-100">Confirm Global Refresh</h3>
             <p className="text-sm text-zinc-300">
-              This will update <span className="font-semibold">{pendingConfirmation.affectedMealsCount}</span> meals that
-              use this ingredient.
+              This will update <span className="font-semibold">{pendingConfirmation.affectedMealsCount}</span> meals
+              that use this ingredient.
             </p>
             <p className="text-xs text-zinc-400">
               Partial success mode is enabled: successful meal updates are saved even if some meals fail.

@@ -6,7 +6,10 @@ import {
   previewIngredientMacroRefresh,
   startIngredientMacroRefresh,
 } from '@/features/ingredient-macro-refresh/api/ingredientMacroRefresh.api';
-import type { IngredientMacroRefreshScope, IngredientMacroRefreshStatusResponse } from '@/features/ingredient-macro-refresh/types/refresh.types';
+import type {
+  IngredientMacroRefreshScope,
+  IngredientMacroRefreshStatusResponse,
+} from '@/features/ingredient-macro-refresh/types/refresh.types';
 
 export function useIngredientMacroRefresh() {
   const [isPreviewing, setIsPreviewing] = useState(false);
