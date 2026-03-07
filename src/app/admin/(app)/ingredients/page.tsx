@@ -5,7 +5,16 @@ import FoodForm from '@/features/foods/components/FoodForm';
 import { useFoods } from '@/features/foods/hooks/useFoods';
 import type { FoodCategory } from '@/features/foods/types/food.types';
 
-const categoryOptions: Array<FoodCategory | 'all'> = ['all', 'protein', 'carb', 'fat', 'dairy', 'fruit', 'vegetable', 'extra'];
+const categoryOptions: Array<FoodCategory | 'all'> = [
+  'all',
+  'protein',
+  'carb',
+  'fat',
+  'dairy',
+  'fruit',
+  'vegetable',
+  'extra',
+];
 
 export default function IngredientsPage() {
   const [query, setQuery] = useState('');
@@ -29,7 +38,9 @@ export default function IngredientsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-100">Ingredients</h1>
-          <p className="text-sm text-zinc-400">Add and manage your internal ingredient catalog used by meal building.</p>
+          <p className="text-sm text-zinc-400">
+            Add and manage your internal ingredient catalog used by meal building.
+          </p>
         </div>
 
         <button
@@ -69,7 +80,9 @@ export default function IngredientsPage() {
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900">
         <div className="flex items-center justify-between border-b border-zinc-800 p-4">
-          <p className="text-sm text-zinc-300">{isLoading ? 'Loading ingredients...' : `${total} ingredient${total === 1 ? '' : 's'}`}</p>
+          <p className="text-sm text-zinc-300">
+            {isLoading ? 'Loading ingredients...' : `${total} ingredient${total === 1 ? '' : 's'}`}
+          </p>
           <button
             type="button"
             onClick={refresh}
@@ -104,7 +117,9 @@ export default function IngredientsPage() {
                     <td className="px-4 py-2">{item.state}</td>
                     <td className="px-4 py-2">
                       {item.baseUnit}
-                      {item.baseUnit === 'unit' && item.gramsPerUnit ? ` (${item.gramsPerUnit}g ${item.displayUnitLabel || 'unit'})` : ''}
+                      {item.baseUnit === 'unit' && item.gramsPerUnit
+                        ? ` (${item.gramsPerUnit}g ${item.displayUnitLabel || 'unit'})`
+                        : ''}
                     </td>
                     <td className="px-4 py-2">{item.caloriesKcal}</td>
                     <td className="px-4 py-2">{item.proteinG}g</td>
