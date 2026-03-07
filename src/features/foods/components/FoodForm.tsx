@@ -12,6 +12,7 @@ type FoodFormProps = {
 
 const categoryOptions = ['protein', 'carb', 'fat', 'dairy', 'fruit', 'vegetable', 'extra'] as const;
 const stateOptions = ['raw', 'dry', 'as_sold', 'cooked'] as const;
+const sourceOptions = ['custom', 'system'] as const;
 
 export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: FoodFormProps) {
   const { submit } = useCreateFood();
@@ -30,6 +31,10 @@ export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: Foo
     gramsPerUnit: '',
     displayUnitLabel: '',
     sourceRef: '',
+    source: 'custom' as (typeof sourceOptions)[number],
+    isActive: true,
+    verifiedBy: '',
+    verifiedAt: '',
   });
 
   const parsedPreview = useMemo(() => {
@@ -42,11 +47,11 @@ export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: Foo
       carbsG: Number(formData.carbsG),
       fatG: Number(formData.fatG),
       fiberG: formData.fiberG ? Number(formData.fiberG) : null,
-      source: 'custom' as const,
-      isActive: true,
+      source: formData.source,
+      isActive: formData.isActive,
       sourceRef: formData.sourceRef.trim() ? formData.sourceRef.trim() : null,
-      verifiedAt: null,
-      verifiedBy: null,
+      verifiedAt: formData.verifiedAt ? new Date(formData.verifiedAt).toISOString() : null,
+      verifiedBy: formData.verifiedBy.trim() ? formData.verifiedBy.trim() : null,
       baseUnit: formData.baseUnit,
       gramsPerUnit: formData.baseUnit === 'unit' ? Number(formData.gramsPerUnit) : null,
       displayUnitLabel: formData.baseUnit === 'unit' ? formData.displayUnitLabel.trim() || null : null,
@@ -72,6 +77,10 @@ export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: Foo
       gramsPerUnit: '',
       displayUnitLabel: '',
       sourceRef: '',
+      source: 'custom',
+      isActive: true,
+      verifiedBy: '',
+      verifiedAt: '',
     });
   };
 
@@ -234,6 +243,50 @@ export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: Foo
                 onChange={e => setFormData(prev => ({ ...prev, sourceRef: e.target.value }))}
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-zinc-100"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-zinc-300 mb-2">Source</label>
+              <select
+                value={formData.source}
+                onChange={e => setFormData(prev => ({ ...prev, source: e.target.value as (typeof sourceOptions)[number] }))}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-zinc-100"
+              >
+                {sourceOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-300 mb-2">Verified By (optional)</label>
+              <input
+                value={formData.verifiedBy}
+                onChange={e => setFormData(prev => ({ ...prev, verifiedBy: e.target.value }))}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-zinc-100"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-300 mb-2">Verified At (optional)</label>
+              <input
+                type="datetime-local"
+                value={formData.verifiedAt}
+                onChange={e => setFormData(prev => ({ ...prev, verifiedAt: e.target.value }))}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-zinc-100"
+              />
+            </div>
+            <div className="flex items-end">
+              <label className="inline-flex items-center gap-2 text-sm text-zinc-200">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={e => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                />
+                Active
+              </label>
             </div>
           </div>
 

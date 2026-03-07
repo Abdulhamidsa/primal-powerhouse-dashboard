@@ -9,6 +9,8 @@
     "db:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
     "db:studio:dev": "dotenv -e .env.dev -- prisma studio",
     "db:studio:prod": "dotenv -e .env.prod -- prisma studio",
+    "db:foods:import:dev": "dotenv -e .env.dev -- node scripts/import-food-patch.js",
+    "db:foods:import:prod": "dotenv -e .env.prod -- node scripts/import-food-patch.js",
     "privacy:cleanup": "node scripts/privacy-cleanup.js",
     "postinstall": "prisma generate",
     "build": "next build",

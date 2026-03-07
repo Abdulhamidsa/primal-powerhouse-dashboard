@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart2, Utensils, Users, Flame, Apple, BarChart, User, Shield } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, Apple, BarChart, User, Shield, Salad } from 'lucide-react';
 
 type NavItem = {
   name: string;
@@ -27,11 +27,17 @@ const adminNavItems: NavItem[] = [
     icon: Utensils,
     description: 'Manage meal library',
   },
+  // {
+  //   name: 'Meal Planner',
+  //   href: '/admin/meal-planner',
+  //   icon: Apple,
+  //   description: 'Create meal plans',
+  // },
   {
-    name: 'Meal Planner',
-    href: '/admin/meal-planner',
-    icon: Apple,
-    description: 'Create meal plans',
+    name: 'Ingredients',
+    href: '/admin/ingredients',
+    icon: Salad,
+    description: 'Food catalog',
   },
   {
     name: 'Videos',

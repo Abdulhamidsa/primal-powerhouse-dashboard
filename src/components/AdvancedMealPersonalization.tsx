@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Meal, MealIngredient, MealInstruction } from '@/types/meal';
 import { Utensils, Sunrise, Sun, Moon, Apple, Save, X } from 'lucide-react';
 import IngredientSearch from './IngredientSearch';
+import FoodForm from '@/features/foods/components/FoodForm';
 import type { SelectedIngredient } from '@/types/openFoodFacts';
 
 interface MealPersonalizationProps {
@@ -24,6 +25,7 @@ export default function MealPersonalization({
   // State for personalized meal data
   const [personalizedMeal, setPersonalizedMeal] = useState<Meal | null>(null);
   const [, setSelectedImage] = useState<string>('');
+  const [showFoodFormModal, setShowFoodFormModal] = useState(false);
 
   const calculateNutritionFromIngredients = (ingredients: MealIngredient[]) => {
     let calories = 0;
@@ -764,6 +766,17 @@ export default function MealPersonalization({
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Ingredients</h3>
+              <button
+                type="button"
+                onClick={() => setShowFoodFormModal(true)}
+                className="px-3 py-1.5 rounded-lg text-sm"
+                style={{
+                  background: 'var(--color-accent-translucent)',
+                  color: 'var(--color-accent)',
+                }}
+              >
+                + Add to DB
+              </button>
             </div>
 
             <div className="mb-4 rounded-lg border p-4" style={{ borderColor: 'var(--color-border)' }}>
@@ -990,6 +1003,12 @@ export default function MealPersonalization({
           </div>
         </div>
       </div>
+
+      <FoodForm
+        isOpen={showFoodFormModal}
+        onCloseAction={() => setShowFoodFormModal(false)}
+        onCreatedAction={() => setShowFoodFormModal(false)}
+      />
     </div>
   );
 }

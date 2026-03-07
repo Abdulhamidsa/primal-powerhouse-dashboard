@@ -344,3 +344,8 @@ all .md files except README.md
 
 
 *fullSeed.ts
+## comment out all js files
+*.js
+
+## json files except package.json and prisma files
+*.json
