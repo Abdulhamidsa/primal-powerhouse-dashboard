@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { Copy, Sparkles } from 'lucide-react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
+import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 import { DataService } from '@/services/dataService';
 import IngredientSearch from './IngredientSearch';
 import SelectedIngredientRow from './SelectedIngredientRow';
@@ -35,10 +37,26 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [instructions, setInstructions] = useState<string[]>(['']);
 
+  const {
+    promptText,
+    error: promptError,
+    copied,
+    hasPrompt,
+    generate,
+    copy,
+    reset: resetPromptState,
+  } = useMealPromptGenerator();
+
   const selectedIds = useMemo(() => new Set(state.selectedIngredients.map(ing => ing.id)), [state.selectedIngredients]);
 
   const totals = calculateTotals();
   const perServing = calculatePerServingNutrition();
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetPromptState();
+    }
+  }, [isOpen, resetPromptState]);
 
   if (!isOpen) return null;
 
@@ -172,6 +190,13 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     setInstructions(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   };
 
+  const handleGeneratePrompt = () => {
+    generate({
+      mealName: state.name,
+      ingredients: state.selectedIngredients.map(ingredient => ingredient.name),
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black backdrop-blur-sm p-2 sm:p-6">
       <div className="w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
@@ -263,6 +288,45 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                 onError={setUploadError}
                 disabled={loading}
               />
+
+              <button
+                type="button"
+                onClick={handleGeneratePrompt}
+                disabled={loading || !state.name.trim()}
+                className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Sparkles size={16} />
+                {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
+              </button>
+
+              <div className="mt-4 rounded-lg border border-zinc-700 bg-zinc-950/80 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-zinc-300">ChatGPT Image Prompt</p>
+                  <button
+                    type="button"
+                    onClick={copy}
+                    disabled={!hasPrompt}
+                    className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Copy generated prompt"
+                    title="Copy prompt"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+
+                <textarea
+                  readOnly
+                  value={
+                    hasPrompt
+                      ? promptText
+                      : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
+                  }
+                  className="w-full min-h-[140px] rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
+                />
+
+                {copied ? <p className="mt-2 text-xs text-emerald-400">Copied</p> : null}
+                {promptError ? <p className="mt-2 text-xs text-red-400">{promptError}</p> : null}
+              </div>
             </div>
 
             {/* Ingredient Search */}
