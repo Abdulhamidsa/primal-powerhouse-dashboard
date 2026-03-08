@@ -52,6 +52,13 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const totals = calculateTotals();
   const perServing = calculatePerServingNutrition();
 
+  const parseInstructionSteps = (items: string[]): string[] => {
+    return items
+      .flatMap(item => item.split(/[\n,]+/g))
+      .map(step => step.replace(/^\s*\d+[\).:\-]?\s*/, '').trim())
+      .filter(Boolean);
+  };
+
   useEffect(() => {
     if (!isOpen) {
       resetPromptState();
@@ -62,6 +69,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
+    const parsedInstructions = parseInstructionSteps(instructions);
 
     if (!state.name.trim()) {
       newErrors.name = 'Meal name is required';
@@ -72,7 +80,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     if (state.servings < 1) {
       newErrors.servings = 'Servings must be at least 1';
     }
-    if (instructions.filter(instruction => instruction.trim()).length === 0) {
+    if (parsedInstructions.length === 0) {
       newErrors.instructions = 'At least one instruction is required';
     }
 
@@ -92,6 +100,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     try {
       setLoading(true);
       setUploadError('');
+      const parsedInstructions = parseInstructionSteps(instructions);
 
       const templateIngredients = state.selectedIngredients.map(ing => {
         const unit = ing.servingUnit ?? 'g';
@@ -149,7 +158,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         fat: totals.fat,
         fiber: totals.fiber || 0,
         ingredients: templateIngredients,
-        instructions: instructions.filter(instruction => instruction.trim()),
+        instructions: parsedInstructions,
         prepTime: 0,
         cookTime: 0,
         servings: state.servings,
@@ -188,6 +197,19 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
 
   const removeInstruction = (index: number) => {
     setInstructions(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
+  const splitBulkInstructions = () => {
+    const parsed = parseInstructionSteps(instructions);
+    setInstructions(parsed.length > 0 ? parsed : ['']);
+
+    if (parsed.length > 0) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next.instructions;
+        return next;
+      });
+    }
   };
 
   const handleGeneratePrompt = () => {
@@ -370,14 +392,27 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-zinc-100">Instructions</h3>
-                <button
-                  type="button"
-                  onClick={addInstruction}
-                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
-                >
-                  + Add Step
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={splitBulkInstructions}
+                    className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
+                  >
+                    Split Commas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addInstruction}
+                    className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
+                  >
+                    + Add Step
+                  </button>
+                </div>
               </div>
+
+              <p className="mb-3 text-xs text-zinc-400">
+                Tip: paste bulk text in one line using commas, then click `Split Commas`.
+              </p>
 
               <div className="space-y-2">
                 {instructions.map((instruction, index) => (
