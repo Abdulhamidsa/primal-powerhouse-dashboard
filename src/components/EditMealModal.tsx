@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import NextImage from 'next/image';
+import { Copy, Sparkles } from 'lucide-react';
 import { DataService } from '@/services/dataService';
 import ImageUpload from '@/components/ImageUpload';
 import IngredientSearch from '@/components/IngredientSearch';
 import type { SelectedIngredient } from '@/types/openFoodFacts';
+import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 
 type EditableIngredient = {
   id: string;
@@ -64,6 +66,16 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    promptText,
+    error: promptError,
+    copied,
+    hasPrompt,
+    generate,
+    copy,
+    reset: resetPromptState,
+  } = useMealPromptGenerator();
 
   const servingsNumber = Math.max(1, Number(formData.servings) || 1);
   const totalsPreview = {
@@ -299,6 +311,12 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     }
   }, [isOpen, mealId]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      resetPromptState();
+    }
+  }, [isOpen, resetPromptState]);
+
   if (!isOpen) return null;
 
   const validateForm = () => {
@@ -441,6 +459,14 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     setShowTemplateWarning(false);
     setErrors({});
     setUploadError('');
+    resetPromptState();
+  };
+
+  const handleGeneratePrompt = () => {
+    generate({
+      mealName: formData.name,
+      ingredients: formData.ingredients.map(ingredient => ingredient.name).filter(Boolean),
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -1016,6 +1042,46 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   ? 'New image will be uploaded when you update the meal'
                   : 'Upload a new image to replace the current one'}
               </p>
+            </div>
+
+            {/* ChatGPT Prompt Generator */}
+            <div className="rounded-lg border border-zinc-700 bg-zinc-900/60 p-4">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <h3 className="text-sm font-semibold text-zinc-100">ChatGPT Image Prompt</h3>
+                <button
+                  type="button"
+                  onClick={copy}
+                  disabled={!hasPrompt}
+                  className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-800 p-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="Copy generated prompt"
+                  title="Copy prompt"
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGeneratePrompt}
+                disabled={loading || !formData.name.trim()}
+                className="mb-3 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Sparkles size={16} />
+                {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
+              </button>
+
+              <textarea
+                readOnly
+                value={
+                  hasPrompt
+                    ? promptText
+                    : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
+                }
+                className="w-full min-h-[140px] rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
+              />
+
+              {copied ? <p className="mt-2 text-xs text-emerald-400">Copied</p> : null}
+              {promptError ? <p className="mt-2 text-xs text-red-400">{promptError}</p> : null}
             </div>
 
             {/* Form Actions */}
