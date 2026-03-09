@@ -238,8 +238,9 @@ export function ClientNutritionComparisonPanel({ clientId }: { clientId: string 
             Last 7 Days (Calories)
           </h4>
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            Avg Target: {data.summary.avgTargetCalories ?? '—'} kcal | Avg Actual: {data.summary.avgActualCalories ?? '—'}
-            {' '}kcal | Avg Remaining: {data.summary.avgRemainingCalories ?? '—'} kcal
+            Avg Target: {data.summary.avgTargetCalories ?? '—'} kcal | Avg Actual:{' '}
+            {data.summary.avgActualCalories ?? '—'} kcal | Avg Remaining: {data.summary.avgRemainingCalories ?? '—'}{' '}
+            kcal
           </p>
         </div>
 

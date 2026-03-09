@@ -151,19 +151,28 @@ export function MealPlanRecalculationModal({
         </div>
 
         {!activeMealPlan && (
-          <div className="p-3 rounded-lg text-sm mb-4" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
+          <div
+            className="p-3 rounded-lg text-sm mb-4"
+            style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}
+          >
             No active meal plan found for this client.
           </div>
         )}
 
         {errorMessage && (
-          <div className="p-3 rounded-lg text-sm mb-4" style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444' }}>
+          <div
+            className="p-3 rounded-lg text-sm mb-4"
+            style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444' }}
+          >
             {errorMessage}
           </div>
         )}
 
         {previewResult?.warning && (
-          <div className="p-3 rounded-lg text-sm mb-4" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
+          <div
+            className="p-3 rounded-lg text-sm mb-4"
+            style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}
+          >
             {previewResult.warning}
           </div>
         )}
@@ -242,7 +251,10 @@ export function MealPlanRecalculationModal({
 
 function StatItem({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border p-3" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+    <div
+      className="rounded-xl border p-3"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+    >
       <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
         {label}
       </p>

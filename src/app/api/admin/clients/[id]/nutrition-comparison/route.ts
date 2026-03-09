@@ -279,8 +279,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         id: client.id,
         name: client.name,
       },
-      estimationNote:
-        'Actual intake is calculated from active meal-plan assignments for each day (portion-adjusted).',
+      estimationNote: 'Actual intake is calculated from active meal-plan assignments for each day (portion-adjusted).',
       today,
       summary,
       days,

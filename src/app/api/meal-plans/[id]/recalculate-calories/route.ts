@@ -130,7 +130,11 @@ function getGoalSafetyFloors(goal: string | null | undefined): { minCalories: nu
   return { minCalories: 1400, proteinPerKgFloor: 1.6 };
 }
 
-function computeTargets(newDailyCalories: number, weightKg: number, goal: string | null | undefined): RecalculationMacroTargets {
+function computeTargets(
+  newDailyCalories: number,
+  weightKg: number,
+  goal: string | null | undefined
+): RecalculationMacroTargets {
   const floors = getGoalSafetyFloors(goal);
   const adjustedCalories = Math.max(newDailyCalories, floors.minCalories);
 
@@ -294,13 +298,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const targets = computeTargets(input.newDailyCalories, weightKg, latestHealthGoal?.goal);
 
-    const currentTotals = calculateTotals(
-      mealPlan.mealAssignments.map(a => ({ portion: a.portion, meal: a.meal }))
-    );
+    const currentTotals = calculateTotals(mealPlan.mealAssignments.map(a => ({ portion: a.portion, meal: a.meal })));
 
     if (currentTotals.calories <= 0) {
       return NextResponse.json(
-        { message: 'Current meal plan has invalid calorie totals. Adjust target or meals first.', recoveryAction: 'Adjust target' },
+        {
+          message: 'Current meal plan has invalid calorie totals. Adjust target or meals first.',
+          recoveryAction: 'Adjust target',
+        },
         { status: 400 }
       );
     }

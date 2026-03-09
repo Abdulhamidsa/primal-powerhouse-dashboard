@@ -12,7 +12,10 @@ export function useMealPlanRecalculation(clientId: string | null) {
   const { mutate } = useSWRConfig();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = async (mealPlanId: string, payload: MealPlanRecalculationPayload): Promise<MealPlanRecalculationResult> => {
+  const submit = async (
+    mealPlanId: string,
+    payload: MealPlanRecalculationPayload
+  ): Promise<MealPlanRecalculationResult> => {
     setIsSubmitting(true);
     try {
       const response = await recalculateMealPlan(mealPlanId, payload);
