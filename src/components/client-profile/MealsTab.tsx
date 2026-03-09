@@ -1,23 +1,36 @@
-import { CalendarDays, Utensils, FileText, PlusCircle, Trash2, Edit } from 'lucide-react';
+import { CalendarDays, Utensils, FileText, PlusCircle, Trash2, Edit, EllipsisVertical } from 'lucide-react';
 import { cx, iosPanel, iosPanelStyle } from '../../lib/ui';
-import { MealAssignment } from '@/lib/client-page/types';
+import { ActiveMealPlanSummary, MealAssignment } from '@/lib/client-page/types';
 import { JSX, useState } from 'react';
 import Image from 'next/image';
 import EditMealModal from '../EditMealModal';
+import { MealPlanRecalculationModal } from '@/features/meal-plan-recalculation/components/MealPlanRecalculationModal';
+import type { MealPortionDelta } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
 
 export function MealsTab({
   assignments,
   onAssign,
   onRemove,
   onMealUpdated,
+  clientId,
+  activeMealPlan,
+  currentGoalCalories,
 }: {
   assignments: MealAssignment[];
   onAssign: () => void;
   onRemove?: (assignmentId: string) => Promise<void>;
   onMealUpdated?: () => Promise<void>;
+  clientId: string;
+  activeMealPlan: ActiveMealPlanSummary | null;
+  currentGoalCalories?: number | null;
 }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [mealToEdit, setMealToEdit] = useState<string | null>(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showRecalcModal, setShowRecalcModal] = useState(false);
+  const [optimisticPortions, setOptimisticPortions] = useState<Record<string, number>>({});
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+  const [bannerType, setBannerType] = useState<'success' | 'error'>('success');
   // Changed to use 'ALL' as default to always show all meals initially
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'LUNCH' | 'DINNER' | 'BREAKFAST' | 'SNACK'>('ALL');
 
@@ -62,6 +75,46 @@ export function MealsTab({
     }
   };
 
+  const getDisplayPortion = (assignment: MealAssignment): number => {
+    return optimisticPortions[assignment.id] ?? assignment.portion ?? 1;
+  };
+
+  const getDisplayNutrition = (assignment: MealAssignment) => {
+    const portion = getDisplayPortion(assignment);
+    return {
+      calories: Math.round(assignment.meal.calories * portion),
+      protein: Math.round(assignment.meal.protein * portion * 10) / 10,
+      carbs: Math.round(assignment.meal.carbs * portion * 10) / 10,
+      fat: Math.round(assignment.meal.fat * portion * 10) / 10,
+      portion,
+    };
+  };
+
+  const handleOptimisticApplyStart = (deltas: MealPortionDelta[]) => {
+    const next: Record<string, number> = {};
+    for (const delta of deltas) {
+      next[delta.assignmentId] = delta.newPortion;
+    }
+    setOptimisticPortions(next);
+    setBannerMessage(`Applying changes to ${deltas.length} meals...`);
+    setBannerType('success');
+  };
+
+  const handleOptimisticRollback = () => {
+    setOptimisticPortions({});
+    setBannerType('error');
+    setBannerMessage('Plan adjustment failed. Changes were rolled back.');
+  };
+
+  const handleRecalcApplied = async () => {
+    setOptimisticPortions({});
+    setBannerType('success');
+    setBannerMessage('Meal plan updated successfully.');
+    if (onMealUpdated) {
+      await onMealUpdated();
+    }
+  };
+
   return (
     <section className={cx(iosPanel, 'p-5 sm:p-6')} style={iosPanelStyle}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
@@ -69,17 +122,60 @@ export function MealsTab({
           Assigned Meals
         </h3>
 
-        <button
-          onClick={onAssign}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
-          style={{ background: 'var(--color-accent)', color: 'var(--color-text-black)' }}
-        >
-          <PlusCircle size={18} />
-          Assign Meals
-        </button>
+        <div className="relative flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowMoreMenu(previous => !previous)}
+            className="inline-flex items-center justify-center p-2.5 rounded-xl border"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+            aria-label="Open meal actions menu"
+          >
+            <EllipsisVertical size={18} />
+          </button>
+
+          {showMoreMenu && (
+            <div
+              className="absolute mt-12 right-6 sm:right-10 z-20 min-w-56 rounded-xl border p-2"
+              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+            >
+              <button
+                type="button"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm"
+                style={{ color: 'var(--color-text)' }}
+                onClick={() => {
+                  setShowMoreMenu(false);
+                  setShowRecalcModal(true);
+                }}
+              >
+                Adjust Plan Calories
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={onAssign}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
+            style={{ background: 'var(--color-accent)', color: 'var(--color-text-black)' }}
+          >
+            <PlusCircle size={18} />
+            Assign Meals
+          </button>
+        </div>
       </div>
 
       {/* Filter Buttons - Always Visible */}
+      {bannerMessage && (
+        <div
+          className="mb-4 rounded-lg px-3 py-2 text-sm"
+          style={{
+            background: bannerType === 'success' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+            color: bannerType === 'success' ? '#22c55e' : '#ef4444',
+          }}
+        >
+          {bannerMessage}
+        </div>
+      )}
+
       <div className="mb-6">
         <div
           className="rounded-xl p-4 border"
@@ -120,6 +216,7 @@ export function MealsTab({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredAssignments.map(a => {
                 if (!a.meal) return null;
+                const nutrition = getDisplayNutrition(a);
 
                 return (
                   <div
@@ -197,7 +294,7 @@ export function MealsTab({
                               Calories
                             </span>
                             <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                              {a.meal.calories}
+                              {nutrition.calories}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
@@ -205,7 +302,7 @@ export function MealsTab({
                               Protein
                             </span>
                             <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                              {a.meal.protein}g
+                              {nutrition.protein}g
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
@@ -213,7 +310,7 @@ export function MealsTab({
                               Carbs
                             </span>
                             <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                              {a.meal.carbs}g
+                              {nutrition.carbs}g
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
@@ -221,7 +318,15 @@ export function MealsTab({
                               Fat
                             </span>
                             <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                              {a.meal.fat}g
+                              {nutrition.fat}g
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                              Portion
+                            </span>
+                            <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                              {nutrition.portion.toFixed(1)}x
                             </span>
                           </div>
                         </div>
@@ -332,6 +437,17 @@ export function MealsTab({
           setMealToEdit(null);
         }}
         onMealUpdatedAction={handleMealUpdated}
+      />
+
+      <MealPlanRecalculationModal
+        isOpen={showRecalcModal}
+        onCloseAction={() => setShowRecalcModal(false)}
+        clientId={clientId}
+        activeMealPlan={activeMealPlan}
+        initialCalories={currentGoalCalories}
+        onOptimisticApplyStartAction={handleOptimisticApplyStart}
+        onOptimisticRollbackAction={handleOptimisticRollback}
+        onAppliedAction={handleRecalcApplied}
       />
     </section>
   );

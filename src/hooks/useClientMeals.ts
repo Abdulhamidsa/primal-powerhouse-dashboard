@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import type { ApiError } from '@/lib/fetcher';
-import { MealAssignment } from '@/lib/client-page/types';
+import { ActiveMealPlanSummary, MealAssignment } from '@/lib/client-page/types';
 
 /**
  * Custom hook to fetch meal assignments for a specific client
@@ -10,21 +10,26 @@ import { MealAssignment } from '@/lib/client-page/types';
 export function useClientMeals(clientId: string | null) {
   const key = clientId ? `/api/meal-plans?clientId=${clientId}` : null;
 
-  const { data, error, isLoading, mutate, isValidating } = useSWR<MealAssignment[], ApiError>(
+  type UseClientMealsData = {
+    assignments: MealAssignment[];
+    activeMealPlan: ActiveMealPlanSummary | null;
+  };
+
+  const { data, error, isLoading, mutate, isValidating } = useSWR<UseClientMealsData, ApiError>(
     key,
     async (url: string) => {
       const response = await fetch(url);
 
       if (!response.ok) {
         console.warn('Failed to fetch meal plans');
-        return [];
+        return { assignments: [], activeMealPlan: null };
       }
 
       const mealPlans = await response.json();
 
       if (!Array.isArray(mealPlans)) {
         console.warn('Meal plans response is not an array');
-        return [];
+        return { assignments: [], activeMealPlan: null };
       }
 
       // Transform meal plans into flat list of meal assignments
@@ -32,7 +37,12 @@ export function useClientMeals(clientId: string | null) {
 
       mealPlans.forEach(
         (plan: {
+          id: string;
+          clientId: string;
+          name: string;
           startDate: string;
+          updatedAt: string;
+          isActive?: boolean;
           endDate?: string;
           mealAssignments?: {
             id: string;
@@ -61,6 +71,7 @@ export function useClientMeals(clientId: string | null) {
               allAssignments.push({
                 id: assignment.id,
                 mealId: assignment.mealId,
+                mealPlanId: plan.id,
                 clientId: clientId!,
                 assignedDate: new Date(plan.startDate),
                 dueDate: plan.endDate ? new Date(plan.endDate) : undefined,
@@ -76,7 +87,21 @@ export function useClientMeals(clientId: string | null) {
         }
       );
 
-      return allAssignments;
+      const activePlanCandidate = mealPlans.find((plan: { isActive?: boolean }) => plan.isActive) ?? mealPlans[0];
+
+      const activeMealPlan: ActiveMealPlanSummary | null = activePlanCandidate
+        ? {
+            id: activePlanCandidate.id,
+            clientId: activePlanCandidate.clientId,
+            name: activePlanCandidate.name,
+            updatedAt: activePlanCandidate.updatedAt,
+          }
+        : null;
+
+      return {
+        assignments: allAssignments,
+        activeMealPlan,
+      };
     },
     {
       revalidateOnFocus: false,
@@ -85,7 +110,8 @@ export function useClientMeals(clientId: string | null) {
   );
 
   return {
-    meals: data || [],
+    meals: data?.assignments || [],
+    activeMealPlan: data?.activeMealPlan ?? null,
     error,
     isLoading,
     isValidating,

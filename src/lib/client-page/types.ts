@@ -29,6 +29,7 @@ export interface Client {
 export interface MealAssignment {
   id: string;
   mealId: string;
+  mealPlanId?: string;
   clientId: string;
   assignedDate: Date;
   dueDate?: Date;
@@ -48,6 +49,13 @@ export interface MealAssignment {
     fiber?: number;
     description?: string;
   };
+}
+
+export interface ActiveMealPlanSummary {
+  id: string;
+  clientId: string;
+  name: string;
+  updatedAt: string;
 }
 
 export type TabKey = 'overview' | 'videos' | 'meals' | 'progress' | 'client-health';

@@ -15,6 +15,7 @@ import { VideosTab } from '@/components/client-profile/VideosTab';
 import { MealsTab } from '@/components/client-profile/MealsTab';
 import { NutritionAnalytics } from '@/components/client-profile/NutritionAnalytics';
 import { ClientHealthTab } from '@/features/client-health/components/ClientHealthTab';
+import { ClientNutritionComparisonPanel } from '@/features/client-nutrition-comparison/components/ClientNutritionComparisonPanel';
 import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
@@ -47,7 +48,7 @@ export default function ClientProfilePage() {
   const [deletingCheckInId, setDeletingCheckInId] = useState<string | null>(null);
 
   // Use custom hook for meal assignments
-  const { meals: mealAssignments, refresh: refreshMeals } = useClientMeals(clientId);
+  const { meals: mealAssignments, activeMealPlan, refresh: refreshMeals } = useClientMeals(clientId);
   const {
     data: weeklyCheckInData,
     isLoading: isWeeklyCheckInsLoading,
@@ -654,6 +655,9 @@ export default function ClientProfilePage() {
         {activeTab === 'meals' && (
           <MealsTab
             assignments={mealAssignments}
+            clientId={clientId}
+            activeMealPlan={activeMealPlan}
+            currentGoalCalories={client.goalCalories}
             onAssign={() => {
               setAssignModalType('meals');
               setShowAssignModal(true);
@@ -673,7 +677,12 @@ export default function ClientProfilePage() {
           />
         )}
 
-        {activeTab === 'progress' && <NutritionAnalytics assignments={mealAssignments} />}
+        {activeTab === 'progress' && (
+          <div className="space-y-6">
+            <ClientNutritionComparisonPanel clientId={clientId} />
+            <NutritionAnalytics assignments={mealAssignments} />
+          </div>
+        )}
 
         {activeTab === 'client-health' && <ClientHealthTab clientId={clientId} />}
       </main>

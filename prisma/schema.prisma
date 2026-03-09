@@ -470,6 +470,28 @@ model IngredientMacroRefreshJob {
   @@map("ingredient_macro_refresh_jobs")
 }
 
+model MealPlanRecalculationAudit {
+  id                      String   @id
+  mealPlanId              String
+  clientId                String
+  actorId                 String
+  reason                  String?
+  mode                    String
+  oldTargets              String
+  newTargets              String
+  projectedTotals         String
+  expectedAccuracyPercent Float
+  hasBoundsClamping       Boolean  @default(false)
+  deltas                  String
+  createdAt               DateTime @default(now())
+
+  @@index([mealPlanId])
+  @@index([clientId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("meal_plan_recalculation_audits")
+}
+
 /* =========================
    ENUMS
 ========================= */
