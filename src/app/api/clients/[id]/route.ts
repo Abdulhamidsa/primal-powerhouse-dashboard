@@ -4,10 +4,7 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import { decryptOrFallback, encryptField } from '@/lib/security/field-crypto';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
-
-function shouldKeepPlaintext(): boolean {
-  return process.env.PRIVACY_ENCRYPTION_STRICT !== 'true';
-}
+import { z } from 'zod';
 
 function isMissingFieldEncryptionKeyError(error: unknown): boolean {
   return String(error).includes('Field encryption key is not configured');
@@ -37,11 +34,20 @@ function decryptWithPlaintextFallback(
   }
 }
 
-function normalizeJsonString(value: unknown): string | null {
-  if (value == null) return null;
-  if (typeof value === 'string') return value;
-  return JSON.stringify(value);
-}
+const adminClientUpdateSchema = z
+  .object({
+    name: z.string().trim().min(2).max(100).optional(),
+    age: z.number().int().min(10).max(120).nullable().optional(),
+    gender: z.enum(['MALE', 'FEMALE']).nullable().optional(),
+    activityLevel: z.enum(['LOW', 'MODERATE', 'HIGH']).nullable().optional(),
+    height: z.number().finite().min(90).max(260).nullable().optional(),
+    currentWeight: z.number().finite().min(20).max(350).nullable().optional(),
+    targetWeight: z.number().finite().min(20).max(350).nullable().optional(),
+  })
+  .strict()
+  .refine(value => Object.keys(value).length > 0, {
+    message: 'Provide at least one editable field',
+  });
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -150,27 +156,48 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params;
     const body = await request.json();
+    const parsed = adminClientUpdateSchema.safeParse(body);
 
-    const goalsRaw = normalizeJsonString(body.goals);
-    const dietaryRaw = normalizeJsonString(body.dietaryRestrictions);
-    const notesRaw = typeof body.notes === 'string' ? body.notes : null;
-    const motivationalRaw = typeof body.motivationalMessage === 'string' ? body.motivationalMessage : null;
-    const phoneRaw = typeof body.phone === 'string' ? body.phone : null;
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Invalid request payload',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
 
-    // Convert arrays to JSON strings for SQLite storage
+    const actor = await prisma.user.findUnique({
+      where: { id: auth.user.userId },
+      select: { id: true, role: true },
+    });
+
+    if (!actor || (actor.role !== 'ADMIN' && actor.role !== 'COACH')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const existingClient = await prisma.client.findUnique({
+      where: { id },
+      select: { id: true, coachId: true },
+    });
+
+    if (!existingClient) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    }
+
+    if (actor.role === 'COACH' && existingClient.coachId !== actor.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const updateData = {
-      ...body,
-      goals: shouldKeepPlaintext() ? goalsRaw : null,
-      dietaryRestrictions: shouldKeepPlaintext() ? dietaryRaw : null,
-      progressPhotos: body.progressPhotos ? JSON.stringify(body.progressPhotos) : undefined,
-      notes: shouldKeepPlaintext() ? notesRaw : null,
-      motivationalMessage: shouldKeepPlaintext() ? motivationalRaw : null,
-      phone: shouldKeepPlaintext() ? phoneRaw : null,
-      goalsEncrypted: encryptIfAvailable(goalsRaw, `client:${id}:goals`),
-      dietaryRestrictionsEncrypted: encryptIfAvailable(dietaryRaw, `client:${id}:dietaryRestrictions`),
-      notesEncrypted: encryptIfAvailable(notesRaw, `client:${id}:notes`),
-      motivationalMessageEncrypted: encryptIfAvailable(motivationalRaw, `client:${id}:motivationalMessage`),
-      phoneEncrypted: encryptIfAvailable(phoneRaw, `client:${id}:phone`),
+      name: parsed.data.name,
+      age: parsed.data.age,
+      gender: parsed.data.gender,
+      activityLevel: parsed.data.activityLevel,
+      height: parsed.data.height,
+      currentWeight: parsed.data.currentWeight,
+      targetWeight: parsed.data.targetWeight,
     };
 
     const client = await (prisma as any).client.update({

@@ -20,6 +20,7 @@ import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWi
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { useClientMeals } from '@/hooks/useClientMeals';
+import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import {
   useAdminClientWeeklyCheckIns,
@@ -31,6 +32,7 @@ export default function ClientProfilePage() {
   const clientId = params.id as string;
 
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
   const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -307,9 +309,18 @@ export default function ClientProfilePage() {
           <div className="grid grid-cols-1 w-full md:grid-cols-2 gap-6">
             {/* Personal Information */}
             <div className="rounded-2xl border shadow-sm p-6 bg-card">
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-                Personal Information
-              </h3>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Personal Information
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileEditModal(true)}
+                  className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  Edit Profile
+                </button>
+              </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--color-text-muted)' }}>Name</span>
@@ -695,6 +706,41 @@ export default function ClientProfilePage() {
             setSelectedClient(null);
           }}
           client={selectedClient}
+        />
+      )}
+
+      {client && (
+        <ClientProfileEditModal
+          isOpen={showProfileEditModal}
+          clientId={clientId}
+          initialValues={{
+            name: client.name,
+            age: client.age ?? null,
+            gender: (client.gender as 'MALE' | 'FEMALE' | null) ?? null,
+            activityLevel: (client.activityLevel as 'LOW' | 'MODERATE' | 'HIGH' | null) ?? null,
+            height: client.height ?? null,
+            currentWeight: client.currentWeight ?? null,
+            targetWeight: client.targetWeight ?? null,
+          }}
+          onCloseAction={() => setShowProfileEditModal(false)}
+          onSavedAction={updatedClient => {
+            setClient(prev => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                name: updatedClient.name,
+                age: updatedClient.age ?? undefined,
+                gender: updatedClient.gender ?? undefined,
+                activityLevel: updatedClient.activityLevel ?? undefined,
+                height: updatedClient.height ?? undefined,
+                currentWeight: updatedClient.currentWeight ?? undefined,
+                targetWeight: updatedClient.targetWeight ?? undefined,
+              };
+            });
+            setShowProfileEditModal(false);
+            window.alert('Profile updated successfully.');
+            fetchClientData();
+          }}
         />
       )}
 

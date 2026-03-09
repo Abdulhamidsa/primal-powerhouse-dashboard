@@ -29,6 +29,11 @@ export async function GET(request: NextRequest) {
         id: client.id,
         name: client.name,
         email: client.email,
+        avatar: client.avatar,
+        age: client.age,
+        height: client.height,
+        currentWeight: client.currentWeight,
+        targetWeight: client.targetWeight,
         coach: client.coach,
       },
     });

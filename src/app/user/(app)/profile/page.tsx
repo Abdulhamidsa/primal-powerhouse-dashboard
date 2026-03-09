@@ -3,20 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare } from 'lucide-react';
+import { LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
+import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
 
 interface UserData {
   id: string;
   name: string;
   email: string;
   phone?: string;
-  age?: number;
-  height?: number;
-  currentWeight?: number;
-  targetWeight?: number;
-  avatar?: string;
+  age?: number | null;
+  height?: number | null;
+  currentWeight?: number | null;
+  targetWeight?: number | null;
+  avatar?: string | null;
 }
 
 function SettingsGroup({ title, children }: { title?: string; children: React.ReactNode }) {
@@ -54,6 +55,7 @@ export default function UserProfilePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -105,6 +107,15 @@ export default function UserProfilePage() {
                 <User className="h-7 w-7 text-muted-foreground" />
               </div>
             )}
+
+            <button
+              type="button"
+              onClick={() => setIsAvatarModalOpen(true)}
+              className="absolute bottom-1 right-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm"
+              aria-label="Edit profile picture"
+            >
+              <Camera className="h-3.5 w-3.5" />
+            </button>
           </div>
 
           <div className="min-w-0 flex-1">
@@ -227,6 +238,16 @@ export default function UserProfilePage() {
           </SettingsGroup>
 
           <FeedbackModal isOpen={isFeedbackOpen} onCloseAction={() => setIsFeedbackOpen(false)} />
+          <ProfileAvatarEditModal
+            isOpen={isAvatarModalOpen}
+            currentImageUrl={userData?.avatar ?? undefined}
+            onCloseAction={() => setIsAvatarModalOpen(false)}
+            onSavedAction={result => {
+              setUserData(result.user);
+              setIsAvatarModalOpen(false);
+              window.alert('Profile picture updated successfully.');
+            }}
+          />
         </div>
       </div>
     </div>
