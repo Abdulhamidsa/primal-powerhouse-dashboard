@@ -43,6 +43,7 @@ const adminClientUpdateSchema = z
     height: z.number().finite().min(90).max(260).nullable().optional(),
     currentWeight: z.number().finite().min(20).max(350).nullable().optional(),
     targetWeight: z.number().finite().min(20).max(350).nullable().optional(),
+    notes: z.string().max(10000).nullable().optional(),
   })
   .strict()
   .refine(value => Object.keys(value).length > 0, {
@@ -198,6 +199,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       height: parsed.data.height,
       currentWeight: parsed.data.currentWeight,
       targetWeight: parsed.data.targetWeight,
+      notes: parsed.data.notes,
+      notesEncrypted: parsed.data.notes !== undefined ? null : undefined,
     };
 
     const client = await (prisma as any).client.update({

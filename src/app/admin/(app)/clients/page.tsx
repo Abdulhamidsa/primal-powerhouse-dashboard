@@ -1,453 +1,336 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import NewAddClientModal from '@/components/NewAddClientModal';
-import { useClients } from '@/hooks/useClients';
-import { Users, Flame, BarChart, Target, Activity, Clock, Mail, Phone, Scale, Calendar } from 'lucide-react';
-import { useAdminWeeklyCheckInStatuses } from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Users } from 'lucide-react';
+import AssignContentModal from '@/components/AssignContentModal';
+import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
+import { useClientMeals } from '@/hooks/useClientMeals';
+import {
+  useAdminClientWeeklyCheckIns,
+  useAdminWeeklyCheckInActions,
+} from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
+import {
+  deleteMealAssignment,
+} from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
+import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
+import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
+import {
+  useClientVideoAssignments,
+  useClientVideoAssignmentActions,
+} from '@/features/admin-clients-dashboard/hooks/useClientVideoAssignments';
+import { useClientNotes } from '@/features/admin-clients-dashboard/hooks/useClientNotes';
+import { ClientListPane } from '@/features/admin-clients-dashboard/components/ClientListPane';
+import { ClientNotesPane } from '@/features/admin-clients-dashboard/components/ClientNotesPane';
+import { ClientDetailTabs } from '@/features/admin-clients-dashboard/components/ClientDetailTabs';
+import { SummaryTabContent } from '@/features/admin-clients-dashboard/components/SummaryTabContent';
+import { NutritionTabContent } from '@/features/admin-clients-dashboard/components/NutritionTabContent';
+import { AssignmentsTabContent } from '@/features/admin-clients-dashboard/components/AssignmentsTabContent';
+import { CheckInsTabContent } from '@/features/admin-clients-dashboard/components/CheckInsTabContent';
+import type {
+  DashboardTabKey,
+  LeftPaneMode,
+} from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export default function ClientsPage() {
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const { clients, isLoading: loading, mutate: fetchClients } = useClients();
-  const { statuses: weeklyStatuses } = useAdminWeeklyCheckInStatuses(clients.map(client => client.id));
+  const [leftPaneMode, setLeftPaneMode] = useState<LeftPaneMode>('list');
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<DashboardTabKey>('summary');
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
+  const [showProfileEditModal, setShowProfileEditModal] = useState(false);
 
-  const filteredClients = statusFilter === 'ALL' ? clients : clients.filter(client => client.status === statusFilter);
+  const {
+    filteredClients,
+    search,
+    setSearch,
+    isLoading: isClientsLoading,
+    error: clientsError,
+    refresh: refreshClients,
+  } = useAdminClientsList();
 
-  const calculateBMI = (weight: number, height: number) => {
-    const heightInM = height / 100;
-    const bmi = weight / (heightInM * heightInM);
-    return bmi.toFixed(1);
+  const selectedClientFromList = useMemo(
+    () => filteredClients.find(client => client.id === selectedClientId) ?? null,
+    [filteredClients, selectedClientId]
+  );
+
+  const {
+    client,
+    isLoading: isClientLoading,
+    error: selectedClientError,
+    refresh: refreshClient,
+  } = useSelectedClientDashboard(selectedClientId);
+
+  const {
+    entries,
+    draft,
+    setDraft,
+    addNote,
+    isSaving: isSavingNote,
+    error: noteError,
+  } = useClientNotes(selectedClientId, client?.notes ?? selectedClientFromList?.notes ?? null, 'Coach');
+
+  const {
+    meals: mealAssignments,
+    activeMealPlan,
+    refresh: refreshMeals,
+  } = useClientMeals(selectedClientId);
+
+  const { assignments: videoAssignments, refresh: refreshVideoAssignments } = useClientVideoAssignments(selectedClientId);
+  const { removeAssignment: removeVideoAssignment } = useClientVideoAssignmentActions(selectedClientId);
+
+  const {
+    data: weeklyCheckIns,
+    isLoading: isWeeklyCheckInsLoading,
+    error: weeklyCheckInsError,
+  } = useAdminClientWeeklyCheckIns(selectedClientId ?? '');
+
+  const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(selectedClientId ?? '');
+
+  useEffect(() => {
+    if (!filteredClients.length) return;
+
+    const queryClientId = searchParams.get('clientId');
+    const preferredId = queryClientId && filteredClients.some(clientItem => clientItem.id === queryClientId)
+      ? queryClientId
+      : filteredClients[0].id;
+
+    if (preferredId !== selectedClientId) {
+      setSelectedClientId(preferredId);
+    }
+  }, [filteredClients, searchParams, selectedClientId]);
+
+  const handleSelectClient = (clientId: string) => {
+    setSelectedClientId(clientId);
+    setLeftPaneMode('notes');
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set('clientId', clientId);
+    router.replace(`/admin/clients?${nextParams.toString()}`, { scroll: false });
   };
 
-  const getWeightProgress = (current: number, target: number) => {
-    const difference = current - target;
-    if (Math.abs(difference) < 2) return 'On Target';
-    return difference > 0
-      ? `${Math.abs(difference).toFixed(1)} kg to lose`
-      : `${Math.abs(difference).toFixed(1)} kg to gain`;
+  const handleBackToList = () => {
+    setLeftPaneMode('list');
   };
 
-  const getWeeklyCheckInStatusStyles = (status: 'completed' | 'due' | 'overdue' | undefined) => {
-    if (status === 'completed') {
-      return {
-        label: 'Check-In Completed',
-        bg: 'var(--color-accent-muted)',
-        color: 'var(--color-accent)',
-      };
-    }
+  const handleRemoveVideoAssignment = async (assignmentId: string) => {
+    const confirmed = window.confirm('Remove this video assignment?');
+    if (!confirmed) return;
 
-    if (status === 'overdue') {
-      return {
-        label: 'Check-In Overdue',
-        bg: 'var(--color-danger-muted, var(--color-bg-alt))',
-        color: 'var(--color-danger)',
-      };
-    }
+    await removeVideoAssignment(assignmentId);
+  };
 
-    return {
-      label: 'Check-In Due',
-      bg: 'var(--color-bg-alt)',
-      color: 'var(--color-text-muted)',
-    };
+  const handleRemoveMealAssignment = async (assignmentId: string) => {
+    const confirmed = window.confirm('Delete this meal assignment for this client?');
+    if (!confirmed) return;
+
+    await deleteMealAssignment(assignmentId);
+    await refreshMeals();
+  };
+
+  const handleDeleteCheckIn = async (checkInId: string) => {
+    await deleteCheckIn(checkInId);
+  };
+
+  const handleResetCheckIns = async () => {
+    await resetAll();
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 text-foreground">Client Management</h1>
-            <p className="text-muted-foreground">Manage your clients and track their fitness journey</p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="mt-4 sm:mt-0 px-6 py-3 rounded-lg flex items-center gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <Users size={20} />
-              Add New Client
-            </button>
-          </div>
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+      <header className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
+            Clients Dashboard
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            Select a client to review their profile, progress, and notes.
+          </p>
         </div>
+      </header>
 
-        {/* Filter Tabs */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            {['ALL', 'ACTIVE', 'INACTIVE'].map(status => (
+      <section className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-12rem)] min-h-[620px]">
+        <aside className="lg:col-span-1 rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+          {isClientsLoading ? (
+            <div className="h-full flex items-center justify-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Loading clients...
+            </div>
+          ) : clientsError ? (
+            <div className="h-full p-4 space-y-3">
+              <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
+                Failed to load clients.
+              </p>
               <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
-    ${statusFilter === status ? 'btn-active' : 'btn-inactive'}
-  `}
+                type="button"
+                onClick={refreshClients}
+                className="rounded-lg px-3 py-2 text-sm"
+                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
               >
-                {status === 'ALL' ? 'All Clients' : status.charAt(0) + status.slice(1).toLowerCase()}
+                Retry
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Total Clients
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {loading ? '...' : clients.length}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <Users size={24} />
-              </div>
             </div>
-          </div>
+          ) : leftPaneMode === 'list' || !client ? (
+            <ClientListPane
+              clients={filteredClients}
+              selectedClientId={selectedClientId}
+              search={search}
+              onSearchChangeAction={setSearch}
+              onSelectClientAction={handleSelectClient}
+            />
+          ) : (
+            <ClientNotesPane
+              clientName={client.name}
+              entries={entries}
+              draft={draft}
+              error={noteError}
+              isSaving={isSavingNote}
+              onDraftChangeAction={setDraft}
+              onBackAction={handleBackToList}
+              onAddNoteAction={addNote}
+            />
+          )}
+        </aside>
 
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Active Clients
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {loading ? '...' : clients.filter(c => c.status === 'ACTIVE').length}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <Flame size={24} />
-              </div>
+        <main className="lg:col-span-3 rounded-2xl border overflow-hidden flex flex-col" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+          {isClientLoading ? (
+            <div className="h-full flex items-center justify-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Select a client to load details.
             </div>
-          </div>
-
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Avg Age
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {loading
-                    ? '...'
-                    : clients.length > 0
-                      ? Math.round(clients.reduce((sum, client) => sum + client.age, 0) / clients.length)
-                      : 0}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
+          ) : selectedClientError ? (
+            <div className="h-full p-4 space-y-3">
+              <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
+                Failed to load selected client.
+              </p>
+              <button
+                type="button"
+                onClick={refreshClient}
+                className="rounded-lg px-3 py-2 text-sm"
+                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
               >
-                <BarChart size={24} />
-              </div>
+                Retry
+              </button>
             </div>
-          </div>
-
-          <div
-            className="rounded-xl p-6 shadow-sm border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  Filtered
-                </h3>
-                <p className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {filteredClients.length}
-                </p>
-              </div>
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-bg-alt)' }}
-              >
-                <Target size={24} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Clients Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
-              <div
-                key={index}
-                className="rounded-xl shadow-sm border overflow-hidden"
-                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-              >
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div
-                      className="w-16 h-16 rounded-full animate-pulse mr-4"
-                      style={{ background: 'var(--color-bg-alt)' }}
-                    ></div>
-                    <div className="flex-1">
-                      <div
-                        className="h-5 rounded animate-pulse mb-2"
-                        style={{ background: 'var(--color-bg-alt)' }}
-                      ></div>
-                      <div
-                        className="h-4 rounded animate-pulse w-3/4"
-                        style={{ background: 'var(--color-bg-alt)' }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-4 rounded animate-pulse" style={{ background: 'var(--color-bg-alt)' }}></div>
-                    <div
-                      className="h-4 rounded animate-pulse w-5/6"
-                      style={{ background: 'var(--color-bg-alt)' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredClients.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients.map(client => (
-              <div
-                key={client.id}
-                className="rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all duration-300 group"
-                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-              >
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center">
-                      <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
-                        <Image
-                          src={client.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(client.name)}
-                          alt={client.name}
-                          className="object-cover"
-                          fill
-                          sizes="64px"
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                          {client.name}
-                        </h3>
-                        <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                          <Mail size={16} />
-                          {client.email}
-                        </div>
-                        <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                          <Phone size={16} />
-                          {client.phone}
-                        </div>
-                      </div>
-                    </div>
-                    <span
-                      className="px-3 py-1 rounded-full text-xs font-medium"
-                      style={{
-                        background: client.status === 'ACTIVE' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
-                        color: client.status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                      }}
-                    >
-                      {client.status}
-                    </span>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-alt)' }}>
-                      <div
-                        className="flex items-center justify-center gap-1 text-sm"
-                        style={{ color: 'var(--color-text-muted)' }}
-                      >
-                        <Clock size={16} />
-                        Age
-                      </div>
-                      <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                        {client.age}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 rounded-lg" style={{ background: 'var(--color-bg-alt)' }}>
-                      <div
-                        className="flex items-center justify-center gap-1 text-sm"
-                        style={{ color: 'var(--color-text-muted)' }}
-                      >
-                        <Scale size={16} />
-                        BMI
-                      </div>
-                      <p className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                        {calculateBMI(client.height, client.currentWeight)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Weight Progress */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                      <span>Current: {client.currentWeight} kg</span>
-                      <span>Target: {client.targetWeight} kg</span>
-                    </div>
-                    <div className="w-full rounded-full h-2" style={{ background: 'var(--color-bg-alt)' }}>
-                      <div
-                        className="h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.min(100, Math.max(10, (client.currentWeight / client.targetWeight) * 100))}%`,
-                          background: 'var(--color-accent)',
-                        }}
-                      ></div>
-                    </div>
-                    <p className="text-xs mt-1 text-center" style={{ color: 'var(--color-text-muted)' }}>
-                      {getWeightProgress(client.currentWeight, client.targetWeight)}
+          ) : client ? (
+            <>
+              <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                      {client.name}
+                    </h2>
+                    <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      {client.email}
                     </p>
                   </div>
-
-                  {/* Activity Level */}
-                  <div className="mb-4">
-                    <span
-                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit"
-                      style={{
-                        background: 'var(--color-accent-muted)',
-                        color: 'var(--color-accent)',
-                      }}
-                    >
-                      <Activity size={16} />
-                      {client.activityLevel} Activity
-                    </span>
-                  </div>
-
-                  <div className="mb-4">
-                    <span
-                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit"
-                      style={{
-                        background: getWeeklyCheckInStatusStyles(weeklyStatuses[client.id]?.status).bg,
-                        color: getWeeklyCheckInStatusStyles(weeklyStatuses[client.id]?.status).color,
-                      }}
-                    >
-                      {getWeeklyCheckInStatusStyles(weeklyStatuses[client.id]?.status).label}
-                    </span>
-                    <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                      Last check-in:{' '}
-                      {(() => {
-                        const lastSubmittedAt = weeklyStatuses[client.id]?.lastSubmittedAt;
-                        if (typeof lastSubmittedAt === 'string') {
-                          return new Date(lastSubmittedAt).toLocaleDateString();
-                        }
-                        return 'None';
-                      })()}
-                    </p>
-                  </div>
-
-                  {/* Goals */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-1 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
-                      <Target size={16} />
-                      Goals:
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {client.goals.slice(0, 2).map((goal, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 text-xs rounded-full"
-                          style={{
-                            background: 'var(--color-accent-muted)',
-                            color: 'var(--color-accent)',
-                          }}
-                        >
-                          {goal.replace('-', ' ')}
-                        </span>
-                      ))}
-                      {client.goals.length > 2 && (
-                        <span
-                          className="px-2 py-1 text-xs rounded-full"
-                          style={{
-                            background: 'var(--color-bg-alt)',
-                            color: 'var(--color-text-muted)',
-                          }}
-                        >
-                          +{client.goals.length - 2} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Sessions */}
-                  <div
-                    className="flex justify-between items-center text-sm mb-4"
-                    style={{ color: 'var(--color-text-muted)' }}
+                  <span
+                    className="px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: client.status === 'ACTIVE' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+                      color: client.status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                    }}
                   >
-                    <div className="flex items-center gap-1">
-                      <Activity size={16} />
-                      Sessions: {client.sessionsCompleted}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      Joined: {new Date(client.joinDate).toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/admin/clients/${client.id}`}
-                      className="flex-1 px-4 py-2 rounded-lg text-center font-medium flex items-center justify-center gap-1 btn-inactive"
-                    >
-                      View Profile
-                    </Link>
-                  </div>
+                    {client.status}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div
-            className="text-center py-16 rounded-xl border"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="mb-4">
-              <Users size={48} />
+
+              <div className="px-4 py-3">
+                <ClientDetailTabs activeTab={activeTab} onTabChangeAction={setActiveTab} />
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 pb-4">
+                {activeTab === 'summary' ? (
+                  <SummaryTabContent client={client} onEditProfileAction={() => setShowProfileEditModal(true)} />
+                ) : null}
+
+                {activeTab === 'nutrition' ? (
+                  <NutritionTabContent clientId={client.id} mealAssignments={mealAssignments} />
+                ) : null}
+
+                {activeTab === 'assignments' ? (
+                  <AssignmentsTabContent
+                    clientId={client.id}
+                    mealAssignments={mealAssignments}
+                    videoAssignments={videoAssignments}
+                    activeMealPlan={activeMealPlan}
+                    currentGoalCalories={client.goalCalories}
+                    onAssignMealsAction={() => {
+                      setAssignModalType('meals');
+                      setShowAssignModal(true);
+                    }}
+                    onAssignVideosAction={() => {
+                      setAssignModalType('videos');
+                      setShowAssignModal(true);
+                    }}
+                    onRemoveMealAssignmentAction={handleRemoveMealAssignment}
+                    onRemoveVideoAssignmentAction={handleRemoveVideoAssignment}
+                    onRefreshMealsAction={refreshMeals}
+                  />
+                ) : null}
+
+                {activeTab === 'check-ins' ? (
+                  <CheckInsTabContent
+                    data={weeklyCheckIns}
+                    isLoading={isWeeklyCheckInsLoading}
+                    isError={Boolean(weeklyCheckInsError)}
+                    onDeleteAction={handleDeleteCheckIn}
+                    onResetAction={handleResetCheckIns}
+                  />
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <div className="h-full flex items-center justify-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="text-center space-y-2">
+                <Users size={20} className="mx-auto" />
+                <p>Select a client to view details.</p>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
-              No clients found
-            </h3>
-            <p className="mb-6" style={{ color: 'var(--color-text-muted)' }}>
-              {statusFilter === 'ALL'
-                ? 'Start building your client base by adding your first client!'
-                : `No ${statusFilter.toLowerCase()} clients found.`}
-            </p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2 btn-inactive"
-            >
-              <Users size={16} />
-              Add Your First Client
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </main>
+      </section>
 
-      {/* Add Client Modal */}
-      <NewAddClientModal
-        isOpen={showAddModal}
-        onCloseAction={() => setShowAddModal(false)}
-        onClientAddedAction={fetchClients}
-      />
+      {client ? (
+        <ClientProfileEditModal
+          isOpen={showProfileEditModal}
+          clientId={client.id}
+          initialValues={{
+            name: client.name,
+            age: client.age ?? null,
+            gender: (client as { gender?: 'MALE' | 'FEMALE' | null }).gender ?? null,
+            activityLevel: (client.activityLevel as 'LOW' | 'MODERATE' | 'HIGH' | null) ?? null,
+            height: client.height ?? null,
+            currentWeight: client.currentWeight ?? null,
+            targetWeight: client.targetWeight ?? null,
+          }}
+          onCloseAction={() => setShowProfileEditModal(false)}
+          onSavedAction={async () => {
+            setShowProfileEditModal(false);
+            await refreshClient();
+            await refreshClients();
+          }}
+        />
+      ) : null}
 
-      {/* Edit Motivational Message Modal */}
+      {client ? (
+        <AssignContentModal
+          isOpen={showAssignModal}
+          onCloseAction={() => setShowAssignModal(false)}
+          clientId={client.id}
+          clientName={client.name}
+          type={assignModalType}
+          onAssignmentCompleteAction={async () => {
+            if (assignModalType === 'videos') {
+              await refreshVideoAssignments();
+            } else {
+              await refreshMeals();
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }
