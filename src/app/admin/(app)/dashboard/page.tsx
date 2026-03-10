@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { MessageSquare } from 'lucide-react';
+import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 
 interface DashboardStats {
   totalClients: number;
@@ -18,6 +20,7 @@ interface DashboardStats {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const { unreadTotal } = useChatUnread();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -95,10 +98,25 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-card p-6 rounded-lg border border-border">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Chat</h3>
+            <MessageSquare size={18} className="text-primary" />
+          </div>
+          <p className="text-2xl font-bold text-primary">{unreadTotal}</p>
+          <p className="text-sm text-muted-foreground mb-3">Unread messages</p>
+          <Link href="/admin/chat" className="text-primary hover:underline text-sm">
+            Open Chat
+          </Link>
+        </div>
+
+        <div className="bg-card p-6 rounded-lg border border-border">
           <h3 className="font-semibold mb-2 text-foreground">Quick Actions</h3>
           <div className="space-y-2">
             <Link href="/admin/clients" className="block text-primary hover:underline">
               Manage Clients
+            </Link>
+            <Link href="/admin/chat" className="block text-primary hover:underline">
+              Open Chat {unreadTotal > 0 ? `(${unreadTotal})` : ''}
             </Link>
             <Link href="/admin/meals" className="block text-primary hover:underline">
               Add New Meal

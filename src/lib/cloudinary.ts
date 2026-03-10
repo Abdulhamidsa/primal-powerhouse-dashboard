@@ -207,3 +207,64 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 
   return { valid: true };
 }
+
+export function shouldUsePrivateChatMediaDelivery(): boolean {
+  const setting = process.env.CHAT_MEDIA_PRIVATE_DELIVERY;
+  if (!setting) return true;
+  return setting.toLowerCase() !== 'false';
+}
+
+export function validateChatMediaFile(file: File): {
+  valid: boolean;
+  type?: 'image' | 'video' | 'audio';
+  error?: string;
+} {
+  const normalizedType = file.type.toLowerCase().split(';')[0].trim();
+
+  const imageTypes = new Set([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'image/heic',
+    'image/heif',
+  ]);
+  const videoTypes = new Set(['video/mp4', 'video/quicktime', 'video/webm', 'video/x-matroska', 'video/ogg']);
+  const audioTypes = new Set([
+    'audio/mpeg',
+    'audio/mp3',
+    'audio/wav',
+    'audio/webm',
+    'audio/ogg',
+    'audio/mp4',
+    'audio/x-m4a',
+    'audio/aac',
+  ]);
+
+  if (imageTypes.has(normalizedType) || normalizedType.startsWith('image/')) {
+    if (file.size > 10 * 1024 * 1024) {
+      return { valid: false, error: 'Image size exceeds 10MB limit.' };
+    }
+    return { valid: true, type: 'image' };
+  }
+
+  if (videoTypes.has(normalizedType) || normalizedType.startsWith('video/')) {
+    if (file.size > 50 * 1024 * 1024) {
+      return { valid: false, error: 'Video size exceeds 50MB limit.' };
+    }
+    return { valid: true, type: 'video' };
+  }
+
+  if (audioTypes.has(normalizedType) || normalizedType.startsWith('audio/')) {
+    if (file.size > 25 * 1024 * 1024) {
+      return { valid: false, error: 'Audio size exceeds 25MB limit.' };
+    }
+    return { valid: true, type: 'audio' };
+  }
+
+  return {
+    valid: false,
+    error: 'Unsupported file type. Use image, audio, or video.',
+  };
+}

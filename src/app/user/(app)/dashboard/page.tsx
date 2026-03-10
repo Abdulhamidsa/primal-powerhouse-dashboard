@@ -3,11 +3,13 @@
 import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { useUserData } from '@/hooks/useUserData';
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { CalendarDays, MessageSquare, Sparkles, Sun, Cloud } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
 import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCheckInCard';
 import { DailyNutritionCard } from '@/features/daily-nutrition/components/DailyNutritionCard';
 import { DailyTrainingCard } from '@/features/daily-training/components/DailyTrainingCard';
+import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 
 const MOTIVATIONAL_QUOTES = [
   'The only bad workout is the one that did not happen.',
@@ -24,6 +26,7 @@ const MOTIVATIONAL_QUOTES = [
 
 export default function UserDashboardPage() {
   const { user, error, isLoading } = useUserData();
+  const { unreadTotal } = useChatUnread();
   const [dailyQuote, setDailyQuote] = useState('');
   const [greeting, setGreeting] = useState({ text: '', icon: null as React.ReactNode });
 
@@ -140,10 +143,18 @@ export default function UserDashboardPage() {
               <div className="flex items-start gap-3">
                 <MessageSquare className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-accent mb-1">Coach Inbox</p>
+                  <div className="mb-1 flex items-center gap-2">
+                    <p className="text-sm font-semibold text-accent">Coach Inbox</p>
+                    <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent">
+                      {unreadTotal} unread
+                    </span>
+                  </div>
                   <p className="text-sm text-foreground leading-relaxed">
                     {coachMessage || 'No new coach messages right now.'}
                   </p>
+                  <Link href="/user/chat" className="mt-3 inline-block text-sm font-medium text-accent hover:underline">
+                    Open Chat
+                  </Link>
                 </div>
               </div>
             </div>

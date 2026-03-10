@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart2, Utensils, Users, Flame, Apple, BarChart, User, Shield, Salad } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, Apple, BarChart, User, Shield, Salad, MessageSquare } from 'lucide-react';
+import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 
 type NavItem = {
   name: string;
@@ -46,6 +47,12 @@ const adminNavItems: NavItem[] = [
     description: 'Training videos',
   },
   {
+    name: 'Chat',
+    href: '/admin/chat',
+    icon: MessageSquare,
+    description: 'Realtime messaging',
+  },
+  {
     name: 'Clients',
     href: '/admin/clients',
     icon: Users,
@@ -65,6 +72,12 @@ const userNavItems: NavItem[] = [
     href: '/user/meals',
     icon: Utensils,
     description: 'Meal plans',
+  },
+  {
+    name: 'Chat',
+    href: '/user/chat',
+    icon: MessageSquare,
+    description: 'Coach messaging',
   },
   {
     name: 'Training',
@@ -98,10 +111,12 @@ const DesktopNavItem = React.memo(function DesktopNavItem({
   item,
   collapsed,
   active,
+  unreadCount,
 }: {
   item: NavItem;
   collapsed: boolean;
   active: boolean;
+  unreadCount: number;
 }) {
   const Icon = item.icon;
 
@@ -132,21 +147,48 @@ const DesktopNavItem = React.memo(function DesktopNavItem({
 
       {!collapsed && (
         <div className="flex items-center gap-2">
+          {unreadCount > 0 ? (
+            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              {unreadCount}
+            </span>
+          ) : null}
           {active && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
         </div>
       )}
+
+      {collapsed && unreadCount > 0 ? (
+        <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground">
+          {unreadCount}
+        </span>
+      ) : null}
     </Link>
   );
 });
 
-const MobileTabItem = React.memo(function MobileTabItem({ item, active }: { item: NavItem; active: boolean }) {
+const MobileTabItem = React.memo(function MobileTabItem({
+  item,
+  active,
+  unreadCount,
+}: {
+  item: NavItem;
+  active: boolean;
+  unreadCount: number;
+}) {
   const Icon = item.icon;
 
   return (
-    <Link href={item.href} className="flex flex-col items-center justify-center min-w-[60px] py-2 px-2 rounded-xl">
+    <Link
+      href={item.href}
+      className="relative flex flex-col items-center justify-center min-w-[60px] py-2 px-2 rounded-xl"
+    >
       <div className={`transition-colors duration-200 ${active ? 'text-primary' : 'text-muted-foreground'}`}>
         <Icon size={20} />
       </div>
+      {unreadCount > 0 ? (
+        <span className="absolute right-2 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground">
+          {unreadCount}
+        </span>
+      ) : null}
       <span className={`text-[10px] font-medium mt-1 ${active ? 'text-primary' : 'text-muted-foreground'}`}>
         {item.name.split(' ')[0]}
       </span>
@@ -162,6 +204,7 @@ export default function Navigation({
   userType?: 'admin' | 'user';
 }) {
   const pathname = usePathname();
+  const { unreadTotal } = useChatUnread();
   const [collapsed, setCollapsed] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -241,6 +284,7 @@ export default function Navigation({
                 item={item}
                 collapsed={collapsed}
                 active={isActivePath(pathname, item.href)}
+                unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
               />
             ))}
           </div>
@@ -314,7 +358,12 @@ export default function Navigation({
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg">
           <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto mb-6">
             {navItems.map(item => (
-              <MobileTabItem key={item.href} item={item} active={isActivePath(pathname, item.href)} />
+              <MobileTabItem
+                key={item.href}
+                item={item}
+                active={isActivePath(pathname, item.href)}
+                unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
+              />
             ))}
           </div>
         </nav>

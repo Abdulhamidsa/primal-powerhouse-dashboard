@@ -2,7 +2,7 @@ import type { VideoAssignment } from '@/types/video';
 import type { MealAssignment, ActiveMealPlanSummary } from '@/lib/client-page/types';
 import type { AdminClientWeeklyCheckInsResponse } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
 
-export type LeftPaneMode = 'list' | 'notes';
+export type LeftPaneMode = 'list' | 'chat' | 'notes';
 
 export type DashboardTabKey = 'summary' | 'nutrition' | 'assignments' | 'check-ins';
 

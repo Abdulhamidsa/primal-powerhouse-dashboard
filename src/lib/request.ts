@@ -13,6 +13,15 @@ function isFormData(body: unknown): body is FormData {
   return typeof FormData !== 'undefined' && body instanceof FormData;
 }
 
+function formatErrorDetails(details: unknown): string {
+  if (typeof details === 'string') return details;
+  try {
+    return JSON.stringify(details);
+  } catch {
+    return String(details);
+  }
+}
+
 export async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
 
@@ -38,7 +47,7 @@ export async function request<T>(url: string, init: RequestInit = {}): Promise<T
       if (ct.includes('application/json')) {
         const data = (await res.json()) as ErrorBody;
         message = data.message || data.error || message;
-        if (data.details) message = `${message}: ${data.details}`;
+        if (data.details != null) message = `${message}: ${formatErrorDetails(data.details)}`;
       } else {
         const text = await res.text();
         if (text) message = text;
