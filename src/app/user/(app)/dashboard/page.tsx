@@ -10,6 +10,7 @@ import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCh
 import { DailyNutritionCard } from '@/features/daily-nutrition/components/DailyNutritionCard';
 import { DailyTrainingCard } from '@/features/daily-training/components/DailyTrainingCard';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
+import { ChatPanel } from '@/features/client-coach-messaging/components/ChatPanel';
 
 const MOTIVATIONAL_QUOTES = [
   'The only bad workout is the one that did not happen.',
@@ -135,6 +136,19 @@ export default function UserDashboardPage() {
                 Weekly Check-In
               </p>
               <WeeklyCheckInCard />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Coach Chat</p>
+                <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
+                  {unreadTotal} unread
+                </span>
+              </div>
+
+              <div className="h-[560px] min-h-[480px] rounded-3xl border border-border/70 bg-card/70 overflow-hidden">
+                <ChatPanel title="Coach Chat" hideConversationList />
+              </div>
             </div>
           </section>
 
