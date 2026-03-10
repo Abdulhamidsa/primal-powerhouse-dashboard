@@ -8,6 +8,7 @@ import { mealPlanRecalculationSchema } from '@/features/meal-plan-recalculation/
 import type {
   MealPlanRecalculationResult,
   MealPortionDelta,
+  OptimizationMode,
   RecalculationMacroTargets,
 } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
 
@@ -183,6 +184,79 @@ function calculateAccuracyPercent(targetCalories: number, projectedCalories: num
   return round1(Math.max(0, Math.min(100, accuracy)));
 }
 
+function calculateMacroObjective(targets: RecalculationMacroTargets, totals: RecalculationMacroTargets): number {
+  const caloriePenalty = (Math.abs(targets.calories - totals.calories) / Math.max(1, targets.calories)) * 450;
+  const proteinDeficit = Math.max(0, targets.protein - totals.protein);
+  const proteinPenalty = proteinDeficit * 3.5;
+
+  const fatDelta = totals.fat - targets.fat;
+  const fatPenalty = Math.abs(fatDelta) * 1.2 + (fatDelta > 0 ? fatDelta * 0.9 : 0);
+
+  const carbPenalty = Math.abs(targets.carbs - totals.carbs) * 0.8;
+
+  return caloriePenalty + proteinPenalty + fatPenalty + carbPenalty;
+}
+
+function optimizePortionsForMacros(args: {
+  targets: RecalculationMacroTargets;
+  assignments: Array<{
+    assignmentId: string;
+    oldPortion: number;
+    meal: { calories: number; protein: number; carbs: number; fat: number };
+  }>;
+  initialNewPortions: Map<string, number>;
+  maxMealAdjustments: number;
+}): { optimized: Map<string, number>; adjustmentsApplied: number } {
+  const step = 0.1;
+  const portions = new Map(args.initialNewPortions);
+  let adjustmentsApplied = 0;
+
+  const getTotals = (candidate: Map<string, number>): RecalculationMacroTargets => {
+    return calculateTotals(
+      args.assignments.map(item => ({
+        portion: candidate.get(item.assignmentId) ?? item.oldPortion,
+        meal: item.meal,
+      }))
+    );
+  };
+
+  for (let i = 0; i < args.maxMealAdjustments; i += 1) {
+    const currentTotals = getTotals(portions);
+    const currentScore = calculateMacroObjective(args.targets, currentTotals);
+
+    let bestScore = currentScore;
+    let bestAssignmentId: string | null = null;
+    let bestPortion = 0;
+
+    for (const item of args.assignments) {
+      const currentPortion = portions.get(item.assignmentId) ?? item.oldPortion;
+      const candidates = [round1(currentPortion + step), round1(currentPortion - step)].filter(
+        value => value >= PORTION_MIN && value <= PORTION_MAX
+      );
+
+      for (const candidatePortion of candidates) {
+        const candidateMap = new Map(portions);
+        candidateMap.set(item.assignmentId, candidatePortion);
+        const candidateTotals = getTotals(candidateMap);
+        const candidateScore = calculateMacroObjective(args.targets, candidateTotals);
+
+        if (candidateScore < bestScore - 0.01) {
+          bestScore = candidateScore;
+          bestAssignmentId = item.assignmentId;
+          bestPortion = candidatePortion;
+        }
+      }
+    }
+
+    if (!bestAssignmentId) break;
+
+    portions.set(bestAssignmentId, bestPortion);
+    adjustmentsApplied += 1;
+  }
+
+  return { optimized: portions, adjustmentsApplied };
+}
+
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const auth = requireAuth(request, 'admin');
@@ -298,7 +372,56 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const targets = computeTargets(input.newDailyCalories, weightKg, latestHealthGoal?.goal);
 
-    const currentTotals = calculateTotals(mealPlan.mealAssignments.map(a => ({ portion: a.portion, meal: a.meal })));
+    const originalMealIds = Array.from(
+      new Set(
+        mealPlan.mealAssignments
+          .map(assignment => assignment.meal.originalMealId)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0)
+      )
+    );
+
+    const originalMeals =
+      originalMealIds.length > 0
+        ? await prisma.meal.findMany({
+            where: { id: { in: originalMealIds } },
+            select: {
+              id: true,
+              ingredients: true,
+              calories: true,
+              protein: true,
+              carbs: true,
+              fat: true,
+            },
+          })
+        : [];
+
+    const originalMealById = new Map(originalMeals.map(meal => [meal.id, meal]));
+
+    const withDerivedPortions = mealPlan.mealAssignments.map(assignment => {
+      const originalMeal = assignment.meal.originalMealId ? originalMealById.get(assignment.meal.originalMealId) : null;
+
+      const baseMeal = {
+        calories: originalMeal?.calories ?? assignment.meal.calories,
+        protein: originalMeal?.protein ?? assignment.meal.protein,
+        carbs: originalMeal?.carbs ?? assignment.meal.carbs,
+        fat: originalMeal?.fat ?? assignment.meal.fat,
+      };
+
+      const embeddedPortion =
+        originalMeal && originalMeal.calories > 0 ? assignment.meal.calories / originalMeal.calories : 1;
+
+      const logicalOldPortion = round1(Math.max(0.1, assignment.portion * embeddedPortion));
+
+      return {
+        assignment,
+        baseMeal,
+        logicalOldPortion,
+      };
+    });
+
+    const currentTotals = calculateTotals(
+      withDerivedPortions.map(item => ({ portion: item.logicalOldPortion, meal: item.baseMeal }))
+    );
 
     if (currentTotals.calories <= 0) {
       return NextResponse.json(
@@ -312,8 +435,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const scaleFactor = targets.calories / currentTotals.calories;
 
-    const deltas: MealPortionDelta[] = mealPlan.mealAssignments.map(assignment => {
-      const scaled = assignment.portion * scaleFactor;
+    const deltas: MealPortionDelta[] = withDerivedPortions.map(({ assignment, logicalOldPortion }) => {
+      const scaled = logicalOldPortion * scaleFactor;
       const rounded = round1(scaled);
       const clamped = clampPortion(rounded);
 
@@ -322,21 +445,51 @@ export async function POST(request: NextRequest, context: RouteContext) {
         mealName: assignment.meal.name,
         mealType: assignment.mealType,
         dayOfWeek: assignment.dayOfWeek,
-        oldPortion: round1(assignment.portion),
+        oldPortion: logicalOldPortion,
         newPortion: clamped.value,
         wasClampedByBounds: clamped.clamped,
       };
     });
 
+    const initialPortionsByAssignmentId = new Map(deltas.map(delta => [delta.assignmentId, delta.newPortion]));
+    let optimizationMode: OptimizationMode = input.optimizationMode;
+    let adjustmentsApplied = 0;
+    let optimizedPortions = initialPortionsByAssignmentId;
+
+    if (input.optimizationMode === 'macro_optimized') {
+      const optimized = optimizePortionsForMacros({
+        targets,
+        assignments: withDerivedPortions.map(item => ({
+          assignmentId: item.assignment.id,
+          oldPortion: item.logicalOldPortion,
+          meal: item.baseMeal,
+        })),
+        initialNewPortions: initialPortionsByAssignmentId,
+        maxMealAdjustments: input.maxMealAdjustments,
+      });
+      optimizedPortions = optimized.optimized;
+      adjustmentsApplied = optimized.adjustmentsApplied;
+    }
+
+    const optimizedDeltas = deltas.map(delta => {
+      const nextPortion = optimizedPortions.get(delta.assignmentId) ?? delta.newPortion;
+      return {
+        ...delta,
+        newPortion: nextPortion,
+        wasClampedByBounds:
+          delta.wasClampedByBounds || nextPortion <= PORTION_MIN + 0.0001 || nextPortion >= PORTION_MAX - 0.0001,
+      };
+    });
+
     const projectedTotals = calculateTotals(
-      mealPlan.mealAssignments.map(assignment => {
-        const delta = deltas.find(item => item.assignmentId === assignment.id)!;
-        return { portion: delta.newPortion, meal: assignment.meal };
+      withDerivedPortions.map(({ assignment, baseMeal }) => {
+        const delta = optimizedDeltas.find(item => item.assignmentId === assignment.id)!;
+        return { portion: delta.newPortion, meal: baseMeal };
       })
     );
 
     const expectedAccuracyPercent = calculateAccuracyPercent(targets.calories, projectedTotals.calories);
-    const hasBoundsClamping = deltas.some(delta => delta.wasClampedByBounds);
+    const hasBoundsClamping = optimizedDeltas.some(delta => delta.wasClampedByBounds);
 
     const warning =
       hasBoundsClamping || expectedAccuracyPercent < 99
@@ -351,9 +504,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       projectedTotals,
       expectedAccuracyPercent,
       hasBoundsClamping,
-      deltas,
+      deltas: optimizedDeltas,
       warning,
       mode: input.mode,
+      optimizationMode,
+      adjustmentsApplied,
     };
 
     if (input.mode === 'preview') {
@@ -374,7 +529,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
 
-      const delta = deltas.find(item => item.assignmentId === assignment.id);
+      const delta = optimizedDeltas.find(item => item.assignmentId === assignment.id);
       if (!delta) {
         return NextResponse.json({ message: 'Failed to resolve assignment delta during apply.' }, { status: 500 });
       }
@@ -408,31 +563,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       targetPortionByMealId.set(assignment.mealId, delta.newPortion);
     }
 
-    const originalMealIds = Array.from(
-      new Set(
-        mealPlan.mealAssignments
-          .map(assignment => assignment.meal.originalMealId)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0)
-      )
-    );
-
-    const originalMeals =
-      originalMealIds.length > 0
-        ? await prisma.meal.findMany({
-            where: { id: { in: originalMealIds } },
-            select: {
-              id: true,
-              ingredients: true,
-              calories: true,
-              protein: true,
-              carbs: true,
-              fat: true,
-            },
-          })
-        : [];
-
-    const originalMealById = new Map(originalMeals.map(meal => [meal.id, meal]));
-
     const applied = await prisma.$transaction(async tx => {
       for (const mealId of ratioByMealId.keys()) {
         const sourceAssignment = mealPlan.mealAssignments.find(assignment => assignment.mealId === mealId);
@@ -461,7 +591,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
       }
 
-      for (const delta of deltas) {
+      for (const delta of optimizedDeltas) {
         await tx.mealAssignment.update({
           where: { id: delta.assignmentId },
           data: { portion: 1.0 },
@@ -508,7 +638,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             ${JSON.stringify(projectedTotals)},
             ${expectedAccuracyPercent},
             ${hasBoundsClamping},
-            ${JSON.stringify(deltas)},
+            ${JSON.stringify(optimizedDeltas)},
             NOW()
           )
         `

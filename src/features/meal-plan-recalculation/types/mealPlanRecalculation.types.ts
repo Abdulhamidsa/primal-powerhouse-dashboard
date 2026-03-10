@@ -1,10 +1,12 @@
 import type { z } from 'zod';
 import type {
   mealPlanRecalculationSchema,
+  optimizationModeSchema,
   recalculationModeSchema,
 } from '@/features/meal-plan-recalculation/schemas/mealPlanRecalculation.schema';
 
 export type RecalculationMode = z.infer<typeof recalculationModeSchema>;
+export type OptimizationMode = z.infer<typeof optimizationModeSchema>;
 export type MealPlanRecalculationPayload = z.infer<typeof mealPlanRecalculationSchema>;
 
 export type MealPortionDelta = {
@@ -28,6 +30,8 @@ export type MealPlanRecalculationResult = {
   mealPlanId: string;
   clientId: string;
   basePlanUpdatedAt: string;
+  optimizationMode: OptimizationMode;
+  adjustmentsApplied: number;
   targets: RecalculationMacroTargets;
   projectedTotals: RecalculationMacroTargets;
   expectedAccuracyPercent: number;

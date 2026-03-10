@@ -112,6 +112,15 @@ export default function ClientProfilePage() {
             macros: JSON.parse(latest.macros),
             notes: latest.notes ? latest.notes.split('\n').filter((n: string) => n.trim()) : [],
             isSafeToDeficit: latest.isSafeToDeficit,
+            calculationDetails: {
+              formulaUsed: 'mifflin',
+              activityLevel: 'MODERATE',
+              activityMultiplier: 1.55,
+              goal: 'maintenance',
+              goalAdjustmentCalories: 0,
+              proteinPerKg: 1.8,
+              fatFloorGrams: 0,
+            },
           });
         }
       }

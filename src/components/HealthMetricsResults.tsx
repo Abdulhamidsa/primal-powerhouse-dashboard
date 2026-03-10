@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Beef, Wheat, Droplets, AlertCircle, Trash2 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
+import { useHealthMetricsNotes } from '@/features/health-metrics/hooks/useHealthMetricsNotes';
 
 interface HealthMetricsResultsProps {
   clientId: string;
@@ -20,7 +21,7 @@ export function HealthMetricsResults({
 }: HealthMetricsResultsProps) {
   const [notes, setNotes] = useState<string[]>(metrics.notes || []);
   const [newNote, setNewNote] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const { saveNotes, isSaving } = useHealthMetricsNotes(clientId);
 
   const handleAddNote = async (e: React.KeyboardEvent) => {
     if (e.key !== 'Enter' || !newNote.trim()) return;
@@ -31,18 +32,11 @@ export function HealthMetricsResults({
     setNewNote('');
 
     // Save notes to API
-    setIsSaving(true);
     try {
-      await fetch(`/api/clients/${clientId}/health-metrics/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: updatedNotes }),
-      });
+      await saveNotes(updatedNotes);
       onSaveNotesAction(updatedNotes);
     } catch (error) {
       console.error('Failed to save notes:', error);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -50,18 +44,11 @@ export function HealthMetricsResults({
     const updatedNotes = notes.filter((_, i) => i !== index);
     setNotes(updatedNotes);
 
-    setIsSaving(true);
     try {
-      await fetch(`/api/clients/${clientId}/health-metrics/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: updatedNotes }),
-      });
+      await saveNotes(updatedNotes);
       onSaveNotesAction(updatedNotes);
     } catch (error) {
       console.error('Failed to save notes:', error);
-    } finally {
-      setIsSaving(false);
     }
   };
 

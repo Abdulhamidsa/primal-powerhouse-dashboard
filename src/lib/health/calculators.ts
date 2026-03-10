@@ -1,29 +1,86 @@
 import { z } from 'zod';
 
-// Activity level multipliers (Mifflin-St Jeor adjusted)
+const DEFICIT_CAP_RATIO = 0.25;
+const SURPLUS_CAP_RATIO = 0.15;
+const FAT_FLOOR_PER_KG = 0.6;
+const KCAL_PER_KG = 7700;
+
+type GoalType =
+  | 'fat_loss'
+  | 'aggressive_cut'
+  | 'recomposition'
+  | 'lean_bulk'
+  | 'maintenance'
+  | 'lose_fat'
+  | 'maintain'
+  | 'gain_muscle'
+  | string;
+
+type FormulaPreference = 'auto' | 'mifflin' | 'katch';
+
+const activitySchema = z.enum([
+  'LOW',
+  'MODERATE',
+  'HIGH',
+  'SEDENTARY',
+  'LIGHT',
+  'VERY_ACTIVE',
+  'ATHLETE',
+  'sedentary',
+  'light',
+  'moderate',
+  'very_active',
+  'athlete',
+]);
+
+function normalizeActivityLevel(level: string): 'SEDENTARY' | 'LIGHT' | 'MODERATE' | 'VERY_ACTIVE' | 'ATHLETE' {
+  const key = level.trim().toUpperCase();
+  if (key === 'LOW' || key === 'SEDENTARY') return 'SEDENTARY';
+  if (key === 'LIGHT') return 'LIGHT';
+  if (key === 'MODERATE') return 'MODERATE';
+  if (key === 'HIGH' || key === 'VERY_ACTIVE') return 'VERY_ACTIVE';
+  if (key === 'ATHLETE') return 'ATHLETE';
+  return 'MODERATE';
+}
+
+// Activity level multipliers.
 export const ACTIVITY_MULTIPLIERS: Record<string, number> = {
+  SEDENTARY: 1.2,
+  LIGHT: 1.375,
+  MODERATE: 1.55,
+  VERY_ACTIVE: 1.725,
+  ATHLETE: 1.9,
+  LOW: 1.2,
+  HIGH: 1.725,
   sedentary: 1.2,
   light: 1.375,
   moderate: 1.55,
   very_active: 1.725,
   athlete: 1.9,
-  // Map existing enum values
-  LOW: 1.2,
-  MODERATE: 1.55,
-  HIGH: 1.725,
 };
 
-// Zod validation schema
+// Zod validation schema.
 export const HealthMetricsSchema = z.object({
   weightKg: z.coerce.number().min(30, 'Weight must be at least 30kg').max(250, 'Weight cannot exceed 250kg'),
   heightCm: z.coerce.number().min(120, 'Height must be at least 120cm').max(230, 'Height cannot exceed 230cm'),
   age: z.coerce.number().min(10, 'Age must be at least 10').max(100, 'Age cannot exceed 100'),
   gender: z.enum(['male', 'female']).catch('male'),
-  activityLevel: z
-    .enum(['LOW', 'MODERATE', 'HIGH', 'sedentary', 'light', 'moderate', 'very_active', 'athlete'] as const)
-    .catch('MODERATE'),
-  goal: z.enum(['lose_fat', 'maintain', 'gain_muscle']).optional(),
-  goalAggressiveness: z.enum(['conservative', 'standard', 'aggressive']).optional(),
+  activityLevel: activitySchema.catch('MODERATE'),
+  goal: z
+    .enum([
+      'fat_loss',
+      'aggressive_cut',
+      'recomposition',
+      'lean_bulk',
+      'maintenance',
+      'lose_fat',
+      'maintain',
+      'gain_muscle',
+    ])
+    .default('fat_loss'),
+  weeklyRatePercent: z.coerce.number().min(0.1).max(1.2).optional(),
+  bodyFatPercentage: z.coerce.number().min(3).max(60).optional(),
+  formulaPreference: z.enum(['auto', 'mifflin', 'katch']).default('auto'),
 });
 
 export type HealthMetricsInput = z.infer<typeof HealthMetricsSchema>;
@@ -41,21 +98,23 @@ export interface HealthMetricsOutput {
   };
   notes: string[];
   isSafeToDeficit: boolean;
+  calculationDetails: {
+    formulaUsed: 'mifflin' | 'katch';
+    activityLevel: 'SEDENTARY' | 'LIGHT' | 'MODERATE' | 'VERY_ACTIVE' | 'ATHLETE';
+    activityMultiplier: number;
+    goal: GoalType;
+    goalAdjustmentCalories: number;
+    proteinPerKg: number;
+    fatFloorGrams: number;
+  };
 }
 
-/**
- * Calculate BMI from weight and height
- * Formula: weight (kg) / (height (m))²
- */
 export function calculateBMI(weightKg: number, heightCm: number): number {
   const heightM = heightCm / 100;
   const bmi = weightKg / (heightM * heightM);
   return Math.round(bmi * 10) / 10;
 }
 
-/**
- * Get BMI category
- */
 export function getBMICategory(bmi: number): 'underweight' | 'normal' | 'overweight' | 'obese' {
   if (bmi < 18.5) return 'underweight';
   if (bmi < 25) return 'normal';
@@ -63,118 +122,226 @@ export function getBMICategory(bmi: number): 'underweight' | 'normal' | 'overwei
   return 'obese';
 }
 
-/**
- * Calculate Basal Metabolic Rate using Mifflin-St Jeor equation
- * Men: 10*kg + 6.25*cm - 5*age + 5
- * Women: 10*kg + 6.25*cm - 5*age - 161
- */
 export function calculateBMR(weightKg: number, heightCm: number, age: number, gender: 'male' | 'female'): number {
   const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
   const bmr = gender === 'male' ? base + 5 : base - 161;
   return Math.round(bmr);
 }
 
-/**
- * Calculate Total Daily Energy Expenditure
- */
+export function calculateBMRKatch(weightKg: number, bodyFatPercentage: number): number {
+  const leanMassKg = weightKg * (1 - bodyFatPercentage / 100);
+  return Math.round(370 + 21.6 * leanMassKg);
+}
+
 export function calculateTDEE(bmr: number, activityLevel: string): number {
-  const multiplier = ACTIVITY_MULTIPLIERS[activityLevel] || 1.55;
+  const normalized = normalizeActivityLevel(activityLevel);
+  const multiplier = ACTIVITY_MULTIPLIERS[normalized] || 1.55;
   return Math.round(bmr * multiplier);
 }
 
-/**
- * Get recommended daily calories based on goal
- */
-export function getRecommendedCalories(
-  tdee: number,
-  goal: string | undefined,
-  goalAggressiveness: string | undefined,
-  bmi: number
-): { calories: number; notes: string[] } {
+function getGoalAdjustmentCalories(input: {
+  goal: GoalType;
+  tdee: number;
+  weightKg: number;
+  weeklyRatePercent?: number;
+  bmi: number;
+  goalAggressiveness?: string;
+  isLegacyMode?: boolean;
+}): { adjustment: number; notes: string[] } {
   const notes: string[] = [];
-  const aggressiveness = goalAggressiveness || 'standard';
 
-  // Safety override: underweight clients should not cut
-  if (bmi < 18.5) {
-    notes.push(
-      '⚠️ Your BMI suggests you may be underweight. Avoid cutting calories; prioritize proper nutrition and building mass.'
-    );
-    return { calories: tdee, notes };
+  if (input.isLegacyMode) {
+    if (
+      input.bmi < 18.5 &&
+      (input.goal === 'lose_fat' || input.goal === 'fat_loss' || input.goal === 'aggressive_cut')
+    ) {
+      notes.push('Safety override: BMI indicates underweight range, deficit disabled.');
+      return { adjustment: 0, notes };
+    }
+
+    if (input.goal === 'lose_fat') {
+      const deficits: Record<string, number> = { conservative: -300, standard: -400, aggressive: -500 };
+      const adjustment = deficits[input.goalAggressiveness ?? 'standard'] ?? -400;
+      return { adjustment, notes };
+    }
+
+    if (input.goal === 'gain_muscle') {
+      const surpluses: Record<string, number> = { conservative: 200, standard: 250, aggressive: 300 };
+      const adjustment = surpluses[input.goalAggressiveness ?? 'standard'] ?? 250;
+      return { adjustment, notes };
+    }
+
+    return { adjustment: 0, notes };
   }
 
-  let adjustment = 0;
-
-  if (goal === 'lose_fat') {
-    const deficits: Record<string, number> = { conservative: -300, standard: -400, aggressive: -500 };
-    adjustment = deficits[aggressiveness] || -400;
-    notes.push(
-      `Weight loss: ${Math.abs(adjustment)} kcal deficit expected to lose ~${((Math.abs(adjustment) / 1000) * 0.5).toFixed(1)} kg/week`
-    );
-  } else if (goal === 'gain_muscle') {
-    const surpluses: Record<string, number> = { conservative: 200, standard: 250, aggressive: 300 };
-    adjustment = surpluses[aggressiveness] || 250;
-    notes.push(
-      `Muscle gain: ${adjustment} kcal surplus expected to gain ~${((adjustment / 1000) * 0.5).toFixed(1)} kg/week`
-    );
-  } else {
-    notes.push('Maintenance: eating at TDEE to sustain current weight');
+  if (input.bmi < 18.5 && (input.goal === 'fat_loss' || input.goal === 'aggressive_cut' || input.goal === 'lose_fat')) {
+    notes.push('Safety override: BMI indicates underweight range, deficit disabled.');
+    return { adjustment: 0, notes };
   }
 
-  const recommended = Math.round(tdee + adjustment);
-  notes.push('Monitor weekly average weight; adjust by 150–200 kcal if progress stalls.');
-  notes.push('This is a starting estimate. Individual factors vary; adjust based on 2-3 week trends.');
+  const rate = input.weeklyRatePercent;
+  const deficitCap = Math.round(input.tdee * DEFICIT_CAP_RATIO);
+  const surplusCap = Math.round(input.tdee * SURPLUS_CAP_RATIO);
 
-  return { calories: recommended, notes };
+  const fromRate = (percentPerWeek: number): number => {
+    const kgPerWeek = input.weightKg * (percentPerWeek / 100);
+    return Math.round((kgPerWeek * KCAL_PER_KG) / 7);
+  };
+
+  if (input.goal === 'aggressive_cut') {
+    const raw = fromRate(rate ?? 1.0);
+    const capped = Math.min(raw, deficitCap);
+    notes.push(
+      `Aggressive cut target uses ~${rate ?? 1.0}% bodyweight loss/week with a ${DEFICIT_CAP_RATIO * 100}% TDEE cap.`
+    );
+    return { adjustment: -capped, notes };
+  }
+
+  if (input.goal === 'fat_loss' || input.goal === 'lose_fat') {
+    const raw = fromRate(rate ?? 0.5);
+    const capped = Math.min(raw, deficitCap);
+    notes.push(
+      `Fat loss target uses ~${rate ?? 0.5}% bodyweight loss/week with a ${DEFICIT_CAP_RATIO * 100}% TDEE cap.`
+    );
+    return { adjustment: -capped, notes };
+  }
+
+  if (input.goal === 'recomposition') {
+    const raw = Math.round(input.tdee * 0.08);
+    const capped = Math.min(raw, deficitCap);
+    notes.push('Recomposition uses a mild deficit to support fat loss while preserving training performance.');
+    return { adjustment: -capped, notes };
+  }
+
+  if (input.goal === 'lean_bulk' || input.goal === 'gain_muscle') {
+    const raw = fromRate(rate ?? 0.25);
+    const capped = Math.min(raw, surplusCap);
+    notes.push(
+      `Lean bulk target uses ~${rate ?? 0.25}% bodyweight gain/week with a ${SURPLUS_CAP_RATIO * 100}% TDEE cap.`
+    );
+    return { adjustment: capped, notes };
+  }
+
+  notes.push('Maintenance target keeps intake near TDEE.');
+  return { adjustment: 0, notes };
 }
 
-/**
- * Calculate macro recommendations based on calorie goal and goal type
- * Protein: 1.6-2.2g per kg for muscle gain, 1.6g for fat loss
- * Carbs & Fat: adjust ratios based on preference
- */
+export function getRecommendedCalories(
+  input:
+    | {
+        tdee: number;
+        goal: GoalType;
+        weeklyRatePercent?: number;
+        bmi: number;
+        weightKg: number;
+      }
+    | number,
+  legacyGoal?: string,
+  legacyGoalAggressiveness?: string,
+  legacyBmi?: number
+): { calories: number; notes: string[]; adjustment: number } {
+  const notes: string[] = [];
+
+  const normalized =
+    typeof input === 'number'
+      ? {
+          tdee: input,
+          goal: (legacyGoal ?? 'maintain') as GoalType,
+          bmi: legacyBmi ?? 25,
+          weightKg: 80,
+          weeklyRatePercent: undefined,
+          legacyGoalAggressiveness,
+          isLegacyMode: true,
+        }
+      : {
+          ...input,
+          legacyGoalAggressiveness: undefined,
+          isLegacyMode: false,
+        };
+
+  const adjustmentResult = getGoalAdjustmentCalories({
+    goal: normalized.goal,
+    tdee: normalized.tdee,
+    weeklyRatePercent: normalized.weeklyRatePercent,
+    bmi: normalized.bmi,
+    weightKg: normalized.weightKg,
+    goalAggressiveness: normalized.legacyGoalAggressiveness,
+    isLegacyMode: normalized.isLegacyMode,
+  });
+
+  notes.push(...adjustmentResult.notes);
+
+  const recommended = Math.max(1200, Math.round(normalized.tdee + adjustmentResult.adjustment));
+  notes.push('This is a starting estimate. Track 2-3 week trend and adjust 100-200 kcal if needed.');
+
+  return { calories: recommended, notes, adjustment: adjustmentResult.adjustment };
+}
+
+function getProteinPerKg(goal: GoalType | undefined): number {
+  if (goal === 'aggressive_cut') return 2.6;
+  if (goal === 'fat_loss' || goal === 'lose_fat' || goal === 'recomposition') return 2.4;
+  if (goal === 'lean_bulk' || goal === 'gain_muscle') return 2.0;
+  return 1.8;
+}
+
 export function calculateMacroRecommendations(
   caloriesPerDay: number,
   weightKg: number,
-  goal: string | undefined
-): { protein: number; carbs: number; fat: number } {
-  // Protein priority
-  const proteinPerKg = goal === 'gain_muscle' ? 2.0 : goal === 'lose_fat' ? 1.6 : 1.8;
+  goal: GoalType | undefined
+): { protein: number; carbs: number; fat: number; proteinPerKg: number; fatFloorGrams: number } {
+  const proteinPerKg = getProteinPerKg(goal);
   const protein = Math.round(weightKg * proteinPerKg);
   const proteinCalories = protein * 4;
 
-  // Remaining calories for carbs and fat
-  const remainingCalories = caloriesPerDay - proteinCalories;
+  const fatFloorGrams = Math.round(weightKg * FAT_FLOOR_PER_KG);
+  const fatFloorCalories = fatFloorGrams * 9;
 
-  // Default split: 50% carbs, 50% fat (adjustable based on preference)
-  const carbCalories = remainingCalories * 0.5;
-  const fatCalories = remainingCalories * 0.5;
+  const minimumCaloriesNeeded = proteinCalories + fatFloorCalories;
+  const safeCalories = Math.max(caloriesPerDay, minimumCaloriesNeeded);
+  const remainingCalories = safeCalories - proteinCalories - fatFloorCalories;
 
-  const carbs = Math.round(carbCalories / 4);
-  const fat = Math.round(fatCalories / 9);
+  const carbs = Math.max(0, Math.round((remainingCalories * 0.65) / 4));
+  const fat = Math.max(fatFloorGrams, Math.round((fatFloorCalories + remainingCalories * 0.35) / 9));
 
-  return { protein, carbs, fat };
+  return {
+    protein,
+    carbs,
+    fat,
+    proteinPerKg,
+    fatFloorGrams,
+  };
 }
 
-/**
- * Main calculator function - validates input and returns all metrics
- */
 export async function calculateHealthMetrics(input: unknown): Promise<HealthMetricsOutput | { error: string }> {
   try {
     const validated = HealthMetricsSchema.parse(input);
 
     const bmi = calculateBMI(validated.weightKg, validated.heightCm);
     const bmiCategory = getBMICategory(bmi);
-    const bmr = calculateBMR(validated.weightKg, validated.heightCm, validated.age, validated.gender);
-    const tdee = calculateTDEE(bmr, validated.activityLevel);
 
-    const { calories: recommendedCalories, notes: calorieNotes } = getRecommendedCalories(
+    const normalizedActivity = normalizeActivityLevel(validated.activityLevel);
+    const formulaUsed: 'mifflin' | 'katch' =
+      validated.formulaPreference === 'katch' ||
+      (validated.formulaPreference === 'auto' && typeof validated.bodyFatPercentage === 'number')
+        ? 'katch'
+        : 'mifflin';
+
+    const bmr =
+      formulaUsed === 'katch' && typeof validated.bodyFatPercentage === 'number'
+        ? calculateBMRKatch(validated.weightKg, validated.bodyFatPercentage)
+        : calculateBMR(validated.weightKg, validated.heightCm, validated.age, validated.gender);
+
+    const tdee = calculateTDEE(bmr, normalizedActivity);
+
+    const caloriesResult = getRecommendedCalories({
       tdee,
-      validated.goal,
-      validated.goalAggressiveness,
-      bmi
-    );
+      goal: validated.goal,
+      weeklyRatePercent: validated.weeklyRatePercent,
+      bmi,
+      weightKg: validated.weightKg,
+    });
 
-    const macros = calculateMacroRecommendations(recommendedCalories, validated.weightKg, validated.goal);
+    const macros = calculateMacroRecommendations(caloriesResult.calories, validated.weightKg, validated.goal);
 
     const isSafeToDeficit = bmi >= 18.5;
 
@@ -182,15 +349,28 @@ export async function calculateHealthMetrics(input: unknown): Promise<HealthMetr
       bmi,
       bmr,
       tdee,
-      recommendedCalories,
+      recommendedCalories: caloriesResult.calories,
       bmiCategory,
-      macros,
-      notes: calorieNotes,
+      macros: {
+        protein: macros.protein,
+        carbs: macros.carbs,
+        fat: macros.fat,
+      },
+      notes: caloriesResult.notes,
       isSafeToDeficit,
+      calculationDetails: {
+        formulaUsed,
+        activityLevel: normalizedActivity,
+        activityMultiplier: ACTIVITY_MULTIPLIERS[normalizedActivity],
+        goal: validated.goal,
+        goalAdjustmentCalories: caloriesResult.adjustment,
+        proteinPerKg: macros.proteinPerKg,
+        fatFloorGrams: macros.fatFloorGrams,
+      },
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const messages = error.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join('; ');
+      const messages = error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ');
       return { error: messages };
     }
     return { error: 'Failed to calculate health metrics' };

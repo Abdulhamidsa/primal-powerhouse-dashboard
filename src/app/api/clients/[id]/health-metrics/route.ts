@@ -2,13 +2,33 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { calculateHealthMetrics } from '@/lib/health/calculators';
+import { healthMetricsRequestSchema } from '@/features/health-metrics/schemas/healthMetrics.schema';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: clientId } = await params;
     const body = await request.json();
+    const parsed = healthMetricsRequestSchema.safeParse(body);
 
-    const { currentWeight, goal, goalAggressiveness } = body;
+    if (!parsed.success) {
+      return jsonWithCache(
+        {
+          error: 'Invalid request payload',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const {
+      currentWeight,
+      goal,
+      mode,
+      activityLevelOverride,
+      weeklyRatePercent,
+      bodyFatPercentage,
+      formulaPreference,
+    } = parsed.data;
 
     if (!currentWeight || !clientId) {
       return jsonWithCache({ error: 'Missing required fields: clientId and currentWeight' }, { status: 400 });
@@ -48,19 +68,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
+    const selectedActivityLevel = activityLevelOverride ?? client.activityLevel;
+
     // Calculate health metrics
     const metrics = await calculateHealthMetrics({
       weightKg: currentWeight,
       heightCm: client.height,
       age: client.age,
       gender: client.gender.toLowerCase() as 'male' | 'female',
-      activityLevel: client.activityLevel,
+      activityLevel: selectedActivityLevel,
       goal,
-      goalAggressiveness,
+      weeklyRatePercent,
+      bodyFatPercentage: bodyFatPercentage ?? undefined,
+      formulaPreference,
     });
 
     if ('error' in metrics) {
       return jsonWithCache({ error: metrics.error }, { status: 400 });
+    }
+
+    if (mode === 'preview') {
+      return jsonWithCache({
+        success: true,
+        applied: false,
+        metrics,
+      });
     }
 
     // Save to database
@@ -97,6 +129,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return jsonWithCache({
       success: true,
+      applied: true,
       metrics,
       healthMetric,
       client: updatedClient,

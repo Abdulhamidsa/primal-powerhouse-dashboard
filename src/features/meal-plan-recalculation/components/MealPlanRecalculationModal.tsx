@@ -6,6 +6,7 @@ import { useMealPlanRecalculation } from '@/features/meal-plan-recalculation/hoo
 import type {
   MealPlanRecalculationResult,
   MealPortionDelta,
+  OptimizationMode,
 } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
 import type { ApiError } from '@/lib/request';
 
@@ -32,6 +33,7 @@ export function MealPlanRecalculationModal({
 }: Props) {
   const [newDailyCalories, setNewDailyCalories] = useState(initialCalories ? String(initialCalories) : '');
   const [reason, setReason] = useState('');
+  const [optimizationMode, setOptimizationMode] = useState<OptimizationMode>('macro_optimized');
   const [previewResult, setPreviewResult] = useState<MealPlanRecalculationResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -55,6 +57,8 @@ export function MealPlanRecalculationModal({
         newDailyCalories: Number(newDailyCalories),
         reason: reason.trim() || undefined,
         mode: 'preview',
+        optimizationMode,
+        maxMealAdjustments: 2,
         basePlanUpdatedAt: activeMealPlan.updatedAt,
       });
       setPreviewResult(result);
@@ -74,6 +78,8 @@ export function MealPlanRecalculationModal({
         newDailyCalories: Number(newDailyCalories),
         reason: reason.trim() || undefined,
         mode: 'apply',
+        optimizationMode,
+        maxMealAdjustments: 2,
         basePlanUpdatedAt: previewResult.basePlanUpdatedAt,
       });
 
@@ -148,6 +154,40 @@ export function MealPlanRecalculationModal({
               disabled={disabled}
             />
           </label>
+
+          <label className="text-sm" style={{ color: 'var(--color-text)' }}>
+            Optimization Mode
+            <div
+              className="mt-1 grid grid-cols-2 gap-2 rounded-lg border p-2"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
+              <button
+                type="button"
+                onClick={() => setOptimizationMode('macro_optimized')}
+                className="px-3 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  background: optimizationMode === 'macro_optimized' ? 'var(--color-accent)' : 'var(--color-bg-alt)',
+                  color: optimizationMode === 'macro_optimized' ? 'var(--color-text-black)' : 'var(--color-text-muted)',
+                }}
+              >
+                Macro-Optimized
+              </button>
+              <button
+                type="button"
+                onClick={() => setOptimizationMode('portion_only')}
+                className="px-3 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  background: optimizationMode === 'portion_only' ? 'var(--color-accent)' : 'var(--color-bg-alt)',
+                  color: optimizationMode === 'portion_only' ? 'var(--color-text-black)' : 'var(--color-text-muted)',
+                }}
+              >
+                Portion Only
+              </button>
+            </div>
+            <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Macro-optimized keeps calories close while improving protein/carbs/fat balance.
+            </p>
+          </label>
         </div>
 
         {!activeMealPlan && (
@@ -184,6 +224,19 @@ export function MealPlanRecalculationModal({
               <StatItem label="Projected kcal" value={previewResult.projectedTotals.calories} />
               <StatItem label="Target protein" value={`${previewResult.targets.protein}g`} />
               <StatItem label="Accuracy" value={`${previewResult.expectedAccuracyPercent.toFixed(1)}%`} />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <StatItem
+                label="Protein gap"
+                value={`${previewResult.targets.protein - previewResult.projectedTotals.protein}g`}
+              />
+              <StatItem
+                label="Carb gap"
+                value={`${previewResult.targets.carbs - previewResult.projectedTotals.carbs}g`}
+              />
+              <StatItem label="Fat gap" value={`${previewResult.targets.fat - previewResult.projectedTotals.fat}g`} />
+              <StatItem label="Adjustments" value={previewResult.adjustmentsApplied} />
             </div>
 
             <div>
