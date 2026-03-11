@@ -1,19 +1,35 @@
 import { Mail, Phone, Ruler, Scale, Timer } from 'lucide-react';
+import { HealthMetricsResults } from '@/components/HealthMetricsResults';
+import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
 import { calculateBMI } from '@/lib/health/calculators';
+import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { WeightTargetProgressCard } from '@/features/admin-clients-dashboard/components/WeightTargetProgressCard';
 import type { AdminClientDetail } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export function SummaryTabContent({
   client,
   onEditProfileAction,
+  healthMetricsResult,
+  onOpenHealthMetricsAction,
+  onCloseHealthMetricsResultsAction,
+  onHealthMetricsNotesSavedAction,
 }: {
   client: AdminClientDetail;
   onEditProfileAction: () => void;
+  healthMetricsResult: HealthMetricsOutput | null;
+  onOpenHealthMetricsAction: () => void;
+  onCloseHealthMetricsResultsAction: () => void;
+  onHealthMetricsNotesSavedAction: () => void;
 }) {
   const bmi =
     typeof client.currentWeight === 'number' && typeof client.height === 'number'
       ? calculateBMI(client.currentWeight, client.height)
       : null;
+
+  const bmiCategory =
+    bmi == null ? 'unknown' : bmi < 18.5 ? 'underweight' : bmi < 25 ? 'normal' : bmi < 30 ? 'overweight' : 'obese';
+
+  const goalMacros = parseGoalMacros(client.goalMacros);
 
   return (
     <div className="space-y-4">
@@ -89,6 +105,14 @@ export function SummaryTabContent({
         </div>
       </div>
 
+      <HealthMetricsWidget
+        bmi={bmi}
+        goalCalories={client.goalCalories}
+        goalMacros={goalMacros}
+        bmiCategory={bmiCategory}
+        onUpdate={onOpenHealthMetricsAction}
+      />
+
       <div
         className="rounded-2xl border p-5"
         style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
@@ -101,8 +125,42 @@ export function SummaryTabContent({
           <TagSection title="Dietary Restrictions" items={client.dietaryRestrictions} emptyLabel="No restrictions" />
         </div>
       </div>
+
+      {healthMetricsResult ? (
+        <HealthMetricsResults
+          clientId={client.id}
+          metrics={healthMetricsResult}
+          onCloseAction={onCloseHealthMetricsResultsAction}
+          onSaveNotesAction={() => {
+            onHealthMetricsNotesSavedAction();
+          }}
+        />
+      ) : null}
     </div>
   );
+}
+
+function parseGoalMacros(goalMacros: string | null): { protein: number; carbs: number; fat: number } | null {
+  if (!goalMacros) return null;
+
+  try {
+    const parsed = JSON.parse(goalMacros) as Record<string, unknown>;
+    const protein = Number(parsed.protein);
+    const carbs = Number(parsed.carbs);
+    const fat = Number(parsed.fat);
+
+    if ([protein, carbs, fat].some(value => Number.isNaN(value))) {
+      return null;
+    }
+
+    return {
+      protein,
+      carbs,
+      fat,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function MetricTile({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {

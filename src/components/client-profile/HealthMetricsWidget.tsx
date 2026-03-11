@@ -37,7 +37,7 @@ export function HealthMetricsWidget({
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={24} style={{ color: 'var(--color-text-muted)' }} />
           <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-            💪 Health Metrics
+            Health Metrics
           </h3>
         </div>
         <p style={{ color: 'var(--color-text-muted)' }} className="text-sm mb-4">
@@ -64,7 +64,7 @@ export function HealthMetricsWidget({
     <div className={cx(iosPanel, 'p-6')} style={iosPanelStyle}>
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-          💪 Health Metrics
+          Health Metrics
         </h3>
         <button
           onClick={onUpdate}

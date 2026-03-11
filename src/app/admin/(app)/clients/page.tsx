@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Users } from 'lucide-react';
 import AssignContentModal from '@/components/AssignContentModal';
+import HealthMetricsModal from '@/components/HealthMetricsModal';
 import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
 import { useClientMeals } from '@/hooks/useClientMeals';
 import {
@@ -26,6 +27,7 @@ import { SummaryTabContent } from '@/features/admin-clients-dashboard/components
 import { NutritionTabContent } from '@/features/admin-clients-dashboard/components/NutritionTabContent';
 import { AssignmentsTabContent } from '@/features/admin-clients-dashboard/components/AssignmentsTabContent';
 import { CheckInsTabContent } from '@/features/admin-clients-dashboard/components/CheckInsTabContent';
+import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import type {
   DashboardTabKey,
   LeftPaneMode,
@@ -52,6 +54,8 @@ export default function ClientsPage() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
+  const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
+  const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
 
   const {
     filteredClients,
@@ -110,6 +114,11 @@ export default function ClientsPage() {
       setSelectedClientId(preferredId);
     }
   }, [filteredClients, searchParams, selectedClientId]);
+
+  useEffect(() => {
+    setShowHealthMetricsModal(false);
+    setHealthMetricsResults(null);
+  }, [selectedClientId]);
 
   const handleSelectClient = (clientId: string) => {
     setSelectedClientId(clientId);
@@ -202,7 +211,7 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+    <div className="  max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       <header className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -216,7 +225,7 @@ export default function ClientsPage() {
 
       <section ref={layoutRef} className="h-[calc(100vh-12rem)] min-h-[620px] flex flex-col gap-4 lg:flex-row lg:gap-0">
         <aside
-          className="rounded-2xl border overflow-scroll shrink-0 lg:rounded-r-none lg:min-w-[320px] lg:max-w-[620px] lg:w-[var(--clients-left-pane-width)]"
+          className="rounded-2xl border overflow-scroll shrink-0 lg:rounded-r-none lg:min-w-[320px] lg:max-w-[420px] lg:w-[var(--clients-left-pane-width)]"
           style={{
             borderColor: 'var(--color-border)',
             background: 'var(--color-surface)',
@@ -336,7 +345,16 @@ export default function ClientsPage() {
 
               <div className="flex-1 overflow-y-auto px-4 pb-4">
                 {activeTab === 'summary' ? (
-                  <SummaryTabContent client={client} onEditProfileAction={() => setShowProfileEditModal(true)} />
+                  <SummaryTabContent
+                    client={client}
+                    onEditProfileAction={() => setShowProfileEditModal(true)}
+                    healthMetricsResult={healthMetricsResults}
+                    onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}
+                    onCloseHealthMetricsResultsAction={() => setHealthMetricsResults(null)}
+                    onHealthMetricsNotesSavedAction={() => {
+                      void refreshClient();
+                    }}
+                  />
                 ) : null}
 
                 {activeTab === 'nutrition' ? (
@@ -426,6 +444,28 @@ export default function ClientsPage() {
             } else {
               await refreshMeals();
             }
+          }}
+        />
+      ) : null}
+
+      {client ? (
+        <HealthMetricsModal
+          isOpen={showHealthMetricsModal}
+          onCloseAction={() => setShowHealthMetricsModal(false)}
+          clientId={client.id}
+          clientName={client.name}
+          clientData={{
+            currentWeight: client.currentWeight,
+            height: client.height,
+            age: client.age,
+            gender: client.gender,
+            activityLevel: client.activityLevel,
+          }}
+          onSuccess={async metrics => {
+            setHealthMetricsResults(metrics);
+            setShowHealthMetricsModal(false);
+            await refreshClient();
+            await refreshClients();
           }}
         />
       ) : null}

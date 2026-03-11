@@ -78,7 +78,7 @@ export function HealthMetricsResults({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
-          📊 Health Metrics Results
+          Health Metrics Results
         </h2>
         <button
           onClick={onCloseAction}
@@ -147,7 +147,7 @@ export function HealthMetricsResults({
       {/* BMI Analysis Chart */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-          📊 BMI Analysis
+          BMI Analysis
         </h3>
         <div
           className="rounded-2xl border p-6"
@@ -260,7 +260,7 @@ export function HealthMetricsResults({
             }}
           >
             <p style={{ color: 'var(--color-text)' }} className="font-semibold mb-2">
-              💡 Your Status
+              Your Status
             </p>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
               {metrics.bmiCategory === 'underweight' &&
@@ -277,7 +277,7 @@ export function HealthMetricsResults({
       </div>
       <div className="mb-8">
         <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-          🎯 Macro Targets
+          Macro Targets
         </h3>
 
         {/* Pie Chart */}
@@ -413,7 +413,7 @@ export function HealthMetricsResults({
       {/* Notes Section */}
       <div>
         <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-          📝 Notes & Observations
+          Notes & Observations
         </h3>
 
         {/* Add Note Input */}
@@ -434,7 +434,7 @@ export function HealthMetricsResults({
             }}
           />
           <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-            💡 Press Enter to add a note
+            Press Enter to add a note
           </p>
         </div>
 

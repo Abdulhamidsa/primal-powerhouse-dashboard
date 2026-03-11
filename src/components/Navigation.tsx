@@ -347,7 +347,7 @@ export default function Navigation({
           )}
         </header>
 
-        <main className="flex-1 overflow-y-auto lg:p-6 bg-background pb-24 lg:pb-6">
+        <main className="flex-1 overflow-y-auto lg:p-6 bg-background pb-24 lg:pb-6 w-screen">
           {children || (
             <div id="page-content">
               <p className="text-center py-8 text-muted-foreground">Select an option from the navigation</p>

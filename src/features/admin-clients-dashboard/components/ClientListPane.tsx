@@ -77,9 +77,9 @@ export function ClientListPane({
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                     {client.name}
                   </p>
-                  <p className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
+                  {/* <p className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
                     {client.email}
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </button>

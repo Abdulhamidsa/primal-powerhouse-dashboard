@@ -26,6 +26,7 @@ export type AdminClientDetail = {
   avatar: string | null;
   status: 'ACTIVE' | 'INACTIVE' | string;
   age: number | null;
+  gender: 'MALE' | 'FEMALE' | null;
   activityLevel: string | null;
   height: number | null;
   currentWeight: number | null;
