@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { CalendarDays, MessageSquare, Sparkles, Sun, Cloud } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
 import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCheckInCard';
+import { DailyCheckInCard } from '@/features/daily-checkin/components/DailyCheckInCard';
+import { DailyCheckInInsightsCard } from '@/features/daily-checkin/components/DailyCheckInInsightsCard';
 import { DailyNutritionCard } from '@/features/daily-nutrition/components/DailyNutritionCard';
 import { DailyTrainingCard } from '@/features/daily-training/components/DailyTrainingCard';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
@@ -121,7 +123,23 @@ export default function UserDashboardPage() {
               <div className="flex items-center justify-between gap-2 px-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today</p>
                 <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
-                  Complete both cards
+                  3 daily check-in items
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                <DailyCheckInCard />
+                <DailyCheckInInsightsCard />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Additional Tracking
+                </p>
+                <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
+                  Optional
                 </span>
               </div>
 

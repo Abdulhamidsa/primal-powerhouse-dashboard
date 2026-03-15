@@ -92,6 +92,7 @@ model Client {
   weeklyCheckIns    WeeklyCheckIn[]
   dailyNutritionLogs DailyNutritionLog[]
   dailyTrainingLogs DailyTrainingLog[]
+  dailyCheckIns     DailyCheckIn[]
   privacyExportJobs PrivacyExportJob[]
   deletionRequests  DeletionRequest[]
   conversations     Conversation[]
@@ -429,6 +430,24 @@ model DailyTrainingLog {
   @@map("daily_training_logs")
 }
 
+model DailyCheckIn {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dayDate     DateTime
+  weightKg    Float?
+  compliance  DailyCheckInCompliance?
+  energy      DailyCheckInEnergy?
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([clientId, dayDate])
+  @@index([clientId])
+  @@index([dayDate])
+  @@map("daily_check_ins")
+}
+
 model PrivacyExportJob {
   id                String   @id @default(cuid())
   clientId          String
@@ -631,6 +650,18 @@ enum DailyTrainingStatus {
   DONE
   PARTIAL
   MISSED
+}
+
+enum DailyCheckInCompliance {
+  ON_PLAN
+  PARTIAL
+  OFF_PLAN
+}
+
+enum DailyCheckInEnergy {
+  LOW
+  NORMAL
+  HIGH
 }
 
 enum FoodState {
