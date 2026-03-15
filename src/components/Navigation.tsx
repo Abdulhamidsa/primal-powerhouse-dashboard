@@ -308,7 +308,7 @@ export default function Navigation({
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden">
-        <div className="mx-auto mb-6 flex max-w-lg items-center justify-around px-2 py-2">
+        <div className="mx-auto mb-0 flex max-w-lg items-center justify-around px-2 py-2">
           {navItems.map(item => (
             <MobileTabItem
               key={item.href}
