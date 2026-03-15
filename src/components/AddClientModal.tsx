@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { DataService } from '@/services/dataService';
+import { AlertCircle, Check, Copy } from 'lucide-react';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -9,8 +10,16 @@ interface AddClientModalProps {
   onClientAdded: () => void;
 }
 
+interface ClientCredentials {
+  email: string;
+  password: string;
+  clientName: string;
+}
+
 export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddClientModalProps) {
   const [loading, setLoading] = useState(false);
+  const [credentials, setCredentials] = useState<ClientCredentials | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -79,14 +88,18 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
       };
 
       const result = await DataService.createClient(clientData);
-      // If API returns credentials, show them to the user in a success box
       const creds = result?.credentials;
       if (creds?.email && creds?.password) {
-        alert(`Client created!\nEmail: ${creds.email}\nPassword: ${creds.password}`);
+        setCredentials({
+          email: creds.email,
+          password: creds.password,
+          clientName: clientData.name,
+        });
+      } else {
+        onClose();
+        resetForm();
       }
       onClientAdded();
-      onClose();
-      resetForm();
     } catch (error) {
       console.error('Error creating client:', error);
       setErrors({ general: 'Failed to create client. Please try again.' });
@@ -142,6 +155,18 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
         [field]: prev[field].filter((_, i) => i !== index),
       }));
     }
+  };
+
+  const handleCopy = (value: string, field: 'email' | 'password') => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
+
+  const handleCredentialsClose = () => {
+    setCredentials(null);
+    onClose();
+    resetForm();
   };
 
   return (
@@ -451,6 +476,80 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
             </button>
           </div>
         </form>
+
+        {credentials ? (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                  <AlertCircle size={18} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Client Credentials</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Client &quot;{credentials.clientName}&quot; created successfully.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                  Save these credentials now. The password will not be shown again.
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-2">Email</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={credentials.email}
+                      readOnly
+                      className="flex-1 px-3 py-2 rounded-md border border-gray-300 bg-white text-sm text-gray-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(credentials.email, 'email')}
+                      className="p-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700"
+                      title="Copy email"
+                    >
+                      {copiedField === 'email' ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-2">Password</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={credentials.password}
+                      readOnly
+                      className="flex-1 px-3 py-2 rounded-md border border-gray-300 bg-white text-sm text-gray-900 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(credentials.password, 'password')}
+                      className="p-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700"
+                      title="Copy password"
+                    >
+                      {copiedField === 'password' ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-5">
+                <button
+                  type="button"
+                  onClick={handleCredentialsClose}
+                  className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

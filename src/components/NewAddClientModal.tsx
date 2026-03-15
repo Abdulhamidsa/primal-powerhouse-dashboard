@@ -114,11 +114,12 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
       console.log('Creating client with data:', clientData);
       const response = await DataService.createClient(clientData);
 
-      // Store credentials for display
-      if (response.credentials) {
+      // Store credentials for display (supports legacy and nested response shapes)
+      const createdCredentials = response?.credentials || response?.client?.credentials;
+      if (createdCredentials?.email && createdCredentials?.password) {
         setCredentials({
-          email: response.credentials.email,
-          password: response.credentials.password,
+          email: createdCredentials.email,
+          password: createdCredentials.password,
           clientName: clientData.name,
         });
       }
