@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Users } from 'lucide-react';
 import AssignContentModal from '@/components/AssignContentModal';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
+import NewAddClientModal from '@/components/NewAddClientModal';
 import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
 import { useClientMeals } from '@/hooks/useClientMeals';
 import {
@@ -52,6 +53,7 @@ export default function ClientsPage() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTabKey>('summary');
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
@@ -258,6 +260,7 @@ export default function ClientsPage() {
               clients={filteredClients}
               selectedClientId={selectedClientId}
               search={search}
+              onAddClientAction={() => setShowAddClientModal(true)}
               onSearchChangeAction={setSearch}
               onSelectClientAction={handleSelectClient}
             />
@@ -430,6 +433,15 @@ export default function ClientsPage() {
           }}
         />
       ) : null}
+
+      <NewAddClientModal
+        isOpen={showAddClientModal}
+        onCloseAction={() => setShowAddClientModal(false)}
+        onClientAddedAction={async () => {
+          setLeftPaneMode('list');
+          await refreshClients();
+        }}
+      />
 
       {client ? (
         <AssignContentModal

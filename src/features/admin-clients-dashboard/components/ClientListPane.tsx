@@ -1,28 +1,45 @@
 import Image from 'next/image';
-import { Search, Users } from 'lucide-react';
+import { Plus, Search, Users } from 'lucide-react';
 import type { AdminClientListItem } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export function ClientListPane({
   clients,
   selectedClientId,
   search,
+  onAddClientAction,
   onSearchChangeAction,
   onSelectClientAction,
 }: {
   clients: AdminClientListItem[];
   selectedClientId: string | null;
   search: string;
+  onAddClientAction: () => void;
   onSearchChangeAction: (value: string) => void;
   onSelectClientAction: (clientId: string) => void;
 }) {
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Users size={16} style={{ color: 'var(--color-text-muted)' }} />
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-            Clients
-          </h2>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <Users size={16} style={{ color: 'var(--color-text-muted)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              Clients
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onAddClientAction}
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+            style={{
+              background: 'var(--color-accent)',
+              color: 'var(--color-text)',
+            }}
+          >
+            <Plus size={16} />
+            Add Client
+          </button>
         </div>
 
         <div className="relative">
