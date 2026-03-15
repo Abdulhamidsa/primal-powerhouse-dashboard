@@ -76,18 +76,6 @@ export default function UserDashboardPage() {
           </div>
         </header>
 
-        {/* ── Daily Check-In ── */}
-        <section className="space-y-2.5">
-          <p className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Daily Check-In</p>
-          <DailyCheckInCard />
-        </section>
-
-        {/* ── Progress ── */}
-        <section className="space-y-2.5">
-          <p className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Progress</p>
-          <DailyCheckInInsightsCard />
-        </section>
-
         {/* ── Weekly ── */}
         <section className="space-y-2.5">
           <div className="flex items-center justify-between gap-3 px-1">
@@ -98,6 +86,18 @@ export default function UserDashboardPage() {
             </div>
           </div>
           <WeeklyCheckInCard />
+        </section>
+
+        {/* ── Daily Check-In ── */}
+        <section className="space-y-2.5">
+          <p className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Daily Check-In</p>
+          <DailyCheckInCard />
+        </section>
+
+        {/* ── Progress ── */}
+        <section className="space-y-2.5">
+          <p className="px-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Progress</p>
+          <DailyCheckInInsightsCard />
         </section>
       </div>
     </div>
