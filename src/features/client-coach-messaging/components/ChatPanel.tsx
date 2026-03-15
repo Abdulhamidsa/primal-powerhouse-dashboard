@@ -20,6 +20,7 @@ function clampSidebarWidth(nextWidth: number): number {
 export function ChatPanel({ title, hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
+  const previousConversationIdRef = useRef<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -66,10 +67,31 @@ export function ChatPanel({ title, hideConversationList = false }: { title?: str
     const viewport = messageViewportRef.current;
     if (!viewport) return;
 
+    const conversationChanged = previousConversationIdRef.current !== selectedConversationId;
+    previousConversationIdRef.current = selectedConversationId;
+
+    const distanceFromBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+    const isNearBottom = distanceFromBottom <= 72;
+
+    // Always jump to the bottom when switching conversations.
+    if (conversationChanged) {
+      const animationFrameId = window.requestAnimationFrame(() => {
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' });
+      });
+
+      return () => window.cancelAnimationFrame(animationFrameId);
+    }
+
+    // Keep user position intact when reading older messages.
+    if (!isNearBottom) {
+      return;
+    }
+
     const scrollToBottom = () => {
+      const nextDistanceFromBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
       viewport.scrollTo({
         top: viewport.scrollHeight,
-        behavior: 'smooth',
+        behavior: nextDistanceFromBottom <= 12 ? 'auto' : 'smooth',
       });
     };
 

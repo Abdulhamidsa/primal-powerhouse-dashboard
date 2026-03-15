@@ -15,6 +15,7 @@ import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { toConversationChannel } from '@/lib/realtime/channels';
 import type {
   ChatMessage,
+  ConversationListResponse,
   ConversationMessagesResponse,
   ConversationSummary,
   CreateConversationPayload,
@@ -57,6 +58,27 @@ function normalizeAttachments(attachments: MessageAttachment[]): MessageAttachme
       durationSec: Number.isFinite(durationSec) && durationSec > 0 ? durationSec : null,
     };
   });
+}
+
+function updateConversationListPreview(
+  previous: ConversationListResponse | undefined,
+  conversationId: string,
+  messageCreatedAt: string
+): ConversationListResponse | undefined {
+  if (!previous) return previous;
+
+  const updatedItems = previous.items
+    .map(item => (item.id === conversationId ? { ...item, lastMessageAt: messageCreatedAt } : item))
+    .sort((a, b) => {
+      const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+  return {
+    ...previous,
+    items: updatedItems,
+  };
 }
 
 export function useConversations() {
@@ -127,7 +149,12 @@ export function useConversationMessages(conversationId: string | null) {
         };
       }, false);
 
-      void globalMutate(buildConversationsUrl());
+      globalMutate(
+        buildConversationsUrl(),
+        (previous: ConversationListResponse | undefined) =>
+          updateConversationListPreview(previous, message.conversationId, message.createdAt),
+        false
+      );
     };
 
     channel.bind('message.created', handleMessageCreated);
@@ -202,7 +229,12 @@ export function useConversationMessages(conversationId: string | null) {
         };
       }, false);
 
-      await globalMutate(buildConversationsUrl());
+      globalMutate(
+        buildConversationsUrl(),
+        (previous: ConversationListResponse | undefined) =>
+          updateConversationListPreview(previous, conversationId, created.createdAt),
+        false
+      );
     } catch (error) {
       mutate(previous => {
         if (!previous) return previous;
@@ -251,7 +283,12 @@ export function useConversationMessages(conversationId: string | null) {
         };
       }, false);
 
-      await globalMutate(buildConversationsUrl());
+      globalMutate(
+        buildConversationsUrl(),
+        (previous: ConversationListResponse | undefined) =>
+          updateConversationListPreview(previous, conversationId, created.createdAt),
+        false
+      );
     } catch (error) {
       mutate(previous => {
         if (!previous) return previous;

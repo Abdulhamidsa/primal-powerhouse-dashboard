@@ -43,11 +43,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  if (actor.type === 'client') {
-    const conversation = await findOrCreateClientConversation(actor.clientId);
-    await importLegacyNotesToConversationIfNeeded(conversation.id, actor.clientId);
-  }
-
   const where =
     actor.type === 'client'
       ? { clientId: actor.clientId }
@@ -55,7 +50,7 @@ export async function GET(request: NextRequest) {
         ? { coachId: actor.coachId }
         : undefined;
 
-  const rows = await (prisma as any).conversation.findMany({
+  let rows = await (prisma as any).conversation.findMany({
     where,
     include: {
       client: {
@@ -74,6 +69,31 @@ export async function GET(request: NextRequest) {
     },
     orderBy: [{ lastMessageAt: 'desc' }, { createdAt: 'desc' }],
   });
+
+  if (actor.type === 'client' && rows.length === 0) {
+    const conversation = await findOrCreateClientConversation(actor.clientId);
+    await importLegacyNotesToConversationIfNeeded(conversation.id, actor.clientId);
+
+    rows = await (prisma as any).conversation.findMany({
+      where,
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        coach: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [{ lastMessageAt: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
 
   const items = await Promise.all(
     rows.map(async (row: any) => {
