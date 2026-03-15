@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MessageList } from '@/features/client-coach-messaging/components/MessageList';
 import { MessageComposer } from '@/features/client-coach-messaging/components/MessageComposer';
+import { NextAdapter } from 'next';
 import {
   useConversationMessages,
   useConversations,

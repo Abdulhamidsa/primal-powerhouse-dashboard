@@ -65,7 +65,7 @@ export function ClientScopedChatPanel({ clientId }: { clientId: string }) {
             Loading chat...
           </p>
         ) : (
-          <MessageList messages={messages} onRetryAction={retryMessage} />
+          <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
         )}
       </div>
 
