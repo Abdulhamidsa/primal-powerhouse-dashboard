@@ -344,8 +344,9 @@ all .md files except README.md
 
 
 *fullSeed.ts
-## comment out all js files
+## comment out all js files expect those files prisma-generate-safe.js
 *.js
+!prisma-generate-safe.js
 
 ## json files except package.json and prisma files
 *.json
