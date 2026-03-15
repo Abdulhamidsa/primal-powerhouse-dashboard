@@ -123,7 +123,9 @@ export function useConversationMessages(conversationId: string | null) {
     key,
     () => listConversationMessages(conversationId as string),
     {
-      refreshInterval: 8_000,
+      // Realtime updates come from Pusher; polling can cause signed media URLs to rotate and appear as reloads.
+      refreshInterval: 0,
+      revalidateOnFocus: false,
     }
   );
 

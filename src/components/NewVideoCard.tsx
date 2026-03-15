@@ -13,13 +13,7 @@ interface VideoCardProps {
   formatDuration: (minutes: number) => string;
 }
 
-export default function NewVideoCard({
-  video,
-  isSelected,
-  onSelect,
-  onClick,
-  formatDuration,
-}: VideoCardProps) {
+export default function NewVideoCard({ video, isSelected, onSelect, onClick, formatDuration }: VideoCardProps) {
   const difficultyConfig = DIFFICULTY_LEVELS.find(d => d.value === video.difficulty);
   const categoryConfig = VIDEO_CATEGORIES.find(c => c.value === video.category);
 
@@ -57,10 +51,7 @@ export default function NewVideoCard({
       </div>
 
       {/* Video Thumbnail */}
-      <div
-        className="relative w-full h-48 overflow-hidden"
-        style={{ background: 'var(--color-bg-alt)' }}
-      >
+      <div className="relative w-full h-48 overflow-hidden" style={{ background: 'var(--color-bg-alt)' }}>
         {video.thumbnailUrl ? (
           <Image
             src={video.thumbnailUrl}
@@ -107,19 +98,13 @@ export default function NewVideoCard({
       {/* Content */}
       <div className="p-5">
         {/* Title */}
-        <h3
-          className="font-bold mb-2 line-clamp-2 leading-tight text-lg"
-          style={{ color: 'var(--color-text)' }}
-        >
+        <h3 className="font-bold mb-2 line-clamp-2 leading-tight text-lg" style={{ color: 'var(--color-text)' }}>
           {video.title}
         </h3>
 
         {/* Description */}
         {video.description && (
-          <p
-            className="text-sm mb-3 line-clamp-2 leading-relaxed"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
+          <p className="text-sm mb-3 line-clamp-2 leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
             {video.description}
           </p>
         )}
@@ -180,10 +165,7 @@ export default function NewVideoCard({
 
         {/* Muscle Groups */}
         {video.muscleGroups && video.muscleGroups.length > 0 && (
-          <div
-            className="flex items-center gap-2 text-xs"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
+          <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
             <Activity className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
             <span>
               {video.muscleGroups.slice(0, 2).join(', ')}

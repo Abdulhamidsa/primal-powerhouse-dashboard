@@ -8,7 +8,7 @@ export interface PersonalizedMealInput {
   name: string;
   // description is not supported in the database schema but we'll keep it for frontend compatibility
   // This field will be ignored when saving to database
-  description?: string; 
+  description?: string;
   ingredients: string[] | string;
   instructions: string[] | string;
   calories: number;
@@ -39,7 +39,7 @@ export class PersonalizedMealService {
   /**
    * Save a personalized meal and associate it with a client
    * Creates a new meal copy specifically for this client
-   * 
+   *
    * @param mealData The meal data to use for the personalized version
    * @param clientId ID of the client to associate with
    * @param originalMealId Optional ID of the original meal being personalized
@@ -51,12 +51,12 @@ export class PersonalizedMealService {
     originalMealId?: string
   ): Promise<{ meal: Meal; client: Client }> {
     try {
-      console.log('PersonalizedMealService.savePersonalizedMeal - Starting', { 
-        mealName: mealData.name, 
+      console.log('PersonalizedMealService.savePersonalizedMeal - Starting', {
+        mealName: mealData.name,
         clientId,
-        originalMealId: originalMealId || 'Not provided'
+        originalMealId: originalMealId || 'Not provided',
       });
-      
+
       // 1. Save the personalized meal to the database as a new meal
       console.log('Creating personalized meal in database as a new copy');
       const meal = await this.createPersonalizedMeal(mealData, clientId, originalMealId);
@@ -106,21 +106,25 @@ export class PersonalizedMealService {
   /**
    * Create a personalized meal in the database
    * This creates a new copy of the meal with the personalized data
-   * 
+   *
    * @param data Meal data to save
    * @param originalMealId Optional ID of the original meal this is based on
    * @returns The created meal
    */
-  static async createPersonalizedMeal(data: PersonalizedMealInput, clientId: string, originalMealId?: string): Promise<Meal> {
+  static async createPersonalizedMeal(
+    data: PersonalizedMealInput,
+    clientId: string,
+    originalMealId?: string
+  ): Promise<Meal> {
     try {
       console.log('Creating personalized meal:', data.name);
       console.log('Original meal ID:', originalMealId || 'Not provided');
       console.log('Client ID:', clientId);
-      
+
       // Format the data for Prisma - make sure all fields are converted to the right types
       // Only include fields that exist in your schema.prisma file
       const mealData = {
-        name: `${data.name} (Personalized)`,  // Append (Personalized) to make it clear this is a custom version
+        name: `${data.name} (Personalized)`, // Append (Personalized) to make it clear this is a custom version
         type: data.type,
         originalMealId: originalMealId || null, // Reference to the original meal if provided
         // Set isPersonalized to true for this meal
@@ -143,7 +147,7 @@ export class PersonalizedMealService {
       };
 
       console.log('Personalized meal data prepared:', mealData);
-      
+
       // Make direct API call to create a new meal
       try {
         const response = await fetch('/api/meals', {
@@ -153,15 +157,15 @@ export class PersonalizedMealService {
           },
           body: JSON.stringify(mealData),
         });
-        
+
         console.log('API response status:', response.status);
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error('API error response:', errorText);
           throw new Error(`API error: ${response.status} - ${errorText}`);
         }
-        
+
         const meal = await response.json();
         console.log('Personalized meal created successfully via API:', meal.id);
         return meal;
@@ -169,7 +173,9 @@ export class PersonalizedMealService {
         console.error('Error calling meals API:', apiError);
         // Don't try to use Prisma directly in the browser as it won't work
         // We'll need to handle this failure case gracefully
-        throw new Error(`Failed to create personalized meal: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+        throw new Error(
+          `Failed to create personalized meal: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`
+        );
       }
     } catch (error) {
       console.error('Error creating personalized meal:', error);
@@ -194,7 +200,7 @@ export class PersonalizedMealService {
   ) {
     try {
       console.log('Assigning meal to client via API:', { mealId, clientId, mealType, dayOfWeek, planId });
-      
+
       // Use the API endpoint instead of direct Prisma access
       const response = await fetch('/api/meal-assignments', {
         method: 'POST',
@@ -210,23 +216,23 @@ export class PersonalizedMealService {
           notes: 'Personalized meal',
         }),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API error response:', errorText);
         throw new Error(`API error: ${response.status} - ${errorText}`);
       }
-      
+
       const assignment = await response.json();
       console.log('Meal assigned successfully via API:', assignment.id);
       return assignment;
     } catch (error) {
       console.error('Error assigning meal to client:', error);
-      
+
       // If there's an error, don't block the whole meal personalization process
       // We can still save the meal itself, even if we couldn't assign it to a plan yet
       console.warn('Failed to assign meal to client, but meal was created successfully');
-      
+
       // Return a minimal object with enough info for the UI to continue
       return {
         id: 'temporary-assignment',
@@ -247,11 +253,11 @@ export class PersonalizedMealService {
     try {
       // Use API instead of direct Prisma access
       const response = await fetch(`/api/meals?coachId=${coachId}&isPersonalized=true`);
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const meals = await response.json();
       return meals;
     } catch (error) {
@@ -267,14 +273,14 @@ export class PersonalizedMealService {
     try {
       // Use API instead of direct Prisma access
       const response = await fetch(`/api/meals/${mealId}`);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           return null;
         }
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const meal = await response.json();
       return meal;
     } catch (error) {
@@ -309,11 +315,11 @@ export class PersonalizedMealService {
         },
         body: JSON.stringify(updateData),
       });
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const meal = await response.json();
       return meal;
     } catch (error) {
@@ -331,7 +337,7 @@ export class PersonalizedMealService {
       const response = await fetch(`/api/meals/${mealId}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -370,7 +376,7 @@ export class PersonalizedMealService {
         tags: originalMeal.tags || '[]',
         coachId: coachId,
       };
-      
+
       // Use API instead of direct Prisma access
       const response = await fetch('/api/meals', {
         method: 'POST',
@@ -379,11 +385,11 @@ export class PersonalizedMealService {
         },
         body: JSON.stringify(mealData),
       });
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const newMeal = await response.json();
       return newMeal;
     } catch (error) {

@@ -73,9 +73,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
     onClose();
   };
 
-  const addField = (
-    field: 'ingredients' | 'instructions' | 'tags' | 'equipment' | 'tips' | 'allergens'
-  ) => {
+  const addField = (field: 'ingredients' | 'instructions' | 'tags' | 'equipment' | 'tips' | 'allergens') => {
     setFormData(prev => ({
       ...prev,
       [field]: [...prev[field], ''],
@@ -109,17 +107,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900">Add New Meal</h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -145,9 +135,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Meal Type *</label>
                 <select
                   value={formData.type}
-                  onChange={e =>
-                    setFormData(prev => ({ ...prev, type: e.target.value as MealType }))
-                  }
+                  onChange={e => setFormData(prev => ({ ...prev, type: e.target.value as MealType }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 >
                   <option value="breakfast">🌅 Breakfast</option>
@@ -169,9 +157,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Difficulty Level
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
                 <select
                   value={formData.difficulty}
                   onChange={e =>
@@ -189,9 +175,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image URL (optional)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL (optional)</label>
                 <input
                   type="url"
                   value={formData.images[0] || ''}
@@ -215,26 +199,20 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     type="number"
                     min="0"
                     value={formData.calories}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, calories: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, calories: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Protein (g)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Protein (g)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.1"
                     value={formData.protein}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, protein: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, protein: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="20"
                   />
@@ -247,9 +225,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     min="0"
                     step="0.1"
                     value={formData.carbs}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, carbs: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, carbs: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="30"
                   />
@@ -275,25 +251,19 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     min="0"
                     step="0.1"
                     value={formData.fiber}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, fiber: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, fiber: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="8"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sodium (mg)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sodium (mg)</label>
                   <input
                     type="number"
                     min="0"
                     value={formData.sodium}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, sodium: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, sodium: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="320"
                   />
@@ -306,25 +276,19 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     min="0"
                     step="0.1"
                     value={formData.sugar}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, sugar: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, sugar: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="5"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cholesterol (mg)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cholesterol (mg)</label>
                   <input
                     type="number"
                     min="0"
                     value={formData.cholesterol}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, cholesterol: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, cholesterol: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="100"
                   />
@@ -336,9 +300,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     type="number"
                     min="1"
                     value={formData.servings}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, servings: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, servings: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="1"
                   />
@@ -347,32 +309,24 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prep Time (min)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Prep Time (min)</label>
                   <input
                     type="number"
                     min="0"
                     value={formData.prepTime}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, prepTime: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, prepTime: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="10"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cook Time (min)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cook Time (min)</label>
                   <input
                     type="number"
                     min="0"
                     value={formData.cookTime}
-                    onChange={e =>
-                      setFormData(prev => ({ ...prev, cookTime: Number(e.target.value) }))
-                    }
+                    onChange={e => setFormData(prev => ({ ...prev, cookTime: Number(e.target.value) }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="5"
                   />

@@ -78,7 +78,7 @@ export function FeedbackModal({ isOpen, onCloseAction }: FeedbackModalProps) {
           aria-modal="true"
           aria-label="Send feedback"
           className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card shadow-xl animate-in fade-in zoom-in-95 duration-200"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           <div className="p-6">
             {/* Header */}
@@ -109,21 +109,17 @@ export function FeedbackModal({ isOpen, onCloseAction }: FeedbackModalProps) {
                 </div>
                 <div>
                   <p className="text-base font-semibold text-foreground">Thank you</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Your feedback has been sent.
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">Your feedback has been sent.</p>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-foreground">
-                    Your message
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-foreground">Your message</label>
 
                   <textarea
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={e => setMessage(e.target.value)}
                     placeholder="Tell us what you think... (max 1000 characters)"
                     rows={5}
                     maxLength={1000}
@@ -137,12 +133,8 @@ export function FeedbackModal({ isOpen, onCloseAction }: FeedbackModalProps) {
                   />
 
                   <div className="mt-2 flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      Be specific so we can act on it.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {message.length}/1000
-                    </p>
+                    <p className="text-xs text-muted-foreground">Be specific so we can act on it.</p>
+                    <p className="text-xs text-muted-foreground">{message.length}/1000</p>
                   </div>
                 </div>
 

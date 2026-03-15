@@ -45,8 +45,7 @@ async function seedMeals() {
         cookTime: 0,
         servings: 1,
         tags: JSON.stringify(['high-protein', 'quick', 'vegetarian']),
-        imageUrl:
-          'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=300&h=200&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=300&h=200&fit=crop',
         coachId: coach.id,
       },
       {
@@ -77,8 +76,7 @@ async function seedMeals() {
         cookTime: 10,
         servings: 1,
         tags: JSON.stringify(['high-fiber', 'healthy-fats', 'vegetarian']),
-        imageUrl:
-          'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=300&h=200&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=300&h=200&fit=crop',
         coachId: coach.id,
       },
 
@@ -111,8 +109,7 @@ async function seedMeals() {
         cookTime: 0,
         servings: 1,
         tags: JSON.stringify(['vegan', 'high-fiber', 'complete-protein']),
-        imageUrl:
-          'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=300&h=200&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=300&h=200&fit=crop',
         coachId: coach.id,
       },
       {
@@ -177,8 +174,7 @@ async function seedMeals() {
         cookTime: 45,
         servings: 1,
         tags: JSON.stringify(['omega-3', 'high-protein', 'anti-inflammatory']),
-        imageUrl:
-          'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&h=200&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&h=200&fit=crop',
         coachId: coach.id,
       },
       {
@@ -210,8 +206,7 @@ async function seedMeals() {
         cookTime: 15,
         servings: 1,
         tags: JSON.stringify(['high-protein', 'low-carb', 'quick-cooking']),
-        imageUrl:
-          'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop',
         coachId: coach.id,
       },
 
@@ -253,11 +248,7 @@ async function seedMeals() {
         carbs: 22,
         fat: 12,
         fiber: 5,
-        ingredients: JSON.stringify([
-          '1 medium apple',
-          '2 tbsp almond butter',
-          'Cinnamon to taste',
-        ]),
+        ingredients: JSON.stringify(['1 medium apple', '2 tbsp almond butter', 'Cinnamon to taste']),
         instructions: JSON.stringify([
           'Wash and slice apple',
           'Serve with almond butter for dipping',
@@ -267,8 +258,7 @@ async function seedMeals() {
         cookTime: 0,
         servings: 1,
         tags: JSON.stringify(['healthy-fats', 'fiber', 'natural-sugars']),
-        imageUrl:
-          'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=300&h=200&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=300&h=200&fit=crop',
         coachId: coach.id,
       },
     ];
