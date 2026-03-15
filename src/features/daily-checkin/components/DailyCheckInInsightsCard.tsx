@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, ArrowDown, ArrowRight, ArrowUp, TrendingDown } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUp, TrendingDown } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useDailyCheckInInsights } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
@@ -54,11 +54,11 @@ export function DailyCheckInInsightsCard() {
   const hasWeightData = history.some(item => item.weightKg != null);
 
   return (
-    <div className="rounded-3xl border border-sky-500/15 bg-background/85 p-5 shadow-sm md:p-6">
+    <div className="rounded-3xl border border-border/70 bg-background/85 p-5 shadow-sm md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-sky-500/10 text-sky-600">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-accent/10 text-accent">
               <TrendingDown size={18} />
             </div>
             <div>
@@ -150,18 +150,6 @@ export function DailyCheckInInsightsCard() {
             <p className="text-sm text-muted-foreground">Log a few weights to unlock your trend chart.</p>
           </div>
         )}
-      </div>
-
-      <div className="mt-4">
-        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-          <div className="flex items-center gap-2">
-            <Activity size={16} className="text-sky-600" />
-            <p className="text-sm font-medium text-foreground">Previous 7-Day Average</p>
-          </div>
-          <p className="mt-2 text-lg font-semibold text-foreground">
-            {isLoading ? 'Loading...' : formatWeight(summary?.previousSevenDayAverage ?? null)}
-          </p>
-        </div>
       </div>
     </div>
   );

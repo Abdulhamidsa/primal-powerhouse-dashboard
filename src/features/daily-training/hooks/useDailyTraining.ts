@@ -7,6 +7,10 @@ import {
   getDailyTrainingCurrent,
   upsertDailyTrainingCurrent,
 } from '@/features/daily-training/api/dailyTraining.api';
+import {
+  buildDailyCheckInCurrentUrl,
+  DAILY_CHECK_IN_INSIGHTS_URL,
+} from '@/features/daily-checkin/api/dailyCheckIn.api';
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
 function getTodayDateKeyLocal(): string {
@@ -38,7 +42,11 @@ export function useUpsertDailyTraining() {
 
   const submit = async (dayDate: string, status: DailyTrainingStatus, note?: string | null) => {
     const result = await upsertDailyTrainingCurrent(dayDate, status, note);
-    await mutate(buildDailyTrainingCurrentUrl(dayDate));
+    await Promise.all([
+      mutate(buildDailyTrainingCurrentUrl(dayDate)),
+      mutate(buildDailyCheckInCurrentUrl(dayDate)),
+      mutate(DAILY_CHECK_IN_INSIGHTS_URL),
+    ]);
     return result;
   };
 

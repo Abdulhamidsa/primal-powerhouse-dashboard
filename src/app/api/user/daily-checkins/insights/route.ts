@@ -32,28 +32,87 @@ export async function GET(request: NextRequest) {
     const oldestDateStart = parseDateKeyLocal(recentDateKeys[recentDateKeys.length - 1]);
     const newestDateEndExclusive = addDays(parseDateKeyLocal(recentDateKeys[0]), 1);
 
-    const rows = await (prisma as any).dailyCheckIn.findMany({
-      where: {
-        clientId: user.userId,
-        dayDate: {
-          gte: oldestDateStart,
-          lt: newestDateEndExclusive,
+    const [rows, nutritionRows, trainingRows] = await Promise.all([
+      (prisma as any).dailyCheckIn.findMany({
+        where: {
+          clientId: user.userId,
+          dayDate: {
+            gte: oldestDateStart,
+            lt: newestDateEndExclusive,
+          },
         },
-      },
-      orderBy: {
-        dayDate: 'asc',
-      },
-      select: {
-        dayDate: true,
-        weightKg: true,
-        compliance: true,
-        energy: true,
-      },
-    });
+        orderBy: {
+          dayDate: 'asc',
+        },
+        select: {
+          dayDate: true,
+          weightKg: true,
+          compliance: true,
+          energy: true,
+        },
+      }),
+      (prisma as any).dailyNutritionLog.findMany({
+        where: {
+          clientId: user.userId,
+          dayDate: {
+            gte: oldestDateStart,
+            lt: newestDateEndExclusive,
+          },
+        },
+        orderBy: {
+          dayDate: 'asc',
+        },
+        select: {
+          dayDate: true,
+          status: true,
+        },
+      }),
+      (prisma as any).dailyTrainingLog.findMany({
+        where: {
+          clientId: user.userId,
+          dayDate: {
+            gte: oldestDateStart,
+            lt: newestDateEndExclusive,
+          },
+        },
+        orderBy: {
+          dayDate: 'asc',
+        },
+        select: {
+          dayDate: true,
+          status: true,
+        },
+      }),
+    ]);
 
-    const recordsByDateKey = new Map<string, { weightKg: number | null; compliance: any; energy: any }>();
+    const recordsByDateKey = new Map<
+      string,
+      {
+        weightKg: number | null;
+        compliance: any;
+        energy: any;
+        nutritionStatus?: any;
+        trainingStatus?: any;
+      }
+    >();
     for (const row of rows) {
       recordsByDateKey.set(toDateKeyLocal(row.dayDate), row);
+    }
+    for (const row of nutritionRows) {
+      const dateKey = toDateKeyLocal(row.dayDate);
+      const existing = recordsByDateKey.get(dateKey) ?? { weightKg: null, compliance: null, energy: null };
+      recordsByDateKey.set(dateKey, {
+        ...existing,
+        nutritionStatus: row.status,
+      });
+    }
+    for (const row of trainingRows) {
+      const dateKey = toDateKeyLocal(row.dayDate);
+      const existing = recordsByDateKey.get(dateKey) ?? { weightKg: null, compliance: null, energy: null };
+      recordsByDateKey.set(dateKey, {
+        ...existing,
+        trainingStatus: row.status,
+      });
     }
 
     const currentWeekKeys = recentDateKeys.slice(0, WEEK_DAYS);

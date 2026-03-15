@@ -1,13 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, CheckCircle2, Scale } from 'lucide-react';
+import { CheckCircle2, Dumbbell, Salad, Scale } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DailyCompletionRing } from '@/features/daily-checkin/components/DailyCompletionRing';
-import { calculateCompletionPercentage } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
+import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { useDailyCheckInToday, useUpsertDailyCheckIn } from '@/features/daily-checkin/hooks/useDailyCheckIn';
+import { useDailyNutritionToday, useUpsertDailyNutrition } from '@/features/daily-nutrition/hooks/useDailyNutrition';
+import { useDailyTrainingToday, useUpsertDailyTraining } from '@/features/daily-training/hooks/useDailyTraining';
 import type { DailyCheckInCompliance, DailyCheckInEnergy } from '@/features/daily-checkin/types/dailyCheckIn.types';
+import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
+import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
 const COMPLIANCE_OPTIONS: Array<{ value: DailyCheckInCompliance; label: string }> = [
   { value: 'OFF_PLAN', label: 'Off Plan' },
@@ -16,43 +20,66 @@ const COMPLIANCE_OPTIONS: Array<{ value: DailyCheckInCompliance; label: string }
 ];
 
 const ENERGY_OPTIONS: Array<{ value: DailyCheckInEnergy; label: string }> = [
-  { value: 'LOW', label: 'LOW' },
-  { value: 'NORMAL', label: 'NORMAL' },
-  { value: 'HIGH', label: 'HIGH' },
+  { value: 'LOW', label: 'Low' },
+  { value: 'NORMAL', label: 'Normal' },
+  { value: 'HIGH', label: 'High' },
 ];
+
+const NUTRITION_OPTIONS: Array<{ value: DailyNutritionStatus; label: string }> = [
+  { value: 'ON_PLAN', label: 'On Plan' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'OFF_PLAN', label: 'Off Plan' },
+];
+
+const TRAINING_OPTIONS: Array<{ value: DailyTrainingStatus; label: string }> = [
+  { value: 'DONE', label: 'Done' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'MISSED', label: 'Missed' },
+];
+
+type SavingField = 'weight' | 'compliance' | 'energy' | 'nutrition' | 'training' | null;
 
 export function DailyCheckInCard() {
   const { dayDate, entry, isLoading } = useDailyCheckInToday();
   const { submit } = useUpsertDailyCheckIn();
+  const { entry: nutritionEntry, isLoading: nutritionLoading } = useDailyNutritionToday();
+  const { submit: submitNutrition } = useUpsertDailyNutrition();
+  const { entry: trainingEntry, isLoading: trainingLoading } = useDailyTrainingToday();
+  const { submit: submitTraining } = useUpsertDailyTraining();
+
   const [weightValue, setWeightValue] = useState('');
-  const [savingField, setSavingField] = useState<'weight' | 'compliance' | 'energy' | null>(null);
+  const [savingField, setSavingField] = useState<SavingField>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setWeightValue(entry?.weightKg != null ? entry.weightKg.toString() : '');
   }, [entry?.weightKg]);
 
-  const previewPercentage = useMemo(() => {
+  // Always derive from live hook data so the ring updates instantly on every tap
+  const completionData = useMemo(() => {
     const parsedWeight = weightValue.trim() === '' ? null : Number(weightValue);
-    return calculateCompletionPercentage({
+    const input = {
       weightKg: Number.isFinite(parsedWeight) ? parsedWeight : (entry?.weightKg ?? null),
       compliance: entry?.compliance ?? null,
       energy: entry?.energy ?? null,
-    });
-  }, [entry?.compliance, entry?.energy, entry?.weightKg, weightValue]);
+      nutritionStatus: nutritionEntry?.status ?? null,
+      trainingStatus: trainingEntry?.status ?? null,
+    };
+    const pct = calculateCompletionPercentage(input);
+    const remaining = 5 - getCompletionCount(input);
+    return { pct, remaining, isComplete: pct === 100 };
+  }, [entry?.compliance, entry?.energy, entry?.weightKg, nutritionEntry?.status, trainingEntry?.status, weightValue]);
 
-  const completionPercentage = entry?.completionPercentage ?? previewPercentage;
+  const anyLoading = isLoading || nutritionLoading || trainingLoading;
 
   async function saveWeight() {
     const trimmedValue = weightValue.trim();
     const parsedWeight = trimmedValue === '' ? null : Number(trimmedValue);
     const hasValidNumber = typeof parsedWeight === 'number' && Number.isFinite(parsedWeight);
-
     if (trimmedValue !== '' && (!hasValidNumber || parsedWeight <= 0)) {
       setErrorMessage('Enter a valid weight in kilograms.');
       return;
     }
-
     try {
       setSavingField('weight');
       setErrorMessage(null);
@@ -70,7 +97,7 @@ export function DailyCheckInCard() {
       setErrorMessage(null);
       await submit(dayDate, { compliance });
     } catch {
-      setErrorMessage('Could not save your compliance. Please try again.');
+      setErrorMessage('Could not save. Please try again.');
     } finally {
       setSavingField(null);
     }
@@ -82,86 +109,102 @@ export function DailyCheckInCard() {
       setErrorMessage(null);
       await submit(dayDate, { energy });
     } catch {
-      setErrorMessage('Could not save your energy. Please try again.');
+      setErrorMessage('Could not save. Please try again.');
+    } finally {
+      setSavingField(null);
+    }
+  }
+
+  async function saveNutrition(status: DailyNutritionStatus) {
+    try {
+      setSavingField('nutrition');
+      setErrorMessage(null);
+      await submitNutrition(dayDate, status);
+    } catch {
+      setErrorMessage('Could not save nutrition status. Please try again.');
+    } finally {
+      setSavingField(null);
+    }
+  }
+
+  async function saveTraining(status: DailyTrainingStatus) {
+    try {
+      setSavingField('training');
+      setErrorMessage(null);
+      await submitTraining(dayDate, status);
+    } catch {
+      setErrorMessage('Could not save training status. Please try again.');
     } finally {
       setSavingField(null);
     }
   }
 
   return (
-    <div className="rounded-3xl border border-emerald-500/15 bg-background/85 p-5 shadow-sm md:p-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-600">
-              <Activity size={18} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Daily Check-In</p>
-              <p className="text-xs text-muted-foreground">Weight, compliance, and energy with less clutter.</p>
-            </div>
-          </div>
-          <p className="max-w-xl text-sm text-foreground/75">
-            Complete the three essentials and move on. This card is intentionally tighter so the next step stays
-            obvious.
+    <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-4">
+        <div>
+          <p className="text-base font-semibold text-foreground">Today&apos;s Check-In</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {completionData.isComplete ? 'All done for today' : `${completionData.remaining} of 5 remaining`}
           </p>
         </div>
-
-        <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2.5 md:shrink-0">
-          <DailyCompletionRing
-            percentage={completionPercentage}
-            size={68}
-            strokeWidth={7}
-            className="mx-auto md:mx-0"
-          />
-        </div>
+        <DailyCompletionRing percentage={completionData.pct} size={56} strokeWidth={6} />
       </div>
 
-      <div className="mt-5 space-y-4">
-        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Scale size={16} className="text-accent" />
-              <p className="text-sm font-medium text-foreground">Weight</p>
-            </div>
-            <span className="text-xs text-muted-foreground">kg</span>
+      {/* Sections — iOS-style grouped rows */}
+      <div className="divide-y divide-border/50 border-t border-border/50">
+        {/* Weight */}
+        <div className="px-5 py-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Scale size={14} className="text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">Weight</p>
+            {entry?.weightKg != null && (
+              <span className="ml-auto text-xs font-semibold text-accent">{entry.weightKg} kg</span>
+            )}
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex gap-2">
             <Input
               type="number"
               inputMode="decimal"
               step="0.1"
               min="0"
               value={weightValue}
-              onChange={event => setWeightValue(event.target.value)}
-              onKeyDown={event => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
+              onChange={e => setWeightValue(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
                   void saveWeight();
                 }
               }}
-              placeholder="Enter weight"
-              disabled={isLoading || savingField === 'weight'}
-              className="sm:max-w-[180px]"
+              placeholder="Enter weight in kg"
+              disabled={anyLoading || savingField === 'weight'}
+              className="flex-1"
             />
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => void saveWeight()}
-              disabled={isLoading || savingField === 'weight'}
-              className="sm:w-auto"
+              disabled={anyLoading || savingField === 'weight'}
+              className="shrink-0"
             >
-              {savingField === 'weight' ? 'Saving...' : 'Save Weight'}
+              {savingField === 'weight' ? 'Saving…' : 'Save'}
             </Button>
           </div>
         </div>
 
-        <div className="space-y-2 rounded-2xl border border-border/70 bg-background/70 p-4">
-          <div className="flex items-center justify-between gap-3">
+        {/* Compliance */}
+        <div className="px-5 py-4">
+          <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-medium text-foreground">Compliance</p>
-            <span className="text-xs text-muted-foreground">Required</span>
+            {entry?.compliance && (
+              <span className="text-xs font-semibold text-accent">
+                {entry.compliance === 'ON_PLAN' ? 'On Plan' : entry.compliance === 'PARTIAL' ? 'Partial' : 'Off Plan'}
+              </span>
+            )}
           </div>
-          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-background/60 p-1.5">
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
             {COMPLIANCE_OPTIONS.map(option => {
               const isActive = entry?.compliance === option.value;
               return (
@@ -169,13 +212,13 @@ export function DailyCheckInCard() {
                   key={option.value}
                   type="button"
                   aria-pressed={isActive}
-                  disabled={isLoading || savingField === 'compliance'}
+                  disabled={anyLoading || savingField === 'compliance'}
                   onClick={() => void saveCompliance(option.value)}
-                  className="rounded-xl border px-3 py-2.5 text-sm font-medium transition active:scale-[0.99]"
+                  className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
                   style={{
                     borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
                     background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                    opacity: isLoading || savingField === 'compliance' ? 0.7 : 1,
+                    opacity: anyLoading || savingField === 'compliance' ? 0.6 : 1,
                   }}
                 >
                   {option.label}
@@ -185,12 +228,15 @@ export function DailyCheckInCard() {
           </div>
         </div>
 
-        <div className="space-y-2 rounded-2xl border border-border/70 bg-background/70 p-4">
-          <div className="flex items-center justify-between gap-3">
+        {/* Energy */}
+        <div className="px-5 py-4">
+          <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-medium text-foreground">Energy</p>
-            <span className="text-xs text-muted-foreground">Required</span>
+            {entry?.energy && (
+              <span className="text-xs font-semibold text-accent capitalize">{entry.energy.toLowerCase()}</span>
+            )}
           </div>
-          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-background/60 p-1.5">
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
             {ENERGY_OPTIONS.map(option => {
               const isActive = entry?.energy === option.value;
               return (
@@ -198,13 +244,87 @@ export function DailyCheckInCard() {
                   key={option.value}
                   type="button"
                   aria-pressed={isActive}
-                  disabled={isLoading || savingField === 'energy'}
+                  disabled={anyLoading || savingField === 'energy'}
                   onClick={() => void saveEnergy(option.value)}
-                  className="rounded-xl border px-3 py-2.5 text-sm font-semibold tracking-[0.06em] transition active:scale-[0.99]"
+                  className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
                   style={{
                     borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
                     background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                    opacity: isLoading || savingField === 'energy' ? 0.7 : 1,
+                    opacity: anyLoading || savingField === 'energy' ? 0.6 : 1,
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Nutrition */}
+        <div className="px-5 py-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Salad size={14} className="text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">Nutrition</p>
+            {nutritionEntry?.status && (
+              <span className="ml-auto text-xs font-semibold text-accent">
+                {nutritionEntry.status === 'ON_PLAN'
+                  ? 'On Plan'
+                  : nutritionEntry.status === 'PARTIAL'
+                    ? 'Partial'
+                    : 'Off Plan'}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
+            {NUTRITION_OPTIONS.map(option => {
+              const isActive = nutritionEntry?.status === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={isActive}
+                  disabled={anyLoading || savingField === 'nutrition'}
+                  onClick={() => void saveNutrition(option.value)}
+                  className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
+                  style={{
+                    borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
+                    background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
+                    opacity: anyLoading || savingField === 'nutrition' ? 0.6 : 1,
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Training */}
+        <div className="px-5 py-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Dumbbell size={14} className="text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">Training</p>
+            {trainingEntry?.status && (
+              <span className="ml-auto text-xs font-semibold text-accent capitalize">
+                {trainingEntry.status.toLowerCase()}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
+            {TRAINING_OPTIONS.map(option => {
+              const isActive = trainingEntry?.status === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={isActive}
+                  disabled={anyLoading || savingField === 'training'}
+                  onClick={() => void saveTraining(option.value)}
+                  className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
+                  style={{
+                    borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
+                    background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
+                    opacity: anyLoading || savingField === 'training' ? 0.6 : 1,
                   }}
                 >
                   {option.label}
@@ -215,16 +335,17 @@ export function DailyCheckInCard() {
         </div>
       </div>
 
-      <div className="mt-4 min-h-5 px-1">
+      {/* Footer status */}
+      <div className="px-5 py-3.5">
         {errorMessage ? (
           <p className="text-xs text-destructive">{errorMessage}</p>
-        ) : entry?.isComplete ? (
-          <p className="inline-flex items-center gap-1 text-xs text-emerald-700">
+        ) : completionData.isComplete ? (
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
             <CheckCircle2 size={14} />
-            Daily check-in complete.
+            All done for today.
           </p>
         ) : (
-          <p className="text-xs text-muted-foreground">{completionPercentage}% complete for today.</p>
+          <p className="text-xs text-muted-foreground">{completionData.pct}% complete for today.</p>
         )}
       </div>
     </div>

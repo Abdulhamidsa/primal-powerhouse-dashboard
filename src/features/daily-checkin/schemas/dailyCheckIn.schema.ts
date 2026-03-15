@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { dailyNutritionStatusSchema } from '@/features/daily-nutrition/schemas/dailyNutrition.schema';
+import { dailyTrainingStatusSchema } from '@/features/daily-training/schemas/dailyTraining.schema';
 
 export const dayDateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid day date key');
 
@@ -28,6 +30,8 @@ export const dailyCheckInRecordSchema = z.object({
   weightKg: z.number().nullable(),
   compliance: dailyCheckInComplianceSchema.nullable(),
   energy: dailyCheckInEnergySchema.nullable(),
+  nutritionStatus: dailyNutritionStatusSchema.nullable(),
+  trainingStatus: dailyTrainingStatusSchema.nullable(),
   submittedAt: z.string(),
   completionPercentage: z.number().int().min(0).max(100),
   isComplete: z.boolean(),

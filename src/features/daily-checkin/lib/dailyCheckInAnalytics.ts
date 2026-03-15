@@ -4,14 +4,18 @@ import type {
   DailyCheckInRecord,
   DailyCheckInWeightTrendDirection,
 } from '@/features/daily-checkin/types/dailyCheckIn.types';
+import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
+import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
 type CompletionInput = {
   weightKg?: number | null;
   compliance?: DailyCheckInCompliance | null;
   energy?: DailyCheckInEnergy | null;
+  nutritionStatus?: DailyNutritionStatus | null;
+  trainingStatus?: DailyTrainingStatus | null;
 };
 
-export const DAILY_CHECK_IN_REQUIRED_FIELDS = 3;
+export const DAILY_CHECK_IN_REQUIRED_FIELDS = 5;
 
 function roundToOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
@@ -22,6 +26,8 @@ export function getCompletionCount(input: CompletionInput): number {
   if (typeof input.weightKg === 'number' && Number.isFinite(input.weightKg)) count += 1;
   if (input.compliance != null) count += 1;
   if (input.energy != null) count += 1;
+  if (input.nutritionStatus != null) count += 1;
+  if (input.trainingStatus != null) count += 1;
   return count;
 }
 
@@ -115,6 +121,8 @@ export function serializeDailyCheckIn(record: {
   weightKg: number | null;
   compliance: DailyCheckInCompliance | null;
   energy: DailyCheckInEnergy | null;
+  nutritionStatus?: DailyNutritionStatus | null;
+  trainingStatus?: DailyTrainingStatus | null;
   submittedAt: Date;
 }): DailyCheckInRecord {
   const completionPercentage = calculateCompletionPercentage(record);
@@ -125,6 +133,8 @@ export function serializeDailyCheckIn(record: {
     weightKg: record.weightKg,
     compliance: record.compliance,
     energy: record.energy,
+    nutritionStatus: record.nutritionStatus ?? null,
+    trainingStatus: record.trainingStatus ?? null,
     submittedAt: record.submittedAt.toISOString(),
     completionPercentage,
     isComplete: completionPercentage === 100,

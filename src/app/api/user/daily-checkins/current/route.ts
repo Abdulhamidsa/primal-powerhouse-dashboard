@@ -22,18 +22,61 @@ export async function GET(request: NextRequest) {
     const dayDate = parsedDateKey.data;
     const dayDateUtc = parseDateKeyUtc(dayDate);
 
-    const entry = await (prisma as any).dailyCheckIn.findUnique({
-      where: {
-        clientId_dayDate: {
-          clientId: user.userId,
-          dayDate: dayDateUtc,
+    const [entry, nutritionEntry, trainingEntry] = await Promise.all([
+      (prisma as any).dailyCheckIn.findUnique({
+        where: {
+          clientId_dayDate: {
+            clientId: user.userId,
+            dayDate: dayDateUtc,
+          },
         },
-      },
-    });
+      }),
+      (prisma as any).dailyNutritionLog.findUnique({
+        where: {
+          clientId_dayDate: {
+            clientId: user.userId,
+            dayDate: dayDateUtc,
+          },
+        },
+        select: {
+          status: true,
+        },
+      }),
+      (prisma as any).dailyTrainingLog.findUnique({
+        where: {
+          clientId_dayDate: {
+            clientId: user.userId,
+            dayDate: dayDateUtc,
+          },
+        },
+        select: {
+          status: true,
+        },
+      }),
+    ]);
+
+    const serializedEntry = entry
+      ? serializeDailyCheckIn({
+          ...entry,
+          nutritionStatus: nutritionEntry?.status ?? null,
+          trainingStatus: trainingEntry?.status ?? null,
+        })
+      : nutritionEntry || trainingEntry
+        ? serializeDailyCheckIn({
+            id: `${user.userId}-${dayDate}`,
+            dayDate: dayDateUtc,
+            weightKg: null,
+            compliance: null,
+            energy: null,
+            nutritionStatus: nutritionEntry?.status ?? null,
+            trainingStatus: trainingEntry?.status ?? null,
+            submittedAt: new Date(dayDateUtc),
+          })
+        : null;
 
     return jsonWithCache({
       dayDate,
-      entry: entry ? serializeDailyCheckIn(entry) : null,
+      entry: serializedEntry,
     });
   } catch (error) {
     console.error('[DAILY_CHECK_IN_GET] Failed:', error);
@@ -79,10 +122,39 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    const [nutritionEntry, trainingEntry] = await Promise.all([
+      (prisma as any).dailyNutritionLog.findUnique({
+        where: {
+          clientId_dayDate: {
+            clientId: user.userId,
+            dayDate: dayDateUtc,
+          },
+        },
+        select: {
+          status: true,
+        },
+      }),
+      (prisma as any).dailyTrainingLog.findUnique({
+        where: {
+          clientId_dayDate: {
+            clientId: user.userId,
+            dayDate: dayDateUtc,
+          },
+        },
+        select: {
+          status: true,
+        },
+      }),
+    ]);
+
     return jsonWithCache({
       success: true,
       dayDate,
-      entry: serializeDailyCheckIn(entry),
+      entry: serializeDailyCheckIn({
+        ...entry,
+        nutritionStatus: nutritionEntry?.status ?? null,
+        trainingStatus: trainingEntry?.status ?? null,
+      }),
     });
   } catch (error) {
     console.error('[DAILY_CHECK_IN_PUT] Failed:', error);

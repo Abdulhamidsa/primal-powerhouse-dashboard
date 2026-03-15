@@ -7,6 +7,10 @@ import {
   getDailyNutritionCurrent,
   upsertDailyNutritionCurrent,
 } from '@/features/daily-nutrition/api/dailyNutrition.api';
+import {
+  buildDailyCheckInCurrentUrl,
+  DAILY_CHECK_IN_INSIGHTS_URL,
+} from '@/features/daily-checkin/api/dailyCheckIn.api';
 import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
 
 function getTodayDateKeyLocal(): string {
@@ -38,7 +42,11 @@ export function useUpsertDailyNutrition() {
 
   const submit = async (dayDate: string, status: DailyNutritionStatus, note?: string | null) => {
     const result = await upsertDailyNutritionCurrent(dayDate, status, note);
-    await mutate(buildDailyNutritionCurrentUrl(dayDate));
+    await Promise.all([
+      mutate(buildDailyNutritionCurrentUrl(dayDate)),
+      mutate(buildDailyCheckInCurrentUrl(dayDate)),
+      mutate(DAILY_CHECK_IN_INSIGHTS_URL),
+    ]);
     return result;
   };
 
