@@ -50,8 +50,8 @@ export function DailyCompletionRing({ percentage, size = 120, strokeWidth = 10, 
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-2xl font-semibold text-foreground">{normalizedPercentage}%</span>
-        <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="text-lg font-semibold text-foreground">{normalizedPercentage}%</span>
+        <span className="text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
           {normalizedPercentage === 100 ? 'Complete' : 'In Progress'}
         </span>
       </div>

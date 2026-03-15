@@ -187,6 +187,7 @@ export default function Navigation({
   const { unreadTotal } = useChatUnread();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
+  const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
 
@@ -291,7 +292,14 @@ export default function Navigation({
         </div>
       </header>
 
-      <main className="mx-auto min-h-[calc(100vh-80px)] max-w-[1600px] overflow-y-auto px-0 pb-24 lg:px-6 lg:py-6 lg:pb-6">
+      <main
+        className={[
+          'mx-auto max-w-[1600px] px-0',
+          isChatRoute
+            ? 'h-[calc(100dvh-80px-96px-env(safe-area-inset-bottom))] overflow-hidden pb-0 lg:h-[calc(100dvh-80px)] lg:px-6 lg:py-6'
+            : 'min-h-[calc(100vh-80px)] overflow-y-auto pb-24 lg:px-6 lg:py-6 lg:pb-6',
+        ].join(' ')}
+      >
         {children || (
           <div id="page-content">
             <p className="py-8 text-center text-muted-foreground">Select an option from the navigation</p>

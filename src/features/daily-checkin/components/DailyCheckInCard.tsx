@@ -89,28 +89,36 @@ export function DailyCheckInCard() {
   }
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card/95 p-5 md:p-6">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+    <div className="rounded-3xl border border-emerald-500/15 bg-background/85 p-5 shadow-sm md:p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-1.5">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-accent">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-600">
               <Activity size={18} />
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">Daily Check-In</p>
-              <p className="text-xs text-muted-foreground">Weight, compliance, and energy in under a minute.</p>
+              <p className="text-xs text-muted-foreground">Weight, compliance, and energy with less clutter.</p>
             </div>
           </div>
-          <p className="text-sm text-foreground/80">
-            Complete all three items to finish the day and keep your streak moving.
+          <p className="max-w-xl text-sm text-foreground/75">
+            Complete the three essentials and move on. This card is intentionally tighter so the next step stays
+            obvious.
           </p>
         </div>
 
-        <DailyCompletionRing percentage={completionPercentage} className="mx-auto lg:mx-0" />
+        <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2.5 md:shrink-0">
+          <DailyCompletionRing
+            percentage={completionPercentage}
+            size={68}
+            strokeWidth={7}
+            className="mx-auto md:mx-0"
+          />
+        </div>
       </div>
 
-      <div className="mt-6 space-y-5">
-        <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+      <div className="mt-5 space-y-4">
+        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Scale size={16} className="text-accent" />
@@ -148,12 +156,12 @@ export function DailyCheckInCard() {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-2xl border border-border/70 bg-background/70 p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-medium text-foreground">Compliance</p>
             <span className="text-xs text-muted-foreground">Required</span>
           </div>
-          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-background/55 p-1.5">
+          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-background/60 p-1.5">
             {COMPLIANCE_OPTIONS.map(option => {
               const isActive = entry?.compliance === option.value;
               return (
@@ -177,12 +185,12 @@ export function DailyCheckInCard() {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-2xl border border-border/70 bg-background/70 p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-medium text-foreground">Energy</p>
             <span className="text-xs text-muted-foreground">Required</span>
           </div>
-          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-background/55 p-1.5">
+          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-background/60 p-1.5">
             {ENERGY_OPTIONS.map(option => {
               const isActive = entry?.energy === option.value;
               return (
@@ -211,7 +219,7 @@ export function DailyCheckInCard() {
         {errorMessage ? (
           <p className="text-xs text-destructive">{errorMessage}</p>
         ) : entry?.isComplete ? (
-          <p className="inline-flex items-center gap-1 text-xs text-accent">
+          <p className="inline-flex items-center gap-1 text-xs text-emerald-700">
             <CheckCircle2 size={14} />
             Daily check-in complete.
           </p>

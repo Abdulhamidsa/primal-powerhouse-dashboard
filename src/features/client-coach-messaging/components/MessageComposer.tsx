@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, Mic, Paperclip, SendHorizontal, Square, Trash2, X } from 'lucide-react';
+import { ImagePlus, Loader2, Mic, Paperclip, SendHorizontal, Square, Trash2, X } from 'lucide-react';
 import { useMessageUpload } from '@/features/client-coach-messaging/hooks/useMessageUpload';
 import { useVoiceRecorder } from '@/features/client-coach-messaging/hooks/useVoiceRecorder';
 import type { MessageAttachment } from '@/features/client-coach-messaging/types/messaging.types';
@@ -94,19 +94,6 @@ export function MessageComposer({
 
   return (
     <form onSubmit={onSend} className="space-y-3">
-      <textarea
-        value={draft}
-        onChange={event => setDraft(event.target.value)}
-        rows={3}
-        className="w-full rounded-xl border px-3 py-2.5 text-sm resize-none"
-        style={{
-          borderColor: 'var(--color-border)',
-          background: 'var(--color-surface)',
-          color: 'var(--color-text)',
-        }}
-        placeholder="Write your message"
-      />
-
       {attachments.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {attachments.map(attachment => (
@@ -114,9 +101,14 @@ export function MessageComposer({
               key={attachment.publicId}
               type="button"
               onClick={() => removeAttachment(attachment.publicId)}
-              className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px]"
-              style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
+              className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px]"
+              style={{
+                borderColor: 'var(--color-border)',
+                background: 'var(--color-surface)',
+                color: 'var(--color-text)',
+              }}
             >
+              {attachment.type === 'image' ? <ImagePlus size={11} /> : <Paperclip size={11} />}
               {attachment.type}
               <X size={12} />
             </button>
@@ -124,77 +116,66 @@ export function MessageComposer({
         </div>
       ) : null}
 
-      <div
-        className="rounded-xl border px-3 py-2"
-        style={{ borderColor: recorder.isRecording ? 'var(--color-danger)' : 'var(--color-border)' }}
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          {!recorder.isRecording ? (
+      {recorder.isRecording ? (
+        <div
+          className="flex items-center justify-between gap-3 rounded-2xl border px-3 py-2"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--color-danger) 35%, var(--color-border))',
+            background: 'color-mix(in srgb, var(--color-danger) 6%, var(--color-surface))',
+          }}
+        >
+          <span className="inline-flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--color-danger)' }}>
+            <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: 'var(--color-danger)' }} />
+            Recording {formatDuration(recorder.recordingDurationSec)}
+          </span>
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={recorder.startRecording}
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+              onClick={recorder.stopRecording}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border"
+              style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}
+              aria-label="Stop recording"
+              title="Stop recording"
             >
-              <Mic size={14} />
-              Record voice
+              <Square size={14} />
             </button>
-          ) : (
-            <>
-              <span
-                className="inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs"
-                style={{
-                  background: 'color-mix(in srgb, var(--color-danger) 12%, transparent)',
-                  color: 'var(--color-danger)',
-                }}
-              >
-                <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: 'var(--color-danger)' }} />
-                Recording {formatDuration(recorder.recordingDurationSec)}
-              </span>
+            <button
+              type="button"
+              onClick={recorder.cancelRecording}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+              aria-label="Cancel recording"
+              title="Cancel recording"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      ) : null}
 
-              <button
-                type="button"
-                onClick={recorder.stopRecording}
-                className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
-                style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}
-              >
-                <Square size={14} />
-                Stop
-              </button>
-
-              <button
-                type="button"
-                onClick={recorder.cancelRecording}
-                className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
-                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
-              >
-                Cancel
-              </button>
-            </>
-          )}
-
-          {voicePreviewUrl ? (
+      {voicePreviewUrl ? (
+        <div
+          className="rounded-2xl border px-3 py-2.5"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+        >
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+              Voice note ready
+            </p>
             <button
               type="button"
               onClick={recorder.clearRecording}
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border"
               style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+              aria-label="Discard voice note"
+              title="Discard voice note"
             >
-              <Trash2 size={14} />
-              Discard voice
+              <Trash2 size={13} />
             </button>
-          ) : null}
-        </div>
-
-        {voicePreviewUrl ? (
-          <div className="mt-2 rounded-lg border p-2" style={{ borderColor: 'var(--color-border)' }}>
-            <p className="mb-1 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-              Voice preview
-            </p>
-            <audio src={voicePreviewUrl} controls className="w-full" />
           </div>
-        ) : null}
-      </div>
+          <audio src={voicePreviewUrl} controls className="w-full" />
+        </div>
+      ) : null}
 
       {recorder.error ? (
         <p className="text-xs" style={{ color: 'var(--color-danger)' }}>
@@ -202,28 +183,67 @@ export function MessageComposer({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div
+        className="flex items-end gap-2 rounded-[28px] border px-3 py-2 shadow-sm"
+        style={{
+          borderColor: 'var(--color-border)',
+          background: 'color-mix(in srgb, var(--color-surface) 88%, white 12%)',
+        }}
+      >
         <label
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs"
-          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+          className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition"
+          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+          aria-label="Add image or video"
+          title="Add image or video"
         >
-          <Paperclip size={14} />
-          Add image or video
+          <Paperclip size={16} />
           <input type="file" className="hidden" accept="image/*,video/*" onChange={onPickFile} />
         </label>
 
         <button
+          type="button"
+          onClick={recorder.startRecording}
+          disabled={recorder.isRecording || isUploading || isSending}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border transition"
+          style={{
+            borderColor: recorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-border)',
+            color: recorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-text-muted)',
+            opacity: recorder.isRecording || isUploading || isSending ? 0.5 : 1,
+          }}
+          aria-label="Record voice note"
+          title="Record voice note"
+        >
+          <Mic size={16} />
+        </button>
+
+        <textarea
+          value={draft}
+          onChange={event => setDraft(event.target.value)}
+          rows={1}
+          className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm outline-none"
+          style={{ color: 'var(--color-text)' }}
+          placeholder="Message your coach"
+          onKeyDown={event => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              void onSend(event);
+            }
+          }}
+        />
+
+        <button
           type="submit"
           disabled={!canSend || isUploading || isSending}
-          className="ml-auto inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full transition"
           style={{
             background: 'var(--color-accent)',
             color: 'var(--color-text-on-accent)',
             opacity: !canSend || isUploading || isSending ? 0.6 : 1,
           }}
+          aria-label={isSending ? 'Sending message' : isUploading ? 'Uploading attachment' : 'Send message'}
+          title={isSending ? 'Sending message' : isUploading ? 'Uploading attachment' : 'Send message'}
         >
-          {isUploading || isSending ? <Loader2 size={14} className="animate-spin" /> : <SendHorizontal size={14} />}
-          {isSending ? 'Sending...' : isUploading ? 'Uploading...' : 'Send'}
+          {isUploading || isSending ? <Loader2 size={16} className="animate-spin" /> : <SendHorizontal size={16} />}
         </button>
       </div>
     </form>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, ArrowDown, ArrowRight, ArrowUp, Flame, TrendingDown } from 'lucide-react';
+import { Activity, ArrowDown, ArrowRight, ArrowUp, TrendingDown } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useDailyCheckInInsights } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
@@ -54,16 +54,18 @@ export function DailyCheckInInsightsCard() {
   const hasWeightData = history.some(item => item.weightKg != null);
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card/95 p-5 md:p-6">
+    <div className="rounded-3xl border border-sky-500/15 bg-background/85 p-5 shadow-sm md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-accent/15 text-accent">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-sky-500/10 text-sky-600">
               <TrendingDown size={18} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">Daily Insights</p>
-              <p className="text-xs text-muted-foreground">Weight context, compliance, and streaks.</p>
+              <p className="text-sm font-semibold text-foreground">Progress Snapshot</p>
+              <p className="text-xs text-muted-foreground">
+                Weight context, compliance, and streaks without extra filler.
+              </p>
             </div>
           </div>
         </div>
@@ -83,19 +85,19 @@ export function DailyCheckInInsightsCard() {
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
           <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Weight Today</p>
           <p className="mt-2 text-xl font-semibold text-foreground">
             {isLoading ? 'Loading...' : formatWeight(summary?.weightToday ?? null)}
           </p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
           <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">7-Day Average</p>
           <p className="mt-2 text-xl font-semibold text-foreground">
             {isLoading ? 'Loading...' : formatWeight(summary?.currentSevenDayAverage ?? null)}
           </p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
           <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Trend</p>
           <div className="mt-2 flex items-center gap-2 text-foreground">
             {summary ? trendIcon(summary.trendDirection) : <ArrowRight size={15} className="text-muted-foreground" />}
@@ -106,7 +108,7 @@ export function DailyCheckInInsightsCard() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-border/70 bg-background/55 p-4">
+      <div className="mt-5 rounded-2xl border border-border/70 bg-background/70 p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-sm font-medium text-foreground">Weight Trend</p>
           <p className="text-xs text-muted-foreground">Recent history</p>
@@ -150,35 +152,14 @@ export function DailyCheckInInsightsCard() {
         )}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-border/70 bg-accent/10 p-4">
-        <div className="flex items-start gap-3">
-          <Flame size={18} className="mt-0.5 text-accent" />
-          <div>
-            <p className="text-sm font-medium text-foreground">Supportive Insight</p>
-            <p className="mt-1 text-sm leading-relaxed text-foreground/80">
-              {isLoading ? 'Loading your trend...' : (summary?.supportiveInsight ?? 'No insights yet.')}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+      <div className="mt-4">
+        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
           <div className="flex items-center gap-2">
-            <Activity size={16} className="text-accent" />
+            <Activity size={16} className="text-sky-600" />
             <p className="text-sm font-medium text-foreground">Previous 7-Day Average</p>
           </div>
           <p className="mt-2 text-lg font-semibold text-foreground">
             {isLoading ? 'Loading...' : formatWeight(summary?.previousSevenDayAverage ?? null)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
-          <div className="flex items-center gap-2">
-            <Flame size={16} className="text-accent" />
-            <p className="text-sm font-medium text-foreground">Completion Focus</p>
-          </div>
-          <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-            Complete weight, compliance, and energy to count the day toward your streak.
           </p>
         </div>
       </div>

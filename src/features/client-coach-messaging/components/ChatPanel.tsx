@@ -19,6 +19,7 @@ function clampSidebarWidth(nextWidth: number): number {
 
 export function ChatPanel({ title, hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const messageViewportRef = useRef<HTMLDivElement | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -26,6 +27,7 @@ export function ChatPanel({ title, hideConversationList = false }: { title?: str
   const { selectedConversationId, setSelectedConversationId, sortedConversations } =
     useMessagingSelection(conversations);
   const {
+    conversation,
     messages,
     isLoading: isMessagesLoading,
     sendMessage,
@@ -60,6 +62,21 @@ export function ChatPanel({ title, hideConversationList = false }: { title?: str
     window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
   }, [hideConversationList, sidebarWidth]);
 
+  useEffect(() => {
+    const viewport = messageViewportRef.current;
+    if (!viewport) return;
+
+    const scrollToBottom = () => {
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior: 'smooth',
+      });
+    };
+
+    const animationFrameId = window.requestAnimationFrame(scrollToBottom);
+    return () => window.cancelAnimationFrame(animationFrameId);
+  }, [selectedConversationId, messages]);
+
   const startDrag = (event: React.MouseEvent<HTMLDivElement>) => {
     if (hideConversationList) return;
     event.preventDefault();
@@ -85,20 +102,26 @@ export function ChatPanel({ title, hideConversationList = false }: { title?: str
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col overflow-hidden rounded-[28px] bg-[var(--color-surface)]">
       <div
-        className="flex items-center justify-between border-b px-4 py-3"
-        style={{ borderColor: 'var(--color-border)' }}
+        className="flex items-center justify-between border-b px-4 py-3.5"
+        style={{
+          borderColor: 'var(--color-border)',
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)) 0%, var(--color-surface) 100%)',
+        }}
       >
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-          {title ?? 'Chat'}
-        </h2>
+        <div>
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+            {title ?? 'Chat'}
+          </h2>
+          <p className="mt-0.5 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+            Direct line with your coach
+          </p>
+        </div>
         <span
-          className="rounded-full px-2 py-0.5 text-[11px]"
-          style={{
-            background: 'var(--color-accent-muted)',
-            color: 'var(--color-accent)',
-          }}
+          className="rounded-full px-2.5 py-1 text-[11px]"
+          style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
         >
           {unreadTotal} unread
         </span>
@@ -158,17 +181,31 @@ export function ChatPanel({ title, hideConversationList = false }: { title?: str
         ) : null}
 
         <section className="min-h-0 flex-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-3" style={{ background: 'var(--color-bg-alt)' }}>
+          <div
+            ref={messageViewportRef}
+            className="flex-1 overflow-y-auto px-3 py-4 md:px-4"
+            style={{
+              background:
+                'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 7%, transparent) 0%, transparent 38%), var(--color-bg-alt)',
+            }}
+          >
             {isMessagesLoading ? (
               <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                 Loading messages...
               </p>
             ) : (
-              <MessageList messages={messages} onRetryAction={retryMessage} />
+              <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
             )}
           </div>
 
-          <div className="border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
+          <div
+            className="border-t px-3 py-3 md:px-4"
+            style={{
+              borderColor: 'var(--color-border)',
+              background:
+                'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 82%, transparent) 0%, var(--color-surface) 100%)',
+            }}
+          >
             <MessageComposer conversationId={selectedConversationId} onSendAction={sendMessage} />
           </div>
         </section>

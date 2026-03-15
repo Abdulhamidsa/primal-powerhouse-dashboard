@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           name: true,
+          avatar: true,
         },
       },
       coach: {
@@ -90,6 +91,7 @@ export async function GET(request: NextRequest) {
         id: row.id,
         clientId: row.clientId,
         clientName: row.client?.name ?? 'Client',
+        clientAvatar: row.client?.avatar ?? null,
         coachId: row.coachId,
         coachName: row.coach?.name ?? 'Coach',
         lastMessageAt: parseDate(row.lastMessageAt),
@@ -145,7 +147,7 @@ export async function POST(request: NextRequest) {
       coachId: client.coachId,
     },
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, avatar: true } },
       coach: { select: { id: true, name: true } },
     },
   });
@@ -156,6 +158,7 @@ export async function POST(request: NextRequest) {
     id: conversation.id,
     clientId: conversation.clientId,
     clientName: conversation.client?.name ?? 'Client',
+    clientAvatar: conversation.client?.avatar ?? null,
     coachId: conversation.coachId,
     coachName: conversation.coach?.name ?? 'Coach',
     lastMessageAt: parseDate(conversation.lastMessageAt),

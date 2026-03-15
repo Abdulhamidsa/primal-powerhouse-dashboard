@@ -144,7 +144,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const conversation = await (prisma as any).conversation.findUnique({
     where: { id: conversationId },
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, avatar: true } },
       coach: { select: { id: true, name: true } },
     },
   });
@@ -174,6 +174,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       id: conversation.id,
       clientId: conversation.clientId,
       clientName: conversation.client?.name ?? 'Client',
+      clientAvatar: conversation.client?.avatar ?? null,
       coachId: conversation.coachId,
       coachName: conversation.coach?.name ?? 'Coach',
       lastMessageAt: conversation.lastMessageAt ? conversation.lastMessageAt.toISOString() : null,

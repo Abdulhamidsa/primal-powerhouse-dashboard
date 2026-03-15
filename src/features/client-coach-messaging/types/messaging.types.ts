@@ -19,6 +19,7 @@ export type ConversationSummary = {
   id: string;
   clientId: string;
   clientName: string;
+  clientAvatar?: string | null;
   coachId: string;
   coachName: string;
   lastMessageAt: string | null;
