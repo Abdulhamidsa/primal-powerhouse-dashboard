@@ -32,32 +32,32 @@ export default function SelectedIngredientRow({
       fiber: ingredient.fiberPer100g ?? 0,
       hasIncompleteData: ingredient.hasIncompleteData,
     },
-    ingredient.grams
+    ingredient.grams,
   );
 
   return (
-    <div className="border border-zinc-700 rounded-lg p-4 bg-zinc-800/50 space-y-3">
+    <div className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-zinc-100">{ingredient.name}</h4>
-          {ingredient.brand && <p className="text-xs text-zinc-400">{ingredient.brand}</p>}
+        <div className="min-w-0 flex-1">
+          <h4 className="text-sm font-medium text-[var(--color-text)]">{ingredient.name}</h4>
+          {ingredient.brand && <p className="text-xs text-[var(--color-text-muted)]">{ingredient.brand}</p>}
 
-          {ingredient.hasIncompleteData && <p className="text-xs text-amber-500 mt-1">⚠️ Incomplete data</p>}
+          {ingredient.hasIncompleteData && <p className="mt-1 text-xs text-amber-400">Incomplete data</p>}
         </div>
 
         <button
           onClick={onRemoveAction}
-          className="text-red-500 hover:text-red-400 transition-colors font-medium text-sm"
+          className="text-sm font-medium text-red-400 transition-colors hover:text-red-300"
         >
           Remove
         </button>
       </div>
 
-      {/* Quantity Input */}
-      <div className="flex items-center gap-3">
-        <label className="text-xs text-zinc-400 uppercase tracking-wide">
-          {canUsePieceInput ? 'Quantity:' : 'Grams:'}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-[11px] uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
+          {canUsePieceInput ? 'Quantity' : 'Grams'}
         </label>
+
         {canUsePieceInput ? (
           <>
             <input
@@ -70,14 +70,14 @@ export default function SelectedIngredientRow({
               }}
               min="1"
               step="1"
-              className="w-24 px-3 py-2 bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="input-base w-24"
             />
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-[var(--color-text-muted)]">
               {displayUnitLabel}
               {pieceCount > 1 ? 's' : ''}
             </span>
-            <span className="text-xs text-zinc-500">(≈{Math.round(gramsPerUnit)}g each)</span>
-            <span className="text-xs text-zinc-500">({ingredient.grams}g total)</span>
+            <span className="text-xs text-[var(--color-text-muted)]">(≈{Math.round(gramsPerUnit)}g each)</span>
+            <span className="text-xs text-[var(--color-text-muted)]">({ingredient.grams}g total)</span>
           </>
         ) : (
           <input
@@ -86,32 +86,35 @@ export default function SelectedIngredientRow({
             onChange={e => onUpdateGramsAction(Number(e.target.value))}
             min="1"
             max="9999"
-            className="w-20 px-3 py-2 bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="input-base w-24"
           />
         )}
       </div>
 
-      {/* Macro Preview */}
-      <div className="grid grid-cols-5 gap-2">
-        <div className="bg-zinc-700 rounded-lg p-2 text-center">
-          <p className="text-xs text-zinc-400 mb-1">kcal</p>
-          <p className="text-sm font-semibold text-blue-400">{nutrition.kcal}</p>
+      <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-1.5">
+          <span className="text-orange-400">kcal</span>
+          <span className="font-medium text-orange-400">{nutrition.kcal}</span>
         </div>
-        <div className="bg-zinc-700 rounded-lg p-2 text-center">
-          <p className="text-xs text-zinc-400 mb-1">P</p>
-          <p className="text-sm font-semibold text-amino-100">{nutrition.protein}g</p>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-emerald-400">P</span>
+          <span className="font-medium text-emerald-400">{nutrition.protein}g</span>
         </div>
-        <div className="bg-zinc-700 rounded-lg p-2 text-center">
-          <p className="text-xs text-zinc-400 mb-1">C</p>
-          <p className="text-sm font-semibold text-orange-400">{nutrition.carbs}g</p>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-amber-300">C</span>
+          <span className="font-medium text-amber-300">{nutrition.carbs}g</span>
         </div>
-        <div className="bg-zinc-700 rounded-lg p-2 text-center">
-          <p className="text-xs text-zinc-400 mb-1">F</p>
-          <p className="text-sm font-semibold text-yellow-400">{nutrition.fat}g</p>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-sky-400">F</span>
+          <span className="font-medium text-sky-400">{nutrition.fat}g</span>
         </div>
-        <div className="bg-zinc-700 rounded-lg p-2 text-center">
-          <p className="text-xs text-zinc-400 mb-1">Fiber</p>
-          <p className="text-sm font-semibold text-green-400">{nutrition.fiber}g</p>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-green-400">Fiber</span>
+          <span className="font-medium text-green-400">{nutrition.fiber}g</span>
         </div>
       </div>
     </div>

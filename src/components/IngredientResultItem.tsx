@@ -12,23 +12,24 @@ export default function IngredientResultItem({ item, onAddAction, isAdded = fals
   const renderValue = (value: number | null) => (value === null ? '—' : value);
 
   return (
-    <div className="border border-zinc-700 rounded-lg p-4 bg-zinc-800/50 hover:bg-zinc-800 transition-colors flex items-start justify-between gap-4">
-      <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium text-zinc-100 truncate">{item.name}</h4>
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 transition-colors hover:bg-[var(--color-surface)]">
+      <div className="min-w-0 flex-1">
+        <h4 className="truncate text-sm font-medium text-[var(--color-text)]">{item.name}</h4>
+
         {(item.dataType || item.category || item.brand) && (
-          <p className="text-xs text-zinc-400 truncate">
+          <p className="truncate text-xs text-[var(--color-text-muted)]">
             {[item.dataType, item.category, item.brand].filter(Boolean).join(' • ')}
           </p>
         )}
 
-        {item.hasIncompleteData && <p className="text-xs text-amber-500 mt-1">⚠️ Incomplete nutrition data</p>}
+        {item.hasIncompleteData && <p className="mt-1 text-xs text-amber-400">Incomplete nutrition data</p>}
 
         {item.tags && item.tags.length > 0 && (
-          <div className="mt-2 flex gap-2 flex-wrap">
+          <div className="mt-2 flex flex-wrap gap-2">
             {item.tags.map(tag => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 text-xs bg-zinc-700/60 text-zinc-200 px-2 py-0.5 rounded"
+                className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-0.5 text-xs text-[var(--color-text-muted)]"
               >
                 {tag}
               </span>
@@ -36,19 +37,22 @@ export default function IngredientResultItem({ item, onAddAction, isAdded = fals
           </div>
         )}
 
-        <div className="mt-2 flex gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1 text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300">
             {renderValue(item.kcalPer100g)}
-            <span className="text-xs">kcal/100g</span>
+            <span>kcal</span>
           </span>
-          <span className="inline-flex items-center gap-1 text-xs bg-amino-100/20 text-amino-100 px-2 py-1 rounded">
-            {renderValue(item.proteinPer100g)}g P
+
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-300">
+            {renderValue(item.proteinPer100g)}g<span>P</span>
           </span>
-          <span className="inline-flex items-center gap-1 text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">
-            {renderValue(item.carbsPer100g)}g C
+
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs text-amber-300">
+            {renderValue(item.carbsPer100g)}g<span>C</span>
           </span>
-          <span className="inline-flex items-center gap-1 text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded">
-            {renderValue(item.fatPer100g)}g F
+
+          <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2.5 py-1 text-xs text-sky-300">
+            {renderValue(item.fatPer100g)}g<span>F</span>
           </span>
         </div>
       </div>
@@ -56,11 +60,13 @@ export default function IngredientResultItem({ item, onAddAction, isAdded = fals
       <button
         onClick={() => onAddAction(item)}
         disabled={isAdded}
-        className={`px-3 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${
-          isAdded ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+        className={`rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+          isAdded
+            ? 'cursor-not-allowed border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)]'
+            : 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90'
         }`}
       >
-        {isAdded ? '✓ Added' : 'Add'}
+        {isAdded ? 'Added' : 'Add'}
       </button>
     </div>
   );

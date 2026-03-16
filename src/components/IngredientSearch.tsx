@@ -46,7 +46,7 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
         gramsPerUnit: item.gramsPerUnit,
         displayUnitLabel: item.displayUnitLabel,
       })),
-    [items]
+    [items],
   );
 
   const filteredResults = mappedItems.filter(item => {
@@ -88,39 +88,36 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
       };
       onAddIngredientAction(selectedIngredient);
     },
-    [onAddIngredientAction]
+    [onAddIngredientAction],
   );
 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Search Ingredients</label>
+        <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Search Ingredients</label>
         <div className="flex gap-2">
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="e.g., chicken, rice, spinach..."
-            className="flex-1 px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-zinc-500"
+            className="input-base flex-1"
           />
         </div>
       </div>
 
-      {/* Loading State */}
       {isLoading && (
         <div className="flex justify-center py-6">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--color-accent)]" />
         </div>
       )}
 
-      {/* Error State */}
       {error && !isLoading && searchQuery && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-          <p className="text-sm text-amber-500">{error.message || 'Search failed'}</p>
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+          <p className="text-sm text-amber-400">{error.message || 'Search failed'}</p>
         </div>
       )}
 
-      {/* Filter Chips */}
       <div className="flex flex-wrap gap-2">
         {[
           { key: 'all', label: 'All' },
@@ -133,10 +130,10 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
             key={filter.key}
             type="button"
             onClick={() => setActiveFilter(filter.key)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
               activeFilter === filter.key
-                ? 'bg-blue-600 border-blue-500 text-white'
-                : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
+                ? 'border-transparent bg-[var(--color-accent)] text-[var(--color-text-on-accent)]'
+                : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-alt)] hover:text-[var(--color-text)]'
             }`}
           >
             {filter.label}
@@ -144,13 +141,13 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
         ))}
       </div>
 
-      {/* Results */}
       {!isLoading && filteredResults.length > 0 && (
         <div className="space-y-3">
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-[var(--color-text-muted)]">
             Found {filteredResults.length} ingredient{filteredResults.length !== 1 ? 's' : ''}
           </p>
-          <div className="max-h-96 overflow-y-auto space-y-2">
+
+          <div className="max-h-96 space-y-2 overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
             {filteredResults.map((item, index) => (
               <IngredientResultItem
                 key={`${item.id}-${item.dataType ?? 'na'}-${index}`}
@@ -163,19 +160,17 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
         </div>
       )}
 
-      {/* Empty State */}
       {!isLoading && searchQuery && filteredResults.length === 0 && !error && (
-        <div className="text-center py-6 text-zinc-400">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] py-8 text-center text-[var(--color-text-muted)]">
           <p>No ingredients found</p>
-          <p className="text-xs mt-2">Try a different term or add a new ingredient</p>
+          <p className="mt-2 text-xs">Try a different term or add a new ingredient</p>
         </div>
       )}
 
-      {/* Initial State */}
       {!isLoading && !searchQuery && mappedItems.length === 0 && (
-        <div className="text-center py-6 text-zinc-400">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] py-8 text-center text-[var(--color-text-muted)]">
           <p className="text-sm">Start typing to search for ingredients</p>
-          <p className="text-xs mt-2">Searching your internal ingredients database</p>
+          <p className="mt-2 text-xs">Searching your internal ingredients database</p>
         </div>
       )}
     </div>

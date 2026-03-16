@@ -220,263 +220,290 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black backdrop-blur-sm p-2 sm:p-6">
-      <div className="w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-950/80 px-4 py-4 sm:px-6">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-zinc-100">Build Meal</h2>
-            <p className="text-xs sm:text-sm text-zinc-400">Create a meal template from your ingredients database</p>
-          </div>
-          <button
-            type="button"
-            onClick={onCloseAction}
-            aria-label="Close"
-            className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-300 hover:text-zinc-100"
-          >
-            <span className="text-lg">&times;</span>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex h-full flex-col">
-          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 space-y-6">
-            {/* Error Messages */}
-            {uploadError && (
-              <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                {uploadError}
-              </div>
-            )}
-
-            {/* Meal Meta Info */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-zinc-100 mb-4">Meal Information</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-white mb-2">Meal Name *</label>
-                  <input
-                    type="text"
-                    value={state.name}
-                    onChange={e => updateMealMeta({ name: e.target.value })}
-                    className={`w-full rounded-lg border bg-zinc-950 px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.name ? 'border-red-500' : 'border-zinc-800'
-                    }`}
-                    placeholder="e.g., Grilled Chicken Salad"
-                  />
-                  {errors.name && <p className="text-xs text-red-400 mt-2">{errors.name}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-white mb-2">Meal Type *</label>
-                  <select
-                    value={state.type}
-                    onChange={e =>
-                      updateMealMeta({
-                        type: e.target.value as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
-                      })
-                    }
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="BREAKFAST">Breakfast</option>
-                    <option value="LUNCH">Lunch</option>
-                    <option value="DINNER">Dinner</option>
-                    <option value="SNACK">Snack</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-white mb-2">Servings</label>
-                  <input
-                    type="number"
-                    value={state.servings}
-                    onChange={e => updateMealMeta({ servings: Math.max(1, Number(e.target.value)) })}
-                    min="1"
-                    max="10"
-                    className={`w-full rounded-lg border bg-zinc-950 px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.servings ? 'border-red-500' : 'border-zinc-800'
-                    }`}
-                  />
-                  {errors.servings && <p className="text-xs text-red-400 mt-2">{errors.servings}</p>}
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-zinc-100 mb-4">Meal Image</h3>
-              <ImageUpload
-                onFileSelectAction={file => {
-                  setSelectedImageFile(file);
-                  setUploadError('');
-                }}
-                onError={setUploadError}
-                disabled={loading}
-              />
-
-              <button
-                type="button"
-                onClick={handleGeneratePrompt}
-                disabled={loading || !state.name.trim()}
-                className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <Sparkles size={16} />
-                {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
-              </button>
-
-              <div className="mt-4 rounded-lg border border-zinc-700 bg-zinc-950/80 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-zinc-300">ChatGPT Image Prompt</p>
-                  <button
-                    type="button"
-                    onClick={copy}
-                    disabled={!hasPrompt}
-                    className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 p-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed"
-                    aria-label="Copy generated prompt"
-                    title="Copy prompt"
-                  >
-                    <Copy size={14} />
-                  </button>
-                </div>
-
-                <textarea
-                  readOnly
-                  value={
-                    hasPrompt
-                      ? promptText
-                      : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
-                  }
-                  className="w-full min-h-[140px] rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
-                />
-
-                {copied ? <p className="mt-2 text-xs text-emerald-400">Copied</p> : null}
-                {promptError ? <p className="mt-2 text-xs text-red-400">{promptError}</p> : null}
-              </div>
-            </div>
-
-            {/* Ingredient Search */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <h3 className="text-base sm:text-lg font-semibold text-zinc-100">Add Ingredients</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowFoodFormModal(true)}
-                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
-                >
-                  + Add Ingredient
-                </button>
-              </div>
-              <IngredientSearch
-                onAddIngredientAction={(ingredient: SelectedIngredient) => addIngredient(ingredient)}
-                selectedIds={selectedIds}
-              />
-            </div>
-
-            {/* Selected Ingredients */}
-            {state.selectedIngredients.length > 0 && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-zinc-100 mb-4">
-                  Selected Ingredients ({state.selectedIngredients.length})
-                </h3>
-                <div className="space-y-3">
-                  {state.selectedIngredients.map(ingredient => (
-                    <SelectedIngredientRow
-                      key={ingredient.id}
-                      ingredient={ingredient}
-                      onUpdateGramsAction={grams => updateIngredientGrams(ingredient.id, grams)}
-                      onRemoveAction={() => handleRemoveIngredient(ingredient.id)}
-                    />
-                  ))}
-                </div>
-                {errors.ingredients && <p className="text-xs text-red-400 mt-2">{errors.ingredients}</p>}
-              </div>
-            )}
-
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-semibold text-zinc-100">Instructions</h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={splitBulkInstructions}
-                    className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
-                  >
-                    Split Commas
-                  </button>
-                  <button
-                    type="button"
-                    onClick={addInstruction}
-                    className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
-                  >
-                    + Add Step
-                  </button>
-                </div>
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+      <div className="flex min-h-full items-center justify-center p-2 sm:p-6">
+        <div className="modal-content w-full max-w-5xl rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl">
+          <div className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-4 backdrop-blur sm:px-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-foreground">Build Meal</h2>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                  Create a meal template from your ingredients database.
+                </p>
               </div>
 
-              <p className="mb-3 text-xs text-zinc-400">
-                Tip: paste bulk text in one line using commas, then click `Split Commas`.
-              </p>
-
-              <div className="space-y-2">
-                {instructions.map((instruction, index) => (
-                  <div key={index} className="flex gap-2 items-start">
-                    <span className="px-3 py-2 bg-zinc-800 rounded-lg text-xs font-medium text-zinc-300 min-w-[40px] text-center">
-                      {index + 1}
-                    </span>
-                    <input
-                      type="text"
-                      value={instruction}
-                      onChange={e => handleInstructionChange(index, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-zinc-700 bg-zinc-950 text-zinc-100 rounded-lg"
-                      placeholder="e.g., Cook rice and grill chicken"
-                    />
-                    {instructions.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeInstruction(index)}
-                        className="px-3 py-2 text-red-400 hover:bg-zinc-800 rounded-lg"
-                      >
-                        x
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {errors.instructions && <p className="text-xs text-red-400 mt-2">{errors.instructions}</p>}
-            </div>
-
-            {/* Totals Panel */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
-              <TotalsPanel
-                totals={totals}
-                perServing={perServing}
-                servings={state.servings}
-                selectedIngredientsCount={state.selectedIngredients.length}
-              />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="border-t border-zinc-800 bg-zinc-950/80 px-4 py-4 sm:px-6">
-            <div className="flex flex-col-reverse sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={onCloseAction}
-                className="w-full sm:flex-1 rounded-lg border border-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-300 hover:bg-zinc-900"
+                aria-label="Close"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading || state.selectedIngredients.length === 0}
-                className="w-full sm:flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Creating...' : 'Create Template Meal'}
+                <span className="text-xl leading-none">&times;</span>
               </button>
             </div>
           </div>
-        </form>
-      </div>
 
-      <FoodForm isOpen={showFoodFormModal} onCloseAction={() => setShowFoodFormModal(false)} />
+          <form onSubmit={handleSubmit} className="flex h-full flex-col">
+            <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+              {uploadError && (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {uploadError}
+                </div>
+              )}
+
+              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="mb-5">
+                  <h3 className="text-base font-semibold text-[var(--color-text)]">Meal Information</h3>
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                    Set the core details for the template meal.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Meal Name *</label>
+                    <input
+                      type="text"
+                      value={state.name}
+                      onChange={e => updateMealMeta({ name: e.target.value })}
+                      className={`input-base w-full ${errors.name ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                      placeholder="e.g., Grilled Chicken Salad"
+                    />
+                    {errors.name && <p className="mt-2 text-xs text-red-400">{errors.name}</p>}
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Meal Type *</label>
+                    <select
+                      value={state.type}
+                      onChange={e =>
+                        updateMealMeta({
+                          type: e.target.value as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
+                        })
+                      }
+                      className="input-base w-full appearance-none"
+                    >
+                      <option value="BREAKFAST">Breakfast</option>
+                      <option value="LUNCH">Lunch</option>
+                      <option value="DINNER">Dinner</option>
+                      <option value="SNACK">Snack</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Servings</label>
+                    <input
+                      type="number"
+                      value={state.servings}
+                      onChange={e => updateMealMeta({ servings: Math.max(1, Number(e.target.value)) })}
+                      min="1"
+                      max="10"
+                      className={`input-base w-full ${errors.servings ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                    />
+                    {errors.servings && <p className="mt-2 text-xs text-red-400">{errors.servings}</p>}
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-[var(--color-text)]">Add Ingredients</h3>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      Search your ingredient database and add items to the meal.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowFoodFormModal(true)}
+                    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)]"
+                  >
+                    Add Ingredient
+                  </button>
+                </div>
+
+                <IngredientSearch
+                  onAddIngredientAction={(ingredient: SelectedIngredient) => addIngredient(ingredient)}
+                  selectedIds={selectedIds}
+                />
+              </section>
+
+              {state.selectedIngredients.length > 0 && (
+                <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                  <div className="mb-4">
+                    <h3 className="text-base font-semibold text-[var(--color-text)]">
+                      Selected Ingredients ({state.selectedIngredients.length})
+                    </h3>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      Adjust grams or remove ingredients before creating the meal.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {state.selectedIngredients.map(ingredient => (
+                      <SelectedIngredientRow
+                        key={ingredient.id}
+                        ingredient={ingredient}
+                        onUpdateGramsAction={grams => updateIngredientGrams(ingredient.id, grams)}
+                        onRemoveAction={() => handleRemoveIngredient(ingredient.id)}
+                      />
+                    ))}
+                  </div>
+
+                  {errors.ingredients && <p className="mt-2 text-xs text-red-400">{errors.ingredients}</p>}
+                </section>
+              )}
+
+              <section className="">
+                <TotalsPanel
+                  totals={totals}
+                  perServing={perServing}
+                  servings={state.servings}
+                  selectedIngredientsCount={state.selectedIngredients.length}
+                />
+              </section>
+              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-[var(--color-text)]">Instructions</h3>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      Add steps manually or split pasted comma-separated text.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={splitBulkInstructions}
+                      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)]"
+                    >
+                      Split Commas
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addInstruction}
+                      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)]"
+                    >
+                      Add Step
+                    </button>
+                  </div>
+                </div>
+
+                <p className="mb-3 text-xs text-[var(--color-text-muted)]">
+                  Tip: paste bulk text in one line using commas, then click Split Commas.
+                </p>
+
+                <div className="space-y-3">
+                  {instructions.map((instruction, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <span className="flex min-w-[44px] items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3 text-xs font-medium text-[var(--color-text-muted)]">
+                        {index + 1}
+                      </span>
+
+                      <input
+                        type="text"
+                        value={instruction}
+                        onChange={e => handleInstructionChange(index, e.target.value)}
+                        className="input-base flex-1"
+                        placeholder="e.g., Cook rice and grill chicken"
+                      />
+
+                      {instructions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeInstruction(index)}
+                          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-red-400 transition-colors hover:bg-red-500/10"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {errors.instructions && <p className="mt-2 text-xs text-red-400">{errors.instructions}</p>}
+              </section>
+
+              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="mb-5">
+                  <h3 className="text-base font-semibold text-[var(--color-text)]">Meal Image</h3>
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                    Upload an image and generate a matching prompt.
+                  </p>
+                </div>
+
+                <ImageUpload
+                  onFileSelectAction={file => {
+                    setSelectedImageFile(file);
+                    setUploadError('');
+                  }}
+                  onError={setUploadError}
+                  disabled={loading}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleGeneratePrompt}
+                  disabled={loading || !state.name.trim()}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Sparkles size={16} />
+                  {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
+                </button>
+
+                <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-medium text-[var(--color-text-muted)]">ChatGPT Image Prompt</p>
+                    <button
+                      type="button"
+                      onClick={copy}
+                      disabled={!hasPrompt}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Copy generated prompt"
+                      title="Copy prompt"
+                    >
+                      <Copy size={14} />
+                    </button>
+                  </div>
+
+                  <textarea
+                    readOnly
+                    value={
+                      hasPrompt
+                        ? promptText
+                        : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
+                    }
+                    className="min-h-[140px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs text-[var(--color-text)]"
+                  />
+
+                  {copied ? <p className="mt-2 text-xs text-emerald-400">Copied</p> : null}
+                  {promptError ? <p className="mt-2 text-xs text-red-400">{promptError}</p> : null}
+                </div>
+              </section>
+            </div>
+
+            <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-4 backdrop-blur sm:px-6">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                <button type="button" onClick={onCloseAction} className="btn-secondary w-full sm:flex-1">
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading || state.selectedIngredients.length === 0}
+                  className="btn-primary w-full flex-1 bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? 'Creating...' : 'Create Template Meal'}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <FoodForm isOpen={showFoodFormModal} onCloseAction={() => setShowFoodFormModal(false)} />
+      </div>
     </div>
   );
 }

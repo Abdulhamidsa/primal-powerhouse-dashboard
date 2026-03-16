@@ -47,7 +47,7 @@ export default function ImageUpload({
         setIsDragging(true);
       }
     },
-    [disabled]
+    [disabled],
   );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
@@ -98,7 +98,7 @@ export default function ImageUpload({
       // Notify parent component
       onFileSelectAction(file);
     },
-    [preview, onError, onFileSelectAction]
+    [preview, onError, onFileSelectAction],
   );
 
   const handleDrop = useCallback(
@@ -118,7 +118,7 @@ export default function ImageUpload({
 
       handleFile(imageFile);
     },
-    [disabled, handleFile, onError]
+    [disabled, handleFile, onError],
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,8 +161,7 @@ export default function ImageUpload({
       />
 
       {preview ? (
-        // Image Preview
-        <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-zinc-700 group">
+        <div className="group relative h-64 w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)]">
           <Image
             src={preview}
             alt="Preview"
@@ -172,56 +171,61 @@ export default function ImageUpload({
             unoptimized={preview.startsWith('blob:')}
           />
 
-          {/* Overlay with actions */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 border-t border-white/10 bg-black/45 p-3 backdrop-blur-md">
             <button
               type="button"
               onClick={openFileDialog}
               disabled={disabled}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Upload size={20} />
+              <Upload size={16} />
               Change
             </button>
+
             <button
               type="button"
               onClick={handleRemove}
               disabled={disabled}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/15 px-4 py-2 text-sm font-medium text-red-100 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <X size={20} />
+              <X size={16} />
               Remove
             </button>
           </div>
         </div>
       ) : (
-        // Upload Zone
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={openFileDialog}
           className={`
-            relative w-full h-64 rounded-lg border-2 border-dashed transition-all cursor-pointer
-            ${
-              isDragging
-                ? 'border-blue-500 bg-blue-500/10'
-                : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600 hover:bg-zinc-800'
-            }
-            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-          `}
+        relative flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition-all
+        ${
+          isDragging
+            ? 'border-[var(--color-accent)] bg-[var(--color-accent-translucent)]'
+            : 'border-[var(--color-border)] bg-[var(--color-bg-alt)] hover:bg-[var(--color-surface)]'
+        }
+        ${disabled ? 'cursor-not-allowed opacity-50' : ''}
+      `}
         >
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-zinc-700 flex items-center justify-center mb-4">
-              {isDragging ? <Upload size={20} /> : <ImageIcon size={20} />}
-            </div>
-            <p className="text-lg font-medium text-zinc-300 mb-2">
-              {isDragging ? 'Drop image here' : 'Upload meal image'}
-            </p>
-            <p className="text-sm text-zinc-400 mb-4">Drag and drop or click to browse</p>
-            <p className="text-xs text-zinc-500">Supports: JPG, PNG, WebP, GIF (Max 10MB)</p>
-            <p className="text-xs text-zinc-500 mt-2">Image will be uploaded when you create the meal</p>
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+            {isDragging ? (
+              <Upload size={20} className="text-[var(--color-accent)]" />
+            ) : (
+              <ImageIcon size={20} className="text-[var(--color-accent)]" />
+            )}
           </div>
+
+          <p className="text-base font-medium text-[var(--color-text)]">
+            {isDragging ? 'Drop image here' : 'Upload meal image'}
+          </p>
+
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">Drag and drop or click to browse</p>
+
+          <p className="mt-4 text-xs text-[var(--color-text-muted)]">Supports JPG, PNG, WebP, GIF up to 10MB</p>
+
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">Image will be uploaded when you create the meal</p>
         </div>
       )}
     </div>
