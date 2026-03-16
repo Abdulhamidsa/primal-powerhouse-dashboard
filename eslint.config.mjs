@@ -10,8 +10,7 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-// eslint-disable-next-line import/no-anonymous-default-export
-export default [
+const config = [
   ...compat.extends('next/core-web-vitals', 'prettier'),
   {
     ignores: ['.next/**', 'node_modules/**', 'dist/**', 'build/**'],
@@ -30,12 +29,18 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      'prettier/prettier': 'warn',
+      'prettier/prettier': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
       ],
     },
   },
 ];
+
+export default config;

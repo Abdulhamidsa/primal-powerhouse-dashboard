@@ -131,3 +131,37 @@ export interface ScaledRecipe {
   targetMacros: MacroTarget;
   macroMatchAccuracy: number; // 0-1 score of how well the recipe matches the target
 }
+
+// Utility types for meal filtering
+export const mealTypes = ['ALL', 'BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
+export type MealFilterType = (typeof mealTypes)[number];
+
+// Type for meal list items returned from the API
+export interface MealListItem {
+  id: string;
+  name: string;
+  type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  ingredients: Array<
+    | string
+    | {
+        foodId?: string;
+        name?: string;
+        grams?: number;
+        unit?: string;
+        displayUnitLabel?: string | null;
+      }
+  >;
+  instructions: Array<string | { id?: string; step?: number; instruction?: string }>;
+  prepTime: number;
+  cookTime: number;
+  servings: number;
+  tags: string[];
+  imageUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
