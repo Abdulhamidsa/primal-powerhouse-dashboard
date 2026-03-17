@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import Navigation from '@/components/Navigation';
 import { DataService, Client, MealPlan } from '@/services/dataService';
 import AssignPersonalizedMealsModal from '@/components/AssignPersonalizedMealsModal';
 
@@ -106,7 +105,7 @@ export default function ClientMealPlansPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-        <Navigation />
+        {/* <Navigation /> */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
@@ -125,7 +124,7 @@ export default function ClientMealPlansPage() {
   if (!client) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-        <Navigation />
+        {/* <Navigation /> */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-16">
             <div className="text-6xl mb-4">😕</div>
@@ -139,7 +138,7 @@ export default function ClientMealPlansPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      <Navigation />
+      {/* <Navigation /> */}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}

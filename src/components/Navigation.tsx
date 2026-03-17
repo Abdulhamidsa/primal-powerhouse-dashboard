@@ -5,8 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart2, Utensils, Users, Flame, User, Shield, Salad, MessageSquare } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, User, Shield, MessageSquare } from 'lucide-react';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
+import { cn } from '@/lib/utils';
+
+
 
 type NavItem = {
   name: string;
@@ -28,12 +31,12 @@ const adminNavItems: NavItem[] = [
     icon: Utensils,
     description: 'Manage meal library',
   },
-  {
-    name: 'Ingredients',
-    href: '/admin/ingredients',
-    icon: Salad,
-    description: 'Food catalog',
-  },
+  // {
+  //   name: 'Ingredients',
+  //   href: '/admin/ingredients',
+  //   icon: Salad,
+  //   description: 'Food catalog',
+  // },
   {
     name: 'Videos',
     href: '/admin/videos',
@@ -222,103 +225,120 @@ export default function Navigation({
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-card/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8">
-            <Link href={dashboardPath} className="flex items-center gap-3" onClick={handleLogoClick}>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-background/80">
-                <Image src="/logo.png" alt="Logo" width={26} height={26} />
-              </div>
-
-              <div className="hidden sm:block">
-                <h1 className="text-base font-bold text-foreground">Primal Power</h1>
-              </div>
-            </Link>
-
-            <nav className="hidden lg:flex items-center gap-2">
-              {navItems.map(item => (
-                <DesktopTopNavItem
-                  key={item.href}
-                  item={item}
-                  active={isActivePath(pathname, item.href)}
-                  unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
-                />
-              ))}
-            </nav>
+<div className="min-h-dvh bg-background">
+  <header className="sticky top-0 z-30 hidden border-b border-border bg-card/80 backdrop-blur-xl lg:block">
+    <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center gap-8">
+        <Link href={dashboardPath} className="flex items-center gap-3" onClick={handleLogoClick}>
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-background/80">
+            <Image src="/logo.png" alt="Logo" width={26} height={26} />
           </div>
 
-          <div className="flex items-center gap-3">
-            {userType === 'user' ? (
-              <div ref={accountMenuRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setAccountMenuOpen(v => !v)}
-                  aria-label="Open account menu"
-                  className="inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <User size={18} />
-                </button>
-
-                {accountMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur-xl">
-                    {userAccountMenuItems.map(item => {
-                      const Icon = item.icon;
-                      const active = isActivePath(pathname, item.href);
-
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={[
-                            'flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors',
-                            active
-                              ? 'bg-background text-foreground'
-                              : 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
-                          ].join(' ')}
-                        >
-                          <Icon size={15} />
-                          {item.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="hidden lg:block w-10" />
-            )}
+          <div className="hidden sm:block">
+            <h1 className="text-base font-bold text-foreground">Primal Power</h1>
           </div>
-        </div>
-      </header>
+        </Link>
 
-      <main
-        className={[
-          'mx-auto max-w-[1600px] px-0',
-          isChatRoute
-            ? 'h-[calc(100dvh-80px-96px-env(safe-area-inset-bottom))] overflow-hidden pb-0 lg:h-[calc(100dvh-80px)] lg:px-6 lg:py-6'
-            : 'min-h-[calc(100vh-80px)] overflow-y-auto pb-24 lg:px-6 lg:py-6 lg:pb-6',
-        ].join(' ')}
-      >
-        {children || (
-          <div id="page-content">
-            <p className="py-8 text-center text-muted-foreground">Select an option from the navigation</p>
-          </div>
-        )}
-      </main>
-
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden">
-        <div className="mx-auto mb-0 flex max-w-lg items-center justify-around px-2 py-2">
+        <nav className="hidden items-center gap-2 lg:flex">
           {navItems.map(item => (
-            <MobileTabItem
+            <DesktopTopNavItem
               key={item.href}
               item={item}
               active={isActivePath(pathname, item.href)}
               unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
             />
           ))}
-        </div>
-      </nav>
+        </nav>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {userType === 'user' ? (
+          <div ref={accountMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setAccountMenuOpen(v => !v)}
+              aria-label="Open account menu"
+              className="inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <User size={18} />
+            </button>
+
+            {accountMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur-xl">
+                {userAccountMenuItems.map(item => {
+                  const Icon = item.icon;
+                  const active = isActivePath(pathname, item.href);
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={[
+                        'flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors',
+                        active
+                          ? 'bg-background text-foreground'
+                          : 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
+                      ].join(' ')}
+                    >
+                      <Icon size={15} />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="hidden w-10 lg:block" />
+        )}
+      </div>
     </div>
+  </header>
+
+  <main
+    className={cn(
+      'mx-auto w-full max-w-[1600px] p-6',
+      isChatRoute
+        ? [
+            'h-[calc(100dvh-80px)]',
+            'overflow-hidden',
+            'pb-0',
+            'lg:h-[calc(100dvh-80px)]',
+            'lg:px-6',
+            'lg:py-6',
+          ]
+        : [
+            'min-h-[calc(100dvh-80px)]',
+            'overflow-y-auto',
+            'pb-24',
+            'lg:min-h-[calc(100dvh-80px)]',
+            'lg:px-6',
+            'lg:py-6',
+            'lg:pb-6',
+          ]
+    )}
+  >
+    {children ?? (
+      <div id="page-content" className="flex min-h-[300px] items-center justify-center">
+        <p className="text-center text-sm text-muted-foreground">
+          Select an option from the navigation
+        </p>
+      </div>
+    )}
+  </main>
+
+  <nav className="fixed bottom-0 left-0 right-0 pb-4 z-40 h-20 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden">
+    <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
+      {navItems.map(item => (
+        <MobileTabItem
+          key={item.href}
+          item={item}
+          active={isActivePath(pathname, item.href)}
+          unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
+        />
+      ))}
+    </div>
+  </nav>
+</div>
   );
 }

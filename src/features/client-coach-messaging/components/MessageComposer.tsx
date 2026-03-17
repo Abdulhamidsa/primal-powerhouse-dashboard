@@ -184,10 +184,10 @@ export function MessageComposer({
       ) : null}
 
       <div
-        className="flex items-end gap-2 rounded-[28px] border px-3 py-2 shadow-sm"
+        className="flex items-end gap-2 border px-3 py-2 shadow-sm"
         style={{
           borderColor: 'var(--color-border)',
-          background: 'color-mix(in srgb, var(--color-surface) 88%, white 12%)',
+          background: 'var(--color-surface)',
         }}
       >
         <label
