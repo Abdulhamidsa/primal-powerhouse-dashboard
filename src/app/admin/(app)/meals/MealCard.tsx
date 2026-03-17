@@ -45,7 +45,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
         )}
 
         <div className="absolute top-3 left-3">
-          <div className="flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)]/95 px-2 py-1 text-xs font-medium text-[var(--color-text)] backdrop-blur">
+          <div className="flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-card/70 px-2 py-1 text-xs font-medium text-[var(--color-text)] backdrop-blur">
             {meal.type === 'BREAKFAST' && <Sunrise className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
             {meal.type === 'LUNCH' && <Sun className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
             {meal.type === 'DINNER' && <Moon className="h-3.5 w-3.5 text-[var(--color-accent)]" />}

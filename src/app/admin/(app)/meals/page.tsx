@@ -10,7 +10,6 @@ import { Meal as MealType } from '@/types/meal';
 import { MealsHeader } from './MealsHeader';
 import { MealFilters } from './MealsFilter';
 import { MealFilterType, MealListItem, mealTypes } from '@/lib/meal-planner/types';
-import { StatsOverview } from './StatsOverview';
 import { MealsGrid } from './MealsGrid';
 import { DeleteMealModal } from './DeleteMealModal';
 import { useMeals } from '@/hooks/useMeals';
@@ -71,7 +70,8 @@ export default function MealsPage() {
         {/* Filter Tabs */}
         <MealFilters mealTypes={[...mealTypes]} selectedType={selectedType} onSelectType={setSelectedType} />{' '}
         {/* Stats Overview */}
-        <StatsOverview meals={meals} filteredMealsCount={filteredMeals.length} loading={loading} /> {/* Meals Grid */}
+        {/* <StatsOverview meals={meals} filteredMealsCount={filteredMeals.length} loading={loading} /> */}
+        {/* Meals Grid */}
         <MealsGrid
           meals={filteredMeals}
           loading={loading}

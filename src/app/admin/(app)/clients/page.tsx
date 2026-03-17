@@ -122,6 +122,23 @@ export default function ClientsPage() {
     setHealthMetricsResults(null);
   }, [selectedClientId]);
 
+  useEffect(() => {
+    if (!selectedClientId) return;
+
+    const action = searchParams.get('action');
+    if (action !== 'assign-meal' && action !== 'assign-workout') return;
+
+    setActiveTab('assignments');
+    setAssignModalType(action === 'assign-meal' ? 'meals' : 'videos');
+    setShowAssignModal(true);
+    setLeftPaneMode('chat');
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete('action');
+
+    router.replace(`/admin/clients?${nextParams.toString()}`, { scroll: false });
+  }, [selectedClientId, searchParams, router]);
+
   const handleSelectClient = (clientId: string) => {
     setSelectedClientId(clientId);
     setLeftPaneMode('chat');
