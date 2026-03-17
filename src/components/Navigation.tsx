@@ -297,7 +297,7 @@ export default function Navigation({
 
   <main
     className={cn(
-      'mx-auto w-full max-w-[1600px] p-6',
+      'mx-auto w-full max-w-[1600px]',
       isChatRoute
         ? [
             'h-[calc(100dvh-80px)]',
