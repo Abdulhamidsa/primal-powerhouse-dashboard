@@ -121,7 +121,7 @@ export function ChatPanel({  hideConversationList = false }: { title?: string; h
   };
 
   return (
-  <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]">
+  <div className="flex h-full flex-col overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
   <div ref={containerRef} className="flex min-h-0 flex-1 flex-col md:flex-row">
     {!hideConversationList ? (
       <aside
@@ -185,38 +185,68 @@ export function ChatPanel({  hideConversationList = false }: { title?: string; h
         }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold"
-            style={{
-              background: 'var(--color-accent-muted)',
-              color: 'var(--color-accent)',
-            }}
-          >
-            {conversation?.clientName?.slice(0, 1)?.toUpperCase() ?? '?'}
-          </div>
+ 
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="truncate text-sm font-semibold md:text-base" style={{ color: 'var(--color-text)' }}>
-                {conversation?.clientName ?? 'Select a conversation'}
-              </h2>
+ <div className="flex items-center gap-3">
+  <div
+    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] border text-sm font-semibold shadow-sm"
+    style={{
+      borderColor: 'color-mix(in srgb, var(--color-border) 78%, transparent)',
+      background:
+        'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, white 12%) 0%, var(--color-surface) 100%)',
+      color: 'var(--color-text)',
+      boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+    }}
+  >
+    {(conversation?.coachName || conversation?.clientName || '?').slice(0, 1).toUpperCase()}
+  </div>
 
-              {conversation?.unreadCount ? (
-                <span
-                  className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-                  style={{
-                    background: 'var(--color-accent-muted)',
-                    color: 'var(--color-accent)',
-                  }}
-                >
-                  {conversation.unreadCount} unread
-                </span>
-              ) : null}
-            </div>
+  <div className="min-w-0 flex-1">
+    <div className="flex items-center gap-2">
+      <h2
+        className="truncate text-[15px] font-semibold leading-none md:text-base"
+        style={{ color: 'var(--color-text)' }}
+      >
+        {conversation?.coachName || conversation?.clientName || 'Select a conversation'}
+      </h2>
 
-            <p className="truncate text-[11px] md:text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              {conversation ? 'Conversation history' : 'Choose a conversation from the list'}
+      {conversation?.unreadCount ? (
+        <span
+          className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold leading-none"
+          style={{
+            background: 'var(--color-accent)',
+            color: 'white',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
+          }}
+        >
+          {conversation.unreadCount}
+        </span>
+      ) : null}
+    </div>
+
+      {conversation ? (
+        <div className="mt-1 flex items-center gap-2">
+          {conversation.lastMessageAt ? ( 
+            <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+              Last message{' '}
+              {new Date(conversation.lastMessageAt).toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',  
+                minute: '2-digit',
+              })}
             </p>
+          ) : null}
+          <p
+            className="text-[11px] font-medium"
+            style={{ color: 'var(--color-text-muted)' }}
+          > 
+          </p>
+        </div>
+      ) : null}
+  </div>
+</div>
           </div>
         </div>
       </div>
