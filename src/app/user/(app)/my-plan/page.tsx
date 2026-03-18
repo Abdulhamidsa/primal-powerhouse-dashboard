@@ -21,6 +21,9 @@ export default function UserMyPlanPage() {
   const router = useRouter();
   const { loading, error, selectedByType, selectedTotals, baselineTotals, delta } = useMealSelectionPlanner();
 
+  const isPlanComplete =
+    selectedByType.BREAKFAST.length === 1 && selectedByType.LUNCH.length === 1 && selectedByType.DINNER.length === 1;
+
   const orderedSections = useMemo(() => {
     return TYPE_ORDER.map(type => ({
       type,
@@ -45,6 +48,13 @@ export default function UserMyPlanPage() {
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Your currently selected meals: one breakfast, lunch, dinner, and up to two snacks.
           </p>
+          {!isPlanComplete ? (
+            <p className="mt-2 text-sm font-medium text-[var(--color-accent)]">
+              Plan is not completed yet. Add breakfast, lunch, and dinner to complete it.
+            </p>
+          ) : (
+            <p className="mt-2 text-sm font-medium text-emerald-600">Plan completed.</p>
+          )}
         </section>
 
         <MealSelectionSummaryCard selected={selectedTotals} baseline={baselineTotals} delta={delta} />

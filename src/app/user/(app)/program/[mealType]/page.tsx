@@ -156,7 +156,7 @@ export default function ProgramMealTypePage() {
         ) : null}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 p-3 backdrop-blur sm:px-6">
+      <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 p-3 backdrop-blur sm:px-6 lg:bottom-0">
         <div className="mx-auto flex w-full max-w-6xl justify-end">
           <button
             type="button"

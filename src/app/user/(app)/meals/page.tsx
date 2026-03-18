@@ -157,7 +157,7 @@ export default function UserMealsPage() {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 p-3 backdrop-blur sm:px-6">
+      <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 p-3 backdrop-blur sm:px-6 lg:bottom-0">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
           <button
             type="button"
@@ -172,7 +172,7 @@ export default function UserMealsPage() {
           <button
             type="button"
             onClick={saveDraft}
-            disabled={!hasChanges || isSaving || !hasRequiredSlots}
+            disabled={!hasChanges || isSaving}
             className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-accent-translucent)] px-4 py-2 text-sm font-medium text-[var(--color-text)] disabled:opacity-60"
           >
             <Save size={14} />

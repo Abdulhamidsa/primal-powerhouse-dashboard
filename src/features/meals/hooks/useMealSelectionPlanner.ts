@@ -156,11 +156,6 @@ export function useMealSelectionPlanner() {
   }
 
   async function saveDraft() {
-    if (!hasRequiredSlots) {
-      setSaveError({ message: 'Select breakfast, lunch, and dinner before saving', status: 400 });
-      return false;
-    }
-
     if (snackCount > snackMax) {
       setSaveError({ message: 'You can select up to two snacks', status: 400 });
       return false;

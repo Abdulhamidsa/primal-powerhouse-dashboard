@@ -54,16 +54,16 @@ export const saveMealSelectionSchema = z
       }
     });
 
-    if (counters.BREAKFAST !== 1) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Exactly one breakfast is required', path: ['items'] });
+    if (counters.BREAKFAST > 1) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Maximum one breakfast allowed', path: ['items'] });
     }
 
-    if (counters.LUNCH !== 1) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Exactly one lunch is required', path: ['items'] });
+    if (counters.LUNCH > 1) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Maximum one lunch allowed', path: ['items'] });
     }
 
-    if (counters.DINNER !== 1) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Exactly one dinner is required', path: ['items'] });
+    if (counters.DINNER > 1) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Maximum one dinner allowed', path: ['items'] });
     }
 
     if (counters.SNACK > 2) {
