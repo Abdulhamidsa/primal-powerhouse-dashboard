@@ -1,13 +1,16 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppVersionInfo, applyAppUpdate, checkIfUpdateIsAvailable, getAppVersionInfo } from '@/lib/pwa-update';
 
 type AppUpdateContextValue = {
   hasUpdate: boolean;
   versionInfo: AppVersionInfo | null;
+  installedVersion: string | null;
+  isChecking: boolean;
   updateNow: () => Promise<void>;
   dismissUpdate: () => void;
+  refreshUpdateStatus: () => Promise<void>;
 };
 
 const AppUpdateContext = createContext<AppUpdateContextValue | null>(null);
@@ -18,54 +21,87 @@ const DISMISSED_KEY = 'primal-powerhouse-dismissed-version';
 export function AppUpdateProvider({ children }: { children: React.ReactNode }) {
   const [hasUpdate, setHasUpdate] = useState(false);
   const [versionInfo, setVersionInfo] = useState<AppVersionInfo | null>(null);
+  const [installedVersion, setInstalledVersion] = useState<string | null>(null);
+  const [isChecking, setIsChecking] = useState(true);
 
-  useEffect(() => {
-    const run = async () => {
+  const refreshUpdateStatus = useCallback(async () => {
+    try {
+      setIsChecking(true);
+
       const info = await getAppVersionInfo();
-      if (!info) return;
+
+      if (!info) {
+        setHasUpdate(false);
+        return;
+      }
 
       setVersionInfo(info);
 
-      const installedVersion = localStorage.getItem(STORAGE_KEY);
+      const storedInstalledVersion = localStorage.getItem(STORAGE_KEY);
       const dismissedVersion = localStorage.getItem(DISMISSED_KEY);
 
-      const swUpdateAvailable = await checkIfUpdateIsAvailable();
-      const versionChanged = installedVersion !== info.version;
+      if (!storedInstalledVersion && info.version) {
+        localStorage.setItem(STORAGE_KEY, info.version);
+        setInstalledVersion(info.version);
+        setHasUpdate(false);
+        return;
+      }
 
+      setInstalledVersion(storedInstalledVersion);
+
+      const swUpdateAvailable = await checkIfUpdateIsAvailable();
+      const versionChanged = storedInstalledVersion !== info.version;
       const shouldNotify = (swUpdateAvailable || versionChanged) && dismissedVersion !== info.version;
 
       setHasUpdate(shouldNotify);
-    };
-
-    run();
-
-    window.addEventListener('focus', run);
-    return () => window.removeEventListener('focus', run);
+    } catch (error) {
+      console.error('Failed to check for app updates:', error);
+      setHasUpdate(false);
+    } finally {
+      setIsChecking(false);
+    }
   }, []);
 
-  const updateNow = async () => {
+  useEffect(() => {
+    refreshUpdateStatus();
+
+    window.addEventListener('focus', refreshUpdateStatus);
+
+    return () => {
+      window.removeEventListener('focus', refreshUpdateStatus);
+    };
+  }, [refreshUpdateStatus]);
+
+  const updateNow = useCallback(async () => {
     if (!versionInfo) return;
 
     localStorage.setItem(STORAGE_KEY, versionInfo.version);
     localStorage.removeItem(DISMISSED_KEY);
 
-    await applyAppUpdate(versionInfo.forceClearCache);
-  };
+    setInstalledVersion(versionInfo.version);
+    setHasUpdate(false);
 
-  const dismissUpdate = () => {
+    await applyAppUpdate(versionInfo.forceClearCache);
+  }, [versionInfo]);
+
+  const dismissUpdate = useCallback(() => {
     if (!versionInfo) return;
+
     localStorage.setItem(DISMISSED_KEY, versionInfo.version);
     setHasUpdate(false);
-  };
+  }, [versionInfo]);
 
   const value = useMemo(
     () => ({
       hasUpdate,
       versionInfo,
+      installedVersion,
+      isChecking,
       updateNow,
       dismissUpdate,
+      refreshUpdateStatus,
     }),
-    [hasUpdate, versionInfo]
+    [hasUpdate, versionInfo, installedVersion, isChecking, updateNow, dismissUpdate, refreshUpdateStatus]
   );
 
   return <AppUpdateContext.Provider value={value}>{children}</AppUpdateContext.Provider>;

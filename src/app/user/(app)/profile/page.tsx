@@ -249,7 +249,11 @@ export default function UserProfilePage() {
               window.alert('Profile picture updated successfully.');
             }}
           />
-          <UpdateAppButton />
+          <SettingsGroup>
+  <div className="ml-16 h-px bg-border/60" />
+  <UpdateAppButton />
+
+</SettingsGroup>
         </div>
       </div>
     </div>
