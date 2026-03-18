@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart2, Utensils, Users, Flame, User, Shield, MessageSquare, ClipboardCheck } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, User, Shield, MessageSquare, ClipboardCheck, CalendarCheck2 } from 'lucide-react';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
 
@@ -63,6 +63,12 @@ const userNavItems: NavItem[] = [
     href: '/user/dashboard',
     icon: BarChart2,
     description: 'Overview',
+  },
+  {
+    name: 'My Plan',
+    href: '/user/my-plan',
+    icon: CalendarCheck2,
+    description: 'Selected meals',
   },
   {
     name: 'Check-Ins',

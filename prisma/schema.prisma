@@ -93,6 +93,7 @@ model Client {
   dailyNutritionLogs DailyNutritionLog[]
   dailyTrainingLogs DailyTrainingLog[]
   dailyCheckIns     DailyCheckIn[]
+  mealSelectionSet  UserMealSelectionSet?
   privacyExportJobs PrivacyExportJob[]
   deletionRequests  DeletionRequest[]
   conversations     Conversation[]
@@ -192,6 +193,7 @@ model Meal {
   client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   mealAssignments MealAssignment[]
+  mealSelectionItems UserMealSelectionItem[]
 
   @@map("meals")
 }
@@ -308,7 +310,42 @@ model MealAssignment {
   mealId String
   meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
 
+  selectionItems UserMealSelectionItem[]
+
   @@map("meal_assignments")
+}
+
+model UserMealSelectionSet {
+  id        String   @id @default(cuid())
+  clientId  String   @unique
+  name      String?  @default("Current")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items  UserMealSelectionItem[]
+
+  @@index([clientId])
+  @@map("user_meal_selection_sets")
+}
+
+model UserMealSelectionItem {
+  id                     String   @id @default(cuid())
+  selectionSetId         String
+  mealType               MealType
+  slotIndex              Int      @default(0)
+  mealId                 String
+  sourceMealAssignmentId String?
+  createdAt              DateTime @default(now())
+
+  selectionSet UserMealSelectionSet @relation(fields: [selectionSetId], references: [id], onDelete: Cascade)
+  meal         Meal                 @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  sourceMealAssignment MealAssignment? @relation(fields: [sourceMealAssignmentId], references: [id], onDelete: SetNull)
+
+  @@unique([selectionSetId, mealType, slotIndex])
+  @@index([selectionSetId])
+  @@index([mealType])
+  @@map("user_meal_selection_items")
 }
 
 model VideoAssignment {
