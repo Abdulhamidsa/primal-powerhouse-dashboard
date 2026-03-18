@@ -2,11 +2,15 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealSelectionSummaryCard } from '@/features/meals/components/MealSelectionSummaryCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
 import type { MealTypeKey } from '@/features/meals/types/mealSelection.types';
+
+const fallbackImage =
+  'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
 const TYPE_LABEL: Record<MealTypeKey, string> = {
   BREAKFAST: 'Breakfast',
@@ -57,7 +61,7 @@ export default function UserMyPlanPage() {
           )}
         </section>
 
-        <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} />
+        <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} subtle />
 
         {loading ? <SkeletonMealGrid /> : null}
 
@@ -81,19 +85,32 @@ export default function UserMyPlanPage() {
                     {section.items.map(item => (
                       <article
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}`}
-                        className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                        className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]"
                       >
-                        <p className="text-sm font-semibold text-[var(--color-text)]">{item.meal.name}</p>
-                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                          {item.meal.calories} kcal • P {item.meal.protein}g • C {item.meal.carbs}g • F {item.meal.fat}g
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => router.push(`/user/meals/${item.meal.id}`)}
-                          className="mt-3 rounded-xl border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
-                        >
-                          Open details
-                        </button>
+                        <div className="relative h-32 w-full">
+                          <Image
+                            src={item.meal.imageUrl?.trim() ? item.meal.imageUrl : fallbackImage}
+                            alt={item.meal.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
+                        </div>
+
+                        <div className="p-4">
+                          <p className="text-sm font-semibold text-[var(--color-text)]">{item.meal.name}</p>
+                          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                            {item.meal.calories} kcal • P {item.meal.protein}g • C {item.meal.carbs}g • F {item.meal.fat}g
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/user/meals/${item.meal.id}`)}
+                            className="mt-3 rounded-xl border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+                          >
+                            Open details
+                          </button>
+                        </div>
                       </article>
                     ))}
                   </div>
