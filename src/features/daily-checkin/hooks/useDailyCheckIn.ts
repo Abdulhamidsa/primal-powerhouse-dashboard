@@ -54,9 +54,38 @@ export function useUpsertDailyCheckIn() {
   const { mutate } = useSWRConfig();
 
   const submit = async (dayDate: string, payload: DailyCheckInPayload) => {
-    const result = await upsertDailyCheckInCurrent(dayDate, payload);
+    const key = buildDailyCheckInCurrentUrl(dayDate);
 
-    await Promise.all([mutate(buildDailyCheckInCurrentUrl(dayDate)), mutate(DAILY_CHECK_IN_INSIGHTS_URL)]);
+    const result = await mutate<DailyCheckInCurrentResponse>(
+      key,
+      async (currentData?: DailyCheckInCurrentResponse) => {
+        const serverResult = await upsertDailyCheckInCurrent(dayDate, payload);
+
+        return {
+          dayDate,
+          entry: serverResult.entry ?? currentData?.entry ?? null,
+        };
+      },
+      {
+        optimisticData: (currentData?: DailyCheckInCurrentResponse): DailyCheckInCurrentResponse => ({
+          dayDate,
+          entry: currentData?.entry
+            ? {
+                ...currentData.entry,
+                ...payload,
+              }
+            : null,
+        }),
+        rollbackOnError: true,
+        populateCache: true,
+        revalidate: false,
+      }
+    );
+
+    await Promise.all([
+      mutate(key),
+      mutate(DAILY_CHECK_IN_INSIGHTS_URL),
+    ]);
 
     return result;
   };

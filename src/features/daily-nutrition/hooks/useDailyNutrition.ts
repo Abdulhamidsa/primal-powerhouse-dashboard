@@ -41,12 +41,41 @@ export function useUpsertDailyNutrition() {
   const { mutate } = useSWRConfig();
 
   const submit = async (dayDate: string, status: DailyNutritionStatus, note?: string | null) => {
-    const result = await upsertDailyNutritionCurrent(dayDate, status, note);
+    const nutritionKey = buildDailyNutritionCurrentUrl(dayDate);
+    const checkInKey = buildDailyCheckInCurrentUrl(dayDate);
+
+    const result = await mutate(
+      nutritionKey,
+      async (currentData: any) => {
+        const serverResult = await upsertDailyNutritionCurrent(dayDate, status, note);
+        return {
+          ...currentData,
+          entry: {
+            ...currentData?.entry,
+            ...serverResult.entry,
+          },
+        };
+      },
+      {
+        optimisticData: (currentData: any) => ({
+          ...currentData,
+          entry: {
+            ...currentData?.entry,
+            status,
+            note: note ?? currentData?.entry?.note ?? null,
+          },
+        }),
+        rollbackOnError: true,
+        revalidate: false,
+        populateCache: true,
+      }
+    );
+
     await Promise.all([
-      mutate(buildDailyNutritionCurrentUrl(dayDate)),
-      mutate(buildDailyCheckInCurrentUrl(dayDate)),
+      mutate(checkInKey),
       mutate(DAILY_CHECK_IN_INSIGHTS_URL),
     ]);
+
     return result;
   };
 
