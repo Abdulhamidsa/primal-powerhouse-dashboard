@@ -1,5 +1,5 @@
 const APP_CACHE_PREFIX = 'primal-powerhouse';
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v1.0.45';
 const CACHE_NAME = `${APP_CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];

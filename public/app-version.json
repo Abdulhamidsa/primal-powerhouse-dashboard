@@ -1,10 +1,8 @@
 {
-  "version": "1.0.4",
-  "title": "Meal Planner Update",
-  "notes": [
-    "Fixed stale meal detail rendering",
-    "Improved app refresh behavior",
-    "Better offline cache cleanup"
+  "version": "1.0.45",
+  "title": "Dashboard Update",
+"notes": [
+    "You can now check for updates from Profile Settings. If a new version is available, the app will refresh automatically."
   ],
   "forceClearCache": true
 }
