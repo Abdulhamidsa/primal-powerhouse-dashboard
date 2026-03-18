@@ -1,0 +1,10 @@
+{
+  "version": "1.0.4",
+  "title": "Meal Planner Update",
+  "notes": [
+    "Fixed stale meal detail rendering",
+    "Improved app refresh behavior",
+    "Better offline cache cleanup"
+  ],
+  "forceClearCache": true
+}

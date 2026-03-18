@@ -348,5 +348,6 @@ all .md files except README.md
 *.js
 !prisma-generate-safe.js
 
-## json files except package.json and prisma files
+## json files except package.json and prisma files exept those this file app-version.json add it below
 *.json
+!app-version.json
