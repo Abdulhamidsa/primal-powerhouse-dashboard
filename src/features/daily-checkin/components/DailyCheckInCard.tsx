@@ -1,21 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CheckCircle2, ChevronDown, Dumbbell, Salad } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Dumbbell, Salad,Flame   } from 'lucide-react';
 import { DailyCompletionRing } from '@/features/daily-checkin/components/DailyCompletionRing';
 import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { useDailyCheckInToday, useUpsertDailyCheckIn } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { useDailyNutritionToday, useUpsertDailyNutrition } from '@/features/daily-nutrition/hooks/useDailyNutrition';
 import { useDailyTrainingToday, useUpsertDailyTraining } from '@/features/daily-training/hooks/useDailyTraining';
-import type { DailyCheckInCompliance, DailyCheckInEnergy } from '@/features/daily-checkin/types/dailyCheckIn.types';
+import type {  DailyCheckInEnergy } from '@/features/daily-checkin/types/dailyCheckIn.types';
 import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
-const COMPLIANCE_OPTIONS: Array<{ value: DailyCheckInCompliance; label: string }> = [
-  { value: 'OFF_PLAN', label: 'Off Plan' },
-  { value: 'PARTIAL', label: 'Partial' },
-  { value: 'ON_PLAN', label: 'On Plan' },
-];
+// const COMPLIANCE_OPTIONS: Array<{ value: DailyCheckInCompliance; label: string }> = [
+//   { value: 'OFF_PLAN', label: 'Off Plan' },
+//   { value: 'PARTIAL', label: 'Partial' },
+//   { value: 'ON_PLAN', label: 'On Plan' },
+// ];
 
 const ENERGY_OPTIONS: Array<{ value: DailyCheckInEnergy; label: string }> = [
   { value: 'LOW', label: 'Low' },
@@ -65,17 +65,17 @@ export function DailyCheckInCard() {
 
   const anyLoading = isLoading || nutritionLoading || trainingLoading;
 
-  async function saveCompliance(compliance: DailyCheckInCompliance) {
-    try {
-      setSavingField('compliance');
-      setErrorMessage(null);
-      await submit(dayDate, { compliance });
-    } catch {
-      setErrorMessage('Could not save. Please try again.');
-    } finally {
-      setSavingField(null);
-    }
-  }
+  // async function saveCompliance(compliance: DailyCheckInCompliance) {
+  //   try {
+  //     setSavingField('compliance');
+  //     setErrorMessage(null);
+  //     await submit(dayDate, { compliance });
+  //   } catch {
+  //     setErrorMessage('Could not save. Please try again.');
+  //   } finally {
+  //     setSavingField(null);
+  //   }
+  // }
 
   async function saveEnergy(energy: DailyCheckInEnergy) {
     try {
@@ -119,7 +119,7 @@ export function DailyCheckInCard() {
       <button
         type="button"
         onClick={() => setIsExpanded(prev => !prev)}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+        className="flex w-full items-center justify-between gap-4 px-2 py-2 text-left"
         aria-expanded={isExpanded}
         aria-label="Toggle daily check-in details"
       >
@@ -149,7 +149,7 @@ export function DailyCheckInCard() {
             {/* Sections — iOS-style grouped rows */}
             <div className="divide-y divide-border/50">
               {/* Compliance */}
-              <div className="px-5 py-4">
+              {/* <div className="px-2 py-2">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-sm font-medium text-foreground">Compliance</p>
                   {entry?.compliance && (
@@ -184,15 +184,17 @@ export function DailyCheckInCard() {
                     );
                   })}
                 </div>
-              </div>
+              </div> */}
 
               {/* Energy */}
-              <div className="px-5 py-4">
-                <div className="mb-3 flex items-center justify-between">
+              <div className="px-2 py-2">
+                <div className="mb-3 flex items-center gap-2">
+                                  <Flame  size={14} className="text-muted-foreground" />
+
                   <p className="text-sm font-medium text-foreground">Energy</p>
-                  {entry?.energy && (
+                  {/* {entry?.energy && (
                     <span className="text-xs font-semibold text-accent capitalize">{entry.energy.toLowerCase()}</span>
-                  )}
+                  )} */}
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
                   {ENERGY_OPTIONS.map(option => {
@@ -219,11 +221,11 @@ export function DailyCheckInCard() {
               </div>
 
               {/* Nutrition */}
-              <div className="px-5 py-4">
+              <div className="px-2 py-2">
                 <div className="mb-3 flex items-center gap-2">
                   <Salad size={14} className="text-muted-foreground" />
                   <p className="text-sm font-medium text-foreground">Nutrition</p>
-                  {nutritionEntry?.status && (
+                  {/* {nutritionEntry?.status && (
                     <span className="ml-auto text-xs font-semibold text-accent">
                       {nutritionEntry.status === 'ON_PLAN'
                         ? 'On Plan'
@@ -231,7 +233,7 @@ export function DailyCheckInCard() {
                           ? 'Partial'
                           : 'Off Plan'}
                     </span>
-                  )}
+                  )} */}
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
                   {NUTRITION_OPTIONS.map(option => {
@@ -258,15 +260,15 @@ export function DailyCheckInCard() {
               </div>
 
               {/* Training */}
-              <div className="px-5 py-4">
+              <div className="px-2 py-2">
                 <div className="mb-3 flex items-center gap-2">
                   <Dumbbell size={14} className="text-muted-foreground" />
                   <p className="text-sm font-medium text-foreground">Training</p>
-                  {trainingEntry?.status && (
+                  {/* {trainingEntry?.status && (
                     <span className="ml-auto text-xs font-semibold text-accent capitalize">
                       {trainingEntry.status.toLowerCase()}
                     </span>
-                  )}
+                  )} */}
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
                   {TRAINING_OPTIONS.map(option => {
@@ -294,18 +296,21 @@ export function DailyCheckInCard() {
             </div>
 
             {/* Footer status */}
-            <div className="px-5 py-3.5">
-              {errorMessage ? (
-                <p className="text-xs text-destructive">{errorMessage}</p>
-              ) : completionData.isComplete ? (
-                <p className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                  <CheckCircle2 size={14} />
-                  All done for today.
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">{completionData.pct}% complete for today.</p>
-              )}
-            </div>
+<div className="px-5 py-3.5">
+  {errorMessage ? (
+    <p className="text-xs text-[var(--color-accent)]">
+      {errorMessage}
+    </p>
+  ) : completionData.isComplete ? (
+    <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)]">
+      <CheckCircle2 size={14} className="text-[var(--color-accent)]" />
+      All done for today.
+    </p>
+  ) : (
+    <p className="text-xs text-[var(--color-text-muted)]">
+{completionData.pct}% completed    </p>
+  )}
+</div>
           </div>
         </div>
       </div>
