@@ -46,6 +46,7 @@ export default function ClientsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const layoutRef = useRef<HTMLElement | null>(null);
+  const detailPanelRef = useRef<HTMLElement | null>(null);
 
   const [leftPaneMode, setLeftPaneMode] = useState<LeftPaneMode>('list');
   const [leftPaneWidth, setLeftPaneWidth] = useState<number | null>(null);
@@ -131,7 +132,6 @@ export default function ClientsPage() {
     setActiveTab('assignments');
     setAssignModalType(action === 'assign-meal' ? 'meals' : 'videos');
     setShowAssignModal(true);
-    setLeftPaneMode('chat');
 
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.delete('action');
@@ -141,11 +141,17 @@ export default function ClientsPage() {
 
   const handleSelectClient = (clientId: string) => {
     setSelectedClientId(clientId);
-    setLeftPaneMode('chat');
+    setLeftPaneMode('list');
 
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set('clientId', clientId);
     router.replace(`/admin/clients?${nextParams.toString()}`, { scroll: false });
+
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      window.requestAnimationFrame(() => {
+        detailPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
   };
 
   const handleBackToList = () => {
@@ -242,9 +248,12 @@ export default function ClientsPage() {
         </div>
       </header>
 
-      <section ref={layoutRef} className="h-[calc(100vh-12rem)] min-h-[620px] flex flex-col gap-4 lg:flex-row lg:gap-0">
+      <section
+        ref={layoutRef}
+        className="flex min-h-0 flex-col gap-4 lg:h-[calc(100vh-12rem)] lg:min-h-[620px] lg:flex-row lg:gap-0"
+      >
         <aside
-          className="rounded-2xl border overflow-scroll shrink-0 lg:rounded-r-none lg:min-w-[320px] lg:max-w-[420px] lg:w-[var(--clients-left-pane-width)]"
+          className="max-h-[44vh] shrink-0 overflow-hidden rounded-2xl border lg:max-h-none lg:rounded-r-none lg:min-w-[320px] lg:max-w-[420px] lg:w-[var(--clients-left-pane-width)]"
           style={{
             borderColor: 'var(--color-border)',
             background: 'var(--color-surface)',
@@ -311,7 +320,8 @@ export default function ClientsPage() {
         />
 
         <main
-          className="rounded-2xl border overflow-hidden flex flex-col flex-1 lg:rounded-l-none"
+          ref={detailPanelRef}
+          className="min-h-[56vh] flex-1 overflow-hidden rounded-2xl border flex flex-col lg:min-h-0 lg:rounded-l-none"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
         >
           {isClientLoading ? (

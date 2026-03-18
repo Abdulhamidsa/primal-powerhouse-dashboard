@@ -18,7 +18,7 @@ export function ClientListPane({
   onSelectClientAction: (clientId: string) => void;
 }) {
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
