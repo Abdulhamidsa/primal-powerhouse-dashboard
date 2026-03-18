@@ -10,11 +10,13 @@ export function MealOptionCard({
   selected,
   onSelect,
   disabled,
+  onPreview,
 }: {
   option: MealOption;
   selected: boolean;
   onSelect: () => void;
   disabled?: boolean;
+  onPreview?: () => void;
 }) {
   const totalTime = (option.meal.prepTime ?? 0) + (option.meal.cookTime ?? 0);
 
@@ -27,7 +29,7 @@ export function MealOptionCard({
           : 'border-[var(--color-border)] hover:border-[var(--color-accent-muted)]',
       ].join(' ')}
     >
-      <div className="relative h-36 w-full">
+      <button type="button" onClick={onPreview} disabled={!onPreview} className="relative h-36 w-full text-left disabled:cursor-default">
         <Image
           src={option.meal.imageUrl?.trim() ? option.meal.imageUrl : fallbackImage}
           alt={option.meal.name}
@@ -36,16 +38,16 @@ export function MealOptionCard({
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
-      </div>
+      </button>
 
       <div className="space-y-3 p-4">
-        <div>
+        <button type="button" onClick={onPreview} disabled={!onPreview} className="block w-full text-left disabled:cursor-default">
           <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text)]">{option.meal.name}</p>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             {option.meal.calories} kcal • P {option.meal.protein}g • C {option.meal.carbs}g • F {option.meal.fat}g
           </p>
           {totalTime > 0 ? <p className="text-xs text-[var(--color-text-muted)]">{totalTime} min total</p> : null}
-        </div>
+        </button>
 
         <button
           type="button"

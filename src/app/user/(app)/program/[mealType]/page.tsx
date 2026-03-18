@@ -1,15 +1,19 @@
 'use client';
 
-import { useMemo } from 'react';
+import Image from 'next/image';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock3, X } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
 import type { MealTypeKey } from '@/features/meals/types/mealSelection.types';
 import type { ApiError } from '@/lib/request';
 import type { MealAssignment } from '@/app/user/(app)/meals';
+
+const fallbackImage =
+  'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
 const TYPE_MAP: Record<string, MealTypeKey> = {
   breakfast: 'BREAKFAST',
@@ -28,6 +32,7 @@ const TYPE_TITLE: Record<MealTypeKey, string> = {
 export default function ProgramMealTypePage() {
   const params = useParams();
   const router = useRouter();
+  const [previewMeal, setPreviewMeal] = useState<MealAssignment['meal'] | null>(null);
 
   const mealTypeParam = typeof params?.mealType === 'string' ? params.mealType : '';
   const mealType = TYPE_MAP[mealTypeParam.toLowerCase()];
@@ -74,6 +79,16 @@ export default function ProgramMealTypePage() {
 
   const loading = allMealsSWR.isLoading;
   const error = allMealsSWR.error;
+
+  const mealLookup = useMemo(() => {
+    const byId: Record<string, MealAssignment['meal']> = {};
+
+    (allMealsSWR.data ?? []).forEach(assignment => {
+      byId[assignment.meal.id] = assignment.meal;
+    });
+
+    return byId;
+  }, [allMealsSWR.data]);
 
   if (!mealType) {
     return (
@@ -149,12 +164,89 @@ export default function ProgramMealTypePage() {
                 option={option}
                 selected={isSelected(option.mealType, option.meal.id)}
                 onSelect={() => selectOption(option)}
+                onPreview={() => setPreviewMeal(mealLookup[option.meal.id] ?? null)}
                 disabled={mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull}
               />
             ))}
           </div>
         ) : null}
       </div>
+
+      {previewMeal ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/55 p-4" onClick={() => setPreviewMeal(null)}>
+          <section
+            className="max-h-[88vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)]"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="relative h-52 w-full">
+              <Image
+                src={previewMeal.imageUrl?.trim() ? previewMeal.imageUrl : fallbackImage}
+                alt={previewMeal.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 560px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+              <button
+                type="button"
+                onClick={() => setPreviewMeal(null)}
+                className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur"
+                aria-label="Close preview"
+              >
+                <X size={16} />
+              </button>
+              <div className="absolute bottom-3 left-3 right-3">
+                <h2 className="text-lg font-semibold text-white">{previewMeal.name}</h2>
+                <p className="mt-1 text-xs text-white/85">
+                  {previewMeal.calories} kcal • P {previewMeal.protein}g • C {previewMeal.carbs}g • F {previewMeal.fat}g
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
+                {(previewMeal.prepTime ?? 0) + (previewMeal.cookTime ?? 0) > 0 ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1">
+                    <Clock3 size={12} />
+                    {(previewMeal.prepTime ?? 0) + (previewMeal.cookTime ?? 0)} min
+                  </span>
+                ) : null}
+                {previewMeal.category ? (
+                  <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1">
+                    {previewMeal.category}
+                  </span>
+                ) : null}
+                {previewMeal.difficulty ? (
+                  <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1">
+                    {previewMeal.difficulty}
+                  </span>
+                ) : null}
+              </div>
+
+              {previewMeal.description ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--color-text)]">About</h3>
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">{previewMeal.description}</p>
+                </div>
+              ) : null}
+
+              {previewMeal.ingredients ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--color-text)]">Ingredients</h3>
+                  <p className="mt-1 whitespace-pre-line text-sm text-[var(--color-text-muted)]">{previewMeal.ingredients}</p>
+                </div>
+              ) : null}
+
+              {previewMeal.instructions ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--color-text)]">Instructions</h3>
+                  <p className="mt-1 whitespace-pre-line text-sm text-[var(--color-text-muted)]">{previewMeal.instructions}</p>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 p-3 backdrop-blur sm:px-6 lg:bottom-0">
         <div className="mx-auto flex w-full max-w-6xl justify-end">
