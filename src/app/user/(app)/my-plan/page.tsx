@@ -105,7 +105,7 @@ export default function UserMyPlanPage() {
 
   return (
     <div className="min-h-screen px-4 py-5 md:px-6 md:py-6">
-      <div className="mx-auto max-w-6xl space-y-5 pb-28">
+      <div className={`mx-auto max-w-6xl space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
         <button
           type="button"
           onClick={() => router.push('/user/program')}
@@ -255,7 +255,7 @@ export default function UserMyPlanPage() {
                               onClick={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
                               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-accent-translucent)] px-3 py-2.5 text-sm font-medium text-[var(--color-text)] transition-opacity hover:opacity-90"
                             >
-                              Swap
+                              Swipe
                               <ChevronRight size={16} />
                             </button>
 
@@ -286,7 +286,7 @@ export default function UserMyPlanPage() {
             >
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-[var(--color-text)]">Swap {TYPE_LABEL[swapState.mealType]}</h2>
+                  <h2 className="text-lg font-semibold text-[var(--color-text)]">Swipe {TYPE_LABEL[swapState.mealType]}</h2>
                   <p className="mt-1 text-sm text-[var(--color-text-muted)]">Current selection: {swapState.currentMealName}</p>
                 </div>
 
@@ -305,19 +305,28 @@ export default function UserMyPlanPage() {
                   No alternatives available for this meal type.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {swapOptions.map(option => (
-                    <MealOptionCard
-                      key={option.sourceAssignmentId}
-                      option={option}
-                      selected={isSelected(option.mealType, option.meal.id)}
-                      onSelect={() => handleSelectReplacement(option)}
-                      onPreview={() => {
-                        handleSelectReplacement(option);
-                      }}
-                      disabled={option.mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull}
-                    />
-                  ))}
+                <div className="space-y-3">
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    Swipe sideways to browse all {TYPE_LABEL[swapState.mealType].toLowerCase()} options ({swapOptions.length}).
+                  </p>
+
+                  <div className="-mx-1 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex snap-x snap-mandatory gap-3 px-1">
+                      {swapOptions.map(option => (
+                        <div key={option.sourceAssignmentId} className="w-[85vw] max-w-[330px] shrink-0 snap-start">
+                          <MealOptionCard
+                            option={option}
+                            selected={isSelected(option.mealType, option.meal.id)}
+                            onSelect={() => handleSelectReplacement(option)}
+                            onPreview={() => {
+                              handleSelectReplacement(option);
+                            }}
+                            disabled={option.mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </section>
@@ -325,7 +334,8 @@ export default function UserMyPlanPage() {
         </div>
       ) : null}
 
-      <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 p-3 backdrop-blur-xl sm:px-6 lg:bottom-0">
+      {hasChanges ? (
+        <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 p-3 backdrop-blur-xl sm:px-6 lg:bottom-0">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
           <div className="hidden items-center gap-2 md:flex">
             {isPlanComplete ? (
@@ -363,7 +373,8 @@ export default function UserMyPlanPage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }
