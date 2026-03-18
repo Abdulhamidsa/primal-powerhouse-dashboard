@@ -19,7 +19,7 @@ const TYPE_ORDER: MealTypeKey[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
 export default function UserMyPlanPage() {
   const router = useRouter();
-  const { loading, error, selectedByType, selectedTotals, baselineTotals, delta } = useMealSelectionPlanner();
+  const { loading, error, selectedByType, selectedTotals, coachTargetTotals, delta } = useMealSelectionPlanner();
 
   const isPlanComplete =
     selectedByType.BREAKFAST.length === 1 && selectedByType.LUNCH.length === 1 && selectedByType.DINNER.length === 1;
@@ -57,7 +57,7 @@ export default function UserMyPlanPage() {
           )}
         </section>
 
-        <MealSelectionSummaryCard selected={selectedTotals} baseline={baselineTotals} delta={delta} />
+        <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} />
 
         {loading ? <SkeletonMealGrid /> : null}
 

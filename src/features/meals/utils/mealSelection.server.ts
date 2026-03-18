@@ -2,7 +2,9 @@ import { prisma } from '@/lib/prisma';
 import {
   buildBaselineSelection,
   computeSelectionTotals,
+  roundMacroTotals,
   type MealOption,
+  type MealSelectionMacroTotals,
   type MealTypeKey,
   type UserSelectionItem,
 } from '@/features/meals/utils/mealSelection';
@@ -137,5 +139,51 @@ export function hydrateSelectionAgainstOptions(
   return hydrated.sort((a, b) => {
     if (a.mealType === b.mealType) return a.slotIndex - b.slotIndex;
     return a.mealType.localeCompare(b.mealType);
+  });
+}
+
+function parseGoalMacros(goalMacros: string | null): { protein: number; carbs: number; fat: number } | null {
+  if (!goalMacros) return null;
+
+  try {
+    const parsed = JSON.parse(goalMacros) as Record<string, unknown>;
+    const protein = Number(parsed.protein);
+    const carbs = Number(parsed.carbs);
+    const fat = Number(parsed.fat);
+
+    if ([protein, carbs, fat].some(value => Number.isNaN(value))) {
+      return null;
+    }
+
+    return { protein, carbs, fat };
+  } catch {
+    return null;
+  }
+}
+
+export async function getClientCoachMacroTargets(clientId: string): Promise<MealSelectionMacroTotals | null> {
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    select: {
+      goalCalories: true,
+      goalMacros: true,
+    },
+  });
+
+  if (!client) return null;
+
+  const goalMacros = parseGoalMacros(client.goalMacros);
+  if (!goalMacros) return null;
+
+  const goalCalories =
+    typeof client.goalCalories === 'number'
+      ? client.goalCalories
+      : goalMacros.protein * 4 + goalMacros.carbs * 4 + goalMacros.fat * 9;
+
+  return roundMacroTotals({
+    calories: goalCalories,
+    protein: goalMacros.protein,
+    carbs: goalMacros.carbs,
+    fat: goalMacros.fat,
   });
 }

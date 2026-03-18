@@ -48,16 +48,17 @@ export function useMealSelectionPlanner() {
   const optionsByType = optionsSWR.data?.optionsByType;
 
   const baselineTotals = selectionSWR.data?.baseline.totals ?? optionsSWR.data?.baselineTotals ?? emptyTotals();
+  const coachTargetTotals = selectionSWR.data?.coachTargets ?? optionsSWR.data?.coachTargets ?? baselineTotals;
   const selectedTotals = useMemo(() => totalsFromItems(draftItems), [draftItems]);
 
   const delta = useMemo(
     () => ({
-      calories: selectedTotals.calories - baselineTotals.calories,
-      protein: selectedTotals.protein - baselineTotals.protein,
-      carbs: selectedTotals.carbs - baselineTotals.carbs,
-      fat: selectedTotals.fat - baselineTotals.fat,
+      calories: selectedTotals.calories - coachTargetTotals.calories,
+      protein: selectedTotals.protein - coachTargetTotals.protein,
+      carbs: selectedTotals.carbs - coachTargetTotals.carbs,
+      fat: selectedTotals.fat - coachTargetTotals.fat,
     }),
-    [selectedTotals, baselineTotals]
+    [selectedTotals, coachTargetTotals]
   );
 
   const selectedByType = useMemo(() => {
@@ -202,6 +203,7 @@ export function useMealSelectionPlanner() {
     selectedByType,
     selectedTotals,
     baselineTotals,
+    coachTargetTotals,
     delta,
     snackCount,
     snackMax,

@@ -40,6 +40,7 @@ export type MealOptionsResponse = {
   optionsByType: Record<MealTypeKey, MealOption[]>;
   baselineSelection: SelectionItem[];
   baselineTotals: MealMacroTotals;
+  coachTargets?: MealMacroTotals | null;
   constraints: {
     required: MealTypeKey[];
     snackMax: number;
@@ -56,6 +57,7 @@ export type MealSelectionResponse = {
     items: SelectionItem[];
     totals: MealMacroTotals;
   };
+  coachTargets?: MealMacroTotals | null;
   selectedTotals: MealMacroTotals;
   delta: MealMacroTotals;
   hasSavedSelection?: boolean;

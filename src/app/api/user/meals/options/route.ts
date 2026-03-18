@@ -1,7 +1,11 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import { buildBaselineFromOptions, getClientCoachAssignedMealOptions } from '@/features/meals/utils/mealSelection.server';
+import {
+  buildBaselineFromOptions,
+  getClientCoachAssignedMealOptions,
+  getClientCoachMacroTargets,
+} from '@/features/meals/utils/mealSelection.server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,11 +16,13 @@ export async function GET(request: NextRequest) {
 
     const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
     const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
+    const coachTargets = await getClientCoachMacroTargets(user.userId);
 
     return jsonWithCache({
       optionsByType,
       baselineSelection,
       baselineTotals,
+      coachTargets,
       constraints: {
         required: ['BREAKFAST', 'LUNCH', 'DINNER'],
         snackMax: 2,

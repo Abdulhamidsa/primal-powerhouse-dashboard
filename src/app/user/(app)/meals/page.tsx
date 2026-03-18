@@ -26,7 +26,7 @@ export default function UserMealsPage() {
     optionsByType,
     selectedByType,
     selectedTotals,
-    baselineTotals,
+    coachTargetTotals,
     delta,
     snackCount,
     snackMax,
@@ -68,7 +68,7 @@ export default function UserMealsPage() {
           </div>
         </section>
 
-        <MealSelectionSummaryCard selected={selectedTotals} baseline={baselineTotals} delta={delta} />
+        <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} />
 
         <section className="space-y-3">
           <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

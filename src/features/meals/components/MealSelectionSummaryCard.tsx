@@ -18,11 +18,11 @@ function formatDelta(value: number, suffix = '') {
 
 export function MealSelectionSummaryCard({
   selected,
-  baseline,
+  target,
   delta,
 }: {
   selected: MealMacroTotals;
-  baseline: MealMacroTotals;
+  target: MealMacroTotals;
   delta: MealMacroTotals;
 }) {
   return (
@@ -30,15 +30,15 @@ export function MealSelectionSummaryCard({
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-[var(--color-text)]">Nutrition Match</h2>
-          <p className="text-xs text-[var(--color-text-muted)]">Selected vs coach-assigned baseline</p>
+          <p className="text-xs text-[var(--color-text-muted)]">Selected vs coach target macros</p>
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Metric label="Calories" selected={selected.calories} baseline={baseline.calories} delta={delta.calories} />
-        <Metric label="Protein" selected={selected.protein} baseline={baseline.protein} delta={delta.protein} unit="g" />
-        <Metric label="Carbs" selected={selected.carbs} baseline={baseline.carbs} delta={delta.carbs} unit="g" />
-        <Metric label="Fat" selected={selected.fat} baseline={baseline.fat} delta={delta.fat} unit="g" />
+        <Metric label="Calories" selected={selected.calories} target={target.calories} delta={delta.calories} />
+        <Metric label="Protein" selected={selected.protein} target={target.protein} delta={delta.protein} unit="g" />
+        <Metric label="Carbs" selected={selected.carbs} target={target.carbs} delta={delta.carbs} unit="g" />
+        <Metric label="Fat" selected={selected.fat} target={target.fat} delta={delta.fat} unit="g" />
       </div>
     </section>
   );
@@ -47,13 +47,13 @@ export function MealSelectionSummaryCard({
 function Metric({
   label,
   selected,
-  baseline,
+  target,
   delta,
   unit = '',
 }: {
   label: string;
   selected: number;
-  baseline: number;
+  target: number;
   delta: number;
   unit?: string;
 }) {
@@ -63,7 +63,7 @@ function Metric({
     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
       <p className="text-[11px] text-[var(--color-text-muted)]">{label}</p>
       <p className="mt-1 text-lg font-semibold text-[var(--color-text)]">{selected}{unit}</p>
-      <p className="text-[11px] text-[var(--color-text-muted)]">Baseline {baseline}{unit}</p>
+      <p className="text-[11px] text-[var(--color-text-muted)]">Target {target}{unit}</p>
       <p className={`mt-1 text-[11px] font-medium ${toneClasses(tone)}`}>{formatDelta(delta, unit)}</p>
     </div>
   );

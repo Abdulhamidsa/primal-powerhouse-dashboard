@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { invalidateMealCaches } from '@/lib/cache-tags';
 import {
   buildBaselineFromOptions,
+  getClientCoachMacroTargets,
   getClientCoachAssignedMealOptions,
   hydrateSelectionAgainstOptions,
 } from '@/features/meals/utils/mealSelection.server';
@@ -20,6 +21,8 @@ export async function GET(request: NextRequest) {
 
     const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
     const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
+    const coachTargets = await getClientCoachMacroTargets(user.userId);
+    const comparisonTotals = coachTargets ?? baselineTotals;
 
     const selectionSet = await (prisma as any).userMealSelectionSet.findUnique({
       where: { clientId: user.userId },
@@ -43,8 +46,9 @@ export async function GET(request: NextRequest) {
         items: baselineSelection,
         totals: baselineTotals,
       },
+      coachTargets,
       selectedTotals,
-      delta: macroDelta(selectedTotals, baselineTotals),
+      delta: macroDelta(selectedTotals, comparisonTotals),
       hasSavedSelection: Boolean(selectionSet),
     });
   } catch (error) {
@@ -118,6 +122,8 @@ export async function PUT(request: NextRequest) {
     });
 
     const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
+  const coachTargets = await getClientCoachMacroTargets(user.userId);
+  const comparisonTotals = coachTargets ?? baselineTotals;
 
     const selectedItems = hydrateSelectionAgainstOptions(optionsByType, payload.items);
     const selectedTotals = computeSelectionTotals(selectedItems);
@@ -135,8 +141,9 @@ export async function PUT(request: NextRequest) {
         items: baselineSelection,
         totals: baselineTotals,
       },
+      coachTargets,
       selectedTotals,
-      delta: macroDelta(selectedTotals, baselineTotals),
+      delta: macroDelta(selectedTotals, comparisonTotals),
     });
   } catch (error) {
     console.error('[USER_MEALS_SELECTION_PUT] Failed:', error);
