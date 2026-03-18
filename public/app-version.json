@@ -1,8 +1,9 @@
 {
   "version": "1.0.45",
   "title": "Dashboard Update",
-"notes": [
+  "notes": [
     "You can now check for updates from Profile Settings. If a new version is available, the app will refresh automatically."
   ],
-  "forceClearCache": true
+  "forceClearCache": true,
+  "updateStrategy": "manual"
 }

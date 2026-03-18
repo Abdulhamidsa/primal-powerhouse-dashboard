@@ -52,6 +52,17 @@ export function AppUpdateProvider({ children }: { children: React.ReactNode }) {
       const versionChanged = storedInstalledVersion !== info.version;
       const shouldNotify = swUpdateAvailable || versionChanged;
 
+      // `auto` means apply immediately once a new release is detected.
+      if (shouldNotify && info.updateStrategy === 'auto') {
+        localStorage.setItem(STORAGE_KEY, info.version);
+        localStorage.removeItem(DISMISSED_KEY);
+        setInstalledVersion(info.version);
+        setHasUpdate(false);
+
+        await applyAppUpdate(info.forceClearCache);
+        return;
+      }
+
       setHasUpdate(shouldNotify);
     } catch (error) {
       console.error('Failed to check for app updates:', error);

@@ -3,6 +3,7 @@ export type AppVersionInfo = {
   title: string;
   notes: string[];
   forceClearCache?: boolean;
+  updateStrategy?: 'manual' | 'auto';
 };
 
 export async function getAppVersionInfo(): Promise<AppVersionInfo | null> {
