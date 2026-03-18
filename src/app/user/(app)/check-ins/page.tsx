@@ -14,20 +14,32 @@ export default function UserCheckInsPage() {
   return (
     <div className="px-4 pb-8 pt-4 md:px-5">
       <div className="mx-auto w-full max-w-xl space-y-6">
-        <section className="relative overflow-hidden rounded-[30px] border border-border/70 bg-card/95 p-5 shadow-sm">
-          <div className="pointer-events-none absolute -left-16 -top-14 h-44 w-44 rounded-full bg-accent/10 blur-3xl" />
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-              <ClipboardCheck size={18} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">Check-Ins</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Stay consistent with weekly and daily tracking. Small updates now make progress easier later.
-              </p>
-            </div>
-          </div>
-        </section>
+<section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5 sm:py-5">
+  <div className="flex items-start gap-3">
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+      <ClipboardCheck size={18} />
+    </div>
+
+    <div className="min-w-0 flex-1">
+      <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">
+        Check-Ins
+      </h1>
+
+      <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
+        Track your daily and weekly progress in one place.
+      </p>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <span className="rounded-full bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+          Daily
+        </span>
+        <span className="rounded-full bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+          Weekly
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3 px-1">

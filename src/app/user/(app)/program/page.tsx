@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Flame, Utensils } from 'lucide-react';
+import { Dumbbell, Utensils } from 'lucide-react';
+import { useState } from 'react';
 
 const PROGRAM_MEAL_CARDS = [
   {
@@ -34,60 +35,118 @@ const PROGRAM_MEAL_CARDS = [
   },
 ] as const;
 
+const TRAINING_CARDS = [
+  {
+    key: 'assigned',
+    title: 'Assigned Workouts',
+    href: '/user/training',
+    image:
+      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=80',
+  },
+  {
+    key: 'videos',
+    title: 'Exercise Videos',
+    href: '/user/training/videos',
+    image:
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=80',
+  },
+  {
+    key: 'mobility',
+    title: 'Mobility',
+    href: '/user/training/mobility',
+    image:
+      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80',
+  },
+  {
+    key: 'recovery',
+    title: 'Recovery',
+    href: '/user/training/recovery',
+    image:
+      'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=1400&q=80',
+  },
+] as const;
+
+type ProgramTab = 'meals' | 'training';
+
 export default function UserProgramPage() {
+  const [activeTab, setActiveTab] = useState<ProgramTab>('meals');
+
+  const cards = activeTab === 'meals' ? PROGRAM_MEAL_CARDS :PROGRAM_MEAL_CARDS ;
+
   return (
     <div className="px-4 pb-8 pt-4 md:px-5">
-      <div className="mx-auto w-full max-w-4xl space-y-5">
-        <section className="relative overflow-hidden rounded-[30px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm">
-          <div
-            className="pointer-events-none absolute -left-12 -top-12 h-36 w-36 rounded-full blur-3xl"
-            style={{ background: 'var(--color-accent-translucent)' }}
-          />
-
-          <div className="relative flex items-start gap-3">
-            <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-              <Utensils size={18} />
+      <div className="mx-auto w-full max-w-4xl space-y-4">
+        {/* Hero */}
+        <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5 sm:py-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+              {activeTab === 'meals' ? <Utensils size={18} /> : <Dumbbell size={18} />}
             </div>
 
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-text)]">Program</h1>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                Pick a meal type to view options and assign your meals.
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">
+                Program
+              </h1>
+              <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
+                {activeTab === 'meals'
+                  ? 'Pick a meal type to view options and assign your meals.'
+                  : 'Browse your training sections and video-based workouts.'}
               </p>
             </div>
           </div>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2">
-          {PROGRAM_MEAL_CARDS.map(card => (
+        {/* Tabs */}
+        <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-1">
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab('meals')}
+              className={`rounded-[18px] px-4 py-3 text-sm font-semibold transition-colors ${
+                activeTab === 'meals'
+                  ? 'bg-[var(--color-bg-alt)] text-[var(--color-text)]'
+                  : 'text-[var(--color-text-muted)]'
+              }`}
+            >
+              Meals
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('training')}
+              className={`rounded-[18px] px-4 py-3 text-sm font-semibold transition-colors ${
+                activeTab === 'training'
+                  ? 'bg-[var(--color-bg-alt)] text-[var(--color-text)]'
+                  : 'text-[var(--color-text-muted)]'
+              }`}
+            >
+              Training
+            </button>
+          </div>
+        </div>
+
+        {/* Grid */}
+        <section className="grid gap-3 sm:grid-cols-2">
+          {cards.map(card => (
             <Link
               key={card.key}
               href={card.href}
-              className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] transition-colors hover:border-[var(--color-accent-muted)]"
+              className="group relative overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)]"
             >
               <div
-                className="h-44 w-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02]"
+                className="h-40 w-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02] sm:h-44"
                 style={{ backgroundImage: `url(${card.image})` }}
               />
-              <div className="absolute inset-0 bg-black/35" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="rounded-full border border-white/50 bg-black/35 px-5 py-2 text-base font-semibold text-white backdrop-blur-sm">
+
+              <div className="absolute inset-0 bg-black/35 transition-colors duration-300 group-hover:bg-black/40" />
+
+              <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
+                <span className="rounded-full border border-white/20 bg-black/35 px-5 py-2 text-sm font-semibold text-white backdrop-blur-sm sm:text-base">
                   {card.title}
                 </span>
               </div>
             </Link>
           ))}
-
-          <Link
-            href="/user/training"
-            className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-colors hover:border-[var(--color-accent-muted)]"
-          >
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-              <Flame size={16} />
-            </div>
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">Training</h2>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">Browse your training assignments.</p>
-          </Link>
         </section>
       </div>
     </div>
