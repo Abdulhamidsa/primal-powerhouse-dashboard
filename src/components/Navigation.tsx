@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 
 type NavItem = {
   name: string;
+  mobileName?: string;
   href: string;
   icon: LucideIcon;
   description: string;
@@ -65,7 +66,8 @@ const userNavItems: NavItem[] = [
     description: 'Overview',
   },
   {
-    name: 'My Plan',
+    name: 'Meal Plan',
+    mobileName: 'Plan',
     href: '/user/my-plan',
     icon: CalendarCheck2,
     description: 'Selected meals',
@@ -173,7 +175,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
       ) : null}
 
       <span className={`mt-1 text-[10px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-        {item.name.split(' ')[0]}
+        {item.mobileName ?? item.name}
       </span>
     </Link>
   );

@@ -105,7 +105,7 @@ export default function UserMyPlanPage() {
         </button>
 
         <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-          <h1 className="text-2xl font-semibold text-[var(--color-text)]">My Plan</h1>
+          <h1 className="text-2xl font-semibold text-[var(--color-text)]">Meal Plan</h1>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Your currently selected meals: one breakfast, lunch, dinner, and up to two snacks.
           </p>
