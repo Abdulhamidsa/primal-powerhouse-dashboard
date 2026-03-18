@@ -7,6 +7,7 @@ import { LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'l
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
+import UpdateAppButton from '@/components/UpdateAppButton';
 
 interface UserData {
   id: string;
@@ -248,6 +249,7 @@ export default function UserProfilePage() {
               window.alert('Profile picture updated successfully.');
             }}
           />
+          <UpdateAppButton />
         </div>
       </div>
     </div>

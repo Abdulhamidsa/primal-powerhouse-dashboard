@@ -7,8 +7,7 @@ import { LoadingProvider } from '@/contexts/LoadingProvider';
 // import LayoutClient from '@/components/LayoutClient';
 import { Metadata } from 'next/types';
 import { SwrProvider } from '@/providers/swr-provider';
-import PwaUpdateBanner from '@/components/PwaUpdateBanner';
-
+import { AppUpdateProvider } from '@/components/AppUpdateManager';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -57,16 +56,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Primal Powerhouse" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-<body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
-  <LoadingProvider>
-    <RootAuthGate>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
+        <LoadingProvider>
+           <LoadingProvider>
+  <RootAuthGate>
+    <AppUpdateProvider>
       <PWAInstaller />
       <InstallPrompt />
-      <PwaUpdateBanner />
       <SwrProvider>{children}</SwrProvider>
-    </RootAuthGate>
-  </LoadingProvider>
-</body>
+    </AppUpdateProvider>
+  </RootAuthGate>
+</LoadingProvider>
+          </LoadingProvider>
+      </body>
     </html>
   );
 }

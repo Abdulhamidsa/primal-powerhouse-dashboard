@@ -1,41 +1,68 @@
-// src/lib/pwa-update.ts
-export async function checkForPwaUpdate(): Promise<boolean> {
-  if (!('serviceWorker' in navigator)) return false;
+export type AppVersionInfo = {
+  version: string;
+  title: string;
+  notes: string[];
+  forceClearCache?: boolean;
+};
 
-  const registration = await navigator.serviceWorker.getRegistration();
+export async function getAppVersionInfo(): Promise<AppVersionInfo | null> {
+  try {
+    const res = await fetch('/app-version.json', { cache: 'no-store' });
+
+    if (!res.ok) return null;
+
+    return (await res.json()) as AppVersionInfo;
+  } catch {
+    return null;
+  }
+}
+
+export async function getServiceWorkerRegistration() {
+  if (!('serviceWorker' in navigator)) return null;
+  return navigator.serviceWorker.getRegistration();
+}
+
+export async function checkIfUpdateIsAvailable(): Promise<boolean> {
+  const registration = await getServiceWorkerRegistration();
   if (!registration) return false;
 
   await registration.update();
 
-  return !!registration.waiting;
-}
+  if (registration.waiting) return true;
 
-export async function applyPwaUpdate(): Promise<void> {
-  const registration = await navigator.serviceWorker.getRegistration();
-  if (!registration?.waiting) return;
-
-  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-
-  navigator.serviceWorker.addEventListener(
-    'controllerchange',
-    () => {
-      window.location.reload();
-    },
-    { once: true }
-  );
-}
-
-export async function clearPwaCacheAndReload(): Promise<void> {
-  if (!('serviceWorker' in navigator)) return;
-
-  const registration = await navigator.serviceWorker.getRegistration();
-
-  if (registration?.active) {
-    registration.active.postMessage({ type: 'CLEAR_APP_CACHE' });
+  if (registration.installing) {
+    return new Promise(resolve => {
+      registration.installing?.addEventListener('statechange', () => {
+        resolve(registration.installing?.state === 'installed' && !!navigator.serviceWorker.controller);
+      });
+    });
   }
 
-  const keys = await caches.keys();
-  await Promise.all(keys.map(key => caches.delete(key)));
+  return false;
+}
+
+export async function applyAppUpdate(forceClearCache?: boolean): Promise<void> {
+  const registration = await getServiceWorkerRegistration();
+  if (!registration) return;
+
+  if (forceClearCache) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(key => caches.delete(key)));
+  }
+
+  if (registration.waiting) {
+    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+    navigator.serviceWorker.addEventListener(
+      'controllerchange',
+      () => {
+        window.location.reload();
+      },
+      { once: true }
+    );
+
+    return;
+  }
 
   window.location.reload();
 }
