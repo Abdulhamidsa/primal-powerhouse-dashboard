@@ -7,7 +7,7 @@ import { useAppUpdate } from '@/components/AppUpdateManager';
 type UpdateState = 'idle' | 'updating' | 'success';
 
 export default function UpdateAppButton() {
-  const { hasUpdate, versionInfo, installedVersion, updateNow, dismissUpdate } = useAppUpdate();
+  const { hasUpdate, versionInfo, installedVersion, updateNow } = useAppUpdate();
   const [open, setOpen] = useState(false);
   const [updateState, setUpdateState] = useState<UpdateState>('idle');
   const [error, setError] = useState('');
@@ -204,7 +204,6 @@ export default function UpdateAppButton() {
                     <button
                       type="button"
                       onClick={() => {
-                        dismissUpdate();
                         handleClose();
                       }}
                       className="flex-1 rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted/40"

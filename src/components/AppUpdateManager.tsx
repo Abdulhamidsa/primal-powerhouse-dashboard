@@ -38,7 +38,6 @@ export function AppUpdateProvider({ children }: { children: React.ReactNode }) {
       setVersionInfo(info);
 
       const storedInstalledVersion = localStorage.getItem(STORAGE_KEY);
-      const dismissedVersion = localStorage.getItem(DISMISSED_KEY);
 
       if (!storedInstalledVersion && info.version) {
         localStorage.setItem(STORAGE_KEY, info.version);
@@ -51,7 +50,7 @@ export function AppUpdateProvider({ children }: { children: React.ReactNode }) {
 
       const swUpdateAvailable = await checkIfUpdateIsAvailable();
       const versionChanged = storedInstalledVersion !== info.version;
-      const shouldNotify = (swUpdateAvailable || versionChanged) && dismissedVersion !== info.version;
+      const shouldNotify = swUpdateAvailable || versionChanged;
 
       setHasUpdate(shouldNotify);
     } catch (error) {
