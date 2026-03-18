@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart2, Utensils, Users, Flame, User, Shield, MessageSquare } from 'lucide-react';
+import { BarChart2, Utensils, Users, Flame, User, Shield, MessageSquare, ClipboardCheck } from 'lucide-react';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
 
@@ -65,16 +65,16 @@ const userNavItems: NavItem[] = [
     description: 'Overview',
   },
   {
+    name: 'Check-Ins',
+    href: '/user/check-ins',
+    icon: ClipboardCheck,
+    description: 'Weekly & daily tracking',
+  },
+  {
     name: 'Meals',
     href: '/user/meals',
     icon: Utensils,
     description: 'Meal plans',
-  },
-  {
-    name: 'Chat',
-    href: '/user/chat',
-    icon: MessageSquare,
-    description: 'Coach messaging',
   },
   {
     name: 'Training',
@@ -82,15 +82,15 @@ const userNavItems: NavItem[] = [
     icon: Flame,
     description: 'Workout videos',
   },
-];
-
-const userAccountMenuItems: NavItem[] = [
   {
     name: 'Profile',
     href: '/user/profile',
     icon: User,
     description: 'My profile',
   },
+];
+
+const userAccountMenuItems: NavItem[] = [
   {
     name: 'Privacy',
     href: '/user/privacy',
@@ -253,41 +253,56 @@ export default function Navigation({
 
       <div className="flex items-center gap-3">
         {userType === 'user' ? (
-          <div ref={accountMenuRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setAccountMenuOpen(v => !v)}
-              aria-label="Open account menu"
-              className="inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
+          <>
+            <Link
+              href="/user/chat"
+              aria-label="Open chat"
+              className="relative inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
             >
-              <User size={18} />
-            </button>
+              <MessageSquare size={18} />
+              {unreadTotal > 0 ? (
+                <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                  {unreadTotal}
+                </span>
+              ) : null}
+            </Link>
 
-            {accountMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur-xl">
-                {userAccountMenuItems.map(item => {
-                  const Icon = item.icon;
-                  const active = isActivePath(pathname, item.href);
+            <div ref={accountMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setAccountMenuOpen(v => !v)}
+                aria-label="Open account menu"
+                className="inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <User size={18} />
+              </button>
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={[
-                        'flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors',
-                        active
-                          ? 'bg-background text-foreground'
-                          : 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
-                      ].join(' ')}
-                    >
-                      <Icon size={15} />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+              {accountMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur-xl">
+                  {userAccountMenuItems.map(item => {
+                    const Icon = item.icon;
+                    const active = isActivePath(pathname, item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={[
+                          'flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors',
+                          active
+                            ? 'bg-background text-foreground'
+                            : 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
+                        ].join(' ')}
+                      >
+                        <Icon size={15} />
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
         ) : (
           <div className="hidden w-10 lg:block" />
         )}
