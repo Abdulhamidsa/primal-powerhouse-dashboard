@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, ChevronDown, Dumbbell, Salad, Scale } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useMemo, useState } from 'react';
+import { CheckCircle2, ChevronDown, Dumbbell, Salad } from 'lucide-react';
 import { DailyCompletionRing } from '@/features/daily-checkin/components/DailyCompletionRing';
 import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { useDailyCheckInToday, useUpsertDailyCheckIn } from '@/features/daily-checkin/hooks/useDailyCheckIn';
@@ -37,15 +35,7 @@ const TRAINING_OPTIONS: Array<{ value: DailyTrainingStatus; label: string }> = [
   { value: 'MISSED', label: 'Missed' },
 ];
 
-type SavingField = 'weight' | 'compliance' | 'energy' | 'nutrition' | 'training' | null;
-
-function parseWeightInput(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const normalized = trimmed.replace(/,/g, '.');
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
-}
+type SavingField = 'compliance' | 'energy' | 'nutrition' | 'training' | null;
 
 export function DailyCheckInCard() {
   const { dayDate, entry, isLoading } = useDailyCheckInToday();
@@ -55,20 +45,14 @@ export function DailyCheckInCard() {
   const { entry: trainingEntry, isLoading: trainingLoading } = useDailyTrainingToday();
   const { submit: submitTraining } = useUpsertDailyTraining();
 
-  const [weightValue, setWeightValue] = useState('');
   const [savingField, setSavingField] = useState<SavingField>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  useEffect(() => {
-    setWeightValue(entry?.weightKg != null ? entry.weightKg.toString() : '');
-  }, [entry?.weightKg]);
-
   // Always derive from live hook data so the ring updates instantly on every tap
   const completionData = useMemo(() => {
-    const parsedWeight = parseWeightInput(weightValue);
     const input = {
-      weightKg: Number.isFinite(parsedWeight) ? parsedWeight : (entry?.weightKg ?? null),
+      weightKg: entry?.weightKg ?? null,
       compliance: entry?.compliance ?? null,
       energy: entry?.energy ?? null,
       nutritionStatus: nutritionEntry?.status ?? null,
@@ -77,27 +61,9 @@ export function DailyCheckInCard() {
     const pct = calculateCompletionPercentage(input);
     const remaining = 5 - getCompletionCount(input);
     return { pct, remaining, isComplete: pct === 100 };
-  }, [entry?.compliance, entry?.energy, entry?.weightKg, nutritionEntry?.status, trainingEntry?.status, weightValue]);
+  }, [entry?.compliance, entry?.energy, entry?.weightKg, nutritionEntry?.status, trainingEntry?.status]);
 
   const anyLoading = isLoading || nutritionLoading || trainingLoading;
-
-  async function saveWeight() {
-    const parsedWeight = parseWeightInput(weightValue);
-    const trimmedValue = weightValue.trim();
-    if (trimmedValue !== '' && (parsedWeight == null || parsedWeight <= 0)) {
-      setErrorMessage('Enter a valid weight in kilograms.');
-      return;
-    }
-    try {
-      setSavingField('weight');
-      setErrorMessage(null);
-      await submit(dayDate, { weightKg: parsedWeight });
-    } catch {
-      setErrorMessage('Could not save your weight. Please try again.');
-    } finally {
-      setSavingField(null);
-    }
-  }
 
   async function saveCompliance(compliance: DailyCheckInCompliance) {
     try {
@@ -182,44 +148,6 @@ export function DailyCheckInCard() {
           >
             {/* Sections — iOS-style grouped rows */}
             <div className="divide-y divide-border/50">
-              {/* Weight */}
-              <div className="px-5 py-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <Scale size={14} className="text-muted-foreground" />
-                  <p className="text-sm font-medium text-foreground">Weight</p>
-                  {entry?.weightKg != null && (
-                    <span className="ml-auto text-xs font-semibold text-accent">{entry.weightKg} kg</span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={weightValue}
-                    onChange={e => setWeightValue(e.target.value.replace(/[^0-9.,]/g, ''))}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        void saveWeight();
-                      }
-                    }}
-                    placeholder="e.g. 80,2"
-                    disabled={anyLoading || savingField === 'weight'}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void saveWeight()}
-                    disabled={anyLoading || savingField === 'weight'}
-                    className="shrink-0"
-                  >
-                    {savingField === 'weight' ? 'Saving…' : 'Save'}
-                  </Button>
-                </div>
-              </div>
-
               {/* Compliance */}
               <div className="px-5 py-4">
                 <div className="mb-3 flex items-center justify-between">

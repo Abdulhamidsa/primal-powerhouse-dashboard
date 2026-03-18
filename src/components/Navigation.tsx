@@ -71,16 +71,10 @@ const userNavItems: NavItem[] = [
     description: 'Weekly & daily tracking',
   },
   {
-    name: 'Meals',
-    href: '/user/meals',
+    name: 'Program',
+    href: '/user/program',
     icon: Utensils,
-    description: 'Meal plans',
-  },
-  {
-    name: 'Training',
-    href: '/user/training',
-    icon: Flame,
-    description: 'Workout videos',
+    description: 'Meals & training',
   },
   {
     name: 'Profile',
@@ -315,18 +309,18 @@ export default function Navigation({
       'mx-auto w-full max-w-[1600px]',
       isChatRoute
         ? [
-            'h-[calc(100dvh-80px)]',
+            'h-[calc(100dvh-96px)]',
             'overflow-hidden',
             'pb-0',
-            'lg:h-[calc(100dvh-80px)]',
+            'lg:h-[calc(100dvh-96px)]',
             'lg:px-6',
             'lg:py-6',
           ]
         : [
-            'min-h-[calc(100dvh-80px)]',
+            'min-h-[calc(100dvh-96px)]',
             'overflow-y-auto',
             'pb-24',
-            'lg:min-h-[calc(100dvh-80px)]',
+            'lg:min-h-[calc(100dvh-96px)]',
             'lg:px-6',
             'lg:py-6',
             'lg:pb-6',
@@ -342,7 +336,7 @@ export default function Navigation({
     )}
   </main>
 
-  <nav className="fixed bottom-0 left-0 right-0 pb-4 z-40 h-20 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden">
+  <nav className="fixed bottom-0 left-0 right-0 pb-6 z-40 h-24 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden">
     <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
       {navItems.map(item => (
         <MobileTabItem

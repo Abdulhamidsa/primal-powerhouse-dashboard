@@ -72,7 +72,7 @@ export default function UserDashboardPage() {
     {
       title: 'Check today\'s meals',
       description: 'Review your meal plan and stay on track with your nutrition targets.',
-      href: '/user/meals',
+      href: '/user/program?tab=meals',
       icon: Utensils,
       cta: 'Open meals',
       badge: 'Nutrition',
@@ -80,7 +80,7 @@ export default function UserDashboardPage() {
     {
       title: 'Start your training block',
       description: 'Open your workout videos and complete the next planned session.',
-      href: '/user/training',
+      href: '/user/program?tab=training',
       icon: Flame,
       cta: 'Open training',
       badge: 'Performance',
