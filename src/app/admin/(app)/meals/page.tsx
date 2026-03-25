@@ -14,6 +14,7 @@ import { MealsGrid } from './MealsGrid';
 import { DeleteMealModal } from './DeleteMealModal';
 import { useMeals } from '@/hooks/useMeals';
 import { convertToMealType } from '@/lib/meal-planner/adaptoers/mealToDetailMeal';
+import MealGeneratorPanel from '@/features/meals/components/MealGeneratorPanel';
 
 export default function MealsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -69,6 +70,10 @@ export default function MealsPage() {
         <MealsHeader onCreateManual={() => setShowAddModal(true)} onOpenBuilder={() => setShowBuilderModal(true)} />
         {/* Filter Tabs */}
         <MealFilters mealTypes={[...mealTypes]} selectedType={selectedType} onSelectType={setSelectedType} />{' '}
+        {/* Generator Panel */}
+        <div className="my-6">
+          <MealGeneratorPanel onTemplateSaved={refreshMeals} />
+        </div>
         {/* Stats Overview */}
         {/* <StatsOverview meals={meals} filteredMealsCount={filteredMeals.length} loading={loading} /> */}
         {/* Meals Grid */}

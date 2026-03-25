@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { Copy, Sparkles } from 'lucide-react';
+import { ChevronDown, Copy, Sparkles } from 'lucide-react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
 import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
+import { useGenerateMealTemplate } from '@/features/meals/hooks/useGenerateMealTemplate';
 import { DataService } from '@/services/dataService';
+import { httpClient } from '@/lib/http/client';
 import IngredientSearch from './IngredientSearch';
 import SelectedIngredientRow from './SelectedIngredientRow';
 import TotalsPanel from './TotalsPanel';
@@ -21,6 +23,7 @@ interface MealBuilderModalProps {
 export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedAction }: MealBuilderModalProps) {
   const {
     state,
+    setState,
     updateMealMeta,
     addIngredient,
     removeIngredient,
@@ -33,7 +36,9 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadError, setUploadError] = useState<string>('');
+  const [aiNotice, setAiNotice] = useState<string>('');
   const [showFoodFormModal, setShowFoodFormModal] = useState(false);
+  const [isIngredientSearchOpen, setIsIngredientSearchOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [instructions, setInstructions] = useState<string[]>(['']);
 
@@ -47,6 +52,13 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     reset: resetPromptState,
   } = useMealPromptGenerator();
 
+  const {
+    loading: aiGenerating,
+    error: aiGenerationError,
+    generateTemplate,
+    reset: resetTemplateGenerator,
+  } = useGenerateMealTemplate();
+
   const selectedIds = useMemo(() => new Set(state.selectedIngredients.map(ing => ing.id)), [state.selectedIngredients]);
 
   const totals = calculateTotals();
@@ -54,7 +66,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
 
   const parseInstructionSteps = (items: string[]): string[] => {
     return items
-      .flatMap(item => item.split(/[\n,]+/g))
+      .map(item => item)
       .map(step => step.replace(/^\s*\d+[\).:\-]?\s*/, '').trim())
       .filter(Boolean);
   };
@@ -62,8 +74,10 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   useEffect(() => {
     if (!isOpen) {
       resetPromptState();
+      resetTemplateGenerator();
+      setAiNotice('');
     }
-  }, [isOpen, resetPromptState]);
+  }, [isOpen, resetPromptState, resetTemplateGenerator]);
 
   if (!isOpen) return null;
 
@@ -134,17 +148,17 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         uploadFormData.append('file', selectedImageFile);
         uploadFormData.append('folder', 'meals');
 
-        const uploadResponse = await fetch('/api/cloudinary/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
+        const uploadResult = await httpClient.postForm<{
+          success: boolean;
+          data?: { url: string };
+          error?: string;
+          details?: string;
+        }>('/api/cloudinary/upload', uploadFormData);
 
-        if (!uploadResponse.ok) {
-          const error = await uploadResponse.json();
-          throw new Error(error.details || error.error || 'Failed to upload image');
+        if (!uploadResult?.success || !uploadResult.data?.url) {
+          throw new Error(uploadResult?.details || uploadResult?.error || 'Failed to upload image');
         }
 
-        const uploadResult = await uploadResponse.json();
         imageUrl = uploadResult.data.url;
       }
 
@@ -172,6 +186,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       onMealCreatedAction();
       onCloseAction();
       resetForm();
+      setIsIngredientSearchOpen(false);
       setInstructions(['']);
       setSelectedImageFile(null);
     } catch (error) {
@@ -199,24 +214,61 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     setInstructions(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   };
 
-  const splitBulkInstructions = () => {
-    const parsed = parseInstructionSteps(instructions);
-    setInstructions(parsed.length > 0 ? parsed : ['']);
-
-    if (parsed.length > 0) {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next.instructions;
-        return next;
-      });
-    }
-  };
-
   const handleGeneratePrompt = () => {
     generate({
       mealName: state.name,
       ingredients: state.selectedIngredients.map(ingredient => ingredient.name),
     });
+  };
+
+  const handleSuggestMealWithAi = async () => {
+    const hasExistingData =
+      state.name.trim().length > 0 ||
+      state.selectedIngredients.length > 0 ||
+      parseInstructionSteps(instructions).length > 0;
+
+    if (hasExistingData) {
+      const shouldReplace = window.confirm('Regenerate and replace current meal data?');
+      if (!shouldReplace) {
+        return;
+      }
+    }
+
+    try {
+      setUploadError('');
+      setAiNotice('');
+
+      const template = await generateTemplate(state.type);
+
+      setState(prev => ({
+        ...prev,
+        name: template.mealName,
+        type: state.type,
+        servings: Math.max(1, template.servings),
+        selectedIngredients: template.ingredients.map(ingredient => ({
+          ...ingredient,
+          hasIncompleteData: false,
+        })),
+      }));
+
+      setInstructions(template.instructions.length > 0 ? template.instructions : ['']);
+      setErrors({});
+
+      generate({
+        mealName: template.mealName,
+        ingredients: template.ingredients.map(ingredient => ingredient.name),
+      });
+
+      const baseNotice = `AI meal ready: ${template.coreDishReference} (${template.cuisineStyle})`;
+      if (template.warnings.length > 0) {
+        setAiNotice(`${baseNotice}. Notes: ${template.warnings.join(' ')}`);
+      } else {
+        setAiNotice(baseNotice);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to generate meal template';
+      setUploadError(message);
+    }
   };
 
   return (
@@ -248,6 +300,18 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
               {uploadError && (
                 <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                   {uploadError}
+                </div>
+              )}
+
+              {aiNotice && (
+                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+                  {aiNotice}
+                </div>
+              )}
+
+              {aiGenerationError && (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  {aiGenerationError}
                 </div>
               )}
 
@@ -302,17 +366,75 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                     />
                     {errors.servings && <p className="mt-2 text-xs text-red-400">{errors.servings}</p>}
                   </div>
-                </div>
-              </section>
 
-              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-[var(--color-text)]">Add Ingredients</h3>
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                      Search your ingredient database and add items to the meal.
+                  <div className="sm:col-span-2">
+                    <button
+                      type="button"
+                      onClick={handleSuggestMealWithAi}
+                      disabled={loading || aiGenerating}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Sparkles size={16} />
+                      {aiGenerating ? 'Generating Meal With AI...' : 'Suggest Meal with AI'}
+                    </button>
+                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                      Strict mode is enabled: AI only returns meals when all ingredients match your database, then fills
+                      name, ingredients, and instructions.
                     </p>
                   </div>
+                </div>
+              </section>
+              <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-medium text-[var(--color-text-muted)]">ChatGPT Image Prompt</p>
+                  <button
+                    type="button"
+                    onClick={copy}
+                    disabled={!hasPrompt}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Copy generated prompt"
+                    title="Copy prompt"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+
+                <textarea
+                  readOnly
+                  value={
+                    hasPrompt
+                      ? promptText
+                      : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
+                  }
+                  className="min-h-[140px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs text-[var(--color-text)]"
+                />
+
+                {copied ? <p className="mt-2 text-xs text-emerald-400">Copied</p> : null}
+                {promptError ? <p className="mt-2 text-xs text-red-400">{promptError}</p> : null}
+              </div>
+              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsIngredientSearchOpen(prev => !prev)}
+                    className="flex flex-1 items-start justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3 text-left transition-colors hover:bg-[var(--color-bg-alt)]"
+                    aria-expanded={isIngredientSearchOpen}
+                    aria-label="Toggle ingredients search"
+                  >
+                    <div>
+                      <h3 className="text-base font-semibold text-[var(--color-text)]">Ingredients</h3>
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        Click to {isIngredientSearchOpen ? 'hide' : 'open'} ingredient search.
+                      </p>
+                    </div>
+
+                    <ChevronDown
+                      size={18}
+                      className={`mt-1 text-[var(--color-text-muted)] transition-transform ${
+                        isIngredientSearchOpen ? 'rotate-180' : 'rotate-0'
+                      }`}
+                    />
+                  </button>
 
                   <button
                     type="button"
@@ -323,10 +445,19 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   </button>
                 </div>
 
-                <IngredientSearch
-                  onAddIngredientAction={(ingredient: SelectedIngredient) => addIngredient(ingredient)}
-                  selectedIds={selectedIds}
-                />
+                {isIngredientSearchOpen ? (
+                  <IngredientSearch
+                    onAddIngredientAction={(ingredient: SelectedIngredient) => {
+                      addIngredient(ingredient);
+                      setIsIngredientSearchOpen(false);
+                    }}
+                    selectedIds={selectedIds}
+                  />
+                ) : (
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    Search stays collapsed until you need it, so the modal remains clean and easier to scan.
+                  </p>
+                )}
               </section>
 
               {state.selectedIngredients.length > 0 && (
@@ -368,18 +499,11 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   <div>
                     <h3 className="text-base font-semibold text-[var(--color-text)]">Instructions</h3>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                      Add steps manually or split pasted comma-separated text.
+                      Add clear, simple cooking steps manually.
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={splitBulkInstructions}
-                      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)]"
-                    >
-                      Split Commas
-                    </button>
                     <button
                       type="button"
                       onClick={addInstruction}
@@ -391,7 +515,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                 </div>
 
                 <p className="mb-3 text-xs text-[var(--color-text-muted)]">
-                  Tip: paste bulk text in one line using commas, then click Split Commas.
+                  Tip: use one instruction per row for clean, simple steps.
                 </p>
 
                 <div className="space-y-3">
@@ -451,35 +575,6 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   <Sparkles size={16} />
                   {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
                 </button>
-
-                <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-medium text-[var(--color-text-muted)]">ChatGPT Image Prompt</p>
-                    <button
-                      type="button"
-                      onClick={copy}
-                      disabled={!hasPrompt}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
-                      aria-label="Copy generated prompt"
-                      title="Copy prompt"
-                    >
-                      <Copy size={14} />
-                    </button>
-                  </div>
-
-                  <textarea
-                    readOnly
-                    value={
-                      hasPrompt
-                        ? promptText
-                        : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
-                    }
-                    className="min-h-[140px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs text-[var(--color-text)]"
-                  />
-
-                  {copied ? <p className="mt-2 text-xs text-emerald-400">Copied</p> : null}
-                  {promptError ? <p className="mt-2 text-xs text-red-400">{promptError}</p> : null}
-                </div>
               </section>
             </div>
 

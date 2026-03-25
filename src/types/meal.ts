@@ -110,3 +110,94 @@ export interface Client {
 }
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+export type MealImageProvider = 'azure' | 'local-sd';
+export type MealImageQualityProfile = 'fast' | 'balanced' | 'high';
+
+export interface MealIngredientSuggestion {
+  name: string;
+  grams: number;
+}
+
+export interface AiMealSuggestion {
+  name: string;
+  ingredients: MealIngredientSuggestion[];
+}
+
+export interface MacroTotals {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+}
+
+export interface MatchedIngredient {
+  id: string;
+  name: string;
+  displayName: string | null;
+  canonicalName: string | null;
+  caloriesKcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  fiberG: number | null;
+  matchedInput: string;
+  grams: number;
+  matchScore: number;
+}
+
+export interface GeneratedMeal {
+  name: string;
+  type: MealType;
+  ingredients: MatchedIngredient[];
+  macros: MacroTotals;
+  imageUrl?: string | null;
+  rejectedReason?: string | null;
+}
+
+export interface GenerateMealsInput {
+  calories: number;
+  protein: number;
+  type: MealType;
+  mealCount?: number;
+  generateImages?: boolean;
+  imageProvider?: MealImageProvider;
+  imageCheckpoint?: string;
+  imageQualityProfile?: MealImageQualityProfile;
+}
+
+export interface SavedTemplateIngredientSnapshot {
+  foodId: string;
+  name: string;
+  canonicalName?: string | null;
+  matchedInput?: string;
+  grams: number;
+  amount: number;
+  unit: 'g';
+  matchScore?: number;
+  nutritionPer100g: {
+    caloriesKcal: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    fiberG: number | null;
+  };
+}
+
+export interface SaveGeneratedMealTemplateInput {
+  meal: GeneratedMeal;
+  force?: boolean;
+  tags?: string[];
+}
+
+export interface FoodGenerationReadyRow {
+  id: string;
+  name: string;
+  display_name: string | null;
+  canonical_name: string | null;
+  caloriesKcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  fiberG: number | null;
+}

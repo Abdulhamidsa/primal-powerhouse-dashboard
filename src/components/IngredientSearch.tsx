@@ -147,7 +147,7 @@ export default function IngredientSearch({ onAddIngredientAction, selectedIds }:
             Found {filteredResults.length} ingredient{filteredResults.length !== 1 ? 's' : ''}
           </p>
 
-          <div className="max-h-96 space-y-2 overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
+          <div className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
             {filteredResults.map((item, index) => (
               <IngredientResultItem
                 key={`${item.id}-${item.dataType ?? 'na'}-${index}`}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { buildMealChatGptImagePrompt } from '@/features/meals/utils/buildMealChatGptImagePrompt';
 import type { MealPromptInput, MealPromptOutput } from '@/features/meals/types/mealPrompt.types';
 
@@ -47,11 +47,11 @@ export function useMealPromptGenerator() {
     }
   };
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setPrompt(null);
     setError('');
     setCopied(false);
-  };
+  }, []);
 
   return {
     prompt,
