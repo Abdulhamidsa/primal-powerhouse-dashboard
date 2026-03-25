@@ -9,6 +9,11 @@ function getConversationIdFromChannel(channelName: string): string | null {
   return match?.[1] ?? null;
 }
 
+function getUserIdFromUserChannel(channelName: string): string | null {
+  const match = channelName.match(/^private-user-(.+)$/);
+  return match?.[1] ?? null;
+}
+
 export async function POST(request: NextRequest) {
   if (!hasPusherServerConfig()) {
     return NextResponse.json({ error: 'Realtime service is not configured.' }, { status: 503 });
@@ -28,6 +33,16 @@ export async function POST(request: NextRequest) {
 
   if (!socketId || !channelName) {
     return NextResponse.json({ error: 'Missing socket_id or channel_name' }, { status: 400 });
+  }
+
+  // private-user-{userId} — notification channel, only the user themselves can subscribe
+  const channelUserId = getUserIdFromUserChannel(channelName);
+  if (channelUserId) {
+    if (channelUserId !== actor.userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    const authResponse = getPusherServer().authorizeChannel(socketId, channelName);
+    return NextResponse.json(authResponse);
   }
 
   const conversationId = getConversationIdFromChannel(channelName);

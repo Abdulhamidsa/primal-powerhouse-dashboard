@@ -1,5 +1,5 @@
 import Pusher from 'pusher';
-import { toConversationChannel } from '@/lib/realtime/channels';
+import { toConversationChannel, toUserChannel } from '@/lib/realtime/channels';
 
 let pusherInstance: Pusher | null = null;
 
@@ -13,7 +13,7 @@ function getRequiredEnv(name: string): string {
 
 export function hasPusherServerConfig(): boolean {
   return Boolean(
-    process.env.PUSHER_APP_ID && process.env.PUSHER_KEY && process.env.PUSHER_SECRET && process.env.PUSHER_CLUSTER
+    process.env.PUSHER_APP_ID && process.env.PUSHER_KEY && process.env.PUSHER_SECRET && process.env.PUSHER_CLUSTER,
   );
 }
 
@@ -31,4 +31,4 @@ export function getPusherServer(): Pusher {
   return pusherInstance;
 }
 
-export { toConversationChannel };
+export { toConversationChannel, toUserChannel };

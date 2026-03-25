@@ -58,6 +58,15 @@ export type CreateConversationPayload = {
   clientId: string;
 };
 
+export type MessageNotification = {
+  id: string;
+  conversationId: string;
+  senderName: string;
+  preview: string | null;
+  hasAttachment: boolean;
+  createdAt: string;
+};
+
 export type ConversationUploadResponse = {
   attachment: MessageAttachment;
 };

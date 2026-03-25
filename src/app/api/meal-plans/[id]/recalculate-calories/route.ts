@@ -22,9 +22,9 @@ const PORTION_MAX = 1.4;
 type RolloutMode = 'off' | 'admin' | 'pilot' | 'all';
 
 function getRolloutMode(): RolloutMode {
-  const raw = (process.env.FEATURE_ADJUST_PLAN_CALORIES_ROLLOUT ?? 'pilot').toLowerCase();
+  const raw = (process.env.FEATURE_ADJUST_PLAN_CALORIES_ROLLOUT ?? 'all').toLowerCase();
   if (raw === 'off' || raw === 'admin' || raw === 'pilot' || raw === 'all') return raw;
-  return 'pilot';
+  return 'all';
 }
 
 function getPilotCoachIds(): Set<string> {
@@ -33,7 +33,7 @@ function getPilotCoachIds(): Set<string> {
     raw
       .split(',')
       .map(value => value.trim())
-      .filter(Boolean)
+      .filter(Boolean),
   );
 }
 
@@ -134,7 +134,7 @@ function getGoalSafetyFloors(goal: string | null | undefined): { minCalories: nu
 function computeTargets(
   newDailyCalories: number,
   weightKg: number,
-  goal: string | null | undefined
+  goal: string | null | undefined,
 ): RecalculationMacroTargets {
   const floors = getGoalSafetyFloors(goal);
   const adjustedCalories = Math.max(newDailyCalories, floors.minCalories);
@@ -156,7 +156,7 @@ function computeTargets(
 }
 
 function calculateTotals(
-  assignments: Array<{ portion: number; meal: { calories: number; protein: number; carbs: number; fat: number } }>
+  assignments: Array<{ portion: number; meal: { calories: number; protein: number; carbs: number; fat: number } }>,
 ): RecalculationMacroTargets {
   const totals = assignments.reduce(
     (acc, assignment) => {
@@ -166,7 +166,7 @@ function calculateTotals(
       acc.fat += assignment.meal.fat * assignment.portion;
       return acc;
     },
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0 },
   );
 
   return {
@@ -216,7 +216,7 @@ function optimizePortionsForMacros(args: {
       args.assignments.map(item => ({
         portion: candidate.get(item.assignmentId) ?? item.oldPortion,
         meal: item.meal,
-      }))
+      })),
     );
   };
 
@@ -231,7 +231,7 @@ function optimizePortionsForMacros(args: {
     for (const item of args.assignments) {
       const currentPortion = portions.get(item.assignmentId) ?? item.oldPortion;
       const candidates = [round1(currentPortion + step), round1(currentPortion - step)].filter(
-        value => value >= PORTION_MIN && value <= PORTION_MAX
+        value => value >= PORTION_MIN && value <= PORTION_MAX,
       );
 
       for (const candidatePortion of candidates) {
@@ -263,7 +263,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (auth.error || !auth.user) {
       return NextResponse.json(
         { message: "You don't have permission for this client. Contact admin.", recoveryAction: 'Contact admin' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -275,7 +275,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!actor || (actor.role !== 'COACH' && actor.role !== 'ADMIN')) {
       return NextResponse.json(
         { message: "You don't have permission for this client. Contact admin.", recoveryAction: 'Contact admin' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           message: 'This feature is not enabled for your account yet. Contact admin.',
           recoveryAction: 'Contact admin',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -295,7 +295,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!parsed.success) {
       return NextResponse.json(
         { message: 'Please enter a valid calorie target.', details: parsed.error.flatten() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -345,7 +345,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           recoveryAction: 'Refresh',
           code: 'STALE_PLAN',
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -366,18 +366,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
           message: 'Client weight is required before recalculation. Update health metrics first.',
           recoveryAction: 'Adjust target',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const targets = computeTargets(input.newDailyCalories, weightKg, latestHealthGoal?.goal);
 
+    const numDays = Math.max(1, new Set(mealPlan.mealAssignments.map(a => a.dayOfWeek)).size);
+    const planTargets: RecalculationMacroTargets = {
+      calories: targets.calories * numDays,
+      protein: targets.protein * numDays,
+      carbs: targets.carbs * numDays,
+      fat: targets.fat * numDays,
+    };
+
     const originalMealIds = Array.from(
       new Set(
         mealPlan.mealAssignments
           .map(assignment => assignment.meal.originalMealId)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0)
-      )
+          .filter((id): id is string => typeof id === 'string' && id.length > 0),
+      ),
     );
 
     const originalMeals =
@@ -420,7 +428,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     const currentTotals = calculateTotals(
-      withDerivedPortions.map(item => ({ portion: item.logicalOldPortion, meal: item.baseMeal }))
+      withDerivedPortions.map(item => ({ portion: item.logicalOldPortion, meal: item.baseMeal })),
     );
 
     if (currentTotals.calories <= 0) {
@@ -429,11 +437,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
           message: 'Current meal plan has invalid calorie totals. Adjust target or meals first.',
           recoveryAction: 'Adjust target',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const scaleFactor = targets.calories / currentTotals.calories;
+    const scaleFactor = planTargets.calories / currentTotals.calories;
 
     const deltas: MealPortionDelta[] = withDerivedPortions.map(({ assignment, logicalOldPortion }) => {
       const scaled = logicalOldPortion * scaleFactor;
@@ -458,7 +466,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (input.optimizationMode === 'macro_optimized') {
       const optimized = optimizePortionsForMacros({
-        targets,
+        targets: planTargets,
         assignments: withDerivedPortions.map(item => ({
           assignmentId: item.assignment.id,
           oldPortion: item.logicalOldPortion,
@@ -485,10 +493,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       withDerivedPortions.map(({ assignment, baseMeal }) => {
         const delta = optimizedDeltas.find(item => item.assignmentId === assignment.id)!;
         return { portion: delta.newPortion, meal: baseMeal };
-      })
+      }),
     );
 
-    const expectedAccuracyPercent = calculateAccuracyPercent(targets.calories, projectedTotals.calories);
+    const expectedAccuracyPercent = calculateAccuracyPercent(planTargets.calories, projectedTotals.calories);
     const hasBoundsClamping = optimizedDeltas.some(delta => delta.wasClampedByBounds);
 
     const warning =
@@ -496,12 +504,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? `Target cannot be reached exactly within safe portion limits. Expected accuracy: ${expectedAccuracyPercent.toFixed(1)}%.`
         : null;
 
+    const dailyProjectedTotals: RecalculationMacroTargets = {
+      calories: Math.round(projectedTotals.calories / numDays),
+      protein: Math.round(projectedTotals.protein / numDays),
+      carbs: Math.round(projectedTotals.carbs / numDays),
+      fat: Math.round(projectedTotals.fat / numDays),
+    };
+
     const result: MealPlanRecalculationResult = {
       mealPlanId: mealPlan.id,
       clientId: mealPlan.clientId,
       basePlanUpdatedAt: mealPlan.updatedAt.toISOString(),
       targets,
-      projectedTotals,
+      projectedTotals: dailyProjectedTotals,
       expectedAccuracyPercent,
       hasBoundsClamping,
       deltas: optimizedDeltas,
@@ -525,7 +540,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             message: 'One or more assigned meals are not client-personalized. Reassign personalized meals first.',
             recoveryAction: 'Adjust target',
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -543,7 +558,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               'A personalized meal is assigned with conflicting portion ratios across this plan. Please resolve duplicates first.',
             recoveryAction: 'Adjust target',
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -555,7 +570,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               'A personalized meal is assigned with conflicting target portions across this plan. Please resolve duplicates first.',
             recoveryAction: 'Adjust target',
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -641,7 +656,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             ${JSON.stringify(optimizedDeltas)},
             NOW()
           )
-        `
+        `,
       );
 
       return tx.mealPlan.findUnique({ where: { id: mealPlan.id }, select: { updatedAt: true } });

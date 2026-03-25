@@ -13,5 +13,5 @@ export default async function UserAppLayout({ children }: { children: React.Reac
   const payload = AuthService.verifyToken(token);
   if (!payload || payload.type !== 'client') redirect('/user/login');
 
-  return <UserShell>{children}</UserShell>;
+  return <UserShell userId={payload.userId}>{children}</UserShell>;
 }

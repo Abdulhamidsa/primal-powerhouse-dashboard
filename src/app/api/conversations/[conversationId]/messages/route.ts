@@ -12,7 +12,12 @@ import {
   resolveActor,
 } from '@/lib/chat/conversation';
 import { sendMessageSchema } from '@/features/client-coach-messaging/schemas/message.schema';
-import { getPusherServer, hasPusherServerConfig, toConversationChannel } from '@/lib/realtime/pusher-server';
+import {
+  getPusherServer,
+  hasPusherServerConfig,
+  toConversationChannel,
+  toUserChannel,
+} from '@/lib/realtime/pusher-server';
 
 type AttachmentRecord = {
   type: 'image' | 'video' | 'audio';
@@ -27,7 +32,7 @@ type AttachmentRecord = {
 
 function getSignedMediaUrl(
   publicId: string,
-  resourceType: 'image' | 'video' | 'raw'
+  resourceType: 'image' | 'video' | 'raw',
 ): { url: string; expiresAt: number } | null {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -188,7 +193,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 function buildBodyStorage(
   body: string | undefined,
-  context: string
+  context: string,
 ): { body: string | null; bodyEncrypted: string | null } {
   const normalized = body?.trim();
   if (!normalized) {
@@ -273,6 +278,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (hasPusherServerConfig()) {
     try {
       await getPusherServer().trigger(toConversationChannel(conversationId), 'message.created', responseMessage);
+
+      // Notify the recipient on their personal user channel
+      const recipientUserId = actor.type === 'client' ? conversation.coachId : conversation.clientId;
+      const rawBody = parsed.data.body?.trim() ?? null;
+      const preview = rawBody ? (rawBody.length > 80 ? `${rawBody.slice(0, 80)}…` : rawBody) : null;
+      await getPusherServer().trigger(toUserChannel(recipientUserId), 'notification.message', {
+        conversationId,
+        senderName: actor.displayName,
+        preview,
+        hasAttachment: (parsed.data.attachments?.length ?? 0) > 0,
+        createdAt: created.createdAt.toISOString(),
+      });
     } catch (error) {
       console.error('Failed to publish realtime chat event:', error);
     }

@@ -16,5 +16,5 @@ export default async function AdminAppLayout({ children }: { children: React.Rea
     redirect('/admin/login');
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell userId={payload.userId}>{children}</AdminShell>;
 }
