@@ -1,5 +1,5 @@
 const APP_CACHE_PREFIX = 'primal-powerhouse';
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `${APP_CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];
@@ -16,8 +16,26 @@ self.addEventListener('message', event => {
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      await Promise.allSettled(PRECACHE_URLS.map(url => cache.add(url)));
+      try {
+        console.log('[SW] install start', CACHE_NAME);
+
+        const cache = await caches.open(CACHE_NAME);
+
+        await Promise.allSettled(
+          PRECACHE_URLS.map(async url => {
+            try {
+              await cache.add(url);
+              console.log('[SW] precached', url);
+            } catch (error) {
+              console.error('[SW] precache failed', url, error);
+            }
+          }),
+        );
+
+        console.log('[SW] install complete');
+      } catch (error) {
+        console.error('[SW] install crashed', error);
+      }
     })(),
   );
 
@@ -27,18 +45,26 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
-      const keys = await caches.keys();
+      try {
+        console.log('[SW] activate start');
 
-      await Promise.all(
-        keys.map(key => {
-          if (key.startsWith(APP_CACHE_PREFIX) && key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-          return Promise.resolve();
-        }),
-      );
+        const keys = await caches.keys();
 
-      await self.clients.claim();
+        await Promise.all(
+          keys.map(key => {
+            if (key.startsWith(APP_CACHE_PREFIX) && key !== CACHE_NAME) {
+              console.log('[SW] deleting old cache', key);
+              return caches.delete(key);
+            }
+            return Promise.resolve();
+          }),
+        );
+
+        await self.clients.claim();
+        console.log('[SW] activate complete');
+      } catch (error) {
+        console.error('[SW] activate crashed', error);
+      }
     })(),
   );
 });
@@ -54,25 +80,39 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/')) return;
   if (url.pathname.includes('/login')) return;
 
-  if (isHtmlNavigation(req)) return;
+  if (isHtmlNavigation(req)) {
+    console.log('[SW] skipping html navigation', url.pathname);
+    return;
+  }
 
   event.respondWith(
     (async () => {
-      const cached = await caches.match(req);
-      if (cached) return cached;
-
       try {
+        const cached = await caches.match(req);
+        if (cached) {
+          console.log('[SW] cache hit', url.pathname);
+          return cached;
+        }
+
         const res = await fetch(req);
+        console.log('[SW] network success', url.pathname, res.status);
 
         if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
           const cache = await caches.open(CACHE_NAME);
           await cache.put(req, res.clone());
+          console.log('[SW] cached', url.pathname);
         }
 
         return res;
       } catch (error) {
+        console.error('[SW] fetch failed', url.pathname, error);
+
         const fallback = await caches.match(req);
-        if (fallback) return fallback;
+        if (fallback) {
+          console.log('[SW] fallback cache hit', url.pathname);
+          return fallback;
+        }
+
         throw error;
       }
     })(),
@@ -80,7 +120,15 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (error) {
+    console.error('[SW] push payload parse failed', error);
+    data = {};
+  }
+
   const title = data.title || 'Primal Powerhouse';
 
   event.waitUntil(
