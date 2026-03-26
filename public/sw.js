@@ -1,5 +1,5 @@
 const APP_CACHE_PREFIX = 'primal-powerhouse';
-const CACHE_VERSION = 'v1.0.45';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `${APP_CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];
@@ -12,7 +12,7 @@ self.addEventListener('install', event => {
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       await Promise.allSettled(PRECACHE_URLS.map(url => cache.add(url)));
-    })()
+    })(),
   );
 
   self.skipWaiting();
@@ -24,33 +24,17 @@ self.addEventListener('activate', event => {
       const keys = await caches.keys();
 
       await Promise.all(
-        keys.map(key =>
-          key.startsWith(APP_CACHE_PREFIX) && key !== CACHE_NAME ? caches.delete(key) : Promise.resolve()
-        )
+        keys.map(key => {
+          if (key.startsWith(APP_CACHE_PREFIX) && key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+          return Promise.resolve();
+        }),
       );
 
       await self.clients.claim();
-    })()
+    })(),
   );
-});
-
-self.addEventListener('message', event => {
-  if (!event.data) return;
-
-  if (event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-
-  if (event.data.type === 'CLEAR_APP_CACHE') {
-    event.waitUntil(
-      (async () => {
-        const keys = await caches.keys();
-        await Promise.all(
-          keys.map(key => (key.startsWith(APP_CACHE_PREFIX) ? caches.delete(key) : Promise.resolve()))
-        );
-      })()
-    );
-  }
 });
 
 self.addEventListener('fetch', event => {
@@ -62,19 +46,24 @@ self.addEventListener('fetch', event => {
   const url = new URL(req.url);
 
   if (url.pathname.startsWith('/api/')) return;
-  if (url.pathname.includes('/login') || url.pathname.includes('/register')) return;
+  if (url.pathname.includes('/login')) return;
 
   if (isHtmlNavigation(req)) {
     event.respondWith(
       (async () => {
         try {
-          const fresh = await fetch(req);
-          return fresh;
+          return await fetch(req);
         } catch {
           const cached = await caches.match(req);
-          return cached || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+          return (
+            cached ||
+            new Response('Offline', {
+              status: 503,
+              headers: { 'Content-Type': 'text/plain' },
+            })
+          );
         }
-      })()
+      })(),
     );
     return;
   }
@@ -93,12 +82,12 @@ self.addEventListener('fetch', event => {
         }
 
         return res;
-      } catch (err) {
+      } catch (error) {
         const fallback = await caches.match(req);
         if (fallback) return fallback;
-        throw err;
+        throw error;
       }
-    })()
+    })(),
   );
 });
 
@@ -113,7 +102,7 @@ self.addEventListener('push', event => {
       badge: '/icon-192.png',
       tag: 'primal-powerhouse-notification',
       requireInteraction: false,
-    })
+    }),
   );
 });
 
