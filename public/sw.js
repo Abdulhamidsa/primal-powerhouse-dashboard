@@ -1,5 +1,5 @@
 const APP_CACHE_PREFIX = 'primal-powerhouse';
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `${APP_CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];
@@ -48,25 +48,8 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/')) return;
   if (url.pathname.includes('/login')) return;
 
-  if (isHtmlNavigation(req)) {
-    event.respondWith(
-      (async () => {
-        try {
-          return await fetch(req);
-        } catch {
-          const cached = await caches.match(req);
-          return (
-            cached ||
-            new Response('Offline', {
-              status: 503,
-              headers: { 'Content-Type': 'text/plain' },
-            })
-          );
-        }
-      })(),
-    );
-    return;
-  }
+  // Let the browser/server handle page navigations directly
+  if (isHtmlNavigation(req)) return;
 
   event.respondWith(
     (async () => {
