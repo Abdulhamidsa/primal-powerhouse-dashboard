@@ -1,11 +1,37 @@
 const APP_CACHE_PREFIX = 'primal-powerhouse';
-const CACHE_VERSION = 'v4';
-const CACHE_NAME = `${APP_CACHE_PREFIX}-${CACHE_VERSION}`;
+const APP_VERSION = 'v5-2026-03-26';
+const CACHE_NAME = `${APP_CACHE_PREFIX}-${APP_VERSION}`;
 
-const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico'];
+const PRECACHE_URLS = [
+  '/',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-512-maskable.png',
+  '/favicon.ico',
+];
 
-const isSameOrigin = req => req.url.startsWith(self.location.origin);
-const isHtmlNavigation = req => req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+const isSameOrigin = request => {
+  return new URL(request.url).origin === self.location.origin;
+};
+
+const isHtmlNavigation = request => {
+  return request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
+};
+
+const shouldBypassRequest = request => {
+  if (request.method !== 'GET') return true;
+  if (!isSameOrigin(request)) return true;
+
+  const url = new URL(request.url);
+
+  if (url.pathname.startsWith('/api/')) return true;
+  if (url.pathname.startsWith('/login')) return true;
+  if (url.pathname.startsWith('/signin')) return true;
+  if (url.pathname.startsWith('/signup')) return true;
+
+  return false;
+};
 
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -17,103 +43,130 @@ self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       try {
-        console.log('[SW] install start', CACHE_NAME);
-
         const cache = await caches.open(CACHE_NAME);
 
         await Promise.allSettled(
           PRECACHE_URLS.map(async url => {
             try {
               await cache.add(url);
-              console.log('[SW] precached', url);
+              console.log('[SW] precached:', url);
             } catch (error) {
-              console.error('[SW] precache failed', url, error);
+              console.error('[SW] failed to precache:', url, error);
             }
           }),
         );
 
-        console.log('[SW] install complete');
+        console.log('[SW] install complete:', CACHE_NAME);
       } catch (error) {
-        console.error('[SW] install crashed', error);
+        console.error('[SW] install failed:', error);
       }
     })(),
   );
-
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
       try {
-        console.log('[SW] activate start');
-
         const keys = await caches.keys();
 
         await Promise.all(
           keys.map(key => {
             if (key.startsWith(APP_CACHE_PREFIX) && key !== CACHE_NAME) {
-              console.log('[SW] deleting old cache', key);
+              console.log('[SW] deleting old cache:', key);
               return caches.delete(key);
             }
+
             return Promise.resolve();
           }),
         );
 
         await self.clients.claim();
-        console.log('[SW] activate complete');
+        console.log('[SW] activate complete:', CACHE_NAME);
       } catch (error) {
-        console.error('[SW] activate crashed', error);
+        console.error('[SW] activate failed:', error);
       }
     })(),
   );
 });
 
 self.addEventListener('fetch', event => {
-  const req = event.request;
+  const request = event.request;
 
-  if (req.method !== 'GET') return;
-  if (!isSameOrigin(req)) return;
+  if (shouldBypassRequest(request)) {
+    return;
+  }
 
-  const url = new URL(req.url);
+  if (isHtmlNavigation(request)) {
+    event.respondWith(
+      (async () => {
+        try {
+          const freshResponse = await fetch(request);
 
-  if (url.pathname.startsWith('/api/')) return;
-  if (url.pathname.includes('/login')) return;
+          if (freshResponse && freshResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(request, freshResponse.clone());
+          }
 
-  if (isHtmlNavigation(req)) {
-    console.log('[SW] skipping html navigation', url.pathname);
+          return freshResponse;
+        } catch (error) {
+          console.warn('[SW] navigation fetch failed, trying cache:', request.url, error);
+
+          const cachedPage = await caches.match(request);
+          if (cachedPage) {
+            return cachedPage;
+          }
+
+          const appShell = await caches.match('/');
+          if (appShell) {
+            return appShell;
+          }
+
+          return new Response('Offline', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }
+      })(),
+    );
+
     return;
   }
 
   event.respondWith(
     (async () => {
       try {
-        const cached = await caches.match(req);
-        if (cached) {
-          console.log('[SW] cache hit', url.pathname);
-          return cached;
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
         }
 
-        const res = await fetch(req);
-        console.log('[SW] network success', url.pathname, res.status);
+        const networkResponse = await fetch(request);
 
-        if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
+        if (
+          networkResponse &&
+          networkResponse.ok &&
+          (networkResponse.type === 'basic' || networkResponse.type === 'cors')
+        ) {
           const cache = await caches.open(CACHE_NAME);
-          await cache.put(req, res.clone());
-          console.log('[SW] cached', url.pathname);
+          await cache.put(request, networkResponse.clone());
         }
 
-        return res;
+        return networkResponse;
       } catch (error) {
-        console.error('[SW] fetch failed', url.pathname, error);
+        console.warn('[SW] asset fetch failed, trying cache:', request.url, error);
 
-        const fallback = await caches.match(req);
+        const fallback = await caches.match(request);
         if (fallback) {
-          console.log('[SW] fallback cache hit', url.pathname);
           return fallback;
         }
 
-        throw error;
+        return new Response('Offline', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' },
+        });
       }
     })(),
   );
@@ -125,8 +178,7 @@ self.addEventListener('push', event => {
   try {
     data = event.data ? event.data.json() : {};
   } catch (error) {
-    console.error('[SW] push payload parse failed', error);
-    data = {};
+    console.error('[SW] push payload parse failed:', error);
   }
 
   const title = data.title || 'Primal Powerhouse';
@@ -136,13 +188,35 @@ self.addEventListener('push', event => {
       body: data.body || 'New update from your coach!',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: 'primal-powerhouse-notification',
+      tag: data.tag || 'primal-powerhouse-notification',
       requireInteraction: false,
+      data: {
+        url: data.url || '/user/dashboard',
+      },
     }),
   );
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/user/dashboard'));
+
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/user/dashboard';
+
+  event.waitUntil(
+    (async () => {
+      const windowClients = await clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      });
+
+      for (const client of windowClients) {
+        if ('focus' in client) {
+          await client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+
+      return clients.openWindow(targetUrl);
+    })(),
+  );
 });

@@ -1,7 +1,10 @@
 {
-  "version": "1.0.48",
+  "version": "1.0.49",
   "title": "Stability Fix",
   "notes": ["Improved app update stability and reduced cache-related issues."],
+  "releasedAt": "2026-03-26T14:30:00Z",
   "forceClearCache": false,
+  "forceUpdate": false,
+  "minRequiredVersion": "1.0.45",
   "updateStrategy": "manual"
 }
