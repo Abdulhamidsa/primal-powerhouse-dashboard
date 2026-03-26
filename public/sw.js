@@ -7,6 +7,12 @@ const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/ico
 const isSameOrigin = req => req.url.startsWith(self.location.origin);
 const isHtmlNavigation = req => req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
 
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
@@ -48,7 +54,6 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/')) return;
   if (url.pathname.includes('/login')) return;
 
-  // Let the browser/server handle page navigations directly
   if (isHtmlNavigation(req)) return;
 
   event.respondWith(
