@@ -1,5 +1,5 @@
 {
-  "version": "1.0.46",
+  "version": "1.0.47",
   "title": "Stability Fix",
   "notes": ["Improved app update stability and reduced cache-related issues."],
   "forceClearCache": false,
