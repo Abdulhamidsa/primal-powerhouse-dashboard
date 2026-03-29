@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     if (!validMealTypes.includes(mealType)) {
       return jsonWithCache(
         { error: `Invalid meal type: ${mealType}. Valid types are: ${validMealTypes.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     if (!mealId || !clientId || !mealType) {
       return jsonWithCache(
         { error: 'Missing required fields: mealId, clientId, and mealType are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         meal: true,
+        side: true,
         mealPlan: true,
       },
     });
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create meal assignment',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

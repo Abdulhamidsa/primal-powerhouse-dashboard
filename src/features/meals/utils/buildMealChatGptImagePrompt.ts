@@ -9,6 +9,8 @@ Single plated serving of: {MEAL_NAME}.
 
 Ingredients included in the dish: {INGREDIENTS}.
 
+Spices and seasonings: {SPICES}.
+
 All ingredients are cooked and presented as a finished meal.
 No raw meat, no uncooked ingredients, no oversized portions.
 
@@ -51,13 +53,14 @@ function normalizeIngredients(ingredients: string[]): string[] {
 export function buildMealChatGptImagePrompt(input: MealPromptInput): MealPromptOutput {
   const mealName = normalizeMealName(input.mealName);
   const ingredients = normalizeIngredients(input.ingredients);
+  const spices = normalizeIngredients(input.spices || []);
 
   const ingredientLine = ingredients.length > 0 ? ingredients.join(', ') : 'fresh whole ingredients matching the meal';
+  const spiceLine = spices.length > 0 ? spices.join(', ') : 'aromatic spices and seasonings';
 
-  const positivePrompt = POSITIVE_PROMPT_TEMPLATE.replace('{MEAL_NAME}', mealName).replace(
-    '{INGREDIENTS}',
-    ingredientLine
-  );
+  const positivePrompt = POSITIVE_PROMPT_TEMPLATE.replace('{MEAL_NAME}', mealName)
+    .replace('{INGREDIENTS}', ingredientLine)
+    .replace('{SPICES}', spiceLine);
 
   const negativePrompt = NEGATIVE_PROMPT_TEMPLATE;
 

@@ -56,18 +56,21 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Primal Powerhouse" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
+      <body
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+      >
         <LoadingProvider>
-           <LoadingProvider>
-  <RootAuthGate>
-    <AppUpdateProvider>
-      <PWAInstaller />
-      <InstallPrompt />
-      <SwrProvider>{children}</SwrProvider>
-    </AppUpdateProvider>
-  </RootAuthGate>
-</LoadingProvider>
+          <LoadingProvider>
+            <RootAuthGate>
+              <AppUpdateProvider>
+                <PWAInstaller />
+                <InstallPrompt />
+                <SwrProvider>{children}</SwrProvider>
+              </AppUpdateProvider>
+            </RootAuthGate>
           </LoadingProvider>
+        </LoadingProvider>
       </body>
     </html>
   );

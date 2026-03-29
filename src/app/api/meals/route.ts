@@ -4,6 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, invalidateMealCaches } from '@/lib/cache-tags';
 
+function hasMissingSpicesColumnError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+
+  return /meals\.spices/i.test(error.message) && /does not exist/i.test(error.message);
+}
+
 function safeJsonArray(value: string | null) {
   if (!value) return [];
   try {
@@ -14,28 +20,58 @@ function safeJsonArray(value: string | null) {
   }
 }
 
+function parseMealForResponse(
+  meal: {
+    ingredients: string | null;
+    spices?: string | null;
+    instructions: string | null;
+    tags: string | null;
+    [key: string]: unknown;
+  },
+  spicesFallback: string[] = [],
+) {
+  return {
+    ...meal,
+    ingredients: safeJsonArray(meal.ingredients),
+    spices: meal.spices ? safeJsonArray(meal.spices) : spicesFallback,
+    instructions: safeJsonArray(meal.instructions),
+    tags: safeJsonArray(meal.tags),
+  };
+}
+
 export async function GET(_request: NextRequest) {
   try {
     console.log('Meals API: FETCH ALL');
 
-    const meals = await unstable_cache(
-      async () =>
-        prisma.meal.findMany({
-          where: {
-            isPersonalized: false,
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-      ['meals:list:templates'],
-      { tags: [CACHE_TAGS.meals], revalidate: false }
-    )();
+    let meals;
 
-    const parsedMeals = meals.map(meal => ({
-      ...meal,
-      ingredients: safeJsonArray(meal.ingredients),
-      instructions: safeJsonArray(meal.instructions),
-      tags: safeJsonArray(meal.tags),
-    }));
+    try {
+      meals = await unstable_cache(
+        async () =>
+          prisma.meal.findMany({
+            where: {
+              isPersonalized: false,
+            },
+            orderBy: { createdAt: 'desc' },
+          }),
+        ['meals:list:templates'],
+        { tags: [CACHE_TAGS.meals], revalidate: false },
+      )();
+    } catch (error) {
+      if (!hasMissingSpicesColumnError(error)) {
+        throw error;
+      }
+
+      console.warn('Meals API GET: spices column missing; using compatibility query.');
+      meals = await prisma.$queryRawUnsafe(
+        `SELECT "id", "name", "type", "calories", "protein", "carbs", "fat", "fiber", "ingredients", "instructions", "prepTime", "cookTime", "servings", "tags", "imageUrl", "isPersonalized", "originalMealId", "createdAt", "updatedAt", "coachId", "clientId"
+         FROM "meals"
+         WHERE "isPersonalized" = false
+         ORDER BY "createdAt" DESC`,
+      );
+    }
+
+    const parsedMeals = (meals as Array<any>).map(meal => parseMealForResponse(meal));
 
     return jsonWithCache(parsedMeals);
   } catch (error) {
@@ -45,7 +81,7 @@ export async function GET(_request: NextRequest) {
         error: 'Failed to fetch meals',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -151,6 +187,11 @@ export async function POST(request: NextRequest) {
           ? mealData.ingredients
           : JSON.stringify(mealData.ingredients)
         : '[]',
+      spices: mealData.spices
+        ? typeof mealData.spices === 'string'
+          ? mealData.spices
+          : JSON.stringify(mealData.spices)
+        : '[]',
       instructions: mealData.instructions
         ? typeof mealData.instructions === 'string'
           ? mealData.instructions
@@ -161,6 +202,9 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating meal with cleaned data:', mealDataClean);
     let createdMeal;
+    const spicesFallback = Array.isArray(mealData.spices)
+      ? mealData.spices.filter((item: unknown) => typeof item === 'string' && item.trim())
+      : [];
 
     try {
       createdMeal = await prisma.meal.create({
@@ -171,6 +215,43 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('Error creating meal:', error);
       console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+
+      if (hasMissingSpicesColumnError(error)) {
+        console.warn('Meals API POST: spices column missing; creating meal without spices column.');
+        const fallbackCreatedRows = await prisma.$queryRawUnsafe(
+          `INSERT INTO "meals" ("name", "type", "calories", "protein", "carbs", "fat", "fiber", "ingredients", "instructions", "prepTime", "cookTime", "servings", "tags", "imageUrl", "isPersonalized", "originalMealId", "coachId", "clientId")
+           VALUES ($1, $2::"MealType", $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+           RETURNING "id", "name", "type", "calories", "protein", "carbs", "fat", "fiber", "ingredients", "instructions", "prepTime", "cookTime", "servings", "tags", "imageUrl", "isPersonalized", "originalMealId", "createdAt", "updatedAt", "coachId", "clientId"`,
+          mealDataClean.name,
+          mealDataClean.type,
+          mealDataClean.calories,
+          mealDataClean.protein,
+          mealDataClean.carbs,
+          mealDataClean.fat,
+          mealDataClean.fiber,
+          mealDataClean.ingredients,
+          mealDataClean.instructions,
+          mealDataClean.prepTime,
+          mealDataClean.cookTime,
+          mealDataClean.servings,
+          mealDataClean.tags,
+          mealDataClean.imageUrl,
+          mealDataClean.isPersonalized,
+          mealDataClean.originalMealId,
+          mealDataClean.coachId,
+          mealDataClean.clientId,
+        );
+
+        const fallbackCreatedMeal = (fallbackCreatedRows as Array<any>)[0];
+        const parsedMeal = parseMealForResponse(fallbackCreatedMeal, spicesFallback);
+
+        invalidateMealCaches({
+          mealId: String(fallbackCreatedMeal.id),
+          clientId: fallbackCreatedMeal.clientId ?? undefined,
+        });
+
+        return jsonWithCache(parsedMeal, { status: 201 });
+      }
 
       // Try again with absolute minimal fields
       try {
@@ -200,12 +281,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse JSON fields for response
-    const parsedMeal = {
-      ...createdMeal,
-      ingredients: createdMeal.ingredients ? JSON.parse(createdMeal.ingredients) : [],
-      instructions: createdMeal.instructions ? JSON.parse(createdMeal.instructions) : [],
-      tags: createdMeal.tags ? JSON.parse(createdMeal.tags) : [],
-    };
+    const parsedMeal = parseMealForResponse(createdMeal as any, spicesFallback);
 
     invalidateMealCaches({
       mealId: createdMeal.id,
@@ -221,7 +297,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create meal',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

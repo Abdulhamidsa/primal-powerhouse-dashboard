@@ -131,6 +131,11 @@ export interface MacroTotals {
   fiber: number;
 }
 
+export interface UnmatchedIngredientInput {
+  name: string;
+  grams: number;
+}
+
 export interface MatchedIngredient {
   id: string;
   name: string;
@@ -150,6 +155,8 @@ export interface GeneratedMeal {
   name: string;
   type: MealType;
   ingredients: MatchedIngredient[];
+  spices?: string[];
+  instructions?: string[];
   macros: MacroTotals;
   imageUrl?: string | null;
   rejectedReason?: string | null;
@@ -195,6 +202,7 @@ export interface FoodGenerationReadyRow {
   name: string;
   display_name: string | null;
   canonical_name: string | null;
+  alias_names?: string[];
   caloriesKcal: number;
   proteinG: number;
   carbsG: number;

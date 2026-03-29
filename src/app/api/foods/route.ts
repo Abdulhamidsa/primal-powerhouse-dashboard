@@ -69,6 +69,7 @@ function toApiFood(food: {
   baseUnit: DbFoodBaseUnit;
   gramsPerUnit: number | null;
   displayUnitLabel: string | null;
+  aliases?: Array<{ alias: string }>;
   createdById: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -91,6 +92,7 @@ function toApiFood(food: {
     baseUnit: toApiBaseUnit(food.baseUnit),
     gramsPerUnit: food.gramsPerUnit,
     displayUnitLabel: food.displayUnitLabel,
+    aliases: food.aliases?.map(item => item.alias) ?? [],
     createdById: food.createdById,
     createdAt: food.createdAt.toISOString(),
     updatedAt: food.updatedAt.toISOString(),
@@ -114,6 +116,7 @@ export async function GET(request: NextRequest) {
             OR: [
               { name: { contains: q, mode: 'insensitive' } },
               { displayUnitLabel: { contains: q, mode: 'insensitive' } },
+              { aliases: { some: { alias: { contains: q, mode: 'insensitive' } } } },
             ],
           }
         : {}),
@@ -126,6 +129,12 @@ export async function GET(request: NextRequest) {
     const [items, total] = await Promise.all([
       (prisma as any).food.findMany({
         where,
+        include: {
+          aliases: {
+            select: { alias: true },
+            orderBy: { alias: 'asc' },
+          },
+        },
         orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
         take,
       }),
@@ -156,7 +165,7 @@ export async function POST(request: NextRequest) {
           error: 'Invalid food payload',
           details: parsed.error.flatten(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

@@ -35,6 +35,7 @@ export const addMealFormSchema = z.object({
   ingredients: z.array(z.string()).refine(items => items.some(item => item.trim()), {
     message: 'At least one ingredient required',
   }),
+  spices: z.array(z.string()),
   instructions: z.array(z.string()).refine(items => items.some(item => item.trim()), {
     message: 'At least one instruction required',
   }),

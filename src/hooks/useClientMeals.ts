@@ -52,6 +52,7 @@ export function useClientMeals(clientId: string | null) {
             mealType?: string;
             portion?: number;
             meal: MealAssignment['meal'];
+            side?: MealAssignment['side'];
           }[];
         }) => {
           if (!plan.mealAssignments || !Array.isArray(plan.mealAssignments)) {
@@ -67,6 +68,7 @@ export function useClientMeals(clientId: string | null) {
               mealType?: string;
               portion?: number;
               meal: MealAssignment['meal'];
+              side?: MealAssignment['side'];
             }) => {
               allAssignments.push({
                 id: assignment.id,
@@ -81,10 +83,11 @@ export function useClientMeals(clientId: string | null) {
                 mealType: assignment.mealType,
                 portion: assignment.portion,
                 meal: assignment.meal,
+                side: assignment.side,
               });
-            }
+            },
           );
-        }
+        },
       );
 
       const activePlanCandidate = mealPlans.find((plan: { isActive?: boolean }) => plan.isActive) ?? mealPlans[0];
@@ -106,7 +109,7 @@ export function useClientMeals(clientId: string | null) {
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
-    }
+    },
   );
 
   return {

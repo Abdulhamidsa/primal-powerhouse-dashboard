@@ -10,8 +10,9 @@ export function NutritionTabContent({
 }) {
   const dailyCalories = mealAssignments.reduce(
     (sum, assignment) => sum + assignment.meal.calories * (assignment.portion ?? 1),
-    0
+    0,
   );
+  const sideCalories = mealAssignments.reduce((sum, assignment) => sum + (assignment.side?.calories ?? 0), 0);
 
   return (
     <div className="space-y-4">
@@ -25,12 +26,13 @@ export function NutritionTabContent({
           Planned Nutrition Snapshot
         </h3>
         <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Based on currently assigned meals for this client.
+          Based on currently assigned meals for this client. Side calories are tracked separately from main meals.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">
           <Tile label="Assigned Meals" value={`${mealAssignments.length}`} />
           <Tile label="Planned Calories" value={`${Math.round(dailyCalories)} kcal`} />
+          <Tile label="Side Calories" value={`${Math.round(sideCalories)} kcal`} />
           <Tile
             label="Average Per Meal"
             value={mealAssignments.length ? `${Math.round(dailyCalories / mealAssignments.length)} kcal` : '0 kcal'}

@@ -19,7 +19,7 @@ interface AddMealModalProps {
   onMealAddedAction: () => void;
 }
 
-type ArrayField = 'ingredients' | 'instructions' | 'tags';
+type ArrayField = 'ingredients' | 'spices' | 'instructions' | 'tags';
 
 export default function AddMealModal({ isOpen, onCloseAction, onMealAddedAction }: AddMealModalProps) {
   const [formData, setFormData] = useState<AddMealFormData>(getInitialMealFormData);
@@ -123,6 +123,19 @@ export default function AddMealModal({ isOpen, onCloseAction, onMealAddedAction 
               removeArrayItem={removeArrayItem}
               handleArrayChange={handleArrayChange}
               placeholder="e.g., 6 oz chicken breast"
+            />
+
+            <DynamicFieldSection
+              title="Spices & Seasonings"
+              description="Add spices and seasonings to make your meals delicious."
+              buttonText="Add Spice"
+              field="spices"
+              values={formData.spices}
+              error={errors.spices}
+              addArrayItem={addArrayItem}
+              removeArrayItem={removeArrayItem}
+              handleArrayChange={handleArrayChange}
+              placeholder="e.g., garlic powder, cumin, black pepper"
             />
 
             <DynamicFieldSection

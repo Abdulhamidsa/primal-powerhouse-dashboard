@@ -3,6 +3,25 @@ import { prisma } from '@/lib/prisma';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import { saveGeneratedMealTemplateSchema } from '@/features/meals/schemas/saveGeneratedMealTemplate.schema';
 
+const SPICE_TERMS = [
+  'salt',
+  'pepper',
+  'paprika',
+  'cumin',
+  'turmeric',
+  'oregano',
+  'garlic',
+  'chili',
+  'season',
+  'seasoning',
+  'marinade',
+  'sauce',
+  'herb',
+  'spice',
+] as const;
+
+const COVERAGE_STOPWORDS = new Set(['with', 'and', 'the', 'for', 'into', 'from', 'your', 'meal', 'fresh', 'lean']);
+
 function toMealEnum(type: 'breakfast' | 'lunch' | 'dinner' | 'snack') {
   return type.toUpperCase() as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 }
@@ -24,6 +43,102 @@ type SnapshotIngredient = {
     fiberG: number | null;
   };
 };
+
+function normalizeSpices(spices: string[] | undefined): string[] {
+  if (!spices) return [];
+
+  const seen = new Set<string>();
+  return spices
+    .map(item => item.trim().toLowerCase().replace(/\s+/g, ' '))
+    .filter(Boolean)
+    .filter(item => {
+      if (seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    })
+    .slice(0, 16);
+}
+
+function hasSpiceGuidanceInInstructions(instructions: string[], spices: string[]): boolean {
+  const merged = instructions.join(' ').toLowerCase();
+  const dynamicTerms = [...SPICE_TERMS, ...spices];
+  return dynamicTerms.some(term => merged.includes(term));
+}
+
+function normalizeCoverageText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractCoverageTokens(value: string): string[] {
+  return normalizeCoverageText(value)
+    .split(' ')
+    .map(token => token.trim())
+    .filter(token => token.length >= 3 && !COVERAGE_STOPWORDS.has(token));
+}
+
+function appendCoverageStepIfNeeded(instructions: string[], ingredientNames: string[], spices: string[]): string[] {
+  const merged = normalizeCoverageText(instructions.join(' '));
+
+  const missingIngredients = ingredientNames.filter(name => {
+    const tokens = extractCoverageTokens(name);
+    if (tokens.length === 0) return true;
+    return !tokens.some(token => merged.includes(token));
+  });
+
+  const missingSpices = spices.filter(spice => {
+    const tokens = extractCoverageTokens(spice);
+    if (tokens.length === 0) return true;
+    return !tokens.some(token => merged.includes(token));
+  });
+
+  if (missingIngredients.length === 0 && missingSpices.length === 0) {
+    return instructions;
+  }
+
+  const ingredientText =
+    missingIngredients.length > 0 ? `Finish with ${missingIngredients.slice(0, 6).join(', ')}` : null;
+  const spiceText = missingSpices.length > 0 ? `season using ${missingSpices.slice(0, 6).join(', ')}` : null;
+  const coverageStep = [ingredientText, spiceText].filter(Boolean).join(' and ');
+
+  return [...instructions, `${coverageStep}.`].slice(0, 8);
+}
+
+function buildInstructionsForSave(input: {
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  instructions: string[] | undefined;
+  spices: string[];
+  ingredientNames: string[];
+}): string[] {
+  const base = (input.instructions ?? [])
+    .map(step => step.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  if (base.length === 0) {
+    base.push('Cook and assemble ingredients according to your preferred method.');
+  }
+
+  const shouldEnforceSpiceGuidance = input.mealType === 'lunch' || input.mealType === 'dinner';
+  if (!shouldEnforceSpiceGuidance) {
+    return base;
+  }
+
+  if (hasSpiceGuidanceInInstructions(base, input.spices)) {
+    return base;
+  }
+
+  const spiceLine =
+    input.spices.length > 0
+      ? `Season well with ${input.spices.slice(0, 4).join(', ')} before final cooking.`
+      : 'Season well with salt, pepper, garlic, and paprika before final cooking.';
+
+  const withSpiceGuidance = [...base, spiceLine].slice(0, 8);
+  return appendCoverageStepIfNeeded(withSpiceGuidance, input.ingredientNames, input.spices);
+}
 
 async function resolveCoachId(): Promise<string> {
   const existingCoach = await prisma.user.findFirst({
@@ -58,6 +173,14 @@ export async function POST(request: Request) {
     }
 
     const { meal, tags = [], force = false } = parsed.data;
+    const normalizedSpices = normalizeSpices(meal.spices);
+    const ingredientNamesForCoverage = meal.ingredients.map(ingredient => ingredient.name);
+    const instructionsForSave = buildInstructionsForSave({
+      mealType: meal.type,
+      instructions: meal.instructions,
+      spices: normalizedSpices,
+      ingredientNames: ingredientNamesForCoverage,
+    });
 
     const normalizedIngredients = meal.ingredients.map(ingredient => ({
       ...ingredient,
@@ -123,28 +246,38 @@ export async function POST(request: Request) {
       new Set(['ai-generated', 'standard-template', ...tags].map(tag => tag.trim()).filter(Boolean)),
     );
 
+    const mealCreateData: Record<string, unknown> = {
+      name: meal.name.trim(),
+      type: toMealEnum(meal.type),
+      calories: macros.calories,
+      protein: macros.protein,
+      carbs: macros.carbs,
+      fat: macros.fat,
+      fiber: macros.fiber,
+      ingredients: JSON.stringify(ingredients),
+      instructions: JSON.stringify(instructionsForSave),
+      prepTime: 15,
+      cookTime: 20,
+      servings: 1,
+      tags: JSON.stringify(mergedTags),
+      imageUrl: meal.imageUrl ?? null,
+      isPersonalized: false,
+      clientId: null,
+      originalMealId: null,
+      coachId,
+    };
+
     const createdMeal = await prisma.meal.create({
-      data: {
-        name: meal.name.trim(),
-        type: toMealEnum(meal.type),
-        calories: macros.calories,
-        protein: macros.protein,
-        carbs: macros.carbs,
-        fat: macros.fat,
-        fiber: macros.fiber,
-        ingredients: JSON.stringify(ingredients),
-        instructions: JSON.stringify(['Cook and assemble ingredients according to your preferred method.']),
-        prepTime: 15,
-        cookTime: 20,
-        servings: 1,
-        tags: JSON.stringify(mergedTags),
-        imageUrl: meal.imageUrl ?? null,
-        isPersonalized: false,
-        clientId: null,
-        originalMealId: null,
-        coachId,
-      },
+      data: mealCreateData as any,
     });
+
+    if (normalizedSpices.length > 0) {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "meals" SET "spices" = $1 WHERE "id" = $2`,
+        JSON.stringify(normalizedSpices),
+        createdMeal.id,
+      );
+    }
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@ import { FoodBaseUnit, FoodSource, MealType as PrismaMealType } from '@prisma/cl
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
 import { prisma } from '@/lib/prisma';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
+import { buildPromptIngredientNames } from '@/lib/ingredient-canonicalization';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import {
   generateMealTemplateRequestSchema,
@@ -228,8 +229,42 @@ const ALLOWED_CUISINES = [
   'Mexican',
   'Italian',
   'Asian',
+  'Indian',
 ] as const;
+type FoodOrigin = (typeof ALLOWED_CUISINES)[number];
 const EXCLUDED_INGREDIENTS = ['shellfish', 'pork', 'alcohol', 'wine', 'beer', 'vodka'] as const;
+const FLAVOR_TERMS = [
+  'salt',
+  'pepper',
+  'black pepper',
+  'garlic',
+  'garlic powder',
+  'onion powder',
+  'paprika',
+  'smoked paprika',
+  'cumin',
+  'coriander',
+  'turmeric',
+  'oregano',
+  'basil',
+  'thyme',
+  'rosemary',
+  'chili',
+  'chili flakes',
+  'zaatar',
+  "za'atar",
+  'sumac',
+  'ginger',
+  'soy sauce',
+  'lemon juice',
+  'lime juice',
+  'vinegar',
+  'seasoning',
+  'spice blend',
+  'marinade',
+  'sauce',
+  'herbs',
+] as const;
 
 const COHERENCE_SYNONYMS: Record<string, string[]> = {
   chicken: ['chicken', 'shawarma', 'kebab'],
@@ -282,6 +317,120 @@ const COHERENCE_STOPWORDS = new Set([
   'meal',
 ]);
 
+type DiversityLock = {
+  targetCuisine: FoodOrigin;
+  targetProtein: string;
+  targetBase: string;
+  targetTechnique: string;
+};
+
+const DIVERSITY_PROTEIN_ROTATION = ['beef', 'turkey', 'fish', 'lentils', 'chickpeas', 'eggs', 'chicken'] as const;
+const DIVERSITY_BASE_ROTATION = ['couscous', 'lentils', 'bulgur', 'pasta', 'potato', 'quinoa', 'rice'] as const;
+const DIVERSITY_TECHNIQUE_ROTATION = [
+  'oven-baked',
+  'grilled',
+  'stewed',
+  'braised',
+  'stir-fried',
+  'lasagna-style baked',
+  'roasted tray-bake',
+] as const;
+
+const DIVERSITY_KEYWORDS: Record<string, string[]> = {
+  beef: ['beef', 'kofta', 'steak', 'mince'],
+  turkey: ['turkey'],
+  fish: ['fish', 'salmon', 'tuna', 'cod', 'sea bass'],
+  lentils: ['lentil', 'lentils', 'mujaddara', 'daal'],
+  chickpeas: ['chickpea', 'chickpeas'],
+  eggs: ['egg', 'eggs', 'omelette', 'shakshuka'],
+  chicken: ['chicken', 'shawarma', 'kebab'],
+  couscous: ['couscous'],
+  bulgur: ['bulgur', 'burghul'],
+  pasta: ['pasta', 'lasagna', 'lasagne', 'penne', 'spaghetti'],
+  potato: ['potato', 'potatoes'],
+  quinoa: ['quinoa'],
+  rice: ['rice', 'basmati'],
+  'oven-baked': ['oven', 'bake', 'baked'],
+  grilled: ['grill', 'grilled', 'charred'],
+  stewed: ['stew', 'stewed', 'simmer'],
+  braised: ['braise', 'braised'],
+  'stir-fried': ['stir fry', 'stir-fry', 'wok'],
+  'lasagna-style baked': ['lasagna', 'lasagne', 'bake', 'baked'],
+  'roasted tray-bake': ['roast', 'roasted', 'tray bake', 'tray-bake'],
+};
+
+function rotatePick<T>(items: readonly T[], attempt: number): T {
+  return items[(attempt - 1) % items.length] as T;
+}
+
+function buildDiversityLock(mealType: BuilderMealType, attempt: number, foodOrigin?: FoodOrigin): DiversityLock | null {
+  if (mealType === 'BREAKFAST' || mealType === 'SNACK') {
+    return null;
+  }
+
+  const cuisinePool: readonly FoodOrigin[] = foodOrigin
+    ? [foodOrigin]
+    : ['Middle Eastern', 'Mexican', 'Italian', 'Asian', 'Indian', 'Western', 'Greek', 'Mediterranean'];
+
+  const proteinPool = attempt <= 4 ? DIVERSITY_PROTEIN_ROTATION.slice(0, 6) : DIVERSITY_PROTEIN_ROTATION;
+
+  return {
+    targetCuisine: rotatePick(cuisinePool, attempt),
+    targetProtein: rotatePick(proteinPool, attempt),
+    targetBase: rotatePick(DIVERSITY_BASE_ROTATION, attempt),
+    targetTechnique: rotatePick(DIVERSITY_TECHNIQUE_ROTATION, attempt),
+  };
+}
+
+function containsAnyKeyword(text: string, keywords: string[]): boolean {
+  return keywords.some(keyword => text.includes(keyword));
+}
+
+function validateDiversityLock(aiMeal: MealTemplateAiResponse, diversityLock: DiversityLock | null): string | null {
+  const mergedText = normalizeDishKey(
+    [
+      aiMeal.mealName,
+      aiMeal.coreDishReference,
+      ...aiMeal.ingredients.map(item => item.name),
+      ...aiMeal.instructions,
+    ].join(' '),
+  );
+
+  const chickenRiceLemonPattern =
+    containsAnyKeyword(mergedText, DIVERSITY_KEYWORDS.chicken) &&
+    containsAnyKeyword(mergedText, DIVERSITY_KEYWORDS.rice) &&
+    containsAnyKeyword(mergedText, ['lemon']);
+
+  if (chickenRiceLemonPattern) {
+    return 'Rejected repetitive chicken + rice + lemon pattern';
+  }
+
+  if (!diversityLock) {
+    return null;
+  }
+
+  if (aiMeal.cuisineStyle !== diversityLock.targetCuisine) {
+    return `Diversity lock mismatch: expected cuisine ${diversityLock.targetCuisine}, got ${aiMeal.cuisineStyle}`;
+  }
+
+  const proteinKeywords = DIVERSITY_KEYWORDS[diversityLock.targetProtein] ?? [diversityLock.targetProtein];
+  if (!containsAnyKeyword(mergedText, proteinKeywords)) {
+    return `Diversity lock mismatch: missing protein family ${diversityLock.targetProtein}`;
+  }
+
+  const baseKeywords = DIVERSITY_KEYWORDS[diversityLock.targetBase] ?? [diversityLock.targetBase];
+  if (!containsAnyKeyword(mergedText, baseKeywords)) {
+    return `Diversity lock mismatch: missing base ${diversityLock.targetBase}`;
+  }
+
+  const techniqueKeywords = DIVERSITY_KEYWORDS[diversityLock.targetTechnique] ?? [diversityLock.targetTechnique];
+  if (!containsAnyKeyword(mergedText, techniqueKeywords)) {
+    return `Diversity lock mismatch: missing technique ${diversityLock.targetTechnique}`;
+  }
+
+  return null;
+}
+
 function sanitizeAiMealPayload(value: unknown): unknown {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return value;
@@ -289,6 +438,7 @@ function sanitizeAiMealPayload(value: unknown): unknown {
 
   const record = value as Record<string, unknown>;
   const instructions = record.instructions;
+  const spices = record.spices;
 
   if (Array.isArray(instructions) && instructions.length > 6) {
     return {
@@ -297,7 +447,34 @@ function sanitizeAiMealPayload(value: unknown): unknown {
     };
   }
 
+  if (Array.isArray(spices) && spices.length > 16) {
+    return {
+      ...record,
+      spices: spices.slice(0, 16),
+    };
+  }
+
   return value;
+}
+
+function normalizeSpiceList(spices: string[]): string[] {
+  const seen = new Set<string>();
+
+  return spices
+    .map(item => item.trim().toLowerCase().replace(/\s+/g, ' '))
+    .filter(Boolean)
+    .filter(item => {
+      if (seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    })
+    .slice(0, 16);
+}
+
+function inferSpicesFromContent(instructions: string[], ingredientNames: string[]): string[] {
+  const merged = [...instructions, ...ingredientNames].join(' ').toLowerCase();
+
+  return normalizeSpiceList(FLAVOR_TERMS.filter(term => merged.includes(term.toLowerCase())));
 }
 
 function parseAiPayload(content: string): MealTemplateAiResponse {
@@ -403,10 +580,48 @@ function hasAnyTerm(haystack: string, terms: string[]): boolean {
   return terms.some(term => haystack.includes(term));
 }
 
+function extractCoverageTokens(value: string): string[] {
+  return normalizeDishKey(value)
+    .split(' ')
+    .map(token => token.trim())
+    .filter(token => token.length >= 3 && !COHERENCE_STOPWORDS.has(token));
+}
+
+function validateInstructionCoverage(
+  instructions: string[],
+  ingredientNames: string[],
+  spices: string[],
+): string | null {
+  const instructionsText = normalizeDishKey(instructions.join(' '));
+
+  const missingIngredients = ingredientNames.filter(name => {
+    const tokens = extractCoverageTokens(name);
+    if (tokens.length === 0) return true;
+    return !tokens.some(token => instructionsText.includes(token));
+  });
+
+  const missingSpices = spices.filter(spice => {
+    const tokens = extractCoverageTokens(spice);
+    if (tokens.length === 0) return true;
+    return !tokens.some(token => instructionsText.includes(token));
+  });
+
+  if (missingIngredients.length === 0 && missingSpices.length === 0) {
+    return null;
+  }
+
+  const ingredientHint =
+    missingIngredients.length > 0 ? `Missing ingredient mentions: ${missingIngredients.slice(0, 6).join(', ')}` : null;
+  const spiceHint = missingSpices.length > 0 ? `Missing spice mentions: ${missingSpices.slice(0, 6).join(', ')}` : null;
+
+  return [ingredientHint, spiceHint].filter(Boolean).join(' | ');
+}
+
 function validateInstructionQuality(
   coreDishReference: string,
   instructions: string[],
   mealType: BuilderMealType,
+  spices: string[],
 ): string | null {
   // Simple BREAKFAST/SNACK dishes (yogurt bowls, eggs, pancakes) don't require spices in instructions
   if (mealType === 'BREAKFAST' || mealType === 'SNACK') {
@@ -414,28 +629,24 @@ function validateInstructionQuality(
   }
 
   const merged = instructions.join(' ').toLowerCase();
-  const spiceTerms = [
-    'spice',
-    'spices',
-    'season',
-    'seasoning',
-    'salt',
-    'cumin',
-    'paprika',
-    'sumac',
-    'coriander',
-    'turmeric',
-    'oregano',
-    'zaatar',
-    "za'atar",
-    'pepper',
-    'garlic',
-    'chili',
-    'sauce',
-    'salsa',
-    'herb',
-    'herbs',
-  ];
+  if (spices.length === 0) {
+    return 'Lunch and dinner meals must include a dedicated spices list.';
+  }
+
+  const spiceTerms = Array.from(
+    new Set([
+      'spice',
+      'spices',
+      'season',
+      'seasoning',
+      'sauce',
+      'marinade',
+      'herb',
+      'herbs',
+      ...FLAVOR_TERMS,
+      ...spices,
+    ]),
+  );
 
   if (!hasAnyTerm(merged, spiceTerms)) {
     return 'Instructions must include seasoning/spice or sauce guidance for better meal quality.';
@@ -494,6 +705,7 @@ function toFoodGenerationRows(
   foods: Array<{
     id: string;
     name: string;
+    aliases?: Array<{ alias: string }>;
     caloriesKcal: number;
     proteinG: number;
     carbsG: number;
@@ -506,6 +718,7 @@ function toFoodGenerationRows(
     name: food.name,
     display_name: food.name,
     canonical_name: food.name,
+    alias_names: food.aliases?.map(item => item.alias) ?? [],
     caloriesKcal: food.caloriesKcal,
     proteinG: food.proteinG,
     carbsG: food.carbsG,
@@ -517,6 +730,8 @@ function toFoodGenerationRows(
 function buildPrompt(input: {
   mealType: BuilderMealType;
   strictMatchMode: MatchMode;
+  foodOrigin?: FoodOrigin;
+  diversityLock: DiversityLock | null;
   allowedIngredients: string[];
   targetComplexity: 'simple' | 'advanced';
   avoidCoreDishReferences: string[];
@@ -536,6 +751,13 @@ ${coreDishesList}
 
 Allowed Cuisines (MIX & MATCH for creativity):
 ${ALLOWED_CUISINES.join(', ')}
+
+Cuisine Preference:
+${
+  input.foodOrigin
+    ? `STRICT MODE: Generate only ${input.foodOrigin} cuisine style. The returned cuisineStyle must be exactly "${input.foodOrigin}".`
+    : 'No origin selected (Any): keep output broad and rotate across all allowed cuisines. Avoid repeating Mediterranean by default.'
+}
 
 Excluded Ingredients (strict):
 ${EXCLUDED_INGREDIENTS.join(', ')}
@@ -594,10 +816,16 @@ Instead, BUILD FLAVOR through:
    - Result: complex, satisfying, NOT boring
 
 Game-Changing Meal Ideas (EXAMPLES of what clients LOVE):
-- Greek chicken bowls: grilled chicken + tzatziki + cucumber + feta (YES feta, controlled) + olives + herbs
-- Korean beef bowls: marinated lean beef + cilantro + gochujang sauce + brown rice
-- Mediterranean white fish: baked with tomatoes, capers, garlic, olive oil
-- Thai-inspired turkey: ground turkey + coconut milk (lite) + curry paste + green beans
+- Indian chicken bowl: yogurt-spiced chicken + cumin rice + onion-cucumber salad + mint chutney
+- Mexican turkey skillet: lean turkey + chipotle tomato sauce + corn + lime + cilantro
+- Italian beef pasta: lean beef mince + basil tomato sauce + garlic + parmesan finish
+- Italian baked turkey lasagna: lean turkey ragu + layered pasta + oven baked finish
+- Asian ginger chicken stir-fry: chicken + soy-ginger glaze + green beans + sesame
+- Middle Eastern kofta plate: beef kofta + sumac onions + yogurt tahini + herbed rice
+- Levantine/Syrian-inspired tray bake: spiced kofta + tomato-pepper base + oven-roasted vegetables
+- Mujaddara-style bowl: lentils + caramelized onion + cumin + yogurt-herb sauce
+- Greek tuna bowl: tuna + lemon oregano dressing + cucumber + olives + tomato
+- Western steak and potato bowl: seared lean steak + roasted potatoes + peppercorn herb sauce
 - Breakfast: egg white scramble + spinach + feta + sun-dried tomato + whole wheat toast
 - Snack: Greek yogurt + granola + berries + honey drizzle + almonds
 
@@ -618,9 +846,24 @@ Complexity Policy:
 - Simple = 3-4 ingredients, 1 cooking technique
 - Advanced = 6-8 ingredients, 2+ techniques, layered flavors
 
-Database Ingredient Constraint:
-- Use ONLY ingredients from this list (no substitutions):
+Diversity Lock (non-negotiable for this attempt):
+${
+  input.diversityLock
+    ? `- cuisineStyle must be ${input.diversityLock.targetCuisine}
+- primary protein family must include ${input.diversityLock.targetProtein}
+- carb/base must include ${input.diversityLock.targetBase}
+- cooking method must clearly include ${input.diversityLock.targetTechnique}
+- DO NOT return chicken + rice + lemon as the meal identity`
+    : '- Keep breakfast/snack creative and non-repetitive.'
+}
+
+Database Ingredient Context:
+- Pantry items to prefer when they naturally fit this meal:
 ${input.allowedIngredients.join(', ')}
+- You may generate ingredients beyond the pantry when needed for a better meal.
+- Prefer pantry naming when it is natural and clearly fits the same ingredient.
+- If an ingredient already exists in the pantry under a nearby wording, you may still use the most natural culinary name and let the system reconcile exact, alias, or canonical matches after generation.
+- Avoid awkward extra qualifiers or reordered descriptors unless they genuinely matter to the ingredient.
 
 ═══════════════════════════════════════════════════════════════════════════════
 HARD OUTPUT RULES:
@@ -629,12 +872,15 @@ HARD OUTPUT RULES:
 - 4-6 instruction steps (clear, actionable, specific to dish)
 - Each step should be a single action (don't combine multiple steps)
 - Include ONE FLAVOR-BUILDING step (sauce prep, marinade, seasoning rest)
+- Return a dedicated spices array separate from ingredients.
+- Instructions must mention every listed ingredient and every listed spice at least once.
 - Include ONE TEXTURE-BUILDING step (if advanced complexity)
 - Meal name should sound APPETIZING and SPECIFIC (not generic)
 - Never include excluded ingredients
 - Keep it gym-focused, high-protein, creatively delicious
 - Match mode for this request: ${input.strictMatchMode}
-- If match mode is strict, every ingredient must exist in the allowed ingredient list
+- In strict mode, strongly prefer pantry-backed ingredients, but still prioritize a realistic, appetizing meal over awkward pantry-only wording
+- Never output another generic Mediterranean chicken-lemon-rice style bowl
 
 ═══════════════════════════════════════════════════════════════════════════════
 MACRO VALIDATION (CRITICAL - DO THIS LAST):
@@ -647,11 +893,12 @@ Before finalizing, mentally calculate rough macros:
 Return JSON only in this exact shape:
 {
   "mealName": "string",
-  "cuisineStyle": "Middle Eastern|Western|Greek|Mediterranean|Mexican|Italian|Asian",
+  "cuisineStyle": "Middle Eastern|Western|Greek|Mediterranean|Mexican|Italian|Asian|Indian",
   "coreDishReference": "string",
   "complexity": "simple|advanced",
   "servings": 1,
   "ingredients": [{ "name": "string", "grams": 100 }],
+  "spices": ["string"],
   "instructions": ["step 1", "step 2"]
 }`;
 }
@@ -667,6 +914,7 @@ export async function POST(request: Request) {
 
     const mealType = parsed.data.mealType;
     const strictMatchMode = parsed.data.strictMatchMode;
+    const foodOrigin = parsed.data.foodOrigin;
     const avoidCoreDishReferences = parsed.data.avoidCoreDishReferences ?? [];
     const avoidMealNames = parsed.data.avoidMealNames ?? [];
     const persistedMealNames = await prisma.meal.findMany({
@@ -686,11 +934,16 @@ export async function POST(request: Request) {
     const effectiveAvoidCoreDishReferences =
       mealType === 'BREAKFAST' ? avoidCoreDishReferences.slice(0, 2) : avoidCoreDishReferences;
 
-    const foods = await prisma.food.findMany({
+    const foods = await (prisma as any).food.findMany({
       where: { isActive: true },
       select: {
         id: true,
         name: true,
+        aliases: {
+          select: {
+            alias: true,
+          },
+        },
         caloriesKcal: true,
         proteinG: true,
         carbsG: true,
@@ -718,8 +971,13 @@ export async function POST(request: Request) {
     const foodRows = toFoodGenerationRows(foodsByPriority);
     const foodMetaById = new Map(foodsByPriority.map(food => [food.id, food]));
 
-    const allowedIngredients = Array.from(new Set(foodsByPriority.map(food => food.name.trim()).filter(Boolean))).slice(
-      0,
+    const allowedIngredients = buildPromptIngredientNames(
+      foodsByPriority.map(food => ({
+        name: food.name,
+        canonical_name: food.name,
+        display_name: food.name,
+        alias_names: (food.aliases ?? []).map((item: { alias: string }) => item.alias),
+      })),
       500,
     );
     const targetComplexity: 'simple' | 'advanced' = Math.random() < 0.85 ? 'simple' : 'advanced';
@@ -731,6 +989,8 @@ export async function POST(request: Request) {
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
+        const diversityLock = buildDiversityLock(mealType, attempt, foodOrigin);
+
         const response = await azureOpenAI.chat.completions.create({
           model: AZURE_CHAT_DEPLOYMENT as string,
           temperature: 0.55,
@@ -741,6 +1001,8 @@ export async function POST(request: Request) {
               content: buildPrompt({
                 mealType,
                 strictMatchMode,
+                foodOrigin,
+                diversityLock,
                 allowedIngredients,
                 targetComplexity,
                 avoidCoreDishReferences: effectiveAvoidCoreDishReferences,
@@ -757,6 +1019,24 @@ export async function POST(request: Request) {
         }
 
         const aiMeal = parseAiPayload(content);
+        if (foodOrigin && aiMeal.cuisineStyle !== foodOrigin) {
+          lastErrorMessage = `Origin mismatch: expected ${foodOrigin}, got ${aiMeal.cuisineStyle}`;
+          continue;
+        }
+
+        const diversityIssue = validateDiversityLock(aiMeal, diversityLock);
+        if (diversityIssue) {
+          lastErrorMessage = diversityIssue;
+          continue;
+        }
+
+        const spices = normalizeSpiceList(
+          aiMeal.spices ??
+            inferSpicesFromContent(
+              aiMeal.instructions,
+              aiMeal.ingredients.map(item => item.name),
+            ),
+        );
 
         // For breakfast: allow any coreDishReference (user has complete freedom)
         // For other meals: validate against core dish definitions
@@ -802,40 +1082,35 @@ export async function POST(request: Request) {
         const ingredientMatchResults = aiMeal.ingredients.map(item => {
           const directMatch = matchIngredientToFood(item.name, item.grams, foodRows);
           if (directMatch) {
-            return { input: item, match: directMatch, substituted: false };
+            return { input: item, match: directMatch };
           }
 
-          const fallbackMatch = matchIngredientToFood(item.name, item.grams, foodRows, 30);
-          if (fallbackMatch) {
-            return { input: item, match: fallbackMatch, substituted: true };
-          }
-
-          return { input: item, match: null, substituted: false };
+          return { input: item, match: null };
         });
 
         const matchedIngredients = ingredientMatchResults
           .map(result => result.match)
           .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-        if (matchedIngredients.length < 2) {
-          throw new Error('Too few ingredients matched database foods');
+        if (matchedIngredients.length === 0) {
+          throw new Error('No generated ingredients matched database foods');
         }
 
         const unmatchedIngredients = ingredientMatchResults.filter(result => !result.match).map(result => result.input);
         const unmatchedCount = unmatchedIngredients.length;
-        const substitutions = ingredientMatchResults
-          .filter(result => result.substituted && result.match)
-          .map(result => `${result.input.name} -> ${result.match?.displayName ?? result.match?.name}`);
 
         // Build detailed warning with specific ingredient names
         const unmatchedWarning =
-          strictMatchMode === 'strict' && unmatchedCount > 0
-            ? `${unmatchedCount} ingredient(s) not in database: ${unmatchedIngredients.map(ing => `"${ing.name}"`).join(', ')}`
+          unmatchedCount > 0
+            ? strictMatchMode === 'strict'
+              ? `${unmatchedCount} ingredient(s) still need database resolution: ${unmatchedIngredients.map(ing => `"${ing.name}"`).join(', ')}`
+              : `${unmatchedCount} ingredient(s) were not matched automatically: ${unmatchedIngredients.map(ing => `"${ing.name}"`).join(', ')}`
             : null;
 
-        if (strictMatchMode === 'lenient' && unmatchedCount > 2) {
-          throw new Error('Too many unmatched ingredients');
-        }
+        const lowMatchWarning =
+          matchedIngredients.length < 2
+            ? 'Only one ingredient matched automatically. Review unmatched ingredients before saving this meal.'
+            : null;
 
         // Create basic mapped ingredients now so we can save fallback early
         const mappedIngredients = matchedIngredients.map(ingredient => {
@@ -861,9 +1136,7 @@ export async function POST(request: Request) {
         // SAVE FALLBACK NOW - we have a valid meal structure with matched ingredients
         const baseWarnings: string[] = [];
         if (unmatchedWarning) baseWarnings.push(unmatchedWarning);
-        if (substitutions.length > 0) {
-          baseWarnings.push(`Auto-substituted with similar DB ingredients: ${substitutions.join('; ')}`);
-        }
+        if (lowMatchWarning) baseWarnings.push(lowMatchWarning);
 
         fallbackMeal = {
           mealName: aiMeal.mealName,
@@ -873,9 +1146,11 @@ export async function POST(request: Request) {
           complexity: aiMeal.complexity,
           servings: aiMeal.servings,
           ingredients: mappedIngredients,
+          spices,
           instructions: aiMeal.instructions,
           macros,
           warnings: baseWarnings,
+          unmatchedIngredients,
         };
 
         // Now do soft validation checks and accumulate warnings instead of failing
@@ -898,6 +1173,11 @@ export async function POST(request: Request) {
           aiMeal.instructions,
           coherenceIngredientNames,
         );
+        const instructionCoverageError = validateInstructionCoverage(
+          aiMeal.instructions,
+          aiMeal.ingredients.map(item => item.name),
+          spices,
+        );
 
         // Check for quality issues but only hard-fail on critical ones
         let hasCriticalIssue = false;
@@ -907,6 +1187,9 @@ export async function POST(request: Request) {
         if (instructionCoherenceError && !instructionCoherenceError.includes('partial match')) {
           hasCriticalIssue = true;
         }
+        if (instructionCoverageError) {
+          baseWarnings.push(`Instruction coverage warning: ${instructionCoverageError}`);
+        }
 
         // For non-breakfast, check instruction quality
         if (!isBreakfast && resolvedCoreDish) {
@@ -914,6 +1197,7 @@ export async function POST(request: Request) {
             resolvedCoreDish.canonical,
             aiMeal.instructions,
             mealType,
+            spices,
           );
           if (instructionQualityError) {
             hasCriticalIssue = true;
@@ -978,7 +1262,9 @@ export async function POST(request: Request) {
       ? 'Failed to generate a unique meal template after retries. Please try again.'
       : lastErrorMessage.startsWith('AI response validation failed:')
         ? 'Failed to generate a valid meal template after retries. Please try again.'
-        : `Failed to generate a valid meal template after retries: ${lastErrorMessage}`;
+        : lastErrorMessage.startsWith('Origin mismatch:')
+          ? `Failed to generate a meal in the selected origin (${foodOrigin}) after retries. Please try again.`
+          : `Failed to generate a valid meal template after retries: ${lastErrorMessage}`;
 
     return NextResponse.json(
       {

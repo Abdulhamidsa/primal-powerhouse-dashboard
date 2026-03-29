@@ -1,41 +1,72 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createFoodSchema } from '@/features/foods/schemas/food.schema';
 import { useCreateFood } from '@/features/foods/hooks/useFoods';
+import type { FoodRecord } from '@/features/foods/types/food.types';
+
+export type FoodFormPrefill = Partial<{
+  name: string;
+  category: (typeof categoryOptions)[number];
+  state: (typeof stateOptions)[number];
+  caloriesKcal: string;
+  proteinG: string;
+  carbsG: string;
+  fatG: string;
+  fiberG: string;
+  baseUnit: '100g' | 'unit';
+  gramsPerUnit: string;
+  displayUnitLabel: string;
+  sourceRef: string;
+  source: (typeof sourceOptions)[number];
+  isActive: boolean;
+  verifiedBy: string;
+  verifiedAt: string;
+}>;
+
+function buildInitialFormData(prefill?: FoodFormPrefill) {
+  return {
+    name: prefill?.name ?? '',
+    category: prefill?.category ?? ('protein' as (typeof categoryOptions)[number]),
+    state: prefill?.state ?? ('raw' as (typeof stateOptions)[number]),
+    caloriesKcal: prefill?.caloriesKcal ?? '',
+    proteinG: prefill?.proteinG ?? '',
+    carbsG: prefill?.carbsG ?? '',
+    fatG: prefill?.fatG ?? '',
+    fiberG: prefill?.fiberG ?? '',
+    baseUnit: prefill?.baseUnit ?? ('100g' as '100g' | 'unit'),
+    gramsPerUnit: prefill?.gramsPerUnit ?? '',
+    displayUnitLabel: prefill?.displayUnitLabel ?? '',
+    sourceRef: prefill?.sourceRef ?? '',
+    source: prefill?.source ?? ('custom' as (typeof sourceOptions)[number]),
+    isActive: prefill?.isActive ?? true,
+    verifiedBy: prefill?.verifiedBy ?? '',
+    verifiedAt: prefill?.verifiedAt ?? '',
+  };
+}
 
 type FoodFormProps = {
   isOpen: boolean;
   onCloseAction: () => void;
-  onCreatedAction?: () => void;
+  onCreatedAction?: (createdFood?: FoodRecord) => void;
+  prefill?: FoodFormPrefill | null;
 };
 
 const categoryOptions = ['protein', 'carb', 'fat', 'dairy', 'fruit', 'vegetable', 'extra'] as const;
 const stateOptions = ['raw', 'dry', 'as_sold', 'cooked'] as const;
 const sourceOptions = ['custom', 'system'] as const;
 
-export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: FoodFormProps) {
+export default function FoodForm({ isOpen, onCloseAction, onCreatedAction, prefill }: FoodFormProps) {
   const { submit } = useCreateFood();
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string>('');
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'protein' as (typeof categoryOptions)[number],
-    state: 'raw' as (typeof stateOptions)[number],
-    caloriesKcal: '',
-    proteinG: '',
-    carbsG: '',
-    fatG: '',
-    fiberG: '',
-    baseUnit: '100g' as '100g' | 'unit',
-    gramsPerUnit: '',
-    displayUnitLabel: '',
-    sourceRef: '',
-    source: 'custom' as (typeof sourceOptions)[number],
-    isActive: true,
-    verifiedBy: '',
-    verifiedAt: '',
-  });
+  const [formData, setFormData] = useState(buildInitialFormData(prefill ?? undefined));
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setFormError('');
+    setFormData(buildInitialFormData(prefill ?? undefined));
+  }, [isOpen, prefill]);
 
   const parsedPreview = useMemo(() => {
     const payload = {
@@ -64,24 +95,7 @@ export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: Foo
 
   const reset = () => {
     setFormError('');
-    setFormData({
-      name: '',
-      category: 'protein',
-      state: 'raw',
-      caloriesKcal: '',
-      proteinG: '',
-      carbsG: '',
-      fatG: '',
-      fiberG: '',
-      baseUnit: '100g',
-      gramsPerUnit: '',
-      displayUnitLabel: '',
-      sourceRef: '',
-      source: 'custom',
-      isActive: true,
-      verifiedBy: '',
-      verifiedAt: '',
-    });
+    setFormData(buildInitialFormData());
   };
 
   const handleClose = () => {
@@ -100,8 +114,8 @@ export default function FoodForm({ isOpen, onCloseAction, onCreatedAction }: Foo
     setFormError('');
 
     try {
-      await submit(parsedPreview.data);
-      onCreatedAction?.();
+      const created = await submit(parsedPreview.data);
+      onCreatedAction?.(created);
       handleClose();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Failed to create ingredient');

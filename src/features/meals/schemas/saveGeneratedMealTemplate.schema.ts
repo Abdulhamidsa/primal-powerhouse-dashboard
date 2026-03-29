@@ -19,6 +19,8 @@ const generatedMealSchema = z.object({
   name: z.string().trim().min(1),
   type: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
   ingredients: z.array(matchedIngredientSchema).min(1),
+  spices: z.array(z.string().trim().min(2).max(80)).max(16).optional(),
+  instructions: z.array(z.string().trim().min(3).max(220)).max(8).optional(),
   imageUrl: z.string().url().nullable().optional(),
 });
 

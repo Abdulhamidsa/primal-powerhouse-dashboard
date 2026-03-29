@@ -49,6 +49,20 @@ export interface MealAssignment {
     fiber?: number;
     description?: string;
   };
+  side?: {
+    id: string;
+    name: string;
+    type: 'SALAD' | 'SOUP';
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber?: number | null;
+    ingredients: string[];
+    spices: string[];
+    instructions: string[];
+    foodOrigin?: string | null;
+  } | null;
 }
 
 export interface ActiveMealPlanSummary {

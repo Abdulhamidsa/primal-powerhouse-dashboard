@@ -31,6 +31,7 @@ model User {
   clients   Client[]
   workouts  Workout[]
   videos    Video[]
+  sideItems SideItem[]
   sessions  Session[]
   foodsCreated Food[]
   coachConversations Conversation[] @relation("ConversationCoach")
@@ -88,6 +89,7 @@ model Client {
   meals             Meal[]
   feedback          Feedback[]
   sessions          Session[]
+  sideItems         SideItem[]
   healthMetrics     HealthMetric[]
   weeklyCheckIns    WeeklyCheckIn[]
   dailyNutritionLogs DailyNutritionLog[]
@@ -175,6 +177,7 @@ model Meal {
   fat             Float
   fiber           Float?
   ingredients     String?
+  spices          String?
   instructions    String?
   prepTime        Int?
   cookTime        Int?
@@ -220,11 +223,27 @@ model Food {
   createdBy        User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+  aliases          FoodAlias[]
 
   @@index([name])
   @@index([category])
   @@index([isActive])
   @@map("foods")
+}
+
+model FoodAlias {
+  id              String   @id @default(cuid())
+  foodId          String
+  alias           String
+  normalizedAlias String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@index([foodId])
+  @@index([alias])
+  @@map("food_aliases")
 }
 
 model Video {
@@ -309,10 +328,43 @@ model MealAssignment {
 
   mealId String
   meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  side   SideItem?
 
   selectionItems UserMealSelectionItem[]
 
   @@map("meal_assignments")
+}
+
+model SideItem {
+  id              String    @id @default(cuid())
+  name            String
+  type            SideType
+  imageUrl        String?
+  calories        Float
+  protein         Float     @default(0)
+  carbs           Float     @default(0)
+  fat             Float     @default(0)
+  fiber           Float?
+  ingredients     String?
+  spices          String?
+  instructions    String?
+  foodOrigin      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  mealAssignmentId String?  @unique
+
+  coachId String
+  coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  mealAssignment MealAssignment? @relation(fields: [mealAssignmentId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([coachId])
+  @@index([clientId])
+  @@map("side_items")
 }
 
 model UserMealSelectionSet {
@@ -620,6 +672,11 @@ enum MealType {
   LUNCH
   DINNER
   SNACK
+}
+
+enum SideType {
+  SALAD
+  SOUP
 }
 
 enum WorkoutType {

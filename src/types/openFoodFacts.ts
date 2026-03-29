@@ -72,7 +72,7 @@ export interface SelectedIngredient extends FoodItem {
 
 export interface MealBuilderState {
   name: string;
-  type: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+  type: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK' | 'SIDE';
   servings: number;
   tags: string[];
   imageUrl?: string;

@@ -52,6 +52,22 @@ export interface MealPlan {
   mealAssignments: MealAssignment[];
 }
 
+export interface SideItem {
+  id: string;
+  name: string;
+  type: 'SALAD' | 'SOUP';
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number | null;
+  ingredients: string[];
+  spices: string[];
+  instructions: string[];
+  foodOrigin?: string | null;
+  mealAssignmentId?: string | null;
+}
+
 export interface MealAssignment {
   id: string;
   dayOfWeek: number;
@@ -59,6 +75,7 @@ export interface MealAssignment {
   portion: number;
   notes: string | null;
   meal: Meal;
+  side?: SideItem | null;
 }
 
 export interface Exercise {
@@ -328,6 +345,7 @@ export class DataService {
       mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
       portion?: number;
       notes?: string;
+      sideId?: string;
     }[];
   }): Promise<MealPlan> {
     console.log('DataService.createMealPlan - Starting', {

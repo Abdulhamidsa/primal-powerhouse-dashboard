@@ -1,7 +1,7 @@
 // components/admin/meals/DynamicFieldSection.tsx
 import { AddMealSection } from './AddMealSection';
 
-type ArrayField = 'ingredients' | 'instructions' | 'tags';
+type ArrayField = 'ingredients' | 'spices' | 'instructions' | 'tags';
 
 interface DynamicFieldSectionProps {
   title: string;

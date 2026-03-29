@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import type {
+  createFoodAliasSchema,
   createFoodSchema,
   foodBaseUnitSchema,
   foodCategorySchema,
@@ -13,8 +14,21 @@ export type FoodState = z.infer<typeof foodStateSchema>;
 export type FoodSource = z.infer<typeof foodSourceSchema>;
 export type FoodBaseUnit = z.infer<typeof foodBaseUnitSchema>;
 
+export type CreateFoodAliasPayload = z.infer<typeof createFoodAliasSchema>;
 export type CreateFoodPayload = z.infer<typeof createFoodSchema>;
 export type UpdateFoodPayload = z.infer<typeof updateFoodSchema>;
+
+export type FoodMacroUpdatePayload = NonNullable<CreateFoodAliasPayload['updateMacros']>;
+
+export type FoodAliasRecord = {
+  id: string;
+  foodId: string;
+  alias: string;
+  normalizedAlias: string;
+  macrosUpdated?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type FoodRecord = {
   id: string;
@@ -34,6 +48,7 @@ export type FoodRecord = {
   baseUnit: FoodBaseUnit;
   gramsPerUnit: number | null;
   displayUnitLabel: string | null;
+  aliases?: string[];
   createdById: string | null;
   createdAt: string;
   updatedAt: string;

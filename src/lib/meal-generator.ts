@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
 import { buildMealPrompt } from '@/lib/prompts';
+import { buildPromptIngredientNames } from '@/lib/ingredient-canonicalization';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import { prisma } from '@/lib/prisma';
@@ -78,14 +79,7 @@ async function generateMealSuggestions(
 ): Promise<AiMealSuggestion[]> {
   const requestedCount = Math.max(1, input.mealCount ?? 5);
   const candidateCount = Math.min(60, Math.max(20, requestedCount * 5));
-  const allowedIngredients = Array.from(
-    new Set(
-      foods
-        .map(food => food.canonical_name ?? food.display_name ?? food.name)
-        .map(name => name?.trim())
-        .filter((name): name is string => Boolean(name)),
-    ),
-  ).slice(0, 400);
+  const allowedIngredients = buildPromptIngredientNames(foods, 400);
 
   const basePrompt = buildMealPrompt({
     ...input,

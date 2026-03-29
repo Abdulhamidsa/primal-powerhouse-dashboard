@@ -1,4 +1,5 @@
 import type { FoodGenerationReadyRow, MatchedIngredient } from '@/types/meal';
+import { buildFoodLookupKeys, buildIngredientLookupKeys } from '@/lib/ingredient-canonicalization';
 
 function normalize(value: string): string {
   return value
@@ -18,25 +19,36 @@ function scoreMatch(input: string, food: FoodGenerationReadyRow): number {
   const nameNormalized = normalize(food.name);
   const canonicalNormalized = normalize(food.canonical_name ?? '');
   const displayNormalized = normalize(food.display_name ?? '');
+  const aliasNormalized = (food.alias_names ?? []).map(alias => normalize(alias)).filter(Boolean);
+  const inputLookupKeys = buildIngredientLookupKeys(input);
+  const foodLookupKeys = buildFoodLookupKeys(food);
 
   if (!inputNormalized) return 0;
 
   if (inputNormalized === nameNormalized) return 100;
   if (inputNormalized === canonicalNormalized) return 98;
   if (inputNormalized === displayNormalized) return 96;
+  if (aliasNormalized.includes(inputNormalized)) return 97;
+  if (inputLookupKeys.some(key => foodLookupKeys.includes(key))) return 99;
 
   if (nameNormalized.includes(inputNormalized)) return 90;
   if (canonicalNormalized.includes(inputNormalized)) return 88;
   if (displayNormalized.includes(inputNormalized)) return 86;
+  if (aliasNormalized.some(alias => alias.includes(inputNormalized))) return 87;
+  if (inputLookupKeys.some(key => foodLookupKeys.some(foodKey => foodKey.includes(key)))) return 89;
 
   if (inputNormalized.includes(nameNormalized)) return 84;
   if (inputNormalized.includes(canonicalNormalized)) return 82;
   if (inputNormalized.includes(displayNormalized)) return 80;
+  if (aliasNormalized.some(alias => inputNormalized.includes(alias))) return 81;
+  if (foodLookupKeys.some(foodKey => inputLookupKeys.some(key => key.includes(foodKey)))) return 83;
 
-  const inputTokens = tokenSet(inputNormalized);
+  const inputTokens = new Set(inputLookupKeys.flatMap(value => value.split(' ').filter(Boolean)));
   const nameTokens = tokenSet(nameNormalized);
   const canonicalTokens = tokenSet(canonicalNormalized);
   const displayTokens = tokenSet(displayNormalized);
+  const aliasTokenSets = aliasNormalized.map(tokenSet);
+  const lookupTokenSets = foodLookupKeys.map(value => new Set(value.split(' ').filter(Boolean)));
 
   const overlap = (a: Set<string>, b: Set<string>) => {
     let count = 0;
@@ -55,6 +67,8 @@ function scoreMatch(input: string, food: FoodGenerationReadyRow): number {
     scoreByTokenOverlap(nameTokens),
     scoreByTokenOverlap(canonicalTokens),
     scoreByTokenOverlap(displayTokens),
+    ...aliasTokenSets.map(scoreByTokenOverlap),
+    ...lookupTokenSets.map(scoreByTokenOverlap),
   );
 }
 

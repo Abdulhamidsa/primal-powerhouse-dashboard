@@ -5,14 +5,23 @@ import { ChevronDown, Copy, Sparkles } from 'lucide-react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
 import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 import { useGenerateMealTemplate } from '@/features/meals/hooks/useGenerateMealTemplate';
+import { createSide, generateSideTemplate } from '@/features/sides/api/sides.api';
 import { DataService } from '@/services/dataService';
 import { httpClient } from '@/lib/http/client';
 import IngredientSearch from './IngredientSearch';
 import SelectedIngredientRow from './SelectedIngredientRow';
 import TotalsPanel from './TotalsPanel';
 import type { SelectedIngredient } from '@/types/openFoodFacts';
+import type { BuilderMealType, FoodOrigin } from '@/features/meals/types/mealTemplateGeneration.types';
+import type { SideType } from '@/features/sides/types/side.types';
 import FoodForm from '@/features/foods/components/FoodForm';
+import type { FoodFormPrefill } from '@/features/foods/components/FoodForm';
+import { useCreateFoodAlias } from '@/features/foods/hooks/useFoodAliases';
+import type { FoodMacroUpdatePayload, FoodRecord } from '@/features/foods/types/food.types';
+import { useRematchMealIngredients } from '@/features/meals/hooks/useRematchMealIngredients';
+import UnmatchedIngredientPanel from '@/features/meals/components/UnmatchedIngredientPanel';
 import ImageUpload from '@/components/ImageUpload';
+import type { UnmatchedIngredientInput } from '@/types/meal';
 
 interface MealBuilderModalProps {
   isOpen: boolean;
@@ -20,7 +29,74 @@ interface MealBuilderModalProps {
   onMealCreatedAction: () => void;
 }
 
+type BuilderEntityType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK' | 'SIDE';
+
+function normalizeRecoveryLabel(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function mapTemplateIngredientToSelectedIngredient(ingredient: {
+  id: string;
+  name: string;
+  kcalPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  fiberPer100g: number;
+  grams: number;
+  servingUnit?: 'g' | 'piece';
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
+}): SelectedIngredient {
+  return {
+    id: ingredient.id,
+    name: ingredient.name,
+    kcalPer100g: ingredient.kcalPer100g,
+    proteinPer100g: ingredient.proteinPer100g,
+    carbsPer100g: ingredient.carbsPer100g,
+    fatPer100g: ingredient.fatPer100g,
+    fiberPer100g: ingredient.fiberPer100g,
+    hasIncompleteData: false,
+    grams: ingredient.grams,
+    servingUnit: ingredient.servingUnit,
+    gramsPerUnit: ingredient.gramsPerUnit,
+    displayUnitLabel: ingredient.displayUnitLabel,
+  };
+}
+
+function mapFoodRecordToSelectedIngredient(food: FoodRecord, grams: number): SelectedIngredient {
+  return {
+    id: food.id,
+    name: food.name,
+    kcalPer100g: food.caloriesKcal,
+    proteinPer100g: food.proteinG,
+    carbsPer100g: food.carbsG,
+    fatPer100g: food.fatG,
+    fiberPer100g: food.fiberG ?? 0,
+    hasIncompleteData: false,
+    grams,
+    servingUnit: food.baseUnit === 'unit' ? 'piece' : 'g',
+    gramsPerUnit: food.gramsPerUnit,
+    displayUnitLabel: food.displayUnitLabel,
+  };
+}
+
 export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedAction }: MealBuilderModalProps) {
+  const FOOD_ORIGIN_OPTIONS: FoodOrigin[] = [
+    'Middle Eastern',
+    'Mediterranean',
+    'Greek',
+    'Italian',
+    'Mexican',
+    'Asian',
+    'Western',
+    'Indian',
+  ];
+
   const {
     state,
     setState,
@@ -38,9 +114,18 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const [uploadError, setUploadError] = useState<string>('');
   const [aiNotice, setAiNotice] = useState<string>('');
   const [showFoodFormModal, setShowFoodFormModal] = useState(false);
+  const [foodFormPrefill, setFoodFormPrefill] = useState<FoodFormPrefill | null>(null);
+  const [pendingIngredientRecovery, setPendingIngredientRecovery] = useState<UnmatchedIngredientInput | null>(null);
   const [isIngredientSearchOpen, setIsIngredientSearchOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [instructions, setInstructions] = useState<string[]>(['']);
+  const [spices, setSpices] = useState<string[]>(['']);
+  const [foodOrigin, setFoodOrigin] = useState<'ANY' | FoodOrigin>('ANY');
+  const [sideType, setSideType] = useState<SideType>('SALAD');
+  const [recentSideNames, setRecentSideNames] = useState<string[]>([]);
+  const [unmatchedIngredients, setUnmatchedIngredients] = useState<UnmatchedIngredientInput[]>([]);
+  const { submit: createFoodAlias } = useCreateFoodAlias();
+  const { loading: rematchLoading, error: rematchError, rematch } = useRematchMealIngredients();
 
   const {
     promptText,
@@ -60,6 +145,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   } = useGenerateMealTemplate();
 
   const selectedIds = useMemo(() => new Set(state.selectedIngredients.map(ing => ing.id)), [state.selectedIngredients]);
+  const isSideMode = state.type === 'SIDE';
 
   const totals = calculateTotals();
   const perServing = calculatePerServingNutrition();
@@ -76,6 +162,12 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       resetPromptState();
       resetTemplateGenerator();
       setAiNotice('');
+      setFoodOrigin('ANY');
+      setSideType('SALAD');
+      setRecentSideNames([]);
+      setFoodFormPrefill(null);
+      setPendingIngredientRecovery(null);
+      setUnmatchedIngredients([]);
     }
   }, [isOpen, resetPromptState, resetTemplateGenerator]);
 
@@ -106,6 +198,13 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     e?.preventDefault();
     console.log('Submitting meal with state:', state, 'totals:', totals);
 
+    if (isSideMode && totals.kcal > 80) {
+      setUploadError(
+        `Sides must be 80 kcal or less. Current total is ${Math.round(totals.kcal)} kcal. Reduce ingredient grams and try again.`,
+      );
+      return;
+    }
+
     if (!validateForm()) {
       setUploadError('Please fix the highlighted fields before creating the meal.');
       return;
@@ -115,6 +214,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       setLoading(true);
       setUploadError('');
       const parsedInstructions = parseInstructionSteps(instructions);
+      const parsedSpices = spices.map(item => item.trim()).filter(Boolean);
 
       const templateIngredients = state.selectedIngredients.map(ing => {
         const unit = ing.servingUnit ?? 'g';
@@ -162,33 +262,56 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         imageUrl = uploadResult.data.url;
       }
 
-      // Create meal using existing service (same as manual form)
-      const mealData = {
-        name: state.name,
-        type: state.type,
-        calories: totals.kcal,
-        protein: totals.protein,
-        carbs: totals.carbs,
-        fat: totals.fat,
-        fiber: totals.fiber || 0,
-        ingredients: templateIngredients,
-        instructions: parsedInstructions,
-        prepTime: 0,
-        cookTime: 0,
-        servings: state.servings,
-        tags: ['built-from-ingredients', ...state.tags].filter(Boolean),
-        imageUrl,
-      };
+      if (isSideMode) {
+        await createSide({
+          name: state.name,
+          type: sideType,
+          imageUrl,
+          calories: totals.kcal,
+          protein: totals.protein,
+          carbs: totals.carbs,
+          fat: totals.fat,
+          fiber: totals.fiber || 0,
+          ingredients: state.selectedIngredients.map(ingredient => ingredient.name),
+          spices: parsedSpices,
+          instructions: parsedInstructions,
+          foodOrigin: foodOrigin === 'ANY' ? undefined : foodOrigin,
+        });
+      } else {
+        const mealData = {
+          name: state.name,
+          type: state.type,
+          calories: totals.kcal,
+          protein: totals.protein,
+          carbs: totals.carbs,
+          fat: totals.fat,
+          fiber: totals.fiber || 0,
+          ingredients: templateIngredients,
+          instructions: parsedInstructions,
+          spices: parsedSpices,
+          prepTime: 0,
+          cookTime: 0,
+          servings: state.servings,
+          tags: ['built-from-ingredients', ...state.tags].filter(Boolean),
+          imageUrl,
+        };
 
-      console.log('Creating meal from builder:', mealData);
-      await DataService.createMeal(mealData);
+        console.log('Creating meal from builder:', mealData);
+        await DataService.createMeal(mealData);
+      }
 
       onMealCreatedAction();
       onCloseAction();
       resetForm();
       setIsIngredientSearchOpen(false);
       setInstructions(['']);
+      setSpices(['']);
+      setSideType('SALAD');
+      setFoodOrigin('ANY');
       setSelectedImageFile(null);
+      setFoodFormPrefill(null);
+      setPendingIngredientRecovery(null);
+      setUnmatchedIngredients([]);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create meal';
       setUploadError(message);
@@ -214,11 +337,204 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     setInstructions(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   };
 
+  const handleSpiceChange = (index: number, value: string) => {
+    setSpices(prev => prev.map((item, i) => (i === index ? value : item)));
+  };
+
+  const addSpice = () => {
+    setSpices(prev => [...prev, '']);
+  };
+
+  const removeSpice = (index: number) => {
+    setSpices(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
   const handleGeneratePrompt = () => {
     generate({
       mealName: state.name,
       ingredients: state.selectedIngredients.map(ingredient => ingredient.name),
+      spices: spices.map(item => item.trim()).filter(Boolean),
     });
+  };
+
+  const openBlankFoodForm = () => {
+    setPendingIngredientRecovery(null);
+    setFoodFormPrefill(null);
+    setShowFoodFormModal(true);
+  };
+
+  const openRecoveryFoodForm = (item: UnmatchedIngredientInput) => {
+    setPendingIngredientRecovery(item);
+    setFoodFormPrefill({
+      name: item.name,
+      category: 'protein',
+      state: 'raw',
+      source: 'custom',
+      baseUnit: '100g',
+      isActive: true,
+    });
+    setShowFoodFormModal(true);
+  };
+
+  const applyRematchResult = async (itemsToResolve: UnmatchedIngredientInput[], prefixMessage: string) => {
+    try {
+      const result = await rematch(itemsToResolve);
+      const rematchedIngredients = result.matchedIngredients.map(mapTemplateIngredientToSelectedIngredient);
+      const currentSelectedIngredients = state.selectedIngredients;
+      const nextSelectedIngredients = [...currentSelectedIngredients];
+
+      rematchedIngredients.forEach(ingredient => {
+        if (!nextSelectedIngredients.some(existing => existing.id === ingredient.id)) {
+          nextSelectedIngredients.push(ingredient);
+        }
+      });
+
+      setState(prev => ({
+        ...prev,
+        selectedIngredients: nextSelectedIngredients,
+      }));
+
+      const resolvedKeys = new Set(itemsToResolve.map(item => `${item.name}::${item.grams}`));
+      setUnmatchedIngredients(prev => {
+        const pending = prev.filter(item => !resolvedKeys.has(`${item.name}::${item.grams}`));
+        const merged = [...pending, ...result.unmatchedIngredients];
+        const seen = new Set<string>();
+        return merged.filter(item => {
+          const key = `${item.name}::${item.grams}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      });
+
+      generate({
+        mealName: state.name,
+        ingredients: nextSelectedIngredients.map(ingredient => ingredient.name),
+        spices: spices.map(item => item.trim()).filter(Boolean),
+      });
+
+      const noticeParts = [prefixMessage];
+      if (result.matchedIngredients.length > 0) {
+        noticeParts.push(`Matched ${result.matchedIngredients.length} ingredient(s) into the meal.`);
+      }
+      if (result.unmatchedIngredients.length > 0) {
+        noticeParts.push(`Still unmatched: ${result.unmatchedIngredients.map(item => item.name).join(', ')}.`);
+      }
+      if (result.warnings.length > 0) {
+        noticeParts.push(result.warnings.join(' | '));
+      }
+      setAiNotice(noticeParts.join(' '));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Failed to rematch ingredient');
+    }
+  };
+
+  const handleFoodCreated = async (createdFood?: FoodRecord) => {
+    if (!createdFood || !pendingIngredientRecovery) {
+      return;
+    }
+
+    const recoveryItem = pendingIngredientRecovery;
+    setPendingIngredientRecovery(null);
+    setFoodFormPrefill(null);
+
+    const needsAlias = normalizeRecoveryLabel(recoveryItem.name) !== normalizeRecoveryLabel(createdFood.name);
+    if (needsAlias) {
+      const shouldCreateAlias = window.confirm(
+        `Create alias "${recoveryItem.name}" for "${createdFood.name}" so future AI matches resolve automatically?`,
+      );
+
+      if (shouldCreateAlias) {
+        try {
+          await createFoodAlias({
+            foodId: createdFood.id,
+            alias: recoveryItem.name,
+          });
+        } catch (error) {
+          setUploadError(error instanceof Error ? error.message : 'Failed to create alias');
+          return;
+        }
+      }
+    }
+
+    await applyRematchResult(
+      [recoveryItem],
+      needsAlias
+        ? `Added ${createdFood.name} and refreshed the current AI meal.`
+        : `Added ${createdFood.name} to the database.`,
+    );
+  };
+
+  const handleCreateAliasForUnmatched = async (input: {
+    item: UnmatchedIngredientInput;
+    targetFood: FoodRecord;
+    alias: string;
+    updateMacros?: FoodMacroUpdatePayload;
+  }) => {
+    const { item, targetFood, alias, updateMacros } = input;
+
+    const confirmed = window.confirm(`Create alias "${alias}" for "${targetFood.name}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const createdAlias = await createFoodAlias({
+        foodId: targetFood.id,
+        alias,
+        updateMacros,
+      });
+
+      const notice = createdAlias.macrosUpdated
+        ? `Alias saved for ${alias}. Ingredient macros updated globally for ${targetFood.name}.`
+        : `Alias saved for ${alias}.`;
+      await applyRematchResult([item], notice);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to create alias';
+      if (message.includes('Alias already exists for this ingredient')) {
+        await applyRematchResult([item], `Alias already existed for ${alias}. Matched it immediately.`);
+        return;
+      }
+
+      setUploadError(message);
+    }
+  };
+
+  const handleUseMatchForUnmatched = async (input: { item: UnmatchedIngredientInput; targetFood: FoodRecord }) => {
+    const { item, targetFood } = input;
+    const matchedIngredient = mapFoodRecordToSelectedIngredient(targetFood, item.grams);
+
+    setState(prev => {
+      const existingIndex = prev.selectedIngredients.findIndex(ingredient => ingredient.id === matchedIngredient.id);
+      if (existingIndex === -1) {
+        return {
+          ...prev,
+          selectedIngredients: [...prev.selectedIngredients, matchedIngredient],
+        };
+      }
+
+      const nextSelectedIngredients = [...prev.selectedIngredients];
+      const current = nextSelectedIngredients[existingIndex];
+      nextSelectedIngredients[existingIndex] = {
+        ...current,
+        grams: current.grams + item.grams,
+      };
+
+      return {
+        ...prev,
+        selectedIngredients: nextSelectedIngredients,
+      };
+    });
+
+    setUnmatchedIngredients(prev => prev.filter(entry => !(entry.name === item.name && entry.grams === item.grams)));
+
+    generate({
+      mealName: state.name,
+      ingredients: [...state.selectedIngredients.map(ingredient => ingredient.name), targetFood.name],
+      spices: spices.map(entry => entry.trim()).filter(Boolean),
+    });
+
+    setAiNotice(`Matched ${item.name} directly to ${targetFood.name}.`);
   };
 
   const handleSuggestMealWithAi = async () => {
@@ -238,32 +554,98 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       setUploadError('');
       setAiNotice('');
 
-      const template = await generateTemplate(state.type);
+      if (isSideMode) {
+        const sideTemplate = await generateSideTemplate({
+          mealType: 'LUNCH',
+          sideType,
+          foodOrigin: foodOrigin === 'ANY' ? undefined : foodOrigin,
+          avoidSideNames: recentSideNames.slice(0, 6),
+        });
 
-      setState(prev => ({
-        ...prev,
-        name: template.mealName,
-        type: state.type,
-        servings: Math.max(1, template.servings),
-        selectedIngredients: template.ingredients.map(ingredient => ({
-          ...ingredient,
+        const mappedSelectedIngredients = (sideTemplate.matchedIngredients ?? []).map(ingredient => ({
+          id: ingredient.id,
+          name: ingredient.name,
+          kcalPer100g: ingredient.kcalPer100g,
+          proteinPer100g: ingredient.proteinPer100g,
+          carbsPer100g: ingredient.carbsPer100g,
+          fatPer100g: ingredient.fatPer100g,
+          fiberPer100g: ingredient.fiberPer100g,
           hasIncompleteData: false,
-        })),
-      }));
+          grams: ingredient.grams,
+          servingUnit: ingredient.servingUnit,
+          gramsPerUnit: ingredient.gramsPerUnit,
+          displayUnitLabel: ingredient.displayUnitLabel,
+        }));
 
-      setInstructions(template.instructions.length > 0 ? template.instructions : ['']);
-      setErrors({});
+        setState(prev => ({
+          ...prev,
+          name: sideTemplate.name,
+          servings: 1,
+          selectedIngredients: mappedSelectedIngredients,
+        }));
+        setInstructions(sideTemplate.instructions.length > 0 ? sideTemplate.instructions : ['']);
+        setSpices(sideTemplate.spices.length > 0 ? sideTemplate.spices : ['']);
+        setUnmatchedIngredients([]);
+        setErrors({});
 
-      generate({
-        mealName: template.mealName,
-        ingredients: template.ingredients.map(ingredient => ingredient.name),
-      });
+        generate({
+          mealName: sideTemplate.name,
+          ingredients:
+            mappedSelectedIngredients.length > 0
+              ? mappedSelectedIngredients.map(ingredient => ingredient.name)
+              : sideTemplate.ingredients,
+          spices: sideTemplate.spices,
+        });
 
-      const baseNotice = `AI meal ready: ${template.coreDishReference} (${template.cuisineStyle})`;
-      if (template.warnings.length > 0) {
-        setAiNotice(`${baseNotice}. Notes: ${template.warnings.join(' ')}`);
+        const originLabel = foodOrigin === 'ANY' ? 'Any origin' : `Origin: ${foodOrigin}`;
+        const ingredientNotice =
+          mappedSelectedIngredients.length > 0
+            ? `${mappedSelectedIngredients.length} ingredients auto-filled from your DB`
+            : 'No DB ingredient matches found; add ingredients manually';
+        const warningNotice =
+          sideTemplate.warnings && sideTemplate.warnings.length > 0 ? ` | ${sideTemplate.warnings.join(' ')}` : '';
+        setAiNotice(`AI side ready: ${sideTemplate.type} | ${originLabel}. ${ingredientNotice}.${warningNotice}`);
+        setRecentSideNames(prev => {
+          const normalized = sideTemplate.name.trim();
+          if (!normalized) return prev;
+          const next = [normalized, ...prev.filter(name => name.toLowerCase() !== normalized.toLowerCase())];
+          return next.slice(0, 10);
+        });
       } else {
-        setAiNotice(baseNotice);
+        const template = await generateTemplate(
+          state.type as BuilderMealType,
+          foodOrigin === 'ANY' ? undefined : foodOrigin,
+        );
+
+        setState(prev => ({
+          ...prev,
+          name: template.mealName,
+          type: state.type,
+          servings: Math.max(1, template.servings),
+          selectedIngredients: template.ingredients.map(ingredient => ({
+            ...ingredient,
+            hasIncompleteData: false,
+          })),
+        }));
+
+        setInstructions(template.instructions.length > 0 ? template.instructions : ['']);
+        setSpices(template.spices.length > 0 ? template.spices : ['']);
+        setUnmatchedIngredients(template.unmatchedIngredients ?? []);
+        setErrors({});
+
+        generate({
+          mealName: template.mealName,
+          ingredients: template.ingredients.map(ingredient => ingredient.name),
+          spices: template.spices,
+        });
+
+        const originLabel = foodOrigin === 'ANY' ? 'Any origin' : `Origin: ${foodOrigin}`;
+        const baseNotice = `AI meal ready: ${template.coreDishReference} (${template.cuisineStyle}) | ${originLabel}`;
+        if (template.warnings.length > 0) {
+          setAiNotice(`${baseNotice}. Notes: ${template.warnings.join(' ')}`);
+        } else {
+          setAiNotice(baseNotice);
+        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to generate meal template';
@@ -280,7 +662,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
               <div>
                 <h2 className="text-foreground">Build Meal</h2>
                 <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                  Create a meal template from your ingredients database.
+                  Create a meal or side template from your ingredients database.
                 </p>
               </div>
 
@@ -315,6 +697,12 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                 </div>
               )}
 
+              {rematchError && (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  {rematchError}
+                </div>
+              )}
+
               <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
                 <div className="mb-5">
                   <h3 className="text-base font-semibold text-[var(--color-text)]">Meal Information</h3>
@@ -342,7 +730,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       value={state.type}
                       onChange={e =>
                         updateMealMeta({
-                          type: e.target.value as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
+                          type: e.target.value as BuilderEntityType,
                         })
                       }
                       className="input-base w-full appearance-none"
@@ -351,6 +739,37 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       <option value="LUNCH">Lunch</option>
                       <option value="DINNER">Dinner</option>
                       <option value="SNACK">Snack</option>
+                      <option value="SIDE">Side</option>
+                    </select>
+                  </div>
+
+                  {isSideMode && (
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Side Category *</label>
+                      <select
+                        value={sideType}
+                        onChange={e => setSideType(e.target.value as SideType)}
+                        className="input-base w-full appearance-none"
+                      >
+                        <option value="SALAD">Salad</option>
+                        <option value="SOUP">Soup</option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Food Origin</label>
+                    <select
+                      value={foodOrigin}
+                      onChange={e => setFoodOrigin(e.target.value as 'ANY' | FoodOrigin)}
+                      className="input-base w-full appearance-none"
+                    >
+                      <option value="ANY">Any</option>
+                      {FOOD_ORIGIN_OPTIONS.map(option => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -375,11 +794,16 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Sparkles size={16} />
-                      {aiGenerating ? 'Generating Meal With AI...' : 'Suggest Meal with AI'}
+                      {aiGenerating
+                        ? 'Generating With AI...'
+                        : isSideMode
+                          ? 'Suggest Side with AI'
+                          : 'Suggest Meal with AI'}
                     </button>
                     <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                      Strict mode is enabled: AI only returns meals when all ingredients match your database, then fills
-                      name, ingredients, and instructions.
+                      {isSideMode
+                        ? 'AI suggests side naming, spices, and instructions. Add or refine ingredients and nutrition before saving.'
+                        : 'Strict mode is enabled: AI only returns meals when all ingredients match your database. If an origin is selected, generation is strict to that origin.'}
                     </p>
                   </div>
                 </div>
@@ -438,7 +862,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
 
                   <button
                     type="button"
-                    onClick={() => setShowFoodFormModal(true)}
+                    onClick={openBlankFoodForm}
                     className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)]"
                   >
                     Add Ingredient
@@ -459,6 +883,16 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   </p>
                 )}
               </section>
+
+              {!isSideMode && unmatchedIngredients.length > 0 ? (
+                <UnmatchedIngredientPanel
+                  items={unmatchedIngredients}
+                  busy={rematchLoading || loading}
+                  onAddIngredientAction={openRecoveryFoodForm}
+                  onUseMatchAction={handleUseMatchForUnmatched}
+                  onCreateAliasAction={handleCreateAliasForUnmatched}
+                />
+              ) : null}
 
               {state.selectedIngredients.length > 0 && (
                 <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
@@ -494,6 +928,49 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   selectedIngredientsCount={state.selectedIngredients.length}
                 />
               </section>
+              <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-[var(--color-text)]">Spices and Seasonings</h3>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      Add flavor boosters separately from core database ingredients.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={addSpice}
+                    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)]"
+                  >
+                    Add Spice
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {spices.map((spice, index) => (
+                    <div key={`spice-${index}`} className="flex items-start gap-2">
+                      <input
+                        type="text"
+                        value={spice}
+                        onChange={e => handleSpiceChange(index, e.target.value)}
+                        className="input-base flex-1"
+                        placeholder="e.g., smoked paprika"
+                      />
+
+                      {spices.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeSpice(index)}
+                          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-red-400 transition-colors hover:bg-red-500/10"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
               <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
@@ -590,14 +1067,23 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   disabled={loading || state.selectedIngredients.length === 0}
                   className="btn-primary w-full flex-1 bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading ? 'Creating...' : 'Create Template Meal'}
+                  {loading ? 'Creating...' : isSideMode ? 'Create Template Side' : 'Create Template Meal'}
                 </button>
               </div>
             </div>
           </form>
         </div>
 
-        <FoodForm isOpen={showFoodFormModal} onCloseAction={() => setShowFoodFormModal(false)} />
+        <FoodForm
+          isOpen={showFoodFormModal}
+          onCloseAction={() => {
+            setShowFoodFormModal(false);
+            setFoodFormPrefill(null);
+            setPendingIngredientRecovery(null);
+          }}
+          onCreatedAction={handleFoodCreated}
+          prefill={foodFormPrefill}
+        />
       </div>
     </div>
   );

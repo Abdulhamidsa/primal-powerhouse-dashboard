@@ -2,7 +2,11 @@
 
 import { useCallback, useState } from 'react';
 import { generateMealTemplateApi } from '@/features/meals/api/mealTemplateGeneration.api';
-import type { BuilderMealType, GeneratedMealTemplate } from '@/features/meals/types/mealTemplateGeneration.types';
+import type {
+  BuilderMealType,
+  FoodOrigin,
+  GeneratedMealTemplate,
+} from '@/features/meals/types/mealTemplateGeneration.types';
 
 export function useGenerateMealTemplate() {
   const [loading, setLoading] = useState(false);
@@ -12,13 +16,17 @@ export function useGenerateMealTemplate() {
   const [recentCoreDishReferences, setRecentCoreDishReferences] = useState<string[]>([]);
   const [recentMealNames, setRecentMealNames] = useState<string[]>([]);
 
-  const generateTemplate = async (mealType: BuilderMealType): Promise<GeneratedMealTemplate> => {
+  const generateTemplate = async (
+    mealType: BuilderMealType,
+    foodOrigin?: FoodOrigin,
+  ): Promise<GeneratedMealTemplate> => {
     setLoading(true);
     setError(null);
 
     try {
       const result = await generateMealTemplateApi(mealType, {
         strictMatchMode: 'strict',
+        foodOrigin,
         avoidCoreDishReferences: recentCoreDishReferences.slice(0, 3),
         avoidMealNames: recentMealNames.slice(0, 6),
       });

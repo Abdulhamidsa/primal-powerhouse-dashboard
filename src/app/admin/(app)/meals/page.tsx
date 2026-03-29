@@ -27,10 +27,27 @@ export default function MealsPage() {
   const [deleting, setDeleting] = useState(false);
   const [selectedType, setSelectedType] = useState<MealFilterType>('ALL');
   const { meals, isLoading: loading, refreshMeals } = useMeals();
+  console.log(
+    'heeyy',
+    selectedType,
+    meals.filter(meal => meal.type === 'LUNCH'),
+  );
+  // meals lenght by type
 
   const filteredMeals = useMemo(() => {
     return selectedType === 'ALL' ? meals : meals.filter(meal => meal.type === selectedType);
   }, [meals, selectedType]);
+
+  const mealCounts = useMemo(
+    () => ({
+      ALL: meals.length,
+      BREAKFAST: meals.filter(meal => meal.type === 'BREAKFAST').length,
+      LUNCH: meals.filter(meal => meal.type === 'LUNCH').length,
+      DINNER: meals.filter(meal => meal.type === 'DINNER').length,
+      SNACK: meals.filter(meal => meal.type === 'SNACK').length,
+    }),
+    [meals],
+  );
 
   const handleViewMeal = useCallback((meal: MealListItem) => {
     const convertedMeal = convertToMealType(meal);
@@ -69,7 +86,12 @@ export default function MealsPage() {
       <div className="mb-8">
         <MealsHeader onCreateManual={() => setShowAddModal(true)} onOpenBuilder={() => setShowBuilderModal(true)} />
         {/* Filter Tabs */}
-        <MealFilters mealTypes={[...mealTypes]} selectedType={selectedType} onSelectType={setSelectedType} />{' '}
+        <MealFilters
+          mealCounts={mealCounts}
+          mealTypes={[...mealTypes]}
+          selectedType={selectedType}
+          onSelectType={setSelectedType}
+        />{' '}
         {/* Generator Panel */}
         {/* <div className="my-6">
           <MealGeneratorPanel onTemplateSaved={refreshMeals} />

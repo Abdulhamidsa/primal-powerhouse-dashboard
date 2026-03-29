@@ -28,7 +28,7 @@ const foodSchemaBase = z.object({
 
 function validateUnitFields(
   value: { baseUnit?: '100g' | 'unit'; gramsPerUnit?: number | null; displayUnitLabel?: string | null },
-  ctx: z.RefinementCtx
+  ctx: z.RefinementCtx,
 ) {
   if (value.baseUnit === 'unit') {
     if (!value.gramsPerUnit) {
@@ -55,4 +55,18 @@ export const createFoodSchema = foodSchemaBase.superRefine((value, ctx) => {
 export const updateFoodSchema = foodSchemaBase.partial().superRefine((value, ctx) => {
   // Only enforce unit companion fields when baseUnit is explicitly set to unit on update.
   validateUnitFields(value, ctx);
+});
+
+export const createFoodAliasSchema = z.object({
+  foodId: z.string().trim().min(1),
+  alias: z.string().trim().min(2).max(120),
+  updateMacros: z
+    .object({
+      caloriesKcal: nutritionNumberSchema,
+      proteinG: nutritionNumberSchema,
+      carbsG: nutritionNumberSchema,
+      fatG: nutritionNumberSchema,
+      fiberG: nutritionNumberSchema.nullable(),
+    })
+    .optional(),
 });

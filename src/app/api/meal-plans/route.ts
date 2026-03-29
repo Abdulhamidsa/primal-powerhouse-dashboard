@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
             mealAssignments: {
               include: {
                 meal: true,
+                side: true,
               },
               orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
             },
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: 'desc' },
         }),
       [`meal-plans:${clientId}`],
-      { tags: [CACHE_TAGS.mealPlans, clientMealPlansTag(clientId)], revalidate: false }
+      { tags: [CACHE_TAGS.mealPlans, clientMealPlansTag(clientId)], revalidate: false },
     )();
 
     return jsonWithCache(mealPlans);
@@ -172,8 +173,23 @@ export async function POST(request: NextRequest) {
             },
             include: {
               meal: true,
+              side: true,
             },
           });
+
+          if (assignment.sideId) {
+            const side = await prisma.sideItem.findUnique({
+              where: { id: assignment.sideId },
+              select: { id: true },
+            });
+
+            if (side) {
+              await prisma.sideItem.update({
+                where: { id: assignment.sideId },
+                data: { mealAssignmentId: mealAssignment.id },
+              });
+            }
+          }
 
           createdAssignments.push(mealAssignment);
           console.log('Created meal assignment:', mealAssignment.id);
@@ -191,6 +207,7 @@ export async function POST(request: NextRequest) {
           mealAssignments: {
             include: {
               meal: true,
+              side: true,
             },
           },
         },
@@ -211,7 +228,7 @@ export async function POST(request: NextRequest) {
           error: 'Database error creating meal plan',
           details: dbError instanceof Error ? dbError.message : 'Unknown error',
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error) {
@@ -221,7 +238,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create meal plan',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

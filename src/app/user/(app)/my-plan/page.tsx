@@ -3,23 +3,13 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import {
-  AlertCircle,
-  ArrowLeft,
-  CheckCircle2,
-  ChevronRight,
-  Save,
-  Undo2,
-  Utensils,
-  X,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, Save, Undo2, Utensils, X } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
 import type { MealTypeKey } from '@/features/meals/types/mealSelection.types';
 
-const fallbackImage =
-  'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
+const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
 const TYPE_LABEL: Record<MealTypeKey, string> = {
   BREAKFAST: 'Breakfast',
@@ -55,9 +45,7 @@ export default function UserMyPlanPage() {
   } | null>(null);
 
   const isPlanComplete =
-    selectedByType.BREAKFAST.length === 1 &&
-    selectedByType.LUNCH.length === 1 &&
-    selectedByType.DINNER.length === 1;
+    selectedByType.BREAKFAST.length === 1 && selectedByType.LUNCH.length === 1 && selectedByType.DINNER.length === 1;
 
   const totalSelectedMeals = useMemo(() => {
     return TYPE_ORDER.reduce((acc, type) => acc + selectedByType[type].length, 0);
@@ -116,47 +104,45 @@ export default function UserMyPlanPage() {
           Back to Program
         </button> */}
 
-  <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5 sm:py-5">
-  <div className="flex items-start gap-3">
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-      <Utensils size={18} />
-    </div>
+        <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5 sm:py-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+              <Utensils size={18} />
+            </div>
 
-    <div className="min-w-0 flex-1">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">
-          Meal Plan
-        </h1>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">Meal Plan</h1>
 
-        <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
-          {totalSelectedMeals} selected
-        </span>
-      </div>
+                <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+                  {totalSelectedMeals} selected
+                </span>
+              </div>
 
-      <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
-        Choose your meals and keep your plan simple and consistent.
-      </p>
+              <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
+                Choose your meals and keep your plan simple and consistent.
+              </p>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            isPlanComplete
-              ? 'bg-emerald-500/12 text-emerald-400'
-              : 'bg-[var(--color-accent-translucent)] text-[var(--color-accent)]'
-          }`}
-        >
-          {isPlanComplete ? 'Complete' : 'Incomplete'}
-        </span>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    isPlanComplete
+                      ? 'bg-emerald-500/12 text-emerald-400'
+                      : 'bg-[var(--color-accent-translucent)] text-[var(--color-accent)]'
+                  }`}
+                >
+                  {isPlanComplete ? 'Complete' : 'Incomplete'}
+                </span>
 
-        {hasChanges ? (
-          <span className="rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-400">
-            Unsaved
-          </span>
-        ) : null}
-      </div>
-    </div>
-  </div>
-</section>
+                {hasChanges ? (
+                  <span className="rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-400">
+                    Unsaved
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 md:p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -232,7 +218,9 @@ export default function UserMyPlanPage() {
 
                         <div className="space-y-4 p-4">
                           <div>
-                            <p className="line-clamp-1 text-base font-semibold text-[var(--color-text)]">{item.meal.name}</p>
+                            <p className="line-clamp-1 text-base font-semibold text-[var(--color-text)]">
+                              {item.meal.name}
+                            </p>
                             <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
                               {item.meal.calories} kcal • Protein {item.meal.protein}g • Carbs {item.meal.carbs}g • Fat{' '}
                               {item.meal.fat}g
@@ -276,8 +264,12 @@ export default function UserMyPlanPage() {
             >
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-[var(--color-text)]">Swipe {TYPE_LABEL[swapState.mealType]}</h2>
-                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">Current selection: {swapState.currentMealName}</p>
+                  <h2 className="text-lg font-semibold text-[var(--color-text)]">
+                    Swipe {TYPE_LABEL[swapState.mealType]}
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                    Current selection: {swapState.currentMealName}
+                  </p>
                 </div>
 
                 <button
@@ -297,7 +289,8 @@ export default function UserMyPlanPage() {
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-[var(--color-text-muted)]">
-                    Swipe sideways to browse all {TYPE_LABEL[swapState.mealType].toLowerCase()} options ({swapOptions.length}).
+                    Swipe sideways to browse all {TYPE_LABEL[swapState.mealType].toLowerCase()} options (
+                    {swapOptions.length}).
                   </p>
 
                   <div className="-mx-1 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -311,7 +304,9 @@ export default function UserMyPlanPage() {
                             onPreview={() => {
                               handleSelectReplacement(option);
                             }}
-                            disabled={option.mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull}
+                            disabled={
+                              option.mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull
+                            }
                           />
                         </div>
                       ))}
@@ -326,43 +321,43 @@ export default function UserMyPlanPage() {
 
       {hasChanges ? (
         <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 p-3 backdrop-blur-xl sm:px-6 lg:bottom-0">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
-          <div className="hidden items-center gap-2 md:flex">
-            {isPlanComplete ? (
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1.5 text-xs font-semibold text-emerald-400">
-                <CheckCircle2 size={14} />
-                Plan ready
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent-translucent)] px-3 py-1.5 text-xs font-semibold text-[var(--color-accent)]">
-                <AlertCircle size={14} />
-                Complete breakfast, lunch and dinner
-              </div>
-            )}
-          </div>
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
+            <div className="hidden items-center gap-2 md:flex">
+              {isPlanComplete ? (
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1.5 text-xs font-semibold text-emerald-400">
+                  <CheckCircle2 size={14} />
+                  Plan ready
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent-translucent)] px-3 py-1.5 text-xs font-semibold text-[var(--color-accent)]">
+                  <AlertCircle size={14} />
+                  Complete breakfast, lunch and dinner
+                </div>
+              )}
+            </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              onClick={resetDraftToSaved}
-              disabled={!hasChanges || isSaving}
-              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Undo2 size={14} />
-              Reset
-            </button>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={resetDraftToSaved}
+                disabled={!hasChanges || isSaving}
+                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Undo2 size={14} />
+                Reset
+              </button>
 
-            <button
-              type="button"
-              onClick={saveDraft}
-              disabled={!hasChanges || isSaving}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Save size={14} />
-              {isSaving ? 'Saving...' : 'Save Selection'}
-            </button>
+              <button
+                type="button"
+                onClick={saveDraft}
+                disabled={!hasChanges || isSaving}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Save size={14} />
+                {isSaving ? 'Saving...' : 'Save Selection'}
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       ) : null}
     </div>

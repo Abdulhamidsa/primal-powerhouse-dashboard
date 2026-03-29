@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { DataService, Meal, MealPlan } from '@/services/dataService';
+import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
+import { type SideItem } from '@/features/sides/types/side.types';
 
 interface AssignMealsModalProps {
   isOpen: boolean;
@@ -28,6 +30,16 @@ const mealTypes = [
   { value: 'SNACK', label: 'Snack', icon: '🍎' },
 ] as const;
 
+type MealTypeValue = (typeof mealTypes)[number]['value'];
+
+function buildSlotKey(dayOfWeek: number, mealType: string) {
+  return `${dayOfWeek}_${mealType}`;
+}
+
+function supportsSide(mealType: string): mealType is 'LUNCH' | 'DINNER' {
+  return mealType === 'LUNCH' || mealType === 'DINNER';
+}
+
 export default function AssignMealsModal({
   isOpen,
   onCloseAction,
@@ -40,11 +52,13 @@ export default function AssignMealsModal({
   const [selectedMeals, setSelectedMeals] = useState<{
     [key: string]: string; // dayOfWeek_mealType -> mealId
   }>({});
+  const [selectedSides, setSelectedSides] = useState<Record<string, string>>({});
   const [planName, setPlanName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [notes, setNotes] = useState('');
   const [existingMealPlan, setExistingMealPlan] = useState<MealPlan | null>(null);
+  const { sides, loadSides } = useSideLibrary();
 
   const fetchMeals = useCallback(async () => {
     try {
@@ -58,50 +72,43 @@ export default function AssignMealsModal({
   const fetchExistingMealPlan = useCallback(async () => {
     try {
       console.log('Fetching existing meal plans for client:', clientId);
-      const response = await fetch(`/api/clients/${clientId}/meal-plans`);
-      if (response.ok) {
-        const mealPlans = await response.json();
-        console.log('Meal plans returned:', mealPlans);
-        const activePlan = mealPlans.find((plan: MealPlan) => plan.isActive);
-        if (activePlan) {
-          console.log('Found existing active meal plan:', activePlan);
-          setExistingMealPlan(activePlan);
+      const mealPlans = await DataService.getMealPlans(clientId);
+      console.log('Meal plans returned:', mealPlans);
+      const activePlan = mealPlans.find((plan: MealPlan) => plan.isActive);
+      if (activePlan) {
+        console.log('Found existing active meal plan:', activePlan);
+        setExistingMealPlan(activePlan);
 
-          // Pre-populate the form with existing plan details
-          setPlanName(activePlan.name);
-          if (activePlan.startDate) {
-            setStartDate(new Date(activePlan.startDate).toISOString().split('T')[0]);
-          }
-          if (activePlan.endDate) {
-            setEndDate(new Date(activePlan.endDate).toISOString().split('T')[0]);
-          }
-          if (activePlan.notes) {
-            setNotes(activePlan.notes);
-          }
-
-          // Pre-populate selected meals from existing assignments
-          if (activePlan.mealAssignments && Array.isArray(activePlan.mealAssignments)) {
-            const mealsMap: { [key: string]: string } = {};
-            activePlan.mealAssignments.forEach((assignment: any) => {
-              const key = `${assignment.dayOfWeek}_${assignment.mealType}`;
-              mealsMap[key] = assignment.mealId;
-            });
-            setSelectedMeals(mealsMap);
-            console.log('Pre-populated selected meals:', mealsMap);
-          }
-        } else {
-          console.log('No active meal plan found');
-          // Set default plan name and dates if no existing plan
-          setPlanName(`${clientName}'s Meal Plan`);
-          const today = new Date();
-          setStartDate(today.toISOString().split('T')[0]);
-          const nextWeek = new Date(today);
-          nextWeek.setDate(today.getDate() + 7);
-          setEndDate(nextWeek.toISOString().split('T')[0]);
+        setPlanName(activePlan.name);
+        if (activePlan.startDate) {
+          setStartDate(new Date(activePlan.startDate).toISOString().split('T')[0]);
         }
-      } else {
-        console.error('Failed to fetch meal plans:', response.status);
-        // Set defaults if fetch fails
+        if (activePlan.endDate) {
+          setEndDate(new Date(activePlan.endDate).toISOString().split('T')[0]);
+        }
+        if (activePlan.notes) {
+          setNotes(activePlan.notes);
+        }
+
+        if (activePlan.mealAssignments && Array.isArray(activePlan.mealAssignments)) {
+          const mealsMap: Record<string, string> = {};
+          const sidesMap: Record<string, string> = {};
+          activePlan.mealAssignments.forEach((assignment: any) => {
+            const key = buildSlotKey(assignment.dayOfWeek, assignment.mealType);
+            mealsMap[key] = assignment.mealId;
+
+            if (assignment.side?.id) {
+              sidesMap[key] = assignment.side.id;
+            }
+          });
+          setSelectedMeals(mealsMap);
+          setSelectedSides(sidesMap);
+          console.log('Pre-populated selected meals:', mealsMap);
+        }
+      }
+
+      if (!activePlan) {
+        console.log('No active meal plan found');
         setPlanName(`${clientName}'s Meal Plan`);
         const today = new Date();
         setStartDate(today.toISOString().split('T')[0]);
@@ -111,7 +118,6 @@ export default function AssignMealsModal({
       }
     } catch (error) {
       console.error('Error fetching existing meal plans:', error);
-      // Set defaults if fetch fails
       setPlanName(`${clientName}'s Meal Plan`);
       const today = new Date();
       setStartDate(today.toISOString().split('T')[0]);
@@ -125,25 +131,76 @@ export default function AssignMealsModal({
     if (isOpen) {
       fetchMeals();
       fetchExistingMealPlan();
+      loadSides();
     }
-  }, [isOpen, fetchMeals, fetchExistingMealPlan]);
+  }, [isOpen, fetchMeals, fetchExistingMealPlan, loadSides]);
+
+  const updateSlotSelection = (
+    setter: Dispatch<SetStateAction<Record<string, string>>>,
+    key: string,
+    value: string,
+  ) => {
+    setter(prev => {
+      const next = { ...prev };
+      if (!value) {
+        delete next[key];
+        return next;
+      }
+
+      next[key] = value;
+      return next;
+    });
+  };
 
   const handleMealSelect = (dayOfWeek: number, mealType: string, mealId: string) => {
-    const key = `${dayOfWeek}_${mealType}`;
-    setSelectedMeals(prev => ({
-      ...prev,
-      [key]: mealId,
-    }));
+    const key = buildSlotKey(dayOfWeek, mealType);
+    updateSlotSelection(setSelectedMeals, key, mealId);
+
+    if (!mealId) {
+      updateSlotSelection(setSelectedSides, key, '');
+    }
+  };
+
+  const handleSideSelect = (dayOfWeek: number, mealType: MealTypeValue, sideId: string) => {
+    const key = buildSlotKey(dayOfWeek, mealType);
+    updateSlotSelection(setSelectedSides, key, sideId);
   };
 
   const getMealForSlot = (dayOfWeek: number, mealType: string) => {
-    const key = `${dayOfWeek}_${mealType}`;
+    const key = buildSlotKey(dayOfWeek, mealType);
     const mealId = selectedMeals[key];
     return meals.find(meal => meal.id === mealId);
   };
 
+  const getSideForSlot = (dayOfWeek: number, mealType: MealTypeValue) => {
+    const key = buildSlotKey(dayOfWeek, mealType);
+    const sideId = selectedSides[key];
+    return sides.find(side => side.id === sideId);
+  };
+
   const getAlreadySelectedMealIds = () => {
     return Object.values(selectedMeals).filter(Boolean);
+  };
+
+  const getAlreadySelectedSideIds = () => {
+    return Object.values(selectedSides).filter(Boolean);
+  };
+
+  const getAvailableSidesForSlot = (slotKey: string): SideItem[] => {
+    const selectedSideId = selectedSides[slotKey];
+    const alreadySelectedSideIds = getAlreadySelectedSideIds();
+
+    return sides.filter(side => {
+      if (side.id === selectedSideId) {
+        return true;
+      }
+
+      if (side.mealAssignmentId) {
+        return false;
+      }
+
+      return !alreadySelectedSideIds.includes(side.id);
+    });
   };
 
   const handleSubmit = async () => {
@@ -168,6 +225,7 @@ export default function AssignMealsModal({
           dayOfWeek: parseInt(dayOfWeek),
           mealType: mealType as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
           portion: 1.0,
+          sideId: selectedSides[key] || undefined,
         };
       });
 
@@ -178,50 +236,25 @@ export default function AssignMealsModal({
         console.log('Updating existing meal plan:', existingMealPlan.id);
         console.log('New meal count:', mealAssignments.length);
 
-        const response = await fetch(`/api/meal-plans/${existingMealPlan.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            clientId,
-            name: planName,
-            startDate,
-            endDate: endDate || undefined,
-            notes: notes || undefined,
-            mealAssignments, // This will REPLACE all old assignments
-          }),
+        const result = await DataService.updateMealPlan(existingMealPlan.id, {
+          clientId,
+          name: planName,
+          startDate,
+          endDate: endDate || undefined,
+          notes: notes || undefined,
+          mealAssignments,
         });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update meal plan: ${response.status}`);
-        }
-
-        const result = await response.json();
         console.log('Meal plan updated successfully:', result);
       } else {
-        // Only create a new meal plan if there's no existing active one
         console.log('Creating new meal plan');
-        const response = await fetch('/api/meal-plans', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            clientId,
-            name: planName,
-            startDate,
-            endDate: endDate || undefined,
-            notes: notes || undefined,
-            mealAssignments,
-          }),
+        const result = await DataService.createMealPlan({
+          clientId,
+          name: planName,
+          startDate,
+          endDate: endDate || undefined,
+          notes: notes || undefined,
+          mealAssignments,
         });
-
-        if (!response.ok) {
-          throw new Error(`Failed to create meal plan: ${response.status}`);
-        }
-
-        const result = await response.json();
         console.log('Meal plan created successfully:', result);
       }
 
@@ -229,6 +262,7 @@ export default function AssignMealsModal({
       onCloseAction();
       // Reset form
       setSelectedMeals({});
+      setSelectedSides({});
       setPlanName('');
       setStartDate('');
       setEndDate('');
@@ -261,7 +295,8 @@ export default function AssignMealsModal({
               </p>
               {existingMealPlan && (
                 <p className="text-sm text-orange-600 mt-1">
-                  ⚠️ This will replace all existing meals in the active meal plan with your new selections.
+                  ⚠️ This will replace all existing meals and side assignments in the active meal plan with your new
+                  selections.
                 </p>
               )}
             </div>
@@ -321,7 +356,10 @@ export default function AssignMealsModal({
                 <h3 className="text-lg font-semibold text-gray-900">Weekly Meal Schedule</h3>
                 <button
                   type="button"
-                  onClick={() => setSelectedMeals({})}
+                  onClick={() => {
+                    setSelectedMeals({});
+                    setSelectedSides({});
+                  }}
                   className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                 >
                   Clear All
@@ -330,8 +368,9 @@ export default function AssignMealsModal({
               {existingMealPlan && (
                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
-                    <strong>Note:</strong> This meal plan already has {Object.keys(selectedMeals).length} meals
-                    assigned. Click Clear All above to start fresh, or modify individual meals to update the plan.
+                    <strong>Note:</strong> This meal plan already has {Object.keys(selectedMeals).length} meals and{' '}
+                    {Object.keys(selectedSides).length} sides assigned. Click Clear All above to start fresh, or modify
+                    individual slots to update the plan.
                   </p>
                 </div>
               )}
@@ -359,11 +398,12 @@ export default function AssignMealsModal({
                         <td className="p-3 font-medium text-gray-900 border border-gray-200 bg-gray-50">{day.label}</td>
                         {mealTypes.map(mealType => {
                           const selectedMeal = getMealForSlot(day.value, mealType.value);
-                          const key = `${day.value}_${mealType.value}`;
+                          const selectedSide = getSideForSlot(day.value, mealType.value);
+                          const key = buildSlotKey(day.value, mealType.value);
                           const isPrefilled =
                             existingMealPlan &&
                             existingMealPlan.mealAssignments?.some(
-                              a => a.dayOfWeek === day.value && a.mealType === mealType.value
+                              a => a.dayOfWeek === day.value && a.mealType === mealType.value,
                             );
                           return (
                             <td
@@ -371,7 +411,7 @@ export default function AssignMealsModal({
                               className={`p-2 border ${isPrefilled && selectedMeals[key] ? 'border-blue-300 bg-blue-50' : 'border-gray-200'}`}
                             >
                               <select
-                                value={selectedMeals[`${day.value}_${mealType.value}`] || ''}
+                                value={selectedMeals[key] || ''}
                                 onChange={e => handleMealSelect(day.value, mealType.value, e.target.value)}
                                 className={`w-full px-2 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                   isPrefilled && selectedMeals[key] ? 'border-blue-400 bg-blue-100' : 'border-gray-300'
@@ -382,7 +422,7 @@ export default function AssignMealsModal({
                                   .filter(meal => meal.type === mealType.value)
                                   .filter(meal => {
                                     // Hide meals that are already selected elsewhere UNLESS this slot currently has that meal
-                                    const selectedMealId = selectedMeals[`${day.value}_${mealType.value}`];
+                                    const selectedMealId = selectedMeals[key];
                                     const alreadySelected = getAlreadySelectedMealIds();
                                     return !alreadySelected.includes(meal.id) || meal.id === selectedMealId;
                                   })
@@ -402,6 +442,38 @@ export default function AssignMealsModal({
                                   </div>
                                 </div>
                               )}
+                              {selectedMeal && supportsSide(mealType.value) && (
+                                <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                                      Optional side
+                                    </span>
+                                  </div>
+                                  <select
+                                    value={selectedSides[key] || ''}
+                                    onChange={e => handleSideSelect(day.value, mealType.value, e.target.value)}
+                                    className="mt-2 w-full rounded-lg border border-emerald-300 bg-white px-2 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                  >
+                                    <option value="">No side</option>
+                                    {getAvailableSidesForSlot(key).map(side => (
+                                      <option key={side.id} value={side.id}>
+                                        {side.name} ({side.calories} cal)
+                                      </option>
+                                    ))}
+                                  </select>
+
+                                  {selectedSide && (
+                                    <div className="mt-2 rounded-lg bg-white p-2 text-xs text-gray-600">
+                                      <div className="font-semibold text-gray-800">{selectedSide.name}</div>
+                                      <div className="mt-1">
+                                        {selectedSide.type === 'SALAD' ? 'Salad' : 'Soup'} side
+                                      </div>
+                                      <div>{selectedSide.calories} cal kept separate from main meal totals</div>
+                                      {selectedSide.foodOrigin && <div>{selectedSide.foodOrigin}</div>}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </td>
                           );
                         })}
@@ -415,10 +487,14 @@ export default function AssignMealsModal({
             {/* Summary */}
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium text-gray-900 mb-2">Meal Plan Summary</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Total Meals:</span>
                   <span className="ml-2 font-medium">{Object.keys(selectedMeals).length}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Total Sides:</span>
+                  <span className="ml-2 font-medium">{Object.keys(selectedSides).length}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">Avg Daily Calories:</span>
@@ -428,7 +504,20 @@ export default function AssignMealsModal({
                           Object.values(selectedMeals).reduce((total, mealId) => {
                             const meal = meals.find(m => m.id === mealId);
                             return total + (meal?.calories || 0);
-                          }, 0) / 7
+                          }, 0) / 7,
+                        )
+                      : 0}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Avg Daily Side Calories:</span>
+                  <span className="ml-2 font-medium">
+                    {Object.values(selectedSides).length > 0
+                      ? Math.round(
+                          Object.values(selectedSides).reduce((total, sideId) => {
+                            const side = sides.find(item => item.id === sideId);
+                            return total + (side?.calories || 0);
+                          }, 0) / 7,
                         )
                       : 0}
                   </span>

@@ -29,7 +29,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         ...(body.mealId !== undefined ? { mealId: body.mealId } : {}),
         ...(body.mealPlanId !== undefined ? { mealPlanId: body.mealPlanId } : {}),
       },
-      include: { meal: true, mealPlan: true },
+      include: { meal: true, side: true, mealPlan: true },
     });
 
     invalidateMealCaches({

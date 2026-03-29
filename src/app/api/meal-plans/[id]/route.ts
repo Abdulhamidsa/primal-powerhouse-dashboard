@@ -17,13 +17,13 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           where: { id },
           include: {
             mealAssignments: {
-              include: { meal: true },
+              include: { meal: true, side: true },
               orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
             },
           },
         }),
       [`meal-plan:${id}`],
-      { tags: [CACHE_TAGS.mealPlans, mealPlanTag(id)], revalidate: false }
+      { tags: [CACHE_TAGS.mealPlans, mealPlanTag(id)], revalidate: false },
     )();
 
     if (!mealPlan) {
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       }
 
       console.log(
-        `[Meal Plan Update] Found existing meal plan with ${existingPlan.mealAssignments.length} assignments`
+        `[Meal Plan Update] Found existing meal plan with ${existingPlan.mealAssignments.length} assignments`,
       );
 
       // Update the meal plan metadata
@@ -112,7 +112,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
         // Create all new meal assignments
         for (const assignment of validAssignments) {
-          await tx.mealAssignment.create({
+          const createdAssignment = await tx.mealAssignment.create({
             data: {
               mealPlanId: id,
               mealId: assignment.mealId,
@@ -122,6 +122,20 @@ export async function PUT(request: NextRequest, context: RouteContext) {
               notes: assignment.notes,
             },
           });
+
+          if (assignment.sideId) {
+            const side = await tx.sideItem.findUnique({
+              where: { id: assignment.sideId },
+              select: { id: true },
+            });
+
+            if (side) {
+              await tx.sideItem.update({
+                where: { id: assignment.sideId },
+                data: { mealAssignmentId: createdAssignment.id },
+              });
+            }
+          }
         }
 
         console.log(`[Meal Plan Update] Created ${validAssignments.length} new meal assignments`);
@@ -130,7 +144,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
           where: { id },
           include: {
             mealAssignments: {
-              include: { meal: true },
+              include: { meal: true, side: true },
               orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
             },
           },
@@ -151,7 +165,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     console.error('[Meal Plan Update] Error updating meal plan:', error);
     return NextResponse.json(
       { error: 'Failed to update meal plan', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
