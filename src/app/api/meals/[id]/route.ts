@@ -135,6 +135,10 @@ function normalizeInstructions(raw: string | null): string[] {
   return parsed.map(normalizeInstructionEntry).filter(Boolean) as string[];
 }
 
+function normalizeSpices(raw: string | null): string[] {
+  return normalizeInstructions(raw);
+}
+
 function normalizeTags(raw: string | null): string[] {
   const parsed = parseJsonDeep(raw);
   if (!Array.isArray(parsed)) return [];
@@ -189,7 +193,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           where: { id },
         }),
       [`meal:${id}`],
-      { tags: [CACHE_TAGS.meals, mealTag(id)], revalidate: false }
+      { tags: [CACHE_TAGS.meals, mealTag(id)], revalidate: false },
     )();
 
     if (!meal) {
@@ -197,6 +201,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     let ingredients = normalizeIngredients(meal.ingredients);
+    let spices = normalizeSpices(meal.spices);
     let instructions = normalizeInstructions(meal.instructions);
 
     // Fallback for old corrupted personalized rows: reuse original meal content if available.
@@ -205,6 +210,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where: { id: meal.originalMealId },
         select: {
           ingredients: true,
+          spices: true,
           instructions: true,
         },
       });
@@ -212,6 +218,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       if (originalMeal) {
         if (isCorruptedList(ingredients)) {
           ingredients = normalizeIngredients(originalMeal.ingredients);
+        }
+        if (isCorruptedList(spices)) {
+          spices = normalizeSpices(originalMeal.spices);
         }
         if (isCorruptedList(instructions)) {
           instructions = normalizeInstructions(originalMeal.instructions);
@@ -222,6 +231,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const parsedMeal = {
       ...meal,
       ingredients,
+      spices,
       instructions,
       tags: normalizeTags(meal.tags),
     };
@@ -231,6 +241,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({
         ...parsedMeal,
         ingredients: ingredients.map(toClientDisplayIngredient).filter(Boolean),
+        spices,
       });
     }
 
@@ -303,7 +314,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
           {
             error: 'Cannot delete this meal because it is currently used in assignments or has personalized copies.',
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }

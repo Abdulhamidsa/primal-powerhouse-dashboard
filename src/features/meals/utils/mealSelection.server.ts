@@ -44,6 +44,7 @@ type ClientWithAssignments = {
         carbs: number;
         fat: number;
         ingredients?: string | null;
+        spices?: string | null;
         instructions?: string | null;
         category?: string | null;
         difficulty?: string | null;
@@ -135,6 +136,7 @@ export async function getClientCoachAssignedMealOptions(clientId: string): Promi
           carbs: assignment.meal.carbs,
           fat: assignment.meal.fat,
           ingredients: assignment.meal.ingredients ?? null,
+          spices: assignment.meal.spices ?? null,
           instructions: assignment.meal.instructions ?? null,
           category: assignment.meal.category ?? null,
           difficulty: assignment.meal.difficulty ?? null,

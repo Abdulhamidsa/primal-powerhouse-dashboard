@@ -2,14 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { AlertCircle, CheckCircle2, ChevronRight, Leaf, Save, Undo2, Utensils, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, Save, ShoppingCart, Undo2, Utensils, X } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
+import { PlanSelectedMealCard } from '@/features/meals/components/PlanSelectedMealCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
 import type { MealTypeKey } from '@/features/meals/types/mealSelection.types';
-
-const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
+import { saveShoppingListDraft } from '@/features/meals/utils/shoppingListStorage';
 
 const TYPE_LABEL: Record<MealTypeKey, string> = {
   BREAKFAST: 'Breakfast',
@@ -29,6 +28,7 @@ export default function UserMyPlanPage() {
     saveError,
     optionsByType,
     selectedByType,
+    draftItems,
     isSelected,
     isSnackFull,
     hasChanges,
@@ -102,6 +102,18 @@ export default function UserMyPlanPage() {
     setSwapState(null);
   };
 
+  const handleGenerateShoppingList = () => {
+    const draftSelection = draftItems.map(item => ({
+      mealType: item.mealType,
+      slotIndex: item.slotIndex,
+      mealId: item.mealId,
+      sourceAssignmentId: item.sourceAssignmentId ?? null,
+    }));
+
+    saveShoppingListDraft(draftSelection);
+    router.push('/user/shopping-list');
+  };
+
   return (
     <div className="min-h-screen px-4 py-5 md:px-6 md:py-6">
       <div className={`mx-auto max-w-6xl space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
@@ -134,6 +146,16 @@ export default function UserMyPlanPage() {
               </p>
 
               <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleGenerateShoppingList}
+                  disabled={!isPlanComplete || loading}
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-semibold text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ShoppingCart size={12} />
+                  Generate Shopping List
+                </button>
+
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     isPlanComplete
@@ -207,37 +229,20 @@ export default function UserMyPlanPage() {
                 ) : (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {section.items.map(item => (
-                      <article
+                      <PlanSelectedMealCard
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}`}
-                        className="overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.16)] transition-transform duration-200 hover:-translate-y-0.5"
-                      >
-                        <div className="relative h-40 w-full">
-                          <Image
-                            src={item.meal.imageUrl?.trim() ? item.meal.imageUrl : fallbackImage}
-                            alt={item.meal.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-
-                          <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
-                            {TYPE_LABEL[section.type]}
-                          </div>
-                        </div>
-
-                        <div className="space-y-4 p-4">
-                          <div>
-                            <p className="line-clamp-1 text-base font-semibold text-[var(--color-text)]">
-                              {item.meal.name}
-                            </p>
-                            <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
-                              {item.meal.calories} kcal • Protein {item.meal.protein}g • Carbs {item.meal.carbs}g • Fat{' '}
-                              {item.meal.fat}g
-                            </p>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
+                        badgeLabel={TYPE_LABEL[section.type]}
+                        name={item.meal.name}
+                        imageUrl={item.meal.imageUrl}
+                        calories={item.meal.calories}
+                        protein={item.meal.protein}
+                        carbs={item.meal.carbs}
+                        fat={item.meal.fat}
+                        ingredientsSource={item.meal.ingredients}
+                        spicesSource={item.meal.spices}
+                        instructionsSource={item.meal.instructions}
+                        actions={
+                          <>
                             <button
                               type="button"
                               onClick={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
@@ -254,9 +259,9 @@ export default function UserMyPlanPage() {
                             >
                               Open details
                             </button>
-                          </div>
-                        </div>
-                      </article>
+                          </>
+                        }
+                      />
                     ))}
                   </div>
                 )}
@@ -282,41 +287,20 @@ export default function UserMyPlanPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {selectedSides.map(item => (
-                  <article
+                  <PlanSelectedMealCard
                     key={`${item.mealType}_${item.side.id}`}
-                    className="overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.16)]"
-                  >
-                    <div className="relative h-40 w-full">
-                      <Image
-                        src={item.side.imageUrl?.trim() ? item.side.imageUrl : fallbackImage}
-                        alt={item.side.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-
-                      <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur inline-flex items-center gap-1">
-                        <Leaf size={12} />
-                        {item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 p-4">
-                      <div>
-                        <p className="line-clamp-1 text-base font-semibold text-[var(--color-text)]">
-                          {item.side.name}
-                        </p>
-                        <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
-                          {item.side.calories} kcal • Protein {item.side.protein}g • Carbs {item.side.carbs}g • Fat{' '}
-                          {item.side.fat}g
-                        </p>
-                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                          Linked to {item.mealType.toLowerCase()}: {item.mealName}
-                        </p>
-                      </div>
-                    </div>
-                  </article>
+                    badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
+                    name={item.side.name}
+                    imageUrl={item.side.imageUrl}
+                    calories={item.side.calories}
+                    protein={item.side.protein}
+                    carbs={item.side.carbs}
+                    fat={item.side.fat}
+                    ingredientsSource={item.side.ingredients}
+                    spicesSource={item.side.spices}
+                    instructionsSource={item.side.instructions}
+                    helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
+                  />
                 ))}
               </div>
             )}

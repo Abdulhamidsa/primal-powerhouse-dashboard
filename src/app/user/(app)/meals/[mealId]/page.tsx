@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Clock, Users, Flame, Wheat, Droplets } from 'lucide-react';
+import { ArrowLeft, Clock, Droplets, Flame, Sparkles, Users, Wheat } from 'lucide-react';
+import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 
 interface Meal {
   id: string;
@@ -15,6 +16,7 @@ interface Meal {
   fat: number;
   fiber?: number;
   ingredients?: unknown;
+  spices?: unknown;
   instructions?: unknown;
   prepTime?: number;
   cookTime?: number;
@@ -28,6 +30,7 @@ export default function MealDetailPage() {
 
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'ingredients' | 'spices' | 'instructions'>('ingredients');
 
   useEffect(() => {
     if (!params?.mealId) return;
@@ -69,8 +72,9 @@ export default function MealDetailPage() {
     return (meal.prepTime ?? 0) + (meal.cookTime ?? 0);
   }, [meal]);
 
-  const ingredientsList = useMemo(() => normalizeToList(meal?.ingredients), [meal?.ingredients]);
-  const instructionsList = useMemo(() => normalizeToList(meal?.instructions), [meal?.instructions]);
+  const ingredientsList = useMemo(() => normalizeMealTextList(meal?.ingredients), [meal?.ingredients]);
+  const spicesList = useMemo(() => normalizeMealTextList(meal?.spices), [meal?.spices]);
+  const instructionsList = useMemo(() => normalizeMealTextList(meal?.instructions), [meal?.instructions]);
 
   if (loading) {
     return (
@@ -188,59 +192,70 @@ export default function MealDetailPage() {
         </div>
 
         {/* Details */}
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          {/* Ingredients */}
-          <div className="rounded-3xl border border-border bg-card p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-muted/40">
-                <Wheat size={18} className="text-muted-foreground" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">Ingredients</h2>
-            </div>
+        <div className="rounded-3xl border border-border bg-card p-4 md:p-6">
+          <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <button
+              type="button"
+              onClick={() => setActiveTab('ingredients')}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium"
+              style={{
+                borderColor: activeTab === 'ingredients' ? 'var(--color-accent)' : 'var(--color-border)',
+                color: activeTab === 'ingredients' ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                background: activeTab === 'ingredients' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+              }}
+            >
+              <Wheat size={14} />
+              Ingredients
+            </button>
 
-            <div className="mt-4">
-              {ingredientsList.length > 0 ? (
-                <ul className="space-y-3">
-                  {ingredientsList.map((item, idx) => (
-                    <li key={`${item}-${idx}`} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-[11px] text-muted-foreground">
-                        {idx + 1}
-                      </span>
-                      <span className="text-sm leading-relaxed text-foreground/90">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">No ingredients provided.</p>
-              )}
-            </div>
+            {spicesList.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setActiveTab('spices')}
+                className="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium"
+                style={{
+                  borderColor: activeTab === 'spices' ? 'var(--color-accent)' : 'var(--color-border)',
+                  color: activeTab === 'spices' ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                  background: activeTab === 'spices' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+                }}
+              >
+                <Sparkles size={14} />
+                Spices
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('instructions')}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium"
+              style={{
+                borderColor: activeTab === 'instructions' ? 'var(--color-accent)' : 'var(--color-border)',
+                color: activeTab === 'instructions' ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                background: activeTab === 'instructions' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+              }}
+            >
+              <Flame size={14} />
+              Instructions
+            </button>
           </div>
 
-          {/* Instructions */}
-          <div className="rounded-3xl border border-border bg-card p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-muted/40">
-                <Flame size={18} className="text-muted-foreground" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">Instructions</h2>
-            </div>
+          <div className="mt-3 rounded-2xl border border-border bg-background p-4">
+            {activeTab === 'ingredients' ? (
+              <ListBlock title="Ingredients" items={ingredientsList} emptyState="No ingredients provided." />
+            ) : null}
 
-            <div className="mt-4">
-              {instructionsList.length > 0 ? (
-                <ol className="space-y-4">
-                  {instructionsList.map((step, idx) => (
-                    <li key={`${step}-${idx}`} className="flex gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold text-foreground">
-                        {idx + 1}
-                      </span>
-                      <span className="text-sm leading-relaxed text-foreground/90">{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-sm text-muted-foreground">No instructions provided.</p>
-              )}
-            </div>
+            {activeTab === 'spices' ? (
+              <ListBlock title="Spices" items={spicesList} emptyState="No spices provided." />
+            ) : null}
+
+            {activeTab === 'instructions' ? (
+              <ListBlock
+                title="Instructions"
+                items={instructionsList}
+                emptyState="No instructions provided."
+                numbered
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -278,126 +293,36 @@ function StatRow({ icon, label, value }: { icon?: React.ReactNode; label: string
   );
 }
 
-function normalizeToList(value?: unknown): string[] {
-  if (!value) return [];
-
-  if (Array.isArray(value)) {
-    return value.flatMap(item => normalizeObjectOrPrimitive(item)).filter(Boolean);
-  }
-
-  if (typeof value === 'object') {
-    return normalizeObjectOrPrimitive(value);
-  }
-
-  const raw = String(value).trim();
-  if (!raw || isObjectObjectToken(raw)) return [];
-
-  const parsedEmbeddedJson = tryParseJson(raw);
-  if (parsedEmbeddedJson !== undefined) {
-    return normalizeToList(parsedEmbeddedJson);
-  }
-
-  // Try to split common formats:
-  // - newline separated
-  // - "1) step" or "1. step"
-  // - comma separated fallback
-  const lines = raw
-    .split('\n')
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  if (lines.length > 1) return lines;
-
-  const numbered = raw
-    .split(/(?:\r?\n)?\s*\d+[\).\:-]\s+/g)
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  if (numbered.length > 1) return numbered;
-
-  const comma = raw
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  return comma.length > 1 ? comma : [raw];
-}
-
-function normalizeObjectOrPrimitive(item: unknown): string[] {
-  if (item === null || item === undefined) return [];
-
-  if (typeof item === 'string') {
-    const trimmed = item.trim();
-    if (!trimmed || isObjectObjectToken(trimmed)) return [];
-
-    const parsedEmbeddedJson = tryParseJson(trimmed);
-    if (parsedEmbeddedJson !== undefined) {
-      return normalizeToList(parsedEmbeddedJson);
-    }
-
-    return [trimmed];
-  }
-
-  if (typeof item === 'number' || typeof item === 'boolean') {
-    return [String(item)];
-  }
-
-  if (typeof item !== 'object') return [];
-
-  const record = item as Record<string, unknown>;
-
-  // Some assignment flows persist a nested ingredient payload, e.g. { ingredient: { name, amount, unit }, amount, unit }
-  const nestedIngredient = toRecord(record.ingredient);
-
-  const instruction = toCleanString(record.instruction) || toCleanString(record.stepText);
-  if (instruction) return [instruction];
-
-  const name =
-    toCleanString(record.name) ||
-    toCleanString(nestedIngredient?.name) ||
-    toCleanString((nestedIngredient?.ingredient as Record<string, unknown> | undefined)?.name);
-  const amount = toCleanString(record.amount) || toCleanString(nestedIngredient?.amount);
-  const unit = toCleanString(record.unit) || toCleanString(nestedIngredient?.unit);
-  const notes = toCleanString(record.notes) || toCleanString(nestedIngredient?.notes);
-
-  const base = [amount, unit, name].filter(Boolean).join(' ').trim();
-  if (base) {
-    return [notes ? `${base} (${notes})` : base];
-  }
-
-  const fallback = Object.values(record)
-    .map(value => (typeof value === 'string' || typeof value === 'number' ? String(value).trim() : ''))
-    .filter(value => Boolean(value) && !isObjectObjectToken(value))
-    .join(' - ');
-
-  return fallback ? [fallback] : [];
-}
-
-function tryParseJson(raw: string): unknown | undefined {
-  const trimmed = raw.trim();
-  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
-    return undefined;
-  }
-
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return undefined;
-  }
-}
-
-function isObjectObjectToken(value: string): boolean {
-  return value.trim().toLowerCase() === '[object object]';
-}
-
-function toCleanString(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'string') return value.trim();
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
-  return '';
-}
-
-function toRecord(value: unknown): Record<string, unknown> | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  return value as Record<string, unknown>;
+function ListBlock({
+  title,
+  items,
+  emptyState,
+  numbered = false,
+}: {
+  title: string;
+  items: string[];
+  emptyState: string;
+  numbered?: boolean;
+}) {
+  return (
+    <>
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <div className="mt-3">
+        {items.length > 0 ? (
+          <ul className="space-y-3">
+            {items.map((item, index) => (
+              <li key={`${item}-${index}`} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-[11px] text-muted-foreground">
+                  {numbered ? index + 1 : '\u2022'}
+                </span>
+                <span className="text-sm leading-relaxed text-foreground/90">{item}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">{emptyState}</p>
+        )}
+      </div>
+    </>
+  );
 }

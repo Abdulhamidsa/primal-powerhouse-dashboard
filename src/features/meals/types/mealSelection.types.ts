@@ -41,6 +41,7 @@ export type MealOption = {
     carbs: number;
     fat: number;
     ingredients?: string | null;
+    spices?: string | null;
     instructions?: string | null;
     category?: string | null;
     difficulty?: string | null;
