@@ -603,7 +603,9 @@ function validateDishIdentity(aiMeal: MealTemplateAiResponse, dishLock: DishBlue
   const expectedWords = expected.split(' ').filter(Boolean);
   const matchCount = expectedWords.filter(word => mealName.includes(word) || coreDish.includes(word)).length;
 
-  if (matchCount < Math.max(2, Math.ceil(expectedWords.length * 0.4))) {
+  const minimumRequiredMatches = expectedWords.length <= 2 ? 1 : Math.max(2, Math.ceil(expectedWords.length * 0.4));
+
+  if (matchCount < minimumRequiredMatches) {
     return `Dish identity mismatch. Expected a recognizable version of "${dishLock.name}".`;
   }
 
