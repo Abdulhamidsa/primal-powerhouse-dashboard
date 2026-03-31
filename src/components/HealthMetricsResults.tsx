@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Beef, Wheat, Droplets, AlertCircle, Trash2 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { AlertCircle, Beef, Droplets, ShieldAlert, Target, Trash2, Wheat } from 'lucide-react';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { useHealthMetricsNotes } from '@/features/health-metrics/hooks/useHealthMetricsNotes';
 
@@ -12,6 +12,8 @@ interface HealthMetricsResultsProps {
   onCloseAction: () => void;
   onSaveNotesAction: (notes: string[]) => void;
 }
+
+const MACRO_CHART_COLORS = ['var(--color-accent)', 'rgba(184, 106, 78, 0.68)', 'rgba(245, 245, 245, 0.38)'];
 
 export function HealthMetricsResults({
   clientId,
@@ -23,15 +25,20 @@ export function HealthMetricsResults({
   const [newNote, setNewNote] = useState('');
   const { saveNotes, isSaving } = useHealthMetricsNotes(clientId);
 
-  const handleAddNote = async (e: React.KeyboardEvent) => {
-    if (e.key !== 'Enter' || !newNote.trim()) return;
-    e.preventDefault();
+  const macroChartData = [
+    { name: 'Protein', value: metrics.macros.protein * 4 },
+    { name: 'Carbs', value: metrics.macros.carbs * 4 },
+    { name: 'Fat', value: metrics.macros.fat * 9 },
+  ];
+
+  const handleAddNote = async (event: React.KeyboardEvent) => {
+    if (event.key !== 'Enter' || !newNote.trim()) return;
+    event.preventDefault();
 
     const updatedNotes = [...notes, newNote.trim()];
     setNotes(updatedNotes);
     setNewNote('');
 
-    // Save notes to API
     try {
       await saveNotes(updatedNotes);
       onSaveNotesAction(updatedNotes);
@@ -41,7 +48,7 @@ export function HealthMetricsResults({
   };
 
   const removeNote = async (index: number) => {
-    const updatedNotes = notes.filter((_, i) => i !== index);
+    const updatedNotes = notes.filter((_, currentIndex) => currentIndex !== index);
     setNotes(updatedNotes);
 
     try {
@@ -52,436 +59,325 @@ export function HealthMetricsResults({
     }
   };
 
-  const getBMIColorClass = (category: string) => {
-    switch (category) {
-      case 'underweight':
-        return 'bg-blue-500/10 border-blue-500 text-blue-600';
-      case 'normal':
-        return 'bg-green-500/10 border-green-500 text-green-600';
-      case 'overweight':
-        return 'bg-orange-500/10 border-orange-500 text-orange-600';
-      case 'obese':
-        return 'bg-red-500/10 border-red-500 text-red-600';
-      default:
-        return 'bg-gray-500/10 border-gray-500 text-gray-600';
-    }
-  };
-
   return (
     <div
-      className="rounded-3xl border p-6 md:p-8 shadow-lg mt-6"
-      style={{
-        background: 'var(--color-surface)',
-        borderColor: 'var(--color-border)',
-      }}
+      className="mt-6 rounded-3xl border p-6 shadow-lg md:p-8"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
-          Health Metrics Results
-        </h2>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
+            Health Metrics Results
+          </h2>
+          <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            Coach-facing calorie, macro, and safety summary.
+          </p>
+        </div>
         <button
           onClick={onCloseAction}
-          className="px-4 py-2 rounded-lg font-semibold transition"
-          style={{
-            background: 'var(--color-accent)',
-            color: 'var(--color-text-on-accent)',
-          }}
+          className="rounded-xl px-4 py-2 text-sm font-semibold"
+          style={{ background: 'var(--color-accent)', color: 'var(--color-text-on-accent)' }}
         >
           Done
         </button>
       </div>
 
-      {/* Main Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* BMI Card */}
-        <div className={`rounded-2xl border-2 p-6 text-center ${getBMIColorClass(metrics.bmiCategory)}`}>
-          <p className="text-sm font-medium opacity-75 mb-2">BMI</p>
-          <p className="text-4xl font-bold mb-1">{metrics.bmi.toFixed(1)}</p>
-          <p className="text-sm font-semibold capitalize">{metrics.bmiCategory}</p>
-        </div>
-
-        {/* BMR Card */}
+      {metrics.requiresCoachReview ? (
         <div
-          className="rounded-2xl border-2 p-6 text-center"
-          style={{
-            borderColor: '#ec4899',
-            background: '#ec489920',
-            color: '#ec4899',
-          }}
+          className="mb-6 flex items-start gap-3 rounded-2xl border px-4 py-4"
+          style={{ borderColor: 'var(--color-accent)', background: 'var(--color-accent-translucent)' }}
         >
-          <p className="text-sm font-medium opacity-75 mb-2">BMR</p>
-          <p className="text-4xl font-bold">{metrics.bmr}</p>
-          <p className="text-xs mt-1">kcal/day</p>
+          <ShieldAlert size={18} style={{ color: 'var(--color-accent)', marginTop: 2 }} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              Coach review required
+            </p>
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              This result triggered at least one guardrail and should be reviewed before being used as a prescription.
+            </p>
+          </div>
         </div>
+      ) : null}
 
-        {/* TDEE Card */}
-        <div
-          className="rounded-2xl border-2 p-6 text-center"
-          style={{
-            borderColor: '#8b5cf6',
-            background: '#8b5cf620',
-            color: '#8b5cf6',
-          }}
-        >
-          <p className="text-sm font-medium opacity-75 mb-2">TDEE</p>
-          <p className="text-4xl font-bold">{metrics.tdee}</p>
-          <p className="text-xs mt-1">kcal/day</p>
-        </div>
-
-        {/* Goal Calories Card */}
-        <div
-          className="rounded-2xl border-2 p-6 text-center"
-          style={{
-            borderColor: '#06b6d4',
-            background: '#06b6d420',
-            color: '#06b6d4',
-          }}
-        >
-          <p className="text-sm font-medium opacity-75 mb-2">GOAL</p>
-          <p className="text-4xl font-bold">{metrics.recommendedCalories}</p>
-          <p className="text-xs mt-1">kcal/day</p>
-        </div>
+      <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="BMI" value={metrics.bmi.toFixed(1)} caption={metrics.bmiCategory} />
+        <MetricCard label="BMR" value={`${metrics.bmr}`} caption="kcal/day" />
+        <MetricCard label="TDEE" value={`${metrics.tdee}`} caption="kcal/day" />
+        <MetricCard label="Recommended Calories" value={`${metrics.recommendedCalories}`} caption="kcal/day" />
       </div>
 
-      {/* BMI Analysis Chart */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-          BMI Analysis
-        </h3>
+      <div className="mb-8 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <div
-          className="rounded-2xl border p-6"
-          style={{
-            background: 'var(--color-bg)',
-            borderColor: 'var(--color-border)',
-          }}
+          className="rounded-2xl border p-5"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
         >
-          {/* BMI Scale */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ color: 'var(--color-text-muted)' }} className="text-sm">
-                BMI Scale
-              </span>
-              <span style={{ color: 'var(--color-text)' }} className="font-semibold">
-                Your BMI: {metrics.bmi.toFixed(1)}
-              </span>
-            </div>
-
-            {/* Visual BMI Bar */}
+          <h3 className="mb-4 text-base font-semibold" style={{ color: 'var(--color-text)' }}>
+            Coaching Summary
+          </h3>
+          <div className="space-y-3 text-sm">
+            <InfoRow label="BMI Category" value={metrics.bmiCategory} />
+            <InfoRow label="Waist Risk" value={metrics.waistRisk ?? 'Not provided'} />
+            <InfoRow label="Formula" value={metrics.calculationDetails.formulaUsed.toUpperCase()} />
+            <InfoRow label="Activity Level" value={metrics.calculationDetails.activityLevel} />
+            <InfoRow label="Activity Multiplier" value={metrics.calculationDetails.activityMultiplier.toFixed(2)} />
+            <InfoRow label="Goal Direction" value={metrics.calculationDetails.goalDirection ?? 'N/A'} />
+            <InfoRow label="Coaching Phase" value={metrics.calculationDetails.coachingPhase ?? 'N/A'} />
+            <InfoRow label="Macro Mode" value={metrics.calculationDetails.macroMode ?? 'N/A'} />
+            <InfoRow label="Goal Adjustment" value={`${metrics.calculationDetails.goalAdjustmentCalories} kcal`} />
+            <InfoRow label="Protein Target" value={`${metrics.calculationDetails.proteinPerKg.toFixed(1)} g/kg`} />
+            <InfoRow label="Fat Floor" value={`${metrics.calculationDetails.fatFloorGrams} g/day`} />
+            <InfoRow
+              label="Dynamic Floor"
+              value={
+                metrics.calculationDetails.dynamicCalorieFloor != null
+                  ? `${metrics.calculationDetails.dynamicCalorieFloor} kcal`
+                  : 'N/A'
+              }
+            />
+          </div>
+          {metrics.calculationDetails.activityExplanation ? (
             <div
-              className="relative h-12 bg-gradient-to-r from-blue-500 via-green-500 to-red-500 rounded-lg overflow-hidden border-2"
-              style={{ borderColor: 'var(--color-border)' }}
+              className="mt-4 rounded-xl border p-4"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
             >
-              {/* Current BMI Marker */}
-              <div
-                className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-10"
-                style={{
-                  left: `${Math.min(Math.max((metrics.bmi / 45) * 100, 0), 100)}%`,
-                  boxShadow: '0 0 20px rgba(255, 255, 255, 0.8)',
-                }}
-              />
-              <div
-                className="absolute -top-8 text-white font-bold text-sm"
-                style={{
-                  left: `${Math.min(Math.max((metrics.bmi / 45) * 100, 0), 100)}%`,
-                  transform: 'translateX(-50%)',
-                }}
-              >
-                {metrics.bmi.toFixed(1)}
-              </div>
+              <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                Activity rationale
+              </p>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                {metrics.calculationDetails.activityExplanation}
+              </p>
             </div>
-
-            {/* Scale Labels */}
-            <div className="grid grid-cols-4 gap-2 mt-6">
-              <div className="text-center">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 mx-auto mb-2 flex items-center justify-center">
-                  <span style={{ color: '#3b82f6' }} className="text-sm font-bold">
-                    ↓
-                  </span>
-                </div>
-                <p style={{ color: 'var(--color-text-muted)' }} className="text-xs">
-                  Underweight
-                </p>
-                <p style={{ color: 'var(--color-text)' }} className="text-xs font-semibold">
-                  &lt; 18.5
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-8 h-8 rounded-lg bg-green-500/20 mx-auto mb-2 flex items-center justify-center">
-                  <span style={{ color: '#10b981' }} className="text-sm font-bold">
-                    ✓
-                  </span>
-                </div>
-                <p style={{ color: 'var(--color-text-muted)' }} className="text-xs">
-                  Normal
-                </p>
-                <p style={{ color: 'var(--color-text)' }} className="text-xs font-semibold">
-                  18.5 - 24.9
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-8 h-8 rounded-lg bg-orange-500/20 mx-auto mb-2 flex items-center justify-center">
-                  <span style={{ color: '#f97316' }} className="text-sm font-bold">
-                    ⚠
-                  </span>
-                </div>
-                <p style={{ color: 'var(--color-text-muted)' }} className="text-xs">
-                  Overweight
-                </p>
-                <p style={{ color: 'var(--color-text)' }} className="text-xs font-semibold">
-                  25 - 29.9
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-8 h-8 rounded-lg bg-red-500/20 mx-auto mb-2 flex items-center justify-center">
-                  <span style={{ color: '#ef4444' }} className="text-sm font-bold">
-                    ✕
-                  </span>
-                </div>
-                <p style={{ color: 'var(--color-text-muted)' }} className="text-xs">
-                  Obese
-                </p>
-                <p style={{ color: 'var(--color-text)' }} className="text-xs font-semibold">
-                  30+
-                </p>
-              </div>
+          ) : null}
+          {metrics.calculationDetails.proteinStrategy ? (
+            <div
+              className="mt-4 rounded-xl border p-4"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+            >
+              <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                Protein strategy
+              </p>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                {metrics.calculationDetails.proteinStrategy}
+              </p>
             </div>
-          </div>
-
-          {/* BMI Interpretation */}
-          <div
-            className="p-4 rounded-lg border"
-            style={{
-              background: 'var(--color-surface)',
-              borderColor: 'var(--color-border)',
-            }}
-          >
-            <p style={{ color: 'var(--color-text)' }} className="font-semibold mb-2">
-              Your Status
-            </p>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
-              {metrics.bmiCategory === 'underweight' &&
-                'Your BMI indicates you are underweight. Focus on building muscle mass and consuming adequate calories with nutrient-dense foods.'}
-              {metrics.bmiCategory === 'normal' &&
-                'Your BMI is in the healthy range. Maintain your current weight with balanced nutrition and regular exercise.'}
-              {metrics.bmiCategory === 'overweight' &&
-                'Your BMI indicates you are overweight. A combination of caloric deficit and regular exercise can help you reach a healthy weight.'}
-              {metrics.bmiCategory === 'obese' &&
-                'Your BMI indicates obesity. Consult with a healthcare provider for personalized guidance on weight management.'}
-            </p>
-          </div>
+          ) : null}
         </div>
-      </div>
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-          Macro Targets
-        </h3>
 
-        {/* Pie Chart */}
         <div
-          className="rounded-2xl border p-6 mb-6"
-          style={{
-            background: 'var(--color-bg)',
-            borderColor: 'var(--color-border)',
-          }}
+          className="rounded-2xl border p-5"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
         >
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={[
-                  { name: 'Protein', value: metrics.macros.protein * 4, color: '#ef4444' },
-                  { name: 'Carbs', value: metrics.macros.carbs * 4, color: '#f59916' },
-                  { name: 'Fat', value: metrics.macros.fat * 9, color: '#ffd93d' },
-                ]}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                <Cell fill="#ef4444" />
-                <Cell fill="#f59916" />
-                <Cell fill="#ffd93d" />
-              </Pie>
-              <Tooltip
-                formatter={value => `${value} kcal`}
-                contentStyle={{
-                  background: 'var(--color-accent)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '8px',
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Protein */}
-          <div
-            className="rounded-2xl border p-6 text-center"
-            style={{
-              background: 'var(--color-bg)',
-              borderColor: 'var(--color-border)',
-            }}
-          >
-            <div className="flex justify-center mb-3">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{
-                  background: '#ef444420',
-                }}
-              >
-                <Beef size={28} style={{ color: '#ef4444' }} />
-              </div>
-            </div>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
-              Protein
-            </p>
-            <p className="text-3xl font-bold mt-2" style={{ color: '#ef4444' }}>
-              {metrics.macros.protein}g
-            </p>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-              {Math.round(((metrics.macros.protein * 4) / metrics.recommendedCalories) * 100)}% of total
-            </p>
+          <h3 className="mb-4 text-base font-semibold" style={{ color: 'var(--color-text)' }}>
+            Macro Targets
+          </h3>
+          <div className="mb-4 h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={macroChartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  dataKey="value"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                >
+                  {macroChartData.map((entry, index) => (
+                    <Cell key={entry.name} fill={MACRO_CHART_COLORS[index]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={value => `${value} kcal`}
+                  contentStyle={{
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    color: 'var(--color-text)',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-
-          {/* Carbs */}
-          <div
-            className="rounded-2xl border p-6 text-center"
-            style={{
-              background: 'var(--color-bg)',
-              borderColor: 'var(--color-border)',
-            }}
-          >
-            <div className="flex justify-center mb-3">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{
-                  background: '#f5991620',
-                }}
-              >
-                <Wheat size={28} style={{ color: '#f59916' }} />
-              </div>
-            </div>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
-              Carbs
-            </p>
-            <p className="text-3xl font-bold mt-2" style={{ color: '#f59916' }}>
-              {metrics.macros.carbs}g
-            </p>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-              {Math.round(((metrics.macros.carbs * 4) / metrics.recommendedCalories) * 100)}% of total
-            </p>
-          </div>
-
-          {/* Fat */}
-          <div
-            className="rounded-2xl border p-6 text-center"
-            style={{
-              background: 'var(--color-bg)',
-              borderColor: 'var(--color-border)',
-            }}
-          >
-            <div className="flex justify-center mb-3">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{
-                  background: '#ffd93d20',
-                }}
-              >
-                <Droplets size={28} style={{ color: '#ffd93d' }} />
-              </div>
-            </div>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
-              Fat
-            </p>
-            <p className="text-3xl font-bold mt-2" style={{ color: '#ffd93d' }}>
-              {metrics.macros.fat}g
-            </p>
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-              {Math.round(((metrics.macros.fat * 9) / metrics.recommendedCalories) * 100)}% of total
-            </p>
+          <div className="grid gap-3 md:grid-cols-3">
+            <MacroCard
+              label="Protein"
+              value={`${metrics.macros.protein}g`}
+              share={`${Math.round(((metrics.macros.protein * 4) / metrics.recommendedCalories) * 100)}%`}
+              icon={<Beef size={18} />}
+            />
+            <MacroCard
+              label="Carbs"
+              value={`${metrics.macros.carbs}g`}
+              share={`${Math.round(((metrics.macros.carbs * 4) / metrics.recommendedCalories) * 100)}%`}
+              icon={<Wheat size={18} />}
+            />
+            <MacroCard
+              label="Fat"
+              value={`${metrics.macros.fat}g`}
+              share={`${Math.round(((metrics.macros.fat * 9) / metrics.recommendedCalories) * 100)}%`}
+              icon={<Droplets size={18} />}
+            />
           </div>
         </div>
       </div>
 
-      {/* Notes Section */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-          Notes & Observations
-        </h3>
+      {metrics.safetyWarnings.length ? (
+        <div
+          className="mb-8 rounded-2xl border p-5"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+        >
+          <div className="mb-3 flex items-center gap-2">
+            <AlertCircle size={16} style={{ color: 'var(--color-accent)' }} />
+            <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
+              Safety Warnings
+            </h3>
+          </div>
+          <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            {metrics.safetyWarnings.map(warning => (
+              <li
+                key={warning}
+                className="rounded-xl border px-4 py-3"
+                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+              >
+                {warning}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
-        {/* Add Note Input */}
+      <div
+        className="mb-8 rounded-2xl border p-5"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+      >
+        <div className="mb-3 flex items-center gap-2">
+          <Target size={16} style={{ color: 'var(--color-accent)' }} />
+          <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
+            Notes and Coaching Observations
+          </h3>
+        </div>
+
         <div className="mb-4">
           <input
             type="text"
             value={newNote}
-            onChange={e => setNewNote(e.target.value)}
+            onChange={event => setNewNote(event.target.value)}
             onKeyDown={handleAddNote}
             disabled={isSaving}
-            placeholder="Add a note and press Enter..."
-            className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2"
+            placeholder="Add a note and press Enter"
+            className="w-full rounded-xl border px-4 py-3"
             style={{
               borderColor: 'var(--color-border)',
-              background: 'var(--color-bg)',
+              background: 'var(--color-surface)',
               color: 'var(--color-text)',
               opacity: isSaving ? 0.6 : 1,
             }}
           />
-          <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-            Press Enter to add a note
+          <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            Notes remain editable after calculation so the coach can add context.
           </p>
         </div>
 
-        {/* Notes List */}
-        {notes.length > 0 ? (
+        {notes.length ? (
           <div className="space-y-3">
-            {notes.map((note, idx) => (
+            {notes.map((note, index) => (
               <div
-                key={idx}
-                className="flex items-start justify-between p-4 rounded-lg border"
-                style={{
-                  background: 'var(--color-bg)',
-                  borderColor: 'var(--color-border)',
-                }}
+                key={`${note}-${index}`}
+                className="flex items-start justify-between gap-3 rounded-xl border px-4 py-4"
+                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
               >
                 <div className="flex-1">
                   <p style={{ color: 'var(--color-text)' }}>{note}</p>
-                  <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mt-1">
-                    Note {idx + 1} of {notes.length}
+                  <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    Note {index + 1}
                   </p>
                 </div>
                 <button
-                  onClick={() => removeNote(idx)}
+                  onClick={() => removeNote(index)}
                   disabled={isSaving}
-                  className="ml-3 p-2 hover:bg-red-500/10 rounded-lg transition"
-                  style={{ opacity: isSaving ? 0.5 : 1 }}
+                  className="rounded-lg p-2"
+                  style={{ color: 'var(--color-text-muted)', opacity: isSaving ? 0.5 : 1 }}
                 >
-                  <Trash2 size={18} style={{ color: '#ef4444' }} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             ))}
           </div>
         ) : (
           <div
-            className="p-6 rounded-lg border text-center"
-            style={{
-              background: 'var(--color-bg)',
-              borderColor: 'var(--color-border)',
-            }}
+            className="rounded-xl border px-4 py-6 text-center"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
-            <AlertCircle size={24} style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }} />
-            <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
-              No notes yet. Add observations about this calculation!
+            <AlertCircle size={20} style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }} />
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              No notes added yet.
             </p>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function MetricCard({ label, value, caption }: { label: string; value: string; caption: string }) {
+  return (
+    <div
+      className="rounded-2xl border p-5"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+    >
+      <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-2 text-3xl font-semibold" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </p>
+      <p className="mt-1 text-xs uppercase tracking-[0.12em]" style={{ color: 'var(--color-text-muted)' }}>
+        {caption}
+      </p>
+    </div>
+  );
+}
+
+function MacroCard({
+  label,
+  value,
+  share,
+  icon,
+}: {
+  label: string;
+  value: string;
+  share: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div
+      className="rounded-2xl border p-4"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
+      <div className="mb-3 flex items-center gap-2" style={{ color: 'var(--color-accent)' }}>
+        {icon}
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <p className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </p>
+      <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        {share} of total calories
+      </p>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 border-b py-2 last:border-b-0"
+      style={{ borderColor: 'var(--color-border)' }}
+    >
+      <span style={{ color: 'var(--color-text-muted)' }}>{label}</span>
+      <span className="text-right font-medium capitalize" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </span>
     </div>
   );
 }

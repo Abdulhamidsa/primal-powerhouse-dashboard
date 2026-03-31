@@ -1,13 +1,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Activity, AlertTriangle, ChevronDown, ChevronUp, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { Activity, Gauge, Target, TrendingDown, TrendingUp, X } from 'lucide-react';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { useHealthMetricsCalculator } from '@/features/health-metrics/hooks/useHealthMetricsCalculator';
 import type {
-  HealthMetricsActivityOverride,
+  HealthMetricsCoachingPhase,
   HealthMetricsFormulaPreference,
   HealthMetricsGoal,
+  HealthMetricsGoalDirection,
+  HealthMetricsMacroMode,
+  HealthMetricsOccupationActivity,
   HealthMetricsRequestPayload,
 } from '@/features/health-metrics/types/healthMetrics.types';
 
@@ -26,82 +29,114 @@ interface HealthMetricsModalProps {
   onSuccess?: (metrics: HealthMetricsOutput) => void;
 }
 
-const goalCards: Array<{
-  value: HealthMetricsGoal;
+const directionCards: Array<{
+  value: HealthMetricsGoalDirection;
   label: string;
   subtitle: string;
   icon: typeof TrendingDown;
-  tone: 'danger' | 'warning' | 'info' | 'success' | 'neutral';
 }> = [
   {
-    value: 'fat_loss',
+    value: 'LOSS',
     label: 'Fat Loss',
-    subtitle: 'Steady deficit with muscle retention focus',
+    subtitle: 'Create a controlled rate of loss with clear guardrails.',
     icon: TrendingDown,
-    tone: 'warning',
   },
   {
-    value: 'aggressive_cut',
-    label: 'Aggressive Cut',
-    subtitle: 'High-pressure short phase with strict guardrails',
-    icon: AlertTriangle,
-    tone: 'danger',
-  },
-  {
-    value: 'recomposition',
-    label: 'Recomposition',
-    subtitle: 'Small deficit while pushing performance',
+    value: 'MAINTAIN',
+    label: 'Maintain',
+    subtitle: 'Hold intake near expenditure and protect performance.',
     icon: Activity,
-    tone: 'info',
   },
   {
-    value: 'lean_bulk',
-    label: 'Lean Bulk',
-    subtitle: 'Controlled surplus with quality gain target',
+    value: 'GAIN',
+    label: 'Gain',
+    subtitle: 'Use a measured surplus with quality gain targets.',
     icon: TrendingUp,
-    tone: 'success',
+  },
+];
+
+const coachingPhases: Array<{ value: HealthMetricsCoachingPhase; label: string; description: string }> = [
+  {
+    value: 'GENERAL_FAT_LOSS',
+    label: 'General Fat Loss',
+    description: 'Default steady-loss setup for most active clients.',
   },
   {
-    value: 'maintenance',
-    label: 'Maintenance',
-    subtitle: 'Stabilize output and preserve current composition',
-    icon: Activity,
-    tone: 'neutral',
+    value: 'HARD_CUT',
+    label: 'Hard Cut',
+    description: 'Short, higher-pressure phase with stricter guardrails.',
+  },
+  {
+    value: 'RECOMP',
+    label: 'Recomp',
+    description: 'Bias body composition while keeping training quality intact.',
+  },
+  {
+    value: 'PERFORMANCE',
+    label: 'Performance',
+    description: 'Fuel training output, recovery, and workload tolerance.',
+  },
+  {
+    value: 'LEAN_BULK',
+    label: 'Lean Bulk',
+    description: 'Controlled gain phase with a small productive surplus.',
   },
 ];
 
-const activityOptions: Array<{ value: HealthMetricsActivityOverride; label: string; description: string }> = [
-  { value: 'SEDENTARY', label: 'Sedentary', description: 'Desk job, minimal training volume' },
-  { value: 'LIGHT', label: 'Light', description: '2-3 sessions/week or active lifestyle' },
-  { value: 'MODERATE', label: 'Moderate', description: '4-5 sessions/week with regular movement' },
-  { value: 'VERY_ACTIVE', label: 'Very Active', description: 'Intense training most days' },
-  { value: 'ATHLETE', label: 'Athlete', description: 'High training load, performance priority' },
+const macroModeOptions: Array<{ value: HealthMetricsMacroMode; label: string; description: string }> = [
+  { value: 'BALANCED', label: 'Balanced', description: 'Even split for general coaching use.' },
+  {
+    value: 'HIGH_CARB_PERFORMANCE',
+    label: 'High Carb Performance',
+    description: 'Higher carb bias for training output and glycogen support.',
+  },
+  {
+    value: 'HIGH_FAT_APPETITE_CONTROL',
+    label: 'High Fat Appetite Control',
+    description: 'Higher fat bias for satiety and appetite control.',
+  },
+  {
+    value: 'PROTEIN_PRIORITY_CUT',
+    label: 'Protein Priority Cut',
+    description: 'Protein-forward split for tighter cutting phases.',
+  },
 ];
 
-function normalizeActivityForSelection(activityLevel: string | null): HealthMetricsActivityOverride {
-  const key = (activityLevel ?? '').trim().toUpperCase();
-  if (key === 'LOW' || key === 'SEDENTARY') return 'SEDENTARY';
-  if (key === 'LIGHT') return 'LIGHT';
-  if (key === 'MODERATE') return 'MODERATE';
-  if (key === 'HIGH' || key === 'VERY_ACTIVE') return 'VERY_ACTIVE';
-  if (key === 'ATHLETE') return 'ATHLETE';
-  return 'MODERATE';
+const occupationOptions: Array<{ value: HealthMetricsOccupationActivity; label: string; description: string }> = [
+  { value: 'DESK', label: 'Desk', description: 'Mostly seated workday' },
+  { value: 'MIXED', label: 'Mixed', description: 'Blend of seated and on-feet work' },
+  { value: 'PHYSICAL', label: 'Physical', description: 'Job involves regular manual movement' },
+];
+
+function getDefaultWeeklyRate(direction: HealthMetricsGoalDirection, phase: HealthMetricsCoachingPhase): string {
+  if (direction === 'GAIN') return '0.25';
+  if (direction === 'LOSS' && phase === 'HARD_CUT') return '1';
+  if (direction === 'LOSS') return '0.5';
+  if (direction === 'MAINTAIN' && phase === 'RECOMP') return '0.25';
+  return '0.25';
 }
 
-function getGoalWeeklyRateDefault(goal: HealthMetricsGoal): number {
-  if (goal === 'aggressive_cut') return 1;
-  if (goal === 'fat_loss') return 0.5;
-  if (goal === 'lean_bulk') return 0.25;
-  return 0.3;
+function getDefaultMacroMode(phase: HealthMetricsCoachingPhase): HealthMetricsMacroMode {
+  if (phase === 'HARD_CUT') return 'PROTEIN_PRIORITY_CUT';
+  if (phase === 'PERFORMANCE') return 'HIGH_CARB_PERFORMANCE';
+  return 'BALANCED';
 }
 
-function toneClasses(tone: 'danger' | 'warning' | 'info' | 'success' | 'neutral', active: boolean): string {
-  if (!active) return 'border-border bg-background text-foreground';
-  if (tone === 'danger') return 'border-red-400/70 bg-red-500/15 text-red-300';
-  if (tone === 'warning') return 'border-amber-400/70 bg-amber-500/15 text-amber-300';
-  if (tone === 'info') return 'border-cyan-400/70 bg-cyan-500/15 text-cyan-300';
-  if (tone === 'success') return 'border-emerald-400/70 bg-emerald-500/15 text-emerald-300';
-  return 'border-accent/50 bg-accent/15 text-accent';
+function getLegacyGoal(
+  goalDirection: HealthMetricsGoalDirection,
+  phase: HealthMetricsCoachingPhase,
+): HealthMetricsGoal {
+  if (phase === 'HARD_CUT') return 'aggressive_cut';
+  if (phase === 'RECOMP') return 'recomposition';
+  if (phase === 'LEAN_BULK' || goalDirection === 'GAIN') return 'lean_bulk';
+  if (goalDirection === 'MAINTAIN' || phase === 'PERFORMANCE') return 'maintenance';
+  return 'fat_loss';
+}
+
+function surfaceButtonClass(active: boolean): string {
+  return active
+    ? 'border-[var(--color-accent)] bg-[var(--color-accent-muted)] text-[var(--color-text)]'
+    : 'border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text)]';
 }
 
 export default function HealthMetricsModal({
@@ -113,40 +148,65 @@ export default function HealthMetricsModal({
   onSuccess,
 }: HealthMetricsModalProps) {
   const [weight, setWeight] = useState(clientData.currentWeight?.toString() || '');
-  const [goal, setGoal] = useState<HealthMetricsGoal>('fat_loss');
-  const [activityOverride, setActivityOverride] = useState<HealthMetricsActivityOverride>(
-    normalizeActivityForSelection(clientData.activityLevel)
-  );
-  const [weeklyRatePercent, setWeeklyRatePercent] = useState(getGoalWeeklyRateDefault('fat_loss').toString());
+  const [goalDirection, setGoalDirection] = useState<HealthMetricsGoalDirection>('LOSS');
+  const [coachingPhase, setCoachingPhase] = useState<HealthMetricsCoachingPhase>('GENERAL_FAT_LOSS');
+  const [weeklyRatePercent, setWeeklyRatePercent] = useState(getDefaultWeeklyRate('LOSS', 'GENERAL_FAT_LOSS'));
+  const [averageDailySteps, setAverageDailySteps] = useState('8000');
+  const [resistanceSessionsPerWeek, setResistanceSessionsPerWeek] = useState('4');
+  const [cardioMinutesPerWeek, setCardioMinutesPerWeek] = useState('90');
+  const [occupationActivity, setOccupationActivity] = useState<HealthMetricsOccupationActivity>('MIXED');
   const [formulaPreference, setFormulaPreference] = useState<HealthMetricsFormulaPreference>('auto');
+  const [macroMode, setMacroMode] = useState<HealthMetricsMacroMode>(getDefaultMacroMode('GENERAL_FAT_LOSS'));
   const [bodyFatPercentage, setBodyFatPercentage] = useState('');
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [waistCircumferenceCm, setWaistCircumferenceCm] = useState('');
+  const [isLeanClient, setIsLeanClient] = useState(false);
   const [previewMetrics, setPreviewMetrics] = useState<HealthMetricsOutput | null>(null);
 
   const { submit, isSubmitting, error } = useHealthMetricsCalculator(clientId);
 
-  const showWeeklyRate = goal === 'fat_loss' || goal === 'aggressive_cut' || goal === 'lean_bulk';
-
+  const showWeeklyRate = goalDirection !== 'MAINTAIN' || coachingPhase === 'RECOMP';
   const canPreview = useMemo(() => {
     const parsedWeight = Number(weight);
-    return Number.isFinite(parsedWeight) && parsedWeight > 0;
-  }, [weight]);
+    return (
+      Number.isFinite(parsedWeight) &&
+      parsedWeight > 0 &&
+      Number.isFinite(Number(averageDailySteps)) &&
+      Number.isFinite(Number(resistanceSessionsPerWeek)) &&
+      Number.isFinite(Number(cardioMinutesPerWeek))
+    );
+  }, [averageDailySteps, cardioMinutesPerWeek, resistanceSessionsPerWeek, weight]);
 
   if (!isOpen) return null;
 
   const buildPayload = (mode: 'preview' | 'apply'): HealthMetricsRequestPayload => ({
     currentWeight: Number(weight),
-    goal,
-    mode,
-    activityLevelOverride: activityOverride,
+    goal: getLegacyGoal(goalDirection, coachingPhase),
+    goalDirection,
+    coachingPhase,
     weeklyRatePercent: showWeeklyRate ? Number(weeklyRatePercent) : undefined,
+    compositeActivity: {
+      averageDailySteps: Number(averageDailySteps),
+      resistanceSessionsPerWeek: Number(resistanceSessionsPerWeek),
+      cardioMinutesPerWeek: Number(cardioMinutesPerWeek),
+      occupationActivity,
+    },
     formulaPreference,
+    macroMode,
     bodyFatPercentage: bodyFatPercentage.trim() ? Number(bodyFatPercentage) : undefined,
+    waistCircumferenceCm: waistCircumferenceCm.trim() ? Number(waistCircumferenceCm) : undefined,
+    isLeanClient,
+    mode,
   });
 
-  const handleGoalChange = (nextGoal: HealthMetricsGoal) => {
-    setGoal(nextGoal);
-    setWeeklyRatePercent(getGoalWeeklyRateDefault(nextGoal).toString());
+  const handleDirectionChange = (nextDirection: HealthMetricsGoalDirection) => {
+    setGoalDirection(nextDirection);
+    setWeeklyRatePercent(getDefaultWeeklyRate(nextDirection, coachingPhase));
+  };
+
+  const handleCoachingPhaseChange = (nextPhase: HealthMetricsCoachingPhase) => {
+    setCoachingPhase(nextPhase);
+    setWeeklyRatePercent(getDefaultWeeklyRate(goalDirection, nextPhase));
+    setMacroMode(getDefaultMacroMode(nextPhase));
   };
 
   const handlePreview = async () => {
@@ -163,209 +223,484 @@ export default function HealthMetricsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div
-        className="w-full max-w-3xl overflow-y-auto rounded-3xl border shadow-2xl"
+        className="w-full max-w-5xl overflow-y-auto rounded-3xl border shadow-2xl"
         style={{
           background: 'var(--color-surface)',
           borderColor: 'var(--color-border)',
-          maxHeight: '90vh',
+          maxHeight: '92vh',
         }}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/95 px-6 py-4 backdrop-blur">
+        <div
+          className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b px-6 py-5 backdrop-blur"
+          style={{ background: 'rgba(20, 20, 20, 0.96)', borderColor: 'var(--color-border)' }}
+        >
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Health Metrics Calculator</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{clientName}</p>
+            <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
+              Health Metrics Calculator
+            </h2>
+            <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              {clientName}
+            </p>
           </div>
-          <button type="button" onClick={onCloseAction} className="rounded-lg p-2 hover:bg-muted">
-            <X className="h-5 w-5 text-muted-foreground" />
+          <button
+            type="button"
+            onClick={onCloseAction}
+            className="rounded-xl border p-2"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="space-y-6 p-6">
-          <section className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">Current Weight (kg)</label>
-            <input
-              type="number"
-              step="0.1"
-              value={weight}
-              onChange={event => setWeight(event.target.value)}
-              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground"
-              required
-            />
-          </section>
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-foreground">Goal Strategy</label>
-              {goal === 'aggressive_cut' ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-1 text-xs font-semibold text-red-300">
-                  <AlertTriangle className="h-3.5 w-3.5" /> High stress mode
-                </span>
-              ) : null}
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {goalCards.map(card => {
-                const Icon = card.icon;
-                const active = goal === card.value;
-                return (
-                  <button
-                    key={card.value}
-                    type="button"
-                    onClick={() => handleGoalChange(card.value)}
-                    className={`rounded-xl border px-4 py-3 text-left transition ${toneClasses(card.tone, active)}`}
-                  >
-                    <div className="mb-1 flex items-center justify-between">
-                      <span className="text-sm font-semibold">{card.label}</span>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <p className="text-xs opacity-85">{card.subtitle}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
-          {showWeeklyRate ? (
-            <section className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">Target Weekly Rate (% bodyweight)</label>
+        <div className="grid gap-6 p-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-6">
+            <section
+              className="space-y-3 rounded-2xl border p-5"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+            >
+              <label className="block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                Current Weight (kg)
+              </label>
               <input
                 type="number"
-                min={0.1}
-                max={1.2}
-                step={0.05}
-                value={weeklyRatePercent}
-                onChange={event => setWeeklyRatePercent(event.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground"
+                step="0.1"
+                value={weight}
+                onChange={event => setWeight(event.target.value)}
+                className="w-full rounded-xl border px-4 py-3"
+                style={{
+                  borderColor: 'var(--color-border)',
+                  background: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                }}
               />
             </section>
-          ) : null}
 
-          <section className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">Activity Profile</label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {activityOptions.map(option => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setActivityOverride(option.value)}
-                  className={`rounded-xl border px-4 py-3 text-left transition ${
-                    activityOverride === option.value
-                      ? 'border-accent/50 bg-accent/15 text-accent'
-                      : 'border-border bg-background text-foreground'
-                  }`}
-                >
-                  <div className="text-sm font-semibold">{option.label}</div>
-                  <div className="text-xs opacity-80">{option.description}</div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-xl border border-border bg-background/70">
-            <button
-              type="button"
-              onClick={() => setIsAdvancedOpen(prev => !prev)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left"
+            <section
+              className="space-y-4 rounded-2xl border p-5"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
             >
-              <span className="text-sm font-semibold text-foreground">Advanced Options</span>
-              {isAdvancedOpen ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </button>
+              <div className="flex items-center gap-2">
+                <Target size={16} style={{ color: 'var(--color-accent)' }} />
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Goal Direction
+                </h3>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
+                {directionCards.map(card => {
+                  const Icon = card.icon;
+                  const active = goalDirection === card.value;
+                  return (
+                    <button
+                      key={card.value}
+                      type="button"
+                      onClick={() => handleDirectionChange(card.value)}
+                      className={`rounded-xl border px-4 py-4 text-left transition ${surfaceButtonClass(active)}`}
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-semibold">{card.label}</span>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <p className="text-xs opacity-80">{card.subtitle}</p>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {isAdvancedOpen ? (
-              <div className="space-y-4 border-t border-border px-4 py-4">
+              {showWeeklyRate ? (
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground">Formula Preference</label>
+                  <label className="block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                    Target Weekly Rate (% bodyweight)
+                  </label>
+                  <input
+                    type="number"
+                    min={0.1}
+                    max={1.2}
+                    step={0.05}
+                    value={weeklyRatePercent}
+                    onChange={event => setWeeklyRatePercent(event.target.value)}
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                  />
+                </div>
+              ) : null}
+            </section>
+
+            <section
+              className="space-y-4 rounded-2xl border p-5"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+            >
+              <div className="flex items-center gap-2">
+                <Gauge size={16} style={{ color: 'var(--color-accent)' }} />
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Coaching Phase
+                </h3>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {coachingPhases.map(phase => {
+                  const active = coachingPhase === phase.value;
+                  return (
+                    <button
+                      key={phase.value}
+                      type="button"
+                      onClick={() => handleCoachingPhaseChange(phase.value)}
+                      className={`rounded-xl border px-4 py-4 text-left transition ${surfaceButtonClass(active)}`}
+                    >
+                      <p className="text-sm font-semibold">{phase.label}</p>
+                      <p className="mt-1 text-xs opacity-80">{phase.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section
+              className="space-y-4 rounded-2xl border p-5"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+            >
+              <div className="flex items-center gap-2">
+                <Activity size={16} style={{ color: 'var(--color-accent)' }} />
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  Activity Profile
+                </h3>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Average Daily Steps">
+                  <input
+                    type="number"
+                    step="500"
+                    value={averageDailySteps}
+                    onChange={event => setAverageDailySteps(event.target.value)}
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                  />
+                </Field>
+                <Field label="Resistance Sessions / Week">
+                  <input
+                    type="number"
+                    min={0}
+                    max={14}
+                    value={resistanceSessionsPerWeek}
+                    onChange={event => setResistanceSessionsPerWeek(event.target.value)}
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                  />
+                </Field>
+                <Field label="Cardio Minutes / Week">
+                  <input
+                    type="number"
+                    min={0}
+                    value={cardioMinutesPerWeek}
+                    onChange={event => setCardioMinutesPerWeek(event.target.value)}
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                  />
+                </Field>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                  Occupation Activity
+                </label>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {occupationOptions.map(option => {
+                    const active = occupationActivity === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setOccupationActivity(option.value)}
+                        className={`rounded-xl border px-4 py-3 text-left transition ${surfaceButtonClass(active)}`}
+                      >
+                        <p className="text-sm font-semibold">{option.label}</p>
+                        <p className="mt-1 text-xs opacity-80">{option.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="space-y-4 rounded-2xl border p-5"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+            >
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                Advanced Inputs
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Formula Preference">
                   <select
                     value={formulaPreference}
                     onChange={event => setFormulaPreference(event.target.value as HealthMetricsFormulaPreference)}
-                    className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground"
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
                   >
                     <option value="auto">Auto (recommended)</option>
                     <option value="mifflin">Mifflin-St Jeor</option>
                     <option value="katch">Katch-McArdle</option>
                   </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground">Body Fat % (optional)</label>
+                </Field>
+                <Field label="Macro Mode">
+                  <select
+                    value={macroMode}
+                    onChange={event => setMacroMode(event.target.value as HealthMetricsMacroMode)}
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                  >
+                    {macroModeOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    {macroModeOptions.find(option => option.value === macroMode)?.description}
+                  </p>
+                </Field>
+                <Field label="Body Fat % (optional)">
                   <input
                     type="number"
                     min={3}
                     max={60}
-                    step={0.1}
+                    step="0.1"
                     value={bodyFatPercentage}
                     onChange={event => setBodyFatPercentage(event.target.value)}
-                    className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground"
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
                     placeholder="e.g. 16.5"
                   />
-                </div>
+                </Field>
+                <Field label="Waist Circumference (cm)">
+                  <input
+                    type="number"
+                    min={50}
+                    max={150}
+                    step="0.5"
+                    value={waistCircumferenceCm}
+                    onChange={event => setWaistCircumferenceCm(event.target.value)}
+                    className="w-full rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background: 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                    }}
+                    placeholder="Optional"
+                  />
+                </Field>
+              </div>
+              <label
+                className="flex items-center gap-3 rounded-xl border px-4 py-3"
+                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isLeanClient}
+                  onChange={event => setIsLeanClient(event.target.checked)}
+                />
+                <span className="text-sm" style={{ color: 'var(--color-text)' }}>
+                  Treat as lean client for stricter deficit guardrails and higher-protein logic
+                </span>
+              </label>
+            </section>
+
+            {error?.message ? (
+              <div
+                className="rounded-xl border px-4 py-3 text-sm"
+                style={{
+                  borderColor: 'var(--color-accent)',
+                  background: 'var(--color-accent-translucent)',
+                  color: 'var(--color-text)',
+                }}
+              >
+                {error.message}
               </div>
             ) : null}
-          </section>
 
-          {error?.message ? (
-            <div className="rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {error.message}
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={handlePreview}
+                disabled={!canPreview || isSubmitting}
+                className="rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
+                style={{ background: 'var(--color-accent)', color: 'var(--color-text-on-accent)' }}
+              >
+                {isSubmitting ? 'Working...' : 'Preview Calculation'}
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                disabled={!previewMetrics || isSubmitting}
+                className="rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-60"
+                style={{
+                  borderColor: 'var(--color-border)',
+                  background: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                }}
+              >
+                Apply To Client
+              </button>
             </div>
-          ) : null}
-
-          {previewMetrics ? (
-            <section className="space-y-3 rounded-2xl border border-border bg-background p-4">
-              <h3 className="text-sm font-semibold text-foreground">Preview</h3>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <Metric label="BMI" value={previewMetrics.bmi.toFixed(1)} />
-                <Metric label="BMR" value={`${previewMetrics.bmr}`} />
-                <Metric label="TDEE" value={`${previewMetrics.tdee}`} />
-                <Metric label="Daily kcal" value={`${previewMetrics.recommendedCalories}`} />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <Metric label="Protein" value={`${previewMetrics.macros.protein}g`} />
-                <Metric label="Carbs" value={`${previewMetrics.macros.carbs}g`} />
-                <Metric label="Fat" value={`${previewMetrics.macros.fat}g`} />
-              </div>
-              <div className="rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
-                <p className="mb-2 font-semibold text-foreground">How calculated</p>
-                <p>Formula: {previewMetrics.calculationDetails.formulaUsed.toUpperCase()}</p>
-                <p>Activity multiplier: {previewMetrics.calculationDetails.activityMultiplier.toFixed(3)}</p>
-                <p>Goal adjustment: {previewMetrics.calculationDetails.goalAdjustmentCalories} kcal/day</p>
-                <p>Protein floor: {previewMetrics.calculationDetails.proteinPerKg.toFixed(1)} g/kg</p>
-                <p>Fat floor: {previewMetrics.calculationDetails.fatFloorGrams} g/day</p>
-              </div>
-            </section>
-          ) : null}
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={handlePreview}
-              disabled={!canPreview || isSubmitting}
-              className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-black disabled:opacity-60"
-            >
-              {isSubmitting ? 'Working...' : 'Preview Calculation'}
-            </button>
-            <button
-              type="button"
-              onClick={handleApply}
-              disabled={!previewMetrics || isSubmitting}
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              Apply To Client
-            </button>
           </div>
+
+          <aside
+            className="space-y-4 rounded-2xl border p-5"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+          >
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              Preview
+            </h3>
+            {previewMetrics ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <Metric label="BMI" value={previewMetrics.bmi.toFixed(1)} />
+                  <Metric label="BMR" value={`${previewMetrics.bmr}`} />
+                  <Metric label="TDEE" value={`${previewMetrics.tdee}`} />
+                  <Metric label="Daily kcal" value={`${previewMetrics.recommendedCalories}`} />
+                  <Metric label="Protein" value={`${previewMetrics.macros.protein}g`} />
+                  <Metric label="Carbs" value={`${previewMetrics.macros.carbs}g`} />
+                  <Metric label="Fat" value={`${previewMetrics.macros.fat}g`} />
+                  <Metric label="Coach Review" value={previewMetrics.requiresCoachReview ? 'Required' : 'No'} />
+                </div>
+                <div
+                  className="rounded-xl border p-4 text-sm"
+                  style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+                >
+                  <p className="mb-2 font-semibold" style={{ color: 'var(--color-text)' }}>
+                    Calculation Details
+                  </p>
+                  <InfoRow label="Formula" value={previewMetrics.calculationDetails.formulaUsed.toUpperCase()} />
+                  <InfoRow label="Activity Level" value={previewMetrics.calculationDetails.activityLevel} />
+                  <InfoRow
+                    label="Activity Multiplier"
+                    value={previewMetrics.calculationDetails.activityMultiplier.toFixed(2)}
+                  />
+                  <InfoRow label="Goal Direction" value={previewMetrics.calculationDetails.goalDirection ?? 'N/A'} />
+                  <InfoRow label="Phase" value={previewMetrics.calculationDetails.coachingPhase ?? 'N/A'} />
+                  <InfoRow label="Macro Mode" value={previewMetrics.calculationDetails.macroMode ?? 'N/A'} />
+                  <InfoRow
+                    label="Adjustment"
+                    value={`${previewMetrics.calculationDetails.goalAdjustmentCalories} kcal`}
+                  />
+                  <InfoRow
+                    label="Protein"
+                    value={`${previewMetrics.calculationDetails.proteinPerKg.toFixed(1)} g/kg`}
+                  />
+                  <InfoRow label="Fat Floor" value={`${previewMetrics.calculationDetails.fatFloorGrams} g`} />
+                </div>
+                {previewMetrics.calculationDetails.activityExplanation ? (
+                  <Callout title="Activity rationale" body={previewMetrics.calculationDetails.activityExplanation} />
+                ) : null}
+                {previewMetrics.calculationDetails.proteinStrategy ? (
+                  <Callout title="Protein strategy" body={previewMetrics.calculationDetails.proteinStrategy} />
+                ) : null}
+                {previewMetrics.safetyWarnings.length ? (
+                  <div
+                    className="rounded-xl border p-4"
+                    style={{ borderColor: 'var(--color-accent)', background: 'var(--color-accent-translucent)' }}
+                  >
+                    <p className="mb-2 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                      Safety Warnings
+                    </p>
+                    <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                      {previewMetrics.safetyWarnings.map(warning => (
+                        <li key={warning}>{warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                Run a preview to inspect calories, macros, safety warnings, and calculation rationale before applying
+                the result.
+              </p>
+            )}
+          </aside>
         </div>
       </div>
     </div>
   );
 }
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-3 py-2">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-semibold text-foreground">{value}</p>
+    <div
+      className="rounded-xl border px-3 py-3"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
+      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1">
+      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        {label}
+      </span>
+      <span className="text-xs font-medium text-right" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function Callout({ title, body }: { title: string; body: string }) {
+  return (
+    <div
+      className="rounded-xl border p-4"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
+      <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+        {title}
+      </p>
+      <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+        {body}
+      </p>
     </div>
   );
 }

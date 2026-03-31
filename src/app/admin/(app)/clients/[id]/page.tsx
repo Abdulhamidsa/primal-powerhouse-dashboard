@@ -111,6 +111,8 @@ export default function ClientProfilePage() {
             bmiCategory: latest.bmiCategory,
             macros: JSON.parse(latest.macros),
             notes: latest.notes ? latest.notes.split('\n').filter((n: string) => n.trim()) : [],
+            safetyWarnings: [],
+            requiresCoachReview: false,
             isSafeToDeficit: latest.isSafeToDeficit,
             calculationDetails: {
               formulaUsed: 'mifflin',

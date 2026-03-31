@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Users } from 'lucide-react';
+import { MessageSquare, Search, Users, X } from 'lucide-react';
 import AssignContentModal from '@/components/AssignContentModal';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import NewAddClientModal from '@/components/NewAddClientModal';
@@ -46,6 +46,7 @@ export default function ClientsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const layoutRef = useRef<HTMLElement | null>(null);
+  const leftPaneRef = useRef<HTMLElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
 
   const [leftPaneMode, setLeftPaneMode] = useState<LeftPaneMode>('list');
@@ -59,6 +60,9 @@ export default function ClientsPage() {
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
   const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
+  const [isClientFocusMode, setIsClientFocusMode] = useState(false);
+  const [showChangeUserDrawer, setShowChangeUserDrawer] = useState(false);
+  const [changeUserSearch, setChangeUserSearch] = useState('');
 
   const {
     filteredClients,
@@ -73,6 +77,14 @@ export default function ClientsPage() {
     () => filteredClients.find(client => client.id === selectedClientId) ?? null,
     [filteredClients, selectedClientId],
   );
+
+  const changeUserCandidates = useMemo(() => {
+    const normalized = changeUserSearch.trim().toLowerCase();
+    if (!normalized) return filteredClients;
+    return filteredClients.filter(client => {
+      return client.name.toLowerCase().includes(normalized) || client.email.toLowerCase().includes(normalized);
+    });
+  }, [changeUserSearch, filteredClients]);
 
   const {
     client,
@@ -149,7 +161,9 @@ export default function ClientsPage() {
 
   const handleSelectClient = (clientId: string) => {
     setSelectedClientId(clientId);
-    setLeftPaneMode('list');
+    setIsClientFocusMode(true);
+    setLeftPaneMode('chat');
+    setShowChangeUserDrawer(false);
 
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set('clientId', clientId);
@@ -163,6 +177,9 @@ export default function ClientsPage() {
   };
 
   const handleBackToList = () => {
+    setIsClientFocusMode(false);
+    setShowChangeUserDrawer(false);
+    setChangeUserSearch('');
     setLeftPaneMode('list');
   };
 
@@ -244,7 +261,7 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="  max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+    <div className="px-4 py-4 sm:px-6 lg:px-4 lg:py-2 space-y-4 h-full">
       <header className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -256,12 +273,14 @@ export default function ClientsPage() {
         </div>
       </header>
 
-      <section
-        ref={layoutRef}
-        className="flex min-h-0 flex-col gap-4 lg:h-[calc(100vh-12rem)] lg:min-h-[620px] lg:flex-row lg:gap-0"
-      >
+      <section ref={layoutRef} className="flex min-h-0 flex-col gap-4 lg:h-fit lg:flex-row lg:gap-0">
         <aside
-          className="max-h-[44vh] shrink-0 overflow-hidden rounded-2xl border lg:max-h-none lg:rounded-r-none lg:min-w-[320px] lg:max-w-[420px] lg:w-[var(--clients-left-pane-width)]"
+          ref={leftPaneRef}
+          className={`shrink-0 border lg:min-w-[320px] lg:max-w-[520px] lg:w-[var(--clients-left-pane-width)] ${
+            isClientFocusMode
+              ? 'max-h-[42vh] overflow-hidden lg:max-h-none lg:h-full'
+              : 'max-h-[46vh] overflow-hidden lg:max-h-none lg:h-full'
+          }`}
           style={{
             borderColor: 'var(--color-border)',
             background: 'var(--color-surface)',
@@ -289,7 +308,7 @@ export default function ClientsPage() {
                 Retry
               </button>
             </div>
-          ) : leftPaneMode === 'list' || !client ? (
+          ) : !isClientFocusMode || leftPaneMode === 'list' || !client ? (
             <ClientListPane
               clients={filteredClients}
               selectedClientId={selectedClientId}
@@ -304,6 +323,7 @@ export default function ClientsPage() {
               clientName={client.name}
               onBackAction={handleBackToList}
               onOpenNotesAction={handleOpenNotes}
+              showBackButton={!isClientFocusMode}
             />
           ) : (
             <ClientNotesPane
@@ -329,7 +349,7 @@ export default function ClientsPage() {
 
         <main
           ref={detailPanelRef}
-          className="min-h-[56vh] flex-1 overflow-hidden rounded-2xl border flex flex-col lg:min-h-0 lg:rounded-l-none"
+          className="min-h-[56vh] flex-1 overflow-hidden border flex flex-col lg:min-h-0"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
         >
           {isClientLoading ? (
@@ -378,7 +398,50 @@ export default function ClientsPage() {
               </div>
 
               <div className="px-4 py-3">
-                <ClientDetailTabs activeTab={activeTab} onTabChangeAction={setActiveTab} />
+                <ClientDetailTabs
+                  activeTab={activeTab}
+                  onTabChangeAction={setActiveTab}
+                  actions={
+                    isClientFocusMode ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLeftPaneMode('chat');
+                            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                              window.requestAnimationFrame(() => {
+                                leftPaneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              });
+                            }
+                          }}
+                          className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium"
+                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                        >
+                          <MessageSquare size={14} />
+                          Chat
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowChangeUserDrawer(true)}
+                          className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium"
+                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                        >
+                          <Search size={14} />
+                          Change User
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleBackToList}
+                          className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium"
+                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+                        >
+                          <X size={14} />
+                          Back to List
+                        </button>
+                      </>
+                    ) : undefined
+                  }
+                />
               </div>
 
               <div className="flex-1 overflow-y-auto px-4 pb-4">
@@ -386,10 +449,11 @@ export default function ClientsPage() {
                   <SummaryTabContent
                     client={client}
                     summaryWeightKg={summaryWeightKg}
+                    weeklyWeightHistory={weeklyCheckIns?.checkIns ?? []}
                     onEditProfileAction={() => setShowProfileEditModal(true)}
                     healthMetricsResult={healthMetricsResults}
                     onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}
-                    onCloseHealthMetricsResultsAction={() => setHealthMetricsResults(null)}
+                    onCloseHealthMetricsResultsAction={() => {}}
                     onHealthMetricsNotesSavedAction={() => {
                       void refreshClient();
                     }}
@@ -516,6 +580,73 @@ export default function ClientsPage() {
             await refreshClients();
           }}
         />
+      ) : null}
+
+      {showChangeUserDrawer ? (
+        <div className="fixed inset-0 z-50 bg-black/60 p-4 lg:p-8">
+          <div
+            className="mx-auto w-full max-w-xl rounded-2xl border"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+          >
+            <div
+              className="flex items-center justify-between gap-3 border-b px-4 py-3"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                Change Client
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowChangeUserDrawer(false)}
+                className="rounded-lg border p-1.5"
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+                aria-label="Close user picker"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <input
+                value={changeUserSearch}
+                onChange={event => setChangeUserSearch(event.target.value)}
+                placeholder="Search by name or email"
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+                style={{
+                  borderColor: 'var(--color-border)',
+                  background: 'var(--color-bg-alt)',
+                  color: 'var(--color-text)',
+                }}
+              />
+              <div className="max-h-[50vh] overflow-y-auto space-y-1">
+                {changeUserCandidates.map(candidate => (
+                  <button
+                    key={candidate.id}
+                    type="button"
+                    onClick={() => handleSelectClient(candidate.id)}
+                    className="w-full rounded-lg border px-3 py-2 text-left"
+                    style={{
+                      borderColor: candidate.id === selectedClientId ? 'var(--color-accent)' : 'var(--color-border)',
+                      background:
+                        candidate.id === selectedClientId ? 'var(--color-accent-muted)' : 'var(--color-surface)',
+                    }}
+                  >
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                      {candidate.name}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      {candidate.email}
+                    </p>
+                  </button>
+                ))}
+                {changeUserCandidates.length === 0 ? (
+                  <p className="text-sm px-2 py-3" style={{ color: 'var(--color-text-muted)' }}>
+                    No matching clients.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );

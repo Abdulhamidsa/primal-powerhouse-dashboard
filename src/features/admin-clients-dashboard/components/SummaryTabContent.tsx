@@ -1,14 +1,17 @@
 import { Mail, Phone, Ruler, Scale, Timer } from 'lucide-react';
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
 import { calculateBMI } from '@/lib/health/calculators';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { WeightTargetProgressCard } from '@/features/admin-clients-dashboard/components/WeightTargetProgressCard';
 import type { AdminClientDetail } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
 
 export function SummaryTabContent({
   client,
   summaryWeightKg,
+  weeklyWeightHistory,
   onEditProfileAction,
   healthMetricsResult,
   onOpenHealthMetricsAction,
@@ -17,6 +20,7 @@ export function SummaryTabContent({
 }: {
   client: AdminClientDetail;
   summaryWeightKg: number | null;
+  weeklyWeightHistory: AdminWeeklyCheckInListItem[];
   onEditProfileAction: () => void;
   healthMetricsResult: HealthMetricsOutput | null;
   onOpenHealthMetricsAction: () => void;
@@ -32,6 +36,15 @@ export function SummaryTabContent({
     bmi == null ? 'unknown' : bmi < 18.5 ? 'underweight' : bmi < 25 ? 'normal' : bmi < 30 ? 'overweight' : 'obese';
 
   const goalMacros = parseGoalMacros(client.goalMacros);
+
+  const weeklyTrendData = weeklyWeightHistory
+    .filter(item => item.weightKg != null)
+    .sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
+    .slice(-12)
+    .map(item => ({
+      week: new Date(item.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      weightKg: Number(item.weightKg),
+    }));
 
   return (
     <div className="space-y-4">
@@ -105,6 +118,56 @@ export function SummaryTabContent({
             <Row label="Activity" value={client.activityLevel || 'N/A'} />
           </div>
         </div>
+      </div>
+
+      <div
+        className="rounded-2xl border p-5"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      >
+        <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
+          Weight History (Last 12 Check-ins)
+        </h3>
+        {weeklyTrendData.length >= 2 ? (
+          <div className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={weeklyTrendData} margin={{ top: 8, right: 10, left: 0, bottom: 6 }}>
+                <XAxis
+                  dataKey="week"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }}
+                  domain={['dataMin - 1', 'dataMax + 1']}
+                />
+                <Tooltip
+                  formatter={value => `${Number(value).toFixed(1)} kg`}
+                  contentStyle={{
+                    borderColor: 'var(--color-border)',
+                    borderRadius: '10px',
+                    background: 'var(--color-surface)',
+                    color: 'var(--color-text)',
+                  }}
+                />
+                <Line
+                  dataKey="weightKg"
+                  type="monotone"
+                  stroke="var(--color-accent)"
+                  strokeWidth={2.5}
+                  dot={false}
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            Not enough weekly weight records yet to show a trend.
+          </p>
+        )}
       </div>
 
       <HealthMetricsWidget

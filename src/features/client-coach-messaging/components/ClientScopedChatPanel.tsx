@@ -59,7 +59,7 @@ export function ClientScopedChatPanel({ clientId }: { clientId: string }) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto p-3" style={{ background: 'var(--color-bg-alt)' }}>
+      <div className="flex-1 p-3" style={{ background: 'var(--color-bg-alt)' }}>
         {isLoading ? (
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
             Loading chat...

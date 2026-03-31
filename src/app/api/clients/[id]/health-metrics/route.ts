@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           error: 'Invalid request payload',
           details: parsed.error.flatten(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,6 +25,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       goal,
       mode,
       activityLevelOverride,
+      compositeActivity,
+      goalDirection,
+      coachingPhase,
+      isLeanClient,
+      waistCircumferenceCm,
+      macroMode,
       weeklyRatePercent,
       bodyFatPercentage,
       formulaPreference,
@@ -53,10 +59,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return jsonWithCache({ error: 'Client not found' }, { status: 404 });
     }
 
-    if (!client.height || !client.age || !client.gender || !client.activityLevel) {
+    if (!client.height || !client.age || !client.gender || (!client.activityLevel && !compositeActivity)) {
       return jsonWithCache(
         {
-          error: 'Client missing required health data (height, age, gender, or activity level)',
+          error: 'Client missing required health data (height, age, gender, or activity profile)',
           details: {
             height: client.height,
             age: client.age,
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             activityLevel: client.activityLevel,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,7 +83,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       age: client.age,
       gender: client.gender.toLowerCase() as 'male' | 'female',
       activityLevel: selectedActivityLevel,
+      compositeActivity,
       goal,
+      goalDirection,
+      coachingPhase,
+      isLeanClient,
+      waistCircumferenceCm,
+      macroMode,
       weeklyRatePercent,
       bodyFatPercentage: bodyFatPercentage ?? undefined,
       formulaPreference,
@@ -105,9 +117,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         tdee: metrics.tdee,
         recommendedCals: metrics.recommendedCalories,
         bmiCategory: metrics.bmiCategory,
-        goal: goal || null,
+        goal: goalDirection ?? goal ?? null,
         macros: JSON.stringify(metrics.macros),
-        notes: metrics.notes.join('\n'),
+        notes: [...metrics.notes, ...metrics.safetyWarnings].join('\n'),
       },
     });
 
@@ -143,7 +155,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         error: 'Failed to calculate health metrics',
         details: errorMessage,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -169,7 +181,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         error: 'Failed to fetch health metrics',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
