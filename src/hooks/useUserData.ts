@@ -5,12 +5,15 @@ import type { ApiError } from '@/lib/fetcher';
 export type UserData = {
   name: string;
   motivationalMessage?: string;
+  goalWeight?: number | null;
 };
 
 export function useUserData() {
   const key = '/api/user/data';
 
-  const { data, error, isLoading, mutate, isValidating } = useSWR<UserData, ApiError>(key, fetcher);
+  const { data, error, isLoading, mutate, isValidating } = useSWR<UserData, ApiError>(key, fetcher, {
+    revalidateOnFocus: true,
+  });
 
   return {
     user: data,

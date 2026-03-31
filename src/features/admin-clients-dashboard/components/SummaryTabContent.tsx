@@ -8,6 +8,7 @@ import type { AdminClientDetail } from '@/features/admin-clients-dashboard/types
 
 export function SummaryTabContent({
   client,
+  summaryWeightKg,
   onEditProfileAction,
   healthMetricsResult,
   onOpenHealthMetricsAction,
@@ -15,6 +16,7 @@ export function SummaryTabContent({
   onHealthMetricsNotesSavedAction,
 }: {
   client: AdminClientDetail;
+  summaryWeightKg: number | null;
   onEditProfileAction: () => void;
   healthMetricsResult: HealthMetricsOutput | null;
   onOpenHealthMetricsAction: () => void;
@@ -22,8 +24,8 @@ export function SummaryTabContent({
   onHealthMetricsNotesSavedAction: () => void;
 }) {
   const bmi =
-    typeof client.currentWeight === 'number' && typeof client.height === 'number'
-      ? calculateBMI(client.currentWeight, client.height)
+    typeof summaryWeightKg === 'number' && typeof client.height === 'number'
+      ? calculateBMI(summaryWeightKg, client.height)
       : null;
 
   const bmiCategory =
@@ -75,7 +77,7 @@ export function SummaryTabContent({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <WeightTargetProgressCard currentWeight={client.currentWeight} targetWeight={client.targetWeight} />
+        <WeightTargetProgressCard currentWeight={summaryWeightKg} targetWeight={client.targetWeight} />
 
         <div
           className="rounded-2xl border p-5"
@@ -92,7 +94,7 @@ export function SummaryTabContent({
             />
             <Row
               label="Current Weight"
-              value={client.currentWeight == null ? 'N/A' : `${client.currentWeight} kg`}
+              value={summaryWeightKg == null ? 'N/A' : `${summaryWeightKg} kg`}
               icon={<Scale size={14} />}
             />
             <Row

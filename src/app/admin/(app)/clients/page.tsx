@@ -71,7 +71,7 @@ export default function ClientsPage() {
 
   const selectedClientFromList = useMemo(
     () => filteredClients.find(client => client.id === selectedClientId) ?? null,
-    [filteredClients, selectedClientId]
+    [filteredClients, selectedClientId],
   );
 
   const {
@@ -103,6 +103,14 @@ export default function ClientsPage() {
   } = useAdminClientWeeklyCheckIns(selectedClientId ?? '');
 
   const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(selectedClientId ?? '');
+
+  const summaryWeightKg = useMemo(() => {
+    if (!weeklyCheckIns?.checkIns?.length) return client?.currentWeight ?? null;
+    const withWeight = weeklyCheckIns.checkIns
+      .filter(ci => ci.weightKg != null)
+      .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+    return withWeight[0]?.weightKg ?? client?.currentWeight ?? null;
+  }, [weeklyCheckIns, client?.currentWeight]);
 
   useEffect(() => {
     if (!filteredClients.length) return;
@@ -377,6 +385,7 @@ export default function ClientsPage() {
                 {activeTab === 'summary' ? (
                   <SummaryTabContent
                     client={client}
+                    summaryWeightKg={summaryWeightKg}
                     onEditProfileAction={() => setShowProfileEditModal(true)}
                     healthMetricsResult={healthMetricsResults}
                     onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}

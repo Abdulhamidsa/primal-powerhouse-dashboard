@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { Scale } from 'lucide-react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Area } from 'recharts';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Area,
+} from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,6 +22,7 @@ import {
 } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
 import type { DailyCheckInHistoryItem } from '@/features/daily-checkin/types/dailyCheckIn.types';
+import { useUserData } from '@/hooks/useUserData';
 
 function parseWeightInput(value: string): number | null {
   const trimmed = value.trim();
@@ -46,8 +57,10 @@ function buildChartData(history: DailyCheckInHistoryItem[]) {
 
 export function DailyCheckInInsightsCard() {
   const { dayDate, entry: todayEntry, isLoading: todayLoading } = useDailyCheckInToday();
-  const {  history, isLoading } = useDailyCheckInInsights();
+  const { history, isLoading } = useDailyCheckInInsights();
   const { submit } = useUpsertDailyCheckIn();
+  const { user } = useUserData();
+  const targetWeight = user?.goalWeight ?? null;
 
   const [weightValue, setWeightValue] = useState('');
   const [isSavingWeight, setIsSavingWeight] = useState(false);
@@ -158,77 +171,81 @@ export function DailyCheckInInsightsCard() {
           <div className="h-52 w-full animate-pulse rounded-2xl border border-border/60 bg-background/50" />
         ) : hasWeightData ? (
           <div className="h-52 w-full">
- <ResponsiveContainer width="100%" height="100%">
-  <LineChart
-    data={chartData}
-    margin={{ top: 12, right: 12, left: 0, bottom: 4 }}
-  >
-    <defs>
-      <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.28} />
-        <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0.02} />
-      </linearGradient>
-    </defs>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
 
-    <CartesianGrid
-      stroke="rgba(148, 163, 184, 0.12)"
-      strokeDasharray="3 3"
-      vertical={false}
-    />
+                <CartesianGrid stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="3 3" vertical={false} />
 
-    <XAxis
-      dataKey="label"
-      tickLine={false}
-      axisLine={false}
-      tickMargin={10}
-      tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
-    />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
+                />
 
-    <YAxis
-      tickLine={false}
-      axisLine={false}
-      width={42}
-      tickMargin={8}
-      tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
-      tickFormatter={value => `${value}`}
-      domain={['dataMin - 1', 'dataMax + 1']}
-    />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  width={42}
+                  tickMargin={8}
+                  tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
+                  tickFormatter={value => `${value}`}
+                  domain={[
+                    (dataMin: number) => (targetWeight != null ? Math.min(dataMin - 1, targetWeight - 2) : dataMin - 1),
+                    (dataMax: number) => (targetWeight != null ? Math.max(dataMax + 1, targetWeight + 2) : dataMax + 1),
+                  ]}
+                />
 
-    <Tooltip
-      content={<TrendTooltip />}
-      cursor={{
-        stroke: 'rgba(148, 163, 184, 0.24)',
-        strokeWidth: 1,
-        strokeDasharray: '4 4',
-      }}
-    />
+                <Tooltip
+                  content={<TrendTooltip />}
+                  cursor={{
+                    stroke: 'rgba(148, 163, 184, 0.24)',
+                    strokeWidth: 1,
+                    strokeDasharray: '4 4',
+                  }}
+                />
 
-    <Area
-      type="monotone"
-      dataKey="weightKg"
-      stroke="none"
-      fill="url(#weightGradient)"
-      connectNulls
-    />
+                <Area type="monotone" dataKey="weightKg" stroke="none" fill="url(#weightGradient)" connectNulls />
 
-    <Line
-      type="monotone"
-      dataKey="weightKg"
-      stroke="var(--color-accent)"
-      strokeWidth={3}
-      dot={false}
-      activeDot={{
-        r: 5,
-        stroke: 'var(--color-surface)',
-        strokeWidth: 2,
-        fill: 'var(--color-accent)',
-      }}
-      connectNulls
-      isAnimationActive
-      animationDuration={700}
-    />
-  </LineChart>
-</ResponsiveContainer>
+                <Line
+                  type="monotone"
+                  dataKey="weightKg"
+                  stroke="var(--color-accent)"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{
+                    r: 5,
+                    stroke: 'var(--color-surface)',
+                    strokeWidth: 2,
+                    fill: 'var(--color-accent)',
+                  }}
+                  connectNulls
+                  isAnimationActive
+                  animationDuration={700}
+                />
+                {targetWeight != null && (
+                  <ReferenceLine
+                    y={targetWeight}
+                    stroke="var(--color-text-muted)"
+                    strokeDasharray="5 5"
+                    strokeWidth={1.5}
+                    label={{
+                      value: `Goal: ${targetWeight} kg`,
+                      position: 'insideTopRight',
+                      fontSize: 11,
+                      fill: 'var(--color-text-muted)',
+                    }}
+                  />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         ) : (
           <div className="flex h-44 items-center justify-center rounded-2xl border border-dashed border-border/70 bg-background/40">
