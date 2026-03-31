@@ -58,6 +58,7 @@ export interface MealAssignment {
     carbs: number;
     fat: number;
     fiber?: number | null;
+    imageUrl?: string | null;
     ingredients: string[];
     spices: string[];
     instructions: string[];

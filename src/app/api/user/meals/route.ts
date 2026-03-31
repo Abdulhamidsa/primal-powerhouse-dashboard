@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
             mealAssignments: {
               include: {
                 meal: true,
+                side: true,
               },
               orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
             },
@@ -47,10 +48,11 @@ export async function GET(request: NextRequest) {
         portion: assignment.portion,
         scheduledTime: assignment.scheduledTime,
         meal: assignment.meal,
+        side: assignment.side,
         mealPlan: {
           name: mealPlan.name,
         },
-      }))
+      })),
     );
 
     return jsonWithCache(allMealAssignments);

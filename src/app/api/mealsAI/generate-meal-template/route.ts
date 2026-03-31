@@ -21,8 +21,7 @@ type CoreDishDefinition = {
   mealTypes: BuilderMealType[];
 };
 
-const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
-  // --- Grilled / classic ---
+const GENERAL_CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
   {
     canonical: 'Chicken with rice and broccoli',
     aliases: ['chicken with rice and broccoli'],
@@ -53,7 +52,6 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     aliases: ['chicken kebab plate'],
     mealTypes: ['LUNCH', 'DINNER'],
   },
-  // --- Middle Eastern ---
   {
     canonical: 'Chicken shawarma plate',
     aliases: ['chicken shawarma plate'],
@@ -65,11 +63,10 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     mealTypes: ['LUNCH', 'DINNER'],
   },
   {
-    canonical: 'Shakshuka (eggs in tomato sauce)',
+    canonical: 'Shakshuka',
     aliases: ['shakshuka (eggs in tomato sauce)', 'shakshuka'],
     mealTypes: ['BREAKFAST', 'LUNCH'],
   },
-  // --- Sauce-based ---
   {
     canonical: 'Chicken in tomato herb sauce',
     aliases: ['chicken in tomato herb sauce', 'chicken tomato sauce'],
@@ -85,7 +82,6 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     aliases: ['stir fry chicken', 'stir-fry chicken with vegetables', 'chicken stir fry'],
     mealTypes: ['LUNCH', 'DINNER'],
   },
-  // --- Wraps & tacos ---
   {
     canonical: 'Chicken tacos',
     aliases: ['chicken tacos', 'chicken taco'],
@@ -101,7 +97,6 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     aliases: ['chicken wrap', 'chicken wrap with yogurt sauce'],
     mealTypes: ['LUNCH', 'SNACK'],
   },
-  // --- Stuffed / baked ---
   {
     canonical: 'Stuffed bell peppers with beef mince',
     aliases: ['stuffed bell peppers', 'stuffed peppers with beef'],
@@ -112,7 +107,6 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     aliases: ['baked chicken thighs', 'baked chicken with vegetables'],
     mealTypes: ['LUNCH', 'DINNER'],
   },
-  // --- Fish ---
   {
     canonical: 'Tuna with rice',
     aliases: ['tuna with rice'],
@@ -123,9 +117,8 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     aliases: ['tuna pasta salad', 'tuna with pasta'],
     mealTypes: ['LUNCH', 'SNACK'],
   },
-  // --- Breakfast ---
   {
-    canonical: 'Egg-based meals (scrambled, omelette)',
+    canonical: 'Egg-based meals',
     aliases: ['egg-based meals (scrambled, omelette)', 'egg-based meals (scrambled or omelette)', 'egg based meals'],
     mealTypes: ['BREAKFAST', 'SNACK'],
   },
@@ -219,20 +212,163 @@ const CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
     aliases: ['vanilla protein chia pudding', 'protein chia pudding'],
     mealTypes: ['BREAKFAST', 'SNACK'],
   },
+  {
+    canonical: 'Grilled sirloin steak with roasted vegetables',
+    aliases: [
+      'grilled sirloin steak',
+      'sirloin steak with vegetables',
+      'steak with roasted vegetables',
+      'grilled steak with vegetables',
+      'grilled steak',
+    ],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Pan-seared salmon with roasted vegetables',
+    aliases: [
+      'pan seared salmon',
+      'seared salmon',
+      'salmon with roasted vegetables',
+      'pan seared salmon fillet',
+      'seared salmon fillet',
+    ],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Baked salmon fillet with potato',
+    aliases: ['baked salmon with potato', 'oven baked salmon', 'baked salmon fillet', 'oven salmon with potato'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Beef steak with mushroom sauce',
+    aliases: ['steak with mushroom sauce', 'beef steak mushroom', 'mushroom sauce steak', 'steak mushroom'],
+    mealTypes: ['DINNER'],
+  },
+  {
+    canonical: 'Beef and vegetable stew',
+    aliases: ['beef stew', 'beef vegetable stew', 'hearty beef stew', 'slow cooked beef stew'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Turkey meatballs with tomato pasta',
+    aliases: ['turkey meatballs pasta', 'turkey meatball pasta', 'turkey meatballs with pasta', 'turkey meatballs'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Beef stir fry with broccoli',
+    aliases: ['beef stir fry', 'beef and broccoli', 'stir fry beef with broccoli', 'beef stir fry with vegetables'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Braised beef with bulgur',
+    aliases: ['beef with bulgur', 'braised beef bulgur', 'slow cooked beef with bulgur', 'beef and bulgur'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Ground turkey sweet potato bowl',
+    aliases: [
+      'turkey sweet potato bowl',
+      'turkey with sweet potato',
+      'ground turkey and sweet potato',
+      'turkey sweet potato',
+    ],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Seared tuna steak with roasted vegetables',
+    aliases: ['tuna steak', 'seared tuna steak', 'tuna steak with vegetables', 'tuna steak with roasted vegetables'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Baked cod fillet with roasted tomatoes',
+    aliases: ['baked cod', 'cod with roasted tomatoes', 'cod fillet baked', 'oven baked cod', 'baked cod fillet'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Ribeye steak with roasted potato',
+    aliases: ['ribeye steak', 'ribeye with potato', 'ribeye steak with potato', 'beef ribeye'],
+    mealTypes: ['DINNER'],
+  },
+  {
+    canonical: 'Turkey burger with sweet potato fries',
+    aliases: ['turkey burger', 'turkey patty with sweet potato', 'turkey burger bowl'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Salmon with quinoa and greens',
+    aliases: ['salmon quinoa', 'salmon with quinoa', 'salmon quinoa bowl', 'baked salmon quinoa'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
 ];
 
-const ALLOWED_CUISINES = [
-  'Middle Eastern',
-  'Western',
-  'Greek',
-  'Mediterranean',
-  'Mexican',
-  'Italian',
-  'Asian',
-  'Indian',
-] as const;
+const SYRIAN_CORE_DISH_DEFINITIONS: CoreDishDefinition[] = [
+  {
+    canonical: 'Shish tawook plate',
+    aliases: ['shish tawook', 'shish tawook plate'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Chicken shawarma plate',
+    aliases: ['chicken shawarma', 'chicken shawarma plate', 'shawarma plate'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Beef kofta with rice',
+    aliases: ['beef kofta', 'kofta', 'kafta', 'beef kofta with rice'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Freekeh with chicken',
+    aliases: ['freekeh with chicken', 'chicken freekeh', 'freekeh chicken'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Mujaddara with yogurt',
+    aliases: ['mujaddara', 'mujaddara with yogurt'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Shakshuka',
+    aliases: ['shakshuka', 'shakshuka eggs'],
+    mealTypes: ['BREAKFAST', 'LUNCH'],
+  },
+  {
+    canonical: 'Labneh breakfast plate',
+    aliases: ['labneh plate', 'labneh breakfast plate'],
+    mealTypes: ['BREAKFAST', 'SNACK'],
+  },
+  {
+    canonical: 'Ful medames Syrian style',
+    aliases: ['ful medames', 'foul medames', 'ful'],
+    mealTypes: ['BREAKFAST', 'LUNCH'],
+  },
+  {
+    canonical: 'Egg and zaatar wrap',
+    aliases: ['egg zaatar wrap', 'zaatar egg wrap'],
+    mealTypes: ['BREAKFAST', 'SNACK'],
+  },
+  {
+    canonical: 'Tuna arabi pita',
+    aliases: ['tuna arabi pita', 'tuna pita'],
+    mealTypes: ['SNACK', 'LUNCH'],
+  },
+  {
+    canonical: 'Lentil soup Syrian style',
+    aliases: ['lentil soup', 'syrian lentil soup'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+  {
+    canonical: 'Chicken and rice pilaf Syrian style',
+    aliases: ['chicken rice pilaf', 'syrian chicken rice'],
+    mealTypes: ['LUNCH', 'DINNER'],
+  },
+];
+
+const ALLOWED_CUISINES = ['Syrian', 'Middle Eastern', 'Western', 'Greek', 'Mediterranean'] as const;
 type FoodOrigin = (typeof ALLOWED_CUISINES)[number];
+
 const EXCLUDED_INGREDIENTS = ['shellfish', 'pork', 'alcohol', 'wine', 'beer', 'vodka'] as const;
+
 const FLAVOR_TERMS = [
   'salt',
   'pepper',
@@ -264,32 +400,45 @@ const FLAVOR_TERMS = [
   'marinade',
   'sauce',
   'herbs',
+  'aleppo pepper',
+  'allspice',
+  'cinnamon',
+  'mint',
+  'parsley',
+  'tahini',
+  'yogurt',
+  'labneh',
 ] as const;
 
 const COHERENCE_SYNONYMS: Record<string, string[]> = {
-  chicken: ['chicken', 'shawarma', 'kebab'],
-  beef: ['beef', 'steak', 'kofta', 'mince', 'bolognese'],
+  chicken: ['chicken', 'shawarma', 'kebab', 'tawook'],
+  beef: ['beef', 'steak', 'kofta', 'kafta', 'mince', 'bolognese'],
   turkey: ['turkey'],
   tuna: ['tuna'],
   egg: ['egg', 'eggs', 'omelette', 'omelet', 'scrambled', 'shakshuka'],
-  yogurt: ['yogurt', 'yoghurt'],
-  rice: ['rice', 'basmati'],
+  yogurt: ['yogurt', 'yoghurt', 'labneh'],
+  rice: ['rice', 'basmati', 'pilaf'],
   potato: ['potato', 'potatoes'],
   broccoli: ['broccoli'],
   tomato: ['tomato', 'tomatoes', 'marinara'],
   pasta: ['pasta', 'penne', 'spaghetti', 'noodle', 'noodles'],
-  wrap: ['wrap', 'tortilla', 'taco', 'tacos'],
+  wrap: ['wrap', 'tortilla', 'taco', 'tacos', 'pita', 'arabi'],
   pepper: ['pepper', 'peppers', 'capsicum'],
   avocado: ['avocado'],
-  sauce: ['sauce', 'salsa', 'dressing', 'pesto'],
+  sauce: ['sauce', 'salsa', 'dressing', 'pesto', 'tahini', 'toum'],
   oats: ['oat', 'oats', 'oatmeal'],
-  cheese: ['cheese', 'cottage'],
+  cheese: ['cheese', 'cottage', 'feta'],
   fruit: ['fruit', 'berries', 'banana', 'apple'],
-  bread: ['bread', 'toast'],
+  bread: ['bread', 'toast', 'pita'],
   protein: ['protein', 'powder', 'whey', 'isolate', 'shake', 'smoothie'],
   peanut: ['peanut', 'butter', 'pb'],
   chia: ['chia', 'seeds'],
   chocolate: ['chocolate', 'cocoa'],
+  lentils: ['lentil', 'lentils', 'mujaddara'],
+  chickpeas: ['chickpea', 'chickpeas', 'ful', 'foul'],
+  freekeh: ['freekeh'],
+  bulgur: ['bulgur'],
+  herbs: ['mint', 'parsley', 'dill', 'cilantro'],
 };
 
 const COHERENCE_ALIAS_TO_CANONICAL = new Map<string, string>();
@@ -315,6 +464,11 @@ const COHERENCE_STOPWORDS = new Set([
   'plate',
   'bowl',
   'meal',
+  'syrian',
+  'real',
+  'authentic',
+  'home',
+  'house',
 ]);
 
 type DiversityLock = {
@@ -324,61 +478,128 @@ type DiversityLock = {
   targetTechnique: string;
 };
 
-const DIVERSITY_PROTEIN_ROTATION = ['beef', 'turkey', 'fish', 'lentils', 'chickpeas', 'eggs', 'chicken'] as const;
-const DIVERSITY_BASE_ROTATION = ['couscous', 'lentils', 'bulgur', 'pasta', 'potato', 'quinoa', 'rice'] as const;
-const DIVERSITY_TECHNIQUE_ROTATION = [
-  'oven-baked',
-  'grilled',
-  'stewed',
-  'braised',
-  'stir-fried',
-  'lasagna-style baked',
-  'roasted tray-bake',
+const GENERAL_PROTEIN_ROTATION = [
+  'beef',
+  'salmon',
+  'turkey',
+  'steak',
+  'fish',
+  'lentils',
+  'chicken',
+  'chickpeas',
 ] as const;
+const GENERAL_BASE_ROTATION = ['potato', 'pasta', 'bulgur', 'couscous', 'rice', 'lentils'] as const;
+const GENERAL_TECHNIQUE_ROTATION = ['grilled', 'oven-baked', 'skillet-cooked', 'stewed', 'roasted'] as const;
+
+const SYRIAN_PROTEIN_ROTATION = ['chicken', 'beef', 'lentils', 'chickpeas'] as const;
+const SYRIAN_BASE_ROTATION = ['rice', 'bulgur', 'freekeh', 'lentils', 'pita', 'potato'] as const;
+const SYRIAN_TECHNIQUE_ROTATION = ['grilled', 'oven-baked', 'stewed', 'roasted', 'skillet-cooked'] as const;
 
 const DIVERSITY_KEYWORDS: Record<string, string[]> = {
-  beef: ['beef', 'kofta', 'steak', 'mince'],
+  beef: ['beef', 'kofta', 'kafta', 'mince', 'ground beef', 'beef mince'],
+  steak: ['steak', 'sirloin', 'ribeye', 'tenderloin', 'striploin', 'strip loin', 'flank steak'],
+  salmon: ['salmon', 'atlantic salmon'],
   turkey: ['turkey'],
-  fish: ['fish', 'salmon', 'tuna', 'cod', 'sea bass'],
-  lentils: ['lentil', 'lentils', 'mujaddara', 'daal'],
-  chickpeas: ['chickpea', 'chickpeas'],
+  fish: ['fish', 'tuna', 'cod', 'sea bass', 'tilapia', 'halibut'],
+  lentils: ['lentil', 'lentils', 'mujaddara', 'lentil soup'],
+  chickpeas: ['chickpea', 'chickpeas', 'ful', 'foul'],
   eggs: ['egg', 'eggs', 'omelette', 'shakshuka'],
-  chicken: ['chicken', 'shawarma', 'kebab'],
+  chicken: ['chicken', 'shawarma', 'kebab', 'tawook'],
   couscous: ['couscous'],
   bulgur: ['bulgur', 'burghul'],
   pasta: ['pasta', 'lasagna', 'lasagne', 'penne', 'spaghetti'],
   potato: ['potato', 'potatoes'],
-  quinoa: ['quinoa'],
-  rice: ['rice', 'basmati'],
+  freekeh: ['freekeh'],
+  rice: ['rice', 'basmati', 'pilaf'],
+  pita: ['pita', 'arabi', 'bread'],
   'oven-baked': ['oven', 'bake', 'baked'],
   grilled: ['grill', 'grilled', 'charred'],
   stewed: ['stew', 'stewed', 'simmer'],
-  braised: ['braise', 'braised'],
-  'stir-fried': ['stir fry', 'stir-fry', 'wok'],
-  'lasagna-style baked': ['lasagna', 'lasagne', 'bake', 'baked'],
-  'roasted tray-bake': ['roast', 'roasted', 'tray bake', 'tray-bake'],
+  roasted: ['roast', 'roasted'],
+  'skillet-cooked': ['skillet', 'pan', 'sauté', 'saute', 'cook'],
 };
 
-function rotatePick<T>(items: readonly T[], attempt: number): T {
-  return items[(attempt - 1) % items.length] as T;
+const SYRIAN_DISH_KEYWORDS = [
+  'shawarma',
+  'shish tawook',
+  'tawook',
+  'kofta',
+  'kafta',
+  'mujaddara',
+  'freekeh',
+  'shakshuka',
+  'labneh',
+  'ful',
+  'foul',
+  'zaatar',
+  'lentil soup',
+  'pita',
+  'arabi',
+];
+
+const SYRIAN_INGREDIENT_KEYWORDS = [
+  'tahini',
+  'labneh',
+  'zaatar',
+  'sumac',
+  'aleppo pepper',
+  'parsley',
+  'mint',
+  'lemon',
+  'olive oil',
+  'garlic',
+  'tomato',
+  'onion',
+  'yogurt',
+  'pita',
+  'freekeh',
+  'bulgur',
+  'lentils',
+  'chickpeas',
+  'allspice',
+  'cinnamon',
+];
+
+function isSyrianMode(foodOrigin?: FoodOrigin): boolean {
+  return foodOrigin === 'Syrian';
 }
 
-function buildDiversityLock(mealType: BuilderMealType, attempt: number, foodOrigin?: FoodOrigin): DiversityLock | null {
+function getCoreDishDefinitions(foodOrigin?: FoodOrigin): CoreDishDefinition[] {
+  return isSyrianMode(foodOrigin) ? SYRIAN_CORE_DISH_DEFINITIONS : GENERAL_CORE_DISH_DEFINITIONS;
+}
+
+function rotatePick<T>(items: readonly T[], attempt: number, seed: number = 0): T {
+  return items[(seed + attempt - 1) % items.length] as T;
+}
+
+function buildDiversityLock(
+  mealType: BuilderMealType,
+  attempt: number,
+  foodOrigin?: FoodOrigin,
+  seed: number = 0,
+): DiversityLock | null {
   if (mealType === 'BREAKFAST' || mealType === 'SNACK') {
     return null;
   }
 
+  if (isSyrianMode(foodOrigin)) {
+    return {
+      targetCuisine: 'Syrian',
+      targetProtein: rotatePick(SYRIAN_PROTEIN_ROTATION, attempt, seed),
+      targetBase: rotatePick(SYRIAN_BASE_ROTATION, attempt, seed),
+      targetTechnique: rotatePick(SYRIAN_TECHNIQUE_ROTATION, attempt, seed),
+    };
+  }
+
   const cuisinePool: readonly FoodOrigin[] = foodOrigin
     ? [foodOrigin]
-    : ['Middle Eastern', 'Mexican', 'Italian', 'Asian', 'Indian', 'Western', 'Greek', 'Mediterranean'];
-
-  const proteinPool = attempt <= 4 ? DIVERSITY_PROTEIN_ROTATION.slice(0, 6) : DIVERSITY_PROTEIN_ROTATION;
+    : ['Middle Eastern', 'Western', 'Greek', 'Mediterranean'];
 
   return {
-    targetCuisine: rotatePick(cuisinePool, attempt),
-    targetProtein: rotatePick(proteinPool, attempt),
-    targetBase: rotatePick(DIVERSITY_BASE_ROTATION, attempt),
-    targetTechnique: rotatePick(DIVERSITY_TECHNIQUE_ROTATION, attempt),
+    targetCuisine: rotatePick(cuisinePool, attempt, seed),
+    targetProtein: rotatePick(GENERAL_PROTEIN_ROTATION, attempt, seed),
+    targetBase: rotatePick(GENERAL_BASE_ROTATION, attempt, seed),
+    targetTechnique: rotatePick(GENERAL_TECHNIQUE_ROTATION, attempt, seed),
   };
 }
 
@@ -396,13 +617,24 @@ function validateDiversityLock(aiMeal: MealTemplateAiResponse, diversityLock: Di
     ].join(' '),
   );
 
-  const chickenRiceLemonPattern =
+  // Block plain chicken + rice unless it is a clearly distinctive named preparation.
+  // This is the most common lazy AI fallback and must be suppressed when another protein is targeted.
+  const isBlandChickenRice =
     containsAnyKeyword(mergedText, DIVERSITY_KEYWORDS.chicken) &&
     containsAnyKeyword(mergedText, DIVERSITY_KEYWORDS.rice) &&
-    containsAnyKeyword(mergedText, ['lemon']);
+    !containsAnyKeyword(mergedText, [
+      'shawarma',
+      'tawook',
+      'biryani',
+      'pilaf',
+      'araiis',
+      'mansaf',
+      'freekeh',
+      'musakhan',
+    ]);
 
-  if (chickenRiceLemonPattern) {
-    return 'Rejected repetitive chicken + rice + lemon pattern';
+  if (isBlandChickenRice && diversityLock !== null && diversityLock.targetProtein !== 'chicken') {
+    return 'Rejected generic chicken + rice. Generate a dish centred on the target protein instead.';
   }
 
   if (!diversityLock) {
@@ -413,19 +645,41 @@ function validateDiversityLock(aiMeal: MealTemplateAiResponse, diversityLock: Di
     return `Diversity lock mismatch: expected cuisine ${diversityLock.targetCuisine}, got ${aiMeal.cuisineStyle}`;
   }
 
+  // Protein is the primary diversity signal — enforce it strictly so variety is guaranteed across requests.
   const proteinKeywords = DIVERSITY_KEYWORDS[diversityLock.targetProtein] ?? [diversityLock.targetProtein];
   if (!containsAnyKeyword(mergedText, proteinKeywords)) {
     return `Diversity lock mismatch: missing protein family ${diversityLock.targetProtein}`;
   }
 
-  const baseKeywords = DIVERSITY_KEYWORDS[diversityLock.targetBase] ?? [diversityLock.targetBase];
-  if (!containsAnyKeyword(mergedText, baseKeywords)) {
-    return `Diversity lock mismatch: missing base ${diversityLock.targetBase}`;
+  // Base and technique are directional hints only; removing hard enforcement prevents the
+  // system from cascading through retries and ultimately falling back to chicken + rice.
+  return null;
+}
+
+function validateSyrianAuthenticity(aiMeal: MealTemplateAiResponse): string | null {
+  if (aiMeal.cuisineStyle !== 'Syrian') {
+    return `Expected Syrian cuisineStyle, got ${aiMeal.cuisineStyle}`;
   }
 
-  const techniqueKeywords = DIVERSITY_KEYWORDS[diversityLock.targetTechnique] ?? [diversityLock.targetTechnique];
-  if (!containsAnyKeyword(mergedText, techniqueKeywords)) {
-    return `Diversity lock mismatch: missing technique ${diversityLock.targetTechnique}`;
+  const merged = normalizeDishKey(
+    [
+      aiMeal.mealName,
+      aiMeal.coreDishReference,
+      ...aiMeal.ingredients.map(i => i.name),
+      ...aiMeal.instructions,
+      ...(aiMeal.spices ?? []),
+    ].join(' '),
+  );
+
+  const hasDishIdentity = SYRIAN_DISH_KEYWORDS.some(term => merged.includes(normalizeDishKey(term)));
+  const ingredientHits = SYRIAN_INGREDIENT_KEYWORDS.filter(term => merged.includes(normalizeDishKey(term))).length;
+
+  if (!hasDishIdentity) {
+    return 'Meal does not resemble a recognizable Syrian dish.';
+  }
+
+  if (ingredientHits < 2) {
+    return 'Meal lacks enough Syrian ingredient identity.';
   }
 
   return null;
@@ -440,21 +694,11 @@ function sanitizeAiMealPayload(value: unknown): unknown {
   const instructions = record.instructions;
   const spices = record.spices;
 
-  if (Array.isArray(instructions) && instructions.length > 6) {
-    return {
-      ...record,
-      instructions: instructions.slice(0, 6),
-    };
-  }
-
-  if (Array.isArray(spices) && spices.length > 16) {
-    return {
-      ...record,
-      spices: spices.slice(0, 16),
-    };
-  }
-
-  return value;
+  return {
+    ...record,
+    instructions: Array.isArray(instructions) ? instructions.slice(0, 6) : instructions,
+    spices: Array.isArray(spices) ? spices.slice(0, 16) : spices,
+  };
 }
 
 function normalizeSpiceList(spices: string[]): string[] {
@@ -473,7 +717,6 @@ function normalizeSpiceList(spices: string[]): string[] {
 
 function inferSpicesFromContent(instructions: string[], ingredientNames: string[]): string[] {
   const merged = [...instructions, ...ingredientNames].join(' ').toLowerCase();
-
   return normalizeSpiceList(FLAVOR_TERMS.filter(term => merged.includes(term.toLowerCase())));
 }
 
@@ -502,40 +745,17 @@ function normalizeDishKey(value: string): string {
     .trim();
 }
 
-function resolveCoreDishDefinition(value: string): CoreDishDefinition | null {
+function resolveCoreDishDefinition(value: string, foodOrigin?: FoodOrigin): CoreDishDefinition | null {
   const key = normalizeDishKey(value);
   return (
-    CORE_DISH_DEFINITIONS.find(def => [def.canonical, ...def.aliases].some(alias => normalizeDishKey(alias) === key)) ??
-    null
+    getCoreDishDefinitions(foodOrigin).find(def =>
+      [def.canonical, ...def.aliases].some(alias => normalizeDishKey(alias) === key),
+    ) ?? null
   );
 }
 
-function coreDishesForMealType(mealType: BuilderMealType): CoreDishDefinition[] {
-  return CORE_DISH_DEFINITIONS.filter(def => def.mealTypes.includes(mealType));
-}
-
-function _pickTargetCoreDish(
-  mealType: BuilderMealType,
-  avoidCoreDishReferences: string[],
-  triedTargets: Set<string>,
-): string {
-  const avoidSet = new Set(avoidCoreDishReferences.map(normalizeDishKey));
-  const mealTypeCoreDishes = coreDishesForMealType(mealType);
-  const fullPool = mealTypeCoreDishes.map(def => def.canonical);
-
-  const usablePool = fullPool.filter(name => !avoidSet.has(normalizeDishKey(name)) && !triedTargets.has(name));
-
-  if (usablePool.length === 0) {
-    const withoutTried = fullPool.filter(name => !triedTargets.has(name));
-    if (withoutTried.length > 0) return withoutTried[Math.floor(Math.random() * withoutTried.length)];
-    return (
-      fullPool[Math.floor(Math.random() * fullPool.length)] ??
-      mealTypeCoreDishes[0]?.canonical ??
-      'Chicken with rice and broccoli'
-    );
-  }
-
-  return usablePool[Math.floor(Math.random() * usablePool.length)] ?? usablePool[0];
+function coreDishesForMealType(mealType: BuilderMealType, foodOrigin?: FoodOrigin): CoreDishDefinition[] {
+  return getCoreDishDefinitions(foodOrigin).filter(def => def.mealTypes.includes(mealType));
 }
 
 function containsExcludedValue(values: string[]): string | null {
@@ -596,13 +816,13 @@ function validateInstructionCoverage(
 
   const missingIngredients = ingredientNames.filter(name => {
     const tokens = extractCoverageTokens(name);
-    if (tokens.length === 0) return true;
+    if (tokens.length === 0) return false;
     return !tokens.some(token => instructionsText.includes(token));
   });
 
   const missingSpices = spices.filter(spice => {
     const tokens = extractCoverageTokens(spice);
-    if (tokens.length === 0) return true;
+    if (tokens.length === 0) return false;
     return !tokens.some(token => instructionsText.includes(token));
   });
 
@@ -622,13 +842,14 @@ function validateInstructionQuality(
   instructions: string[],
   mealType: BuilderMealType,
   spices: string[],
+  foodOrigin?: FoodOrigin,
 ): string | null {
-  // Simple BREAKFAST/SNACK dishes (yogurt bowls, eggs, pancakes) don't require spices in instructions
   if (mealType === 'BREAKFAST' || mealType === 'SNACK') {
     return null;
   }
 
   const merged = instructions.join(' ').toLowerCase();
+
   if (spices.length === 0) {
     return 'Lunch and dinner meals must include a dedicated spices list.';
   }
@@ -649,15 +870,127 @@ function validateInstructionQuality(
   );
 
   if (!hasAnyTerm(merged, spiceTerms)) {
-    return 'Instructions must include seasoning/spice or sauce guidance for better meal quality.';
+    return 'Instructions must include seasoning, spice, or sauce guidance.';
   }
 
   const dishKey = normalizeDishKey(coreDishReference);
-  if (dishKey.includes('shawarma')) {
+
+  if (dishKey.includes('shawarma') || dishKey.includes('tawook')) {
     const marinadeTerms = ['marinate', 'marinade', 'season', 'rub', 'rest'];
     if (!hasAnyTerm(merged, marinadeTerms)) {
-      return 'Shawarma-style meals must include a marination or seasoning step.';
+      return 'Shawarma or tawook meals must include a marination or seasoning step.';
     }
+  }
+
+  if (isSyrianMode(foodOrigin)) {
+    const syrianFlavorTerms = ['sumac', 'zaatar', 'aleppo pepper', 'allspice', 'garlic', 'lemon', 'yogurt', 'tahini'];
+    if (!hasAnyTerm(merged, syrianFlavorTerms)) {
+      return 'Syrian meals should include clearly Syrian seasoning or sauce guidance.';
+    }
+  }
+
+  return null;
+}
+
+function validateSnackLightweight(aiMeal: MealTemplateAiResponse): string | null {
+  const mergedText = normalizeDishKey(
+    [aiMeal.mealName, ...aiMeal.ingredients.map(item => item.name), ...aiMeal.instructions].join(' '),
+  );
+
+  const meatAndHeavyProteinSignals = [
+    'chicken',
+    'beef',
+    'steak',
+    'turkey',
+    'lamb',
+    'veal',
+    'duck',
+    'fish',
+    'tuna',
+    'salmon',
+    'shrimp',
+    'prawn',
+  ];
+
+  const longCookSignals = [
+    'oven',
+    'bake',
+    'grill',
+    'roast',
+    'fry',
+    'saute',
+    'sauté',
+    'simmer',
+    'boil',
+    'cook',
+    'cooked',
+    'pan sear',
+    'sear',
+    'scramble',
+    'braise',
+  ];
+
+  const quickSnackSignals = [
+    'yogurt',
+    'labneh',
+    'cottage',
+    'fruit',
+    'berries',
+    'banana',
+    'apple',
+    'nuts',
+    'seeds',
+    'smoothie',
+    'shake',
+    'hummus',
+    'toast',
+    'wrap',
+    'pita',
+    'protein bar',
+  ];
+
+  if (containsAnyKeyword(mergedText, meatAndHeavyProteinSignals)) {
+    return 'Snack must avoid meat, poultry, and fish proteins and stay light.';
+  }
+
+  if (containsAnyKeyword(mergedText, longCookSignals)) {
+    return 'Snack must be quick no-cook or blend and assemble only.';
+  }
+
+  if (!containsAnyKeyword(mergedText, quickSnackSignals)) {
+    return 'Snack should be quick assembly with light ingredients.';
+  }
+
+  return null;
+}
+
+function validateMainMealEggPolicy(aiMeal: MealTemplateAiResponse, mealType: BuilderMealType): string | null {
+  if (mealType === 'BREAKFAST' || mealType === 'SNACK') {
+    return null;
+  }
+
+  const mergedText = normalizeDishKey(
+    [
+      aiMeal.mealName,
+      aiMeal.coreDishReference,
+      ...aiMeal.ingredients.map(item => item.name),
+      ...aiMeal.instructions,
+    ].join(' '),
+  );
+
+  const eggSignals = ['egg', 'eggs', 'omelette', 'omelet', 'scrambled'];
+  const hasEggSignal = containsAnyKeyword(mergedText, eggSignals);
+
+  if (!hasEggSignal) {
+    return null;
+  }
+
+  if (mealType === 'DINNER') {
+    return 'Dinner meals must not include eggs.';
+  }
+
+  if (mealType === 'LUNCH' && !mergedText.includes('shakshuka')) {
+    return 'Lunch meals must avoid egg-based dishes unless it is shakshuka.';
   }
 
   return null;
@@ -701,6 +1034,54 @@ function validateInstructionIngredientCoherence(instructions: string[], ingredie
   return null;
 }
 
+function validateGeneratedIngredientsStrict(aiMeal: MealTemplateAiResponse): string | null {
+  const mergedInstructions = normalizeDishKey(aiMeal.instructions.join(' '));
+  const mergedMealName = normalizeDishKey(aiMeal.mealName);
+
+  const ingredientTokens = new Set<string>();
+  aiMeal.ingredients.forEach(item => {
+    const normalized = normalizeDishKey(item.name);
+    normalized.split(' ').forEach(token => {
+      if (token.length >= 2 && !COHERENCE_STOPWORDS.has(token)) {
+        ingredientTokens.add(token);
+      }
+    });
+  });
+
+  const dangerousIngredientsForSoups = ['eel', 'coffee', 'cocoa', 'chocolate', 'desert', 'alcohol', 'wine'];
+  const isSoup =
+    mergedInstructions.includes('soup') ||
+    mergedInstructions.includes('broth') ||
+    aiMeal.mealName.toLowerCase().includes('soup');
+
+  if (isSoup) {
+    const mergedIngredients = normalizeDishKey(aiMeal.ingredients.map(i => i.name).join(' '));
+
+    for (const dangerousItem of dangerousIngredientsForSoups) {
+      if (mergedIngredients.includes(dangerousItem)) {
+        return `Invalid ingredient for soup: "${dangerousItem}" does not belong in a soup recipe.`;
+      }
+    }
+  }
+
+  let mentionedCount = 0;
+  for (const token of ingredientTokens) {
+    if (mergedInstructions.includes(token) || mergedMealName.includes(token)) {
+      mentionedCount += 1;
+    }
+  }
+
+  const mentionThreshold = Math.ceil(ingredientTokens.size * 0.7);
+  if (mentionedCount < mentionThreshold && ingredientTokens.size > 2) {
+    const unmentionedTokens = Array.from(ingredientTokens).filter(
+      token => !mergedInstructions.includes(token) && !mergedMealName.includes(token),
+    );
+    return `Ingredients not mentioned in instructions: ${unmentionedTokens.slice(0, 3).join(', ')}. Ingredients should be clearly used in the cooking process.`;
+  }
+
+  return null;
+}
+
 function toFoodGenerationRows(
   foods: Array<{
     id: string;
@@ -737,163 +1118,135 @@ function buildPrompt(input: {
   avoidCoreDishReferences: string[];
   avoidMealNames: string[];
 }) {
-  const isBreakfast = input.mealType === 'BREAKFAST';
-  const coreDishesList = isBreakfast
-    ? 'For BREAKFAST: You are FREE to generate ANY type of breakfast meal (oats, eggs, shakes, toast, wraps, bowls, pancakes, puddings, etc.)'
-    : `Core Dish Anchors (recommended base options):
-${CORE_DISH_DEFINITIONS.filter(def => def.mealTypes.includes(input.mealType))
-  .map(item => `- ${item.canonical}`)
-  .join('\n')}`;
+  const syrianMode = isSyrianMode(input.foodOrigin);
+  const isLightFlexibleType = input.mealType === 'BREAKFAST' || input.mealType === 'SNACK';
 
-  return `You are a fitness meal planning assistant specializing in DELICIOUS, HEALTHY, HIGH-PROTEIN meals.
+  const activeCoreDishes = coreDishesForMealType(input.mealType, input.foodOrigin);
+
+  const coreDishesList = isLightFlexibleType
+    ? input.mealType === 'SNACK'
+      ? syrianMode
+        ? 'For SNACK: Generate quick authentic Syrian-style light snacks only such as labneh plate, tuna arabi pita, yogurt based bowls, egg and zaatar wrap, hummus or labneh toast, or similarly realistic Syrian light foods.'
+        : 'For SNACK: Generate quick lightweight high-protein snacks only such as yogurt bowls, cottage cheese bowls, smoothies, shakes, hummus snack plates, or high-protein toast.'
+      : syrianMode
+        ? 'For BREAKFAST: Generate authentic Syrian breakfast meals such as shakshuka, ful medames, labneh plates, egg and zaatar wraps, yogurt bowls with Syrian flavor cues, or similarly realistic Syrian breakfast dishes.'
+        : 'For BREAKFAST: Generate breakfast meals only such as oats, eggs, shakes, toast, wraps, bowls, pancakes, or puddings.'
+    : `Core Dish Anchors:
+${activeCoreDishes.map(item => `- ${item.canonical}`).join('\n')}`;
+
+  return `You are a fitness meal planning assistant.
 
 ${coreDishesList}
 
-Allowed Cuisines (MIX & MATCH for creativity):
+Allowed Cuisines:
 ${ALLOWED_CUISINES.join(', ')}
 
 Cuisine Preference:
 ${
   input.foodOrigin
     ? `STRICT MODE: Generate only ${input.foodOrigin} cuisine style. The returned cuisineStyle must be exactly "${input.foodOrigin}".`
-    : 'No origin selected (Any): keep output broad and rotate across all allowed cuisines. Avoid repeating Mediterranean by default.'
+    : 'No origin selected. Keep output grounded, realistic, and non-repetitive.'
 }
 
-Excluded Ingredients (strict):
+${
+  syrianMode
+    ? `
+SYRIAN AUTHENTICITY MODE:
+- Generate meals that clearly belong to Syrian home cooking or Syrian street food traditions.
+- Do NOT mix Syrian food with Mexican, Indian, Asian, or random fusion ideas.
+- Do NOT invent flashy hybrid meals.
+- If uncertain, choose a simpler authentic Syrian dish instead of a creative fake one.
+- Use ingredients that naturally belong together in Syrian cooking.
+- Prefer realistic Syrian dishes people actually eat.
+- Prefer these ingredients when natural: garlic, lemon, parsley, mint, yogurt, tahini, labneh, tomato, onion, olive oil, pita, rice, bulgur, freekeh, lentils, chickpeas.
+- Prefer these spices when natural: cumin, sumac, allspice, cinnamon, paprika, black pepper, zaatar, Aleppo pepper.
+- Good Syrian examples: shish tawook, chicken shawarma, kofta, mujaddara, freekeh with chicken, shakshuka, ful, labneh plate, lentil soup, tuna pita.
+- The dish should sound like something a Syrian family or Syrian grill place could actually serve.
+`
+    : ''
+}
+
+Excluded Ingredients:
 ${EXCLUDED_INGREDIENTS.join(', ')}
 
-═══════════════════════════════════════════════════════════════════════════════
-MACRO TARGET (NON-NEGOTIABLE):
-═══════════════════════════════════════════════════════════════════════════════
-✓ Protein: 25-45g per serving (PROTEIN IS KING - this makes meals satisfying)
-✓ Fat: 15-30g max (lean, healthy sources only - olive oil, fish, egg whites)
-✓ Carbs: Flexible but preferably 30-60g (don't fear carbs, they fuel workouts)
-✓ NONE of your meals should exceed 35g fat - NEVER
+MACRO TARGET:
+- Protein: 25-45g per serving
+- Fat: 15-30g max
+- Carbs: preferably 30-60g
+- Never exceed 35g fat
 
-Protein Sources to Prioritize:
-- Lean meats: chicken breast, turkey, lean beef
-- Fish: salmon, tuna, white fish (omega-3s = delicious + healthy)
-- Eggs: egg whites + 1-2 whole eggs per meal
-- Greek yogurt: creamy, high-protein, versatile
-- Cottage cheese: underrated protein bomb
-- Legumes: beans, lentils (great for layered flavors)
-
-═══════════════════════════════════════════════════════════════════════════════
-CREATIVITY & DELICIOUSNESS RULES (MAKE THEM LOVE HEALTHY FOOD):
-═══════════════════════════════════════════════════════════════════════════════
-🎯 NEVER generate boring plain grilled chicken + rice. That's what kills diet adherence.
-
-Instead, BUILD FLAVOR through:
-1. SAUCE-BASED dishes (highest flavor, naturally healthy):
-   - Tomato-based sauces with herbs: pesto, marinara, salsa
-   - Yogurt sauces: tzatziki, curry yogurt, garlic aioli (HIGH PROTEIN + creamy)
-   - Asian sauces: soy-ginger, teriyaki, miso-based (skip oil-heavy ones)
-   - Middle Eastern: tahini sauce, hummus blends, pomegranate molasses
-
-2. SPICE & SEASONING makeover (0 calories, infinite flavor):
-   - Cumin, coriander, smoked paprika, cayenne, garlic, ginger
-   - Fresh herbs: cilantro, parsley, basil, dill
-   - Lemon, lime, vinegar (acid = flavor multiplier)
-   - Don't be shy - season AGGRESSIVELY
-
-3. TEXTURE contrasts (keep people engaged):
-   - Crispy elements: roasted chickpeas, crunchy veggies, toasted seeds
-   - Soft elements: slow-cooked proteins, creamy sauces
-   - Combine in ONE meal for eating interest
-
-4. COOKING METHODS for maximum flavor (NOT just "grill"):
-   - Stir-fry: fast, flavorful, lean
-   - Slow-cook: tender, deep flavors, naturally healthy
-   - Bake/roast: caramelization = natural sweetness
-   - Poach: delicate, pairs with sauces
-   - Grill: use for smoky flavor PLUS sauce
-
-5. LAYERED FLAVOR (the secret to healthy eating):
-   - Start: protein base
-   - Layer 1: sauce with herbs/spices
-   - Layer 2: fresh elements (lime, cilantro, pomegranate)
-   - Layer 3: texture (nuts, seeds, crispy vegetables)
-   - Result: complex, satisfying, NOT boring
-
-Game-Changing Meal Ideas (EXAMPLES of what clients LOVE):
-- Indian chicken bowl: yogurt-spiced chicken + cumin rice + onion-cucumber salad + mint chutney
-- Mexican turkey skillet: lean turkey + chipotle tomato sauce + corn + lime + cilantro
-- Italian beef pasta: lean beef mince + basil tomato sauce + garlic + parmesan finish
-- Italian baked turkey lasagna: lean turkey ragu + layered pasta + oven baked finish
-- Asian ginger chicken stir-fry: chicken + soy-ginger glaze + green beans + sesame
-- Middle Eastern kofta plate: beef kofta + sumac onions + yogurt tahini + herbed rice
-- Levantine/Syrian-inspired tray bake: spiced kofta + tomato-pepper base + oven-roasted vegetables
-- Mujaddara-style bowl: lentils + caramelized onion + cumin + yogurt-herb sauce
-- Greek tuna bowl: tuna + lemon oregano dressing + cucumber + olives + tomato
-- Western steak and potato bowl: seared lean steak + roasted potatoes + peppercorn herb sauce
-- Breakfast: egg white scramble + spinach + feta + sun-dried tomato + whole wheat toast
-- Snack: Greek yogurt + granola + berries + honey drizzle + almonds
+Protein Sources — ROTATE, do NOT default to chicken:
+- Beef cuts: sirloin, ribeye, lean ground beef, beef mince, flank steak — use actively
+- Steak: any quality cut (sirloin, ribeye, tenderloin) paired with vegetables or sauce
+- Fish: salmon fillet, tuna steak, cod, sea bass — use actively for variety
+- Turkey: ground turkey, turkey mince, turkey meatballs, turkey patties
+- Legumes: lentils, chickpeas (when it fits the cuisine)
+- Chicken: use only when the Diversity Lock explicitly targets chicken — it is NOT the default
+- Eggs: breakfast and snack only
+- Dairy proteins: Greek yogurt, labneh, cottage cheese (breakfast/snack contexts only)
 
 Meal-Type Rules:
 - mealType=${input.mealType}
-- Breakfast: COMPLETE CREATIVE FREEDOM - generate any breakfast meal type (high protein + satisfying = success)
-- Lunch/Dinner: HIGH-PROTEIN, SAUCE-BASED or SEASONING-RICH variations - vary between grilled, sauced, stir-fried, baked
-- Snack: PROTEIN-FORWARD & satisfying (Greek yogurt, chicken, cheese, nuts combos)
+- Breakfast must stay realistic and breakfast-like
+- Lunch and dinner must be high-protein and culturally coherent
+- For mealType=LUNCH and mealType=DINNER: DO NOT default to chicken — beef, steak, salmon, and turkey deserve equal representation
+- For mealType=LUNCH and mealType=DINNER: do not make eggs the main protein
+- For mealType=DINNER: eggs are not allowed
+- For mealType=LUNCH: egg-based meals are allowed only for shakshuka
+- Snack must stay light, fast, and simple
+- For mealType=SNACK: no meat, poultry, or fish proteins and no oven, grill, fry, boil, or simmer workflow
+- For mealType=SNACK: prefer no-cook assembly or blend only
 
-Regeneration Diversity (DON'T BE REPETITIVE):
+Regeneration Diversity:
 - Avoid these recently used coreDishReference values if possible:
 ${input.avoidCoreDishReferences.length > 0 ? input.avoidCoreDishReferences.join(', ') : 'none'}
-- Avoid these recent meal names (MUST NOT repeat exactly):
+- Avoid these recent meal names and do not repeat them exactly:
 ${input.avoidMealNames.length > 0 ? input.avoidMealNames.join(', ') : 'none'}
 
 Complexity Policy:
 - Target complexity for this request: ${input.targetComplexity}
-- Simple = 3-4 ingredients, 1 cooking technique
-- Advanced = 6-8 ingredients, 2+ techniques, layered flavors
+- Simple means 4-6 ingredients and straightforward instructions
+- Advanced means 6-8 ingredients and slightly more layering, but still realistic
 
-Diversity Lock (non-negotiable for this attempt):
+Diversity Lock:
 ${
   input.diversityLock
-    ? `- cuisineStyle must be ${input.diversityLock.targetCuisine}
-- primary protein family must include ${input.diversityLock.targetProtein}
-- carb/base must include ${input.diversityLock.targetBase}
-- cooking method must clearly include ${input.diversityLock.targetTechnique}
-- DO NOT return chicken + rice + lemon as the meal identity`
-    : '- Keep breakfast/snack creative and non-repetitive.'
+    ? `- cuisineStyle MUST be ${input.diversityLock.targetCuisine}
+- primary protein MUST belong to the "${input.diversityLock.targetProtein}" family — DO NOT substitute chicken unless targetProtein = chicken
+- preferred base/carb: ${input.diversityLock.targetBase} (use if it fits naturally; do not force it)
+- preferred cooking method: ${input.diversityLock.targetTechnique} (use if it fits naturally)
+- NEVER return a plain chicken + rice dish when the target protein is not chicken
+- Boring repetition is a failure; a distinctive, well-executed dish is the goal`
+    : '- Keep breakfast or snack creative but realistic and non-repetitive.'
 }
 
 Database Ingredient Context:
 - Pantry items to prefer when they naturally fit this meal:
 ${input.allowedIngredients.join(', ')}
 - You may generate ingredients beyond the pantry when needed for a better meal.
-- Prefer pantry naming when it is natural and clearly fits the same ingredient.
-- If an ingredient already exists in the pantry under a nearby wording, you may still use the most natural culinary name and let the system reconcile exact, alias, or canonical matches after generation.
-- Avoid awkward extra qualifiers or reordered descriptors unless they genuinely matter to the ingredient.
+- Prefer pantry naming when natural.
+- In ${syrianMode ? 'Syrian mode' : 'general mode'}, use natural culinary naming only.
+- Do not invent awkward ingredient labels.
 
-═══════════════════════════════════════════════════════════════════════════════
-HARD OUTPUT RULES:
-═══════════════════════════════════════════════════════════════════════════════
-- 5-8 ingredients (quality > quantity)
-- 4-6 instruction steps (clear, actionable, specific to dish)
-- Each step should be a single action (don't combine multiple steps)
-- Include ONE FLAVOR-BUILDING step (sauce prep, marinade, seasoning rest)
-- Return a dedicated spices array separate from ingredients.
-- Instructions must mention every listed ingredient and every listed spice at least once.
-- Include ONE TEXTURE-BUILDING step (if advanced complexity)
-- Meal name should sound APPETIZING and SPECIFIC (not generic)
+Hard Output Rules:
+- Ingredient count:
+  - BREAKFAST, LUNCH, DINNER: 5-8 ingredients
+  - SNACK: 3-5 ingredients max
+- 4-6 instruction steps
+- Each step should be a single action
+- Return a dedicated spices array separate from ingredients
+- Instructions must mention every listed ingredient and every listed spice at least once
+- Meal name should be appetizing, specific, and realistic
 - Never include excluded ingredients
-- Keep it gym-focused, high-protein, creatively delicious
 - Match mode for this request: ${input.strictMatchMode}
-- In strict mode, strongly prefer pantry-backed ingredients, but still prioritize a realistic, appetizing meal over awkward pantry-only wording
-- Never output another generic Mediterranean chicken-lemon-rice style bowl
-
-═══════════════════════════════════════════════════════════════════════════════
-MACRO VALIDATION (CRITICAL - DO THIS LAST):
-═══════════════════════════════════════════════════════════════════════════════
-Before finalizing, mentally calculate rough macros:
-- Main protein × 25-30g protein per 100g = total protein ✓
-- Check oils/sauces don't push fat over 30g ✓
-- If fat would exceed 30g, reduce oil or switch to lower-fat sauce ✓
+- In strict mode, strongly prefer pantry-backed ingredients, but realism matters more than awkward pantry-only wording
+- Never output generic Mediterranean chicken-lemon-rice style bowls
+- For Syrian mode, never return fake Syrian fusion dishes
 
 Return JSON only in this exact shape:
 {
   "mealName": "string",
-  "cuisineStyle": "Middle Eastern|Western|Greek|Mediterranean|Mexican|Italian|Asian|Indian",
+  "cuisineStyle": "Syrian|Middle Eastern|Western|Greek|Mediterranean",
   "coreDishReference": "string",
   "complexity": "simple|advanced",
   "servings": 1,
@@ -914,9 +1267,10 @@ export async function POST(request: Request) {
 
     const mealType = parsed.data.mealType;
     const strictMatchMode = parsed.data.strictMatchMode;
-    const foodOrigin = parsed.data.foodOrigin;
+    const foodOrigin = parsed.data.foodOrigin as FoodOrigin | undefined;
     const avoidCoreDishReferences = parsed.data.avoidCoreDishReferences ?? [];
     const avoidMealNames = parsed.data.avoidMealNames ?? [];
+
     const persistedMealNames = await prisma.meal.findMany({
       where: {
         isPersonalized: false,
@@ -980,22 +1334,29 @@ export async function POST(request: Request) {
       })),
       500,
     );
-    const targetComplexity: 'simple' | 'advanced' = Math.random() < 0.85 ? 'simple' : 'advanced';
 
-    const maxAttempts = 6;
+    const targetComplexity: 'simple' | 'advanced' = Math.random() < 0.9 ? 'simple' : 'advanced';
+    const maxAttempts = isSyrianMode(foodOrigin) ? 8 : 6;
+
     let lastErrorMessage = 'Unable to generate a valid meal template';
-    const isBreakfast = mealType === 'BREAKFAST';
-    let fallbackMeal: any = null; // Track best attempt for fallback
+    const isFlexibleCoreDish = mealType === 'BREAKFAST' || mealType === 'SNACK';
+    let bestFallbackMeal: any = null;
+    let bestFallbackScore = -1;
+
+    // Randomise the starting position in the rotation so different API calls (e.g. building a
+    // full meal plan with multiple slots) each target a different protein from the start,
+    // preventing every call from falling back to attempt-1 = the same protein.
+    const rotationSeed = Math.floor(Math.random() * GENERAL_PROTEIN_ROTATION.length);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
-        const diversityLock = buildDiversityLock(mealType, attempt, foodOrigin);
+        const diversityLock = buildDiversityLock(mealType, attempt, foodOrigin, rotationSeed);
 
         const response = await azureOpenAI.chat.completions.create({
           model: AZURE_CHAT_DEPLOYMENT as string,
-          temperature: 0.55,
+          temperature: isSyrianMode(foodOrigin) ? 0.35 : 0.5,
           messages: [
-            { role: 'system', content: 'Return strict JSON only. No markdown.' },
+            { role: 'system', content: 'Return strict JSON only. No markdown. No commentary.' },
             {
               role: 'user',
               content: buildPrompt({
@@ -1019,6 +1380,7 @@ export async function POST(request: Request) {
         }
 
         const aiMeal = parseAiPayload(content);
+
         if (foodOrigin && aiMeal.cuisineStyle !== foodOrigin) {
           lastErrorMessage = `Origin mismatch: expected ${foodOrigin}, got ${aiMeal.cuisineStyle}`;
           continue;
@@ -1030,6 +1392,14 @@ export async function POST(request: Request) {
           continue;
         }
 
+        if (isSyrianMode(foodOrigin)) {
+          const syrianIssue = validateSyrianAuthenticity(aiMeal);
+          if (syrianIssue) {
+            lastErrorMessage = syrianIssue;
+            continue;
+          }
+        }
+
         const spices = normalizeSpiceList(
           aiMeal.spices ??
             inferSpicesFromContent(
@@ -1038,17 +1408,15 @@ export async function POST(request: Request) {
             ),
         );
 
-        // For breakfast: allow any coreDishReference (user has complete freedom)
-        // For other meals: validate against core dish definitions
         let resolvedCoreDish: CoreDishDefinition | null = null;
-        if (!isBreakfast) {
-          resolvedCoreDish = resolveCoreDishDefinition(aiMeal.coreDishReference);
+        if (!isFlexibleCoreDish) {
+          resolvedCoreDish = resolveCoreDishDefinition(aiMeal.coreDishReference, foodOrigin);
           if (!resolvedCoreDish) {
             throw new Error(`Unknown coreDishReference: ${aiMeal.coreDishReference}`);
           }
 
           const normalizedAvoidCoreDishes = new Set(effectiveAvoidCoreDishReferences.map(normalizeDishKey));
-          const mealTypeCoreDishes = coreDishesForMealType(mealType).map(item => item.canonical);
+          const mealTypeCoreDishes = coreDishesForMealType(mealType, foodOrigin).map(item => item.canonical);
           const hasAlternativeCoreDish = mealTypeCoreDishes.some(
             name => !normalizedAvoidCoreDishes.has(normalizeDishKey(name)),
           );
@@ -1067,6 +1435,20 @@ export async function POST(request: Request) {
           }
         }
 
+        if (mealType === 'SNACK') {
+          const snackIssue = validateSnackLightweight(aiMeal);
+          if (snackIssue) {
+            lastErrorMessage = snackIssue;
+            continue;
+          }
+        }
+
+        const mainMealEggIssue = validateMainMealEggPolicy(aiMeal, mealType);
+        if (mainMealEggIssue) {
+          lastErrorMessage = mainMealEggIssue;
+          continue;
+        }
+
         const normalizedMealName = normalizeDishKey(aiMeal.mealName);
         const normalizedAvoidMealNames = new Set(mergedAvoidMealNames.map(normalizeDishKey));
         if (normalizedAvoidMealNames.has(normalizedMealName) && attempt < maxAttempts) {
@@ -1081,11 +1463,7 @@ export async function POST(request: Request) {
 
         const ingredientMatchResults = aiMeal.ingredients.map(item => {
           const directMatch = matchIngredientToFood(item.name, item.grams, foodRows);
-          if (directMatch) {
-            return { input: item, match: directMatch };
-          }
-
-          return { input: item, match: null };
+          return { input: item, match: directMatch ?? null };
         });
 
         const matchedIngredients = ingredientMatchResults
@@ -1099,20 +1477,22 @@ export async function POST(request: Request) {
         const unmatchedIngredients = ingredientMatchResults.filter(result => !result.match).map(result => result.input);
         const unmatchedCount = unmatchedIngredients.length;
 
-        // Build detailed warning with specific ingredient names
-        const unmatchedWarning =
-          unmatchedCount > 0
-            ? strictMatchMode === 'strict'
+        const warnings: string[] = [];
+
+        if (unmatchedCount > 0) {
+          warnings.push(
+            strictMatchMode === 'strict'
               ? `${unmatchedCount} ingredient(s) still need database resolution: ${unmatchedIngredients.map(ing => `"${ing.name}"`).join(', ')}`
-              : `${unmatchedCount} ingredient(s) were not matched automatically: ${unmatchedIngredients.map(ing => `"${ing.name}"`).join(', ')}`
-            : null;
+              : `${unmatchedCount} ingredient(s) were not matched automatically: ${unmatchedIngredients.map(ing => `"${ing.name}"`).join(', ')}`,
+          );
+        }
 
-        const lowMatchWarning =
-          matchedIngredients.length < 2
-            ? 'Only one ingredient matched automatically. Review unmatched ingredients before saving this meal.'
-            : null;
+        if (matchedIngredients.length < 2) {
+          warnings.push(
+            'Only one ingredient matched automatically. Review unmatched ingredients before saving this meal.',
+          );
+        }
 
-        // Create basic mapped ingredients now so we can save fallback early
         const mappedIngredients = matchedIngredients.map(ingredient => {
           const foodMeta = foodMetaById.get(ingredient.id);
 
@@ -1133,27 +1513,6 @@ export async function POST(request: Request) {
 
         const macros = calculateMealMacros(matchedIngredients);
 
-        // SAVE FALLBACK NOW - we have a valid meal structure with matched ingredients
-        const baseWarnings: string[] = [];
-        if (unmatchedWarning) baseWarnings.push(unmatchedWarning);
-        if (lowMatchWarning) baseWarnings.push(lowMatchWarning);
-
-        fallbackMeal = {
-          mealName: aiMeal.mealName,
-          type: mealType,
-          cuisineStyle: aiMeal.cuisineStyle,
-          coreDishReference: resolvedCoreDish?.canonical ?? aiMeal.coreDishReference,
-          complexity: aiMeal.complexity,
-          servings: aiMeal.servings,
-          ingredients: mappedIngredients,
-          spices,
-          instructions: aiMeal.instructions,
-          macros,
-          warnings: baseWarnings,
-          unmatchedIngredients,
-        };
-
-        // Now do soft validation checks and accumulate warnings instead of failing
         const coherenceIngredientNames = Array.from(
           new Set(
             [
@@ -1178,37 +1537,46 @@ export async function POST(request: Request) {
           aiMeal.ingredients.map(item => item.name),
           spices,
         );
+        const strictIngredientError = validateGeneratedIngredientsStrict(aiMeal);
 
-        // Check for quality issues but only hard-fail on critical ones
         let hasCriticalIssue = false;
-        if (titleCoherenceError && !titleCoherenceError.includes('partial match')) {
+
+        if (titleCoherenceError) {
           hasCriticalIssue = true;
-        }
-        if (instructionCoherenceError && !instructionCoherenceError.includes('partial match')) {
-          hasCriticalIssue = true;
-        }
-        if (instructionCoverageError) {
-          baseWarnings.push(`Instruction coverage warning: ${instructionCoverageError}`);
         }
 
-        // For non-breakfast, check instruction quality
-        if (!isBreakfast && resolvedCoreDish) {
+        if (instructionCoherenceError) {
+          hasCriticalIssue = true;
+        }
+
+        if (strictIngredientError) {
+          hasCriticalIssue = true;
+        }
+
+        if (instructionCoverageError) {
+          warnings.push(`Instruction coverage warning: ${instructionCoverageError}`);
+        }
+
+        if (!isFlexibleCoreDish && resolvedCoreDish) {
           const instructionQualityError = validateInstructionQuality(
             resolvedCoreDish.canonical,
             aiMeal.instructions,
             mealType,
             spices,
+            foodOrigin,
           );
+
           if (instructionQualityError) {
             hasCriticalIssue = true;
+            lastErrorMessage = instructionQualityError;
           }
         }
 
-        // Check fat limits - soft failure (add warning, don't hard fail)
-        const MAX_FAT_GRAMS = 32; // STRICT healthy limit for low-fat meals
-        const MIN_PROTEIN_GRAMS = 22; // Minimum protein for satisfying meals
+        const MAX_FAT_GRAMS = mealType === 'SNACK' ? 10 : 32;
+        const MIN_PROTEIN_GRAMS = mealType === 'SNACK' ? 24 : 22;
+        const MAX_CARBS_GRAMS = mealType === 'SNACK' ? 20 : Infinity;
 
-        let macroWarnings: string[] = [];
+        const macroWarnings: string[] = [];
         let macroCheckFailed = false;
 
         if (macros.fat > MAX_FAT_GRAMS) {
@@ -1221,18 +1589,52 @@ export async function POST(request: Request) {
           macroCheckFailed = true;
         }
 
-        // Retry if macros are bad (but only up to attempt 4)
+        if (macros.carbs > MAX_CARBS_GRAMS) {
+          macroWarnings.push(`Carbs too high: ${macros.carbs.toFixed(1)}g (target: <${MAX_CARBS_GRAMS}g)`);
+          macroCheckFailed = true;
+        }
+
+        if (mealType === 'SNACK' && macroCheckFailed) {
+          lastErrorMessage = `Snack macro validation failed: ${macroWarnings.join(', ')}`;
+          continue;
+        }
+
         if (macroCheckFailed && attempt < 4) {
           lastErrorMessage = `Macro validation failed: ${macroWarnings.join(', ')}`;
           continue;
         }
 
-        // After attempt 4, add warnings and accept anyway
         if (macroWarnings.length > 0) {
-          baseWarnings.push(`⚠️ ${macroWarnings.join(' | ')}`);
+          warnings.push(`Macro warning: ${macroWarnings.join(' | ')}`);
         }
 
-        // If we have critical issues, retry; otherwise accept with warnings
+        const candidateMeal = {
+          mealName: aiMeal.mealName,
+          type: mealType,
+          cuisineStyle: aiMeal.cuisineStyle,
+          coreDishReference: resolvedCoreDish?.canonical ?? aiMeal.coreDishReference,
+          complexity: aiMeal.complexity,
+          servings: aiMeal.servings,
+          ingredients: mappedIngredients,
+          spices,
+          instructions: aiMeal.instructions,
+          macros,
+          warnings,
+          unmatchedIngredients,
+        };
+
+        const candidateScore =
+          matchedIngredients.length * 10 +
+          (isSyrianMode(foodOrigin) ? 10 : 0) +
+          Math.max(0, 20 - warnings.length * 2) +
+          (macroCheckFailed ? 0 : 10) +
+          (hasCriticalIssue ? 0 : 15);
+
+        if (candidateScore > bestFallbackScore) {
+          bestFallbackScore = candidateScore;
+          bestFallbackMeal = candidateMeal;
+        }
+
         if (hasCriticalIssue && attempt < maxAttempts) {
           lastErrorMessage = 'Coherence or quality validation failed, retrying...';
           continue;
@@ -1240,7 +1642,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
           success: true,
-          data: fallbackMeal,
+          data: candidateMeal,
         });
       } catch (error) {
         lastErrorMessage = error instanceof Error ? error.message : String(error);
@@ -1250,11 +1652,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // If we have a fallback meal, return it even if quality isn't perfect
-    if (fallbackMeal) {
+    if (bestFallbackMeal) {
       return NextResponse.json({
         success: true,
-        data: fallbackMeal,
+        data: {
+          ...bestFallbackMeal,
+          warnings: [
+            ...(bestFallbackMeal.warnings ?? []),
+            'Returned best available fallback after retries. Review before saving.',
+          ],
+        },
       });
     }
 

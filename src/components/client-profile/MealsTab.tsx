@@ -1,4 +1,4 @@
-import { CalendarDays, Utensils, FileText, PlusCircle, Trash2, Edit, EllipsisVertical } from 'lucide-react';
+import { CalendarDays, Utensils, FileText, PlusCircle, Trash2, Edit, EllipsisVertical, Leaf } from 'lucide-react';
 import { cx, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { ActiveMealPlanSummary, MealAssignment } from '@/lib/client-page/types';
 import { JSX, useState } from 'react';
@@ -32,7 +32,9 @@ export function MealsTab({
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [bannerType, setBannerType] = useState<'success' | 'error'>('success');
   // Changed to use 'ALL' as default to always show all meals initially
-  const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'LUNCH' | 'DINNER' | 'BREAKFAST' | 'SNACK'>('ALL');
+  const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'LUNCH' | 'DINNER' | 'BREAKFAST' | 'SNACK' | 'SIDES'>(
+    'ALL',
+  );
 
   // Define custom filter options for better UX
   const filterOptions = [
@@ -41,6 +43,7 @@ export function MealsTab({
     { key: 'DINNER' as const, label: 'Dinner' },
     { key: 'BREAKFAST' as const, label: 'Breakfast' },
     { key: 'SNACK' as const, label: 'Snack' },
+    { key: 'SIDES' as const, label: 'Sides' },
   ];
 
   // Filter assignments based on selected meal type
@@ -50,6 +53,7 @@ export function MealsTab({
     if (selectedFilter === 'DINNER') return assignments.filter(a => a.meal?.type?.toUpperCase() === 'DINNER');
     if (selectedFilter === 'BREAKFAST') return assignments.filter(a => a.meal?.type?.toUpperCase() === 'BREAKFAST');
     if (selectedFilter === 'SNACK') return assignments.filter(a => a.meal?.type?.toUpperCase() === 'SNACK');
+    if (selectedFilter === 'SIDES') return assignments.filter(a => !!a.side);
     return assignments;
   })();
 
@@ -60,6 +64,7 @@ export function MealsTab({
     DINNER: assignments.filter(a => a.meal?.type?.toUpperCase() === 'DINNER').length,
     BREAKFAST: assignments.filter(a => a.meal?.type?.toUpperCase() === 'BREAKFAST').length,
     SNACK: assignments.filter(a => a.meal?.type?.toUpperCase() === 'SNACK').length,
+    SIDES: assignments.filter(a => !!a.side).length,
   };
 
   const handleEditMeal = (mealId: string) => {
@@ -215,6 +220,99 @@ export function MealsTab({
           {filteredAssignments.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredAssignments.map(a => {
+                /* ── SIDES view: render side card ── */
+                if (selectedFilter === 'SIDES') {
+                  const side = a.side;
+                  if (!side) return null;
+                  return (
+                    <div
+                      key={a.id}
+                      className="group relative transition-all duration-300 rounded-2xl border-4 border-transparent"
+                    >
+                      <div
+                        className="rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl border flex flex-col h-full"
+                        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                      >
+                        {/* Image */}
+                        <div className="relative w-full h-48 overflow-hidden" style={{ background: 'var(--color-bg)' }}>
+                          {side.imageUrl ? (
+                            <Image
+                              src={side.imageUrl}
+                              alt={side.name}
+                              fill
+                              className="object-cover hover:scale-110 transition-transform duration-300"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center"
+                              style={{ background: 'linear-gradient(135deg, var(--color-bg-alt), var(--color-bg))' }}
+                            >
+                              <Leaf className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
+                            </div>
+                          )}
+                          {/* Badge */}
+                          <div className="absolute top-3 left-3">
+                            <span
+                              className="px-3 py-1 rounded-full text-xs font-medium uppercase inline-flex items-center gap-1"
+                              style={{ background: 'var(--color-accent)', color: 'var(--color-text-black)' }}
+                            >
+                              <Leaf size={10} />
+                              {side.type === 'SOUP' ? 'Soup' : 'Salad'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4 flex-1 flex flex-col">
+                          <h4
+                            className="font-semibold text-lg mb-3 line-clamp-2"
+                            style={{ color: 'var(--color-text)' }}
+                          >
+                            {side.name}
+                          </h4>
+
+                          <div className="space-y-2 flex-1 mb-4">
+                            {[
+                              { label: 'Calories', value: side.calories },
+                              { label: 'Protein', value: `${side.protein}g` },
+                              { label: 'Carbs', value: `${side.carbs}g` },
+                              { label: 'Fat', value: `${side.fat}g` },
+                            ].map(({ label, value }) => (
+                              <div key={label} className="flex justify-between items-center">
+                                <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                                  {label}
+                                </span>
+                                <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                            {side.foodOrigin && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                                  Origin
+                                </span>
+                                <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                                  {side.foodOrigin}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                            <span className="inline-flex items-center gap-1">
+                              <CalendarDays size={12} />
+                              Assigned: {new Date(a.assignedDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                /* ── Regular meal card ── */
                 if (!a.meal) return null;
                 const nutrition = getDisplayNutrition(a);
 
@@ -408,9 +506,19 @@ export function MealsTab({
                 borderColor: 'var(--color-border)',
               }}
             >
-              <Utensils size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+              {selectedFilter === 'SIDES' ? (
+                <Leaf size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+              ) : (
+                <Utensils size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+              )}
               <p className="text-base font-medium mb-1" style={{ color: 'var(--color-text)' }}>
-                No {selectedFilter === 'ALL' ? '' : selectedFilter.toLowerCase() + ' '}meals found
+                No{' '}
+                {selectedFilter === 'ALL'
+                  ? ''
+                  : selectedFilter === 'SIDES'
+                    ? 'sides'
+                    : selectedFilter.toLowerCase() + ' meals'}{' '}
+                found
               </p>
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                 Try selecting a different filter or assign more meals

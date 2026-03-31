@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Meal, Client } from '@/types/meal';
 import { DataService } from '@/services/dataService';
 import { clientApi } from '@/lib/client-api';
 import { MealAssignmentService } from '@/services/mealAssignmentService';
+import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
+import type { SideItem } from '@/features/sides/types/side.types';
 import {
   X,
   Search,
@@ -21,6 +23,7 @@ import {
   Moon,
   Apple,
   AlertCircle,
+  Leaf,
 } from 'lucide-react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 
@@ -138,6 +141,11 @@ export default function IntegratedMealAssignmentModal({
       alreadySaved?: boolean;
     };
   }>({});
+  const [selectedSides, setSelectedSides] = useState<Record<string, string>>({}); // dayOfWeek_mealType -> sideId
+  const [sidePickerSlot, setSidePickerSlot] = useState<string | null>(null); // slot key currently showing picker
+
+  // Load sides library
+  const { sides, loadSides } = useSideLibrary();
 
   // State for UI control
   const [loading, setLoading] = useState(true);
@@ -597,6 +605,8 @@ export default function IntegratedMealAssignmentModal({
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
+      // Load sides library
+      await loadSides();
       setLoading(false);
     }
   };
@@ -629,14 +639,14 @@ export default function IntegratedMealAssignmentModal({
   const assignedMealIds = new Set(
     Object.values(selectedMeals)
       .map(selection => selection.mealId)
-      .filter(Boolean)
+      .filter(Boolean),
   );
 
   // Also track original meal IDs for personalized meals
   const assignedOriginalMealIds = new Set(
     Object.values(selectedMeals)
       .map(selection => selection.originalMealId)
-      .filter(Boolean)
+      .filter(Boolean),
   );
 
   // Debug logging for assigned meals
@@ -648,7 +658,7 @@ export default function IntegratedMealAssignmentModal({
     const isAssigned = assignedMealIds.has(mealId) || assignedOriginalMealIds.has(mealId);
     if (isAssigned) {
       console.log(
-        `Meal ${mealId} is assigned (direct: ${assignedMealIds.has(mealId)}, as original: ${assignedOriginalMealIds.has(mealId)})`
+        `Meal ${mealId} is assigned (direct: ${assignedMealIds.has(mealId)}, as original: ${assignedOriginalMealIds.has(mealId)})`,
       );
     }
     return isAssigned;
@@ -677,7 +687,7 @@ export default function IntegratedMealAssignmentModal({
   const handleSavePersonalizedMeal = async (
     personalizedMeal: Meal,
     clientId?: string,
-    originalMealId?: string
+    originalMealId?: string,
   ): Promise<void> => {
     try {
       setLoading(true);
@@ -742,7 +752,7 @@ export default function IntegratedMealAssignmentModal({
           const savedMeal = await clientApi.createPersonalizedMeal(
             mealData,
             selectedClientId || clientId!, // Make sure we pass the selected client ID
-            originalId
+            originalId,
           );
 
           // Format the response to match what the component expects
@@ -804,7 +814,7 @@ export default function IntegratedMealAssignmentModal({
         } catch (saveError) {
           console.error('Error saving personalized meal to database:', saveError);
           alert(
-            `Failed to save personalized meal to database: ${saveError instanceof Error ? saveError.message : 'Unknown error'}`
+            `Failed to save personalized meal to database: ${saveError instanceof Error ? saveError.message : 'Unknown error'}`,
           );
 
           // If saving to database fails, we still want to show the personalized meal in the UI
@@ -822,7 +832,7 @@ export default function IntegratedMealAssignmentModal({
 
           setShowPersonalizationModal(false);
           setSuccessMessage(
-            'Meal personalized but could not be saved to database. Will try again when creating meal plan.'
+            'Meal personalized but could not be saved to database. Will try again when creating meal plan.',
           );
         }
       }
@@ -849,7 +859,7 @@ export default function IntegratedMealAssignmentModal({
           const dayName = daysOfWeek.find(d => d.value === assignmentSlot.day)?.label || 'Unknown day';
           const mealTypeName = mealTypes.find(m => m.value === assignmentSlot.mealType)?.label || 'Unknown type';
           alert(
-            `This meal is already assigned to ${dayName}'s ${mealTypeName}. Remove it from there first if you want to assign it elsewhere.`
+            `This meal is already assigned to ${dayName}'s ${mealTypeName}. Remove it from there first if you want to assign it elsewhere.`,
           );
           return;
         }
@@ -858,7 +868,7 @@ export default function IntegratedMealAssignmentModal({
       const key = `${selectedDay}_${selectedMealType}`;
 
       console.log(
-        `Assigning meal "${meal.name}" (ID: ${meal.id}) to ${mealTypes.find(m => m.value === selectedMealType)?.label} on ${daysOfWeek.find(d => d.value === selectedDay)?.label}`
+        `Assigning meal "${meal.name}" (ID: ${meal.id}) to ${mealTypes.find(m => m.value === selectedMealType)?.label} on ${daysOfWeek.find(d => d.value === selectedDay)?.label}`,
       );
 
       setSelectedMeals(prev => ({
@@ -868,12 +878,12 @@ export default function IntegratedMealAssignmentModal({
 
       setActiveTab('schedule');
       setSuccessMessage(
-        `"${meal.name}" added to ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}!`
+        `"${meal.name}" added to ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}!`,
       );
 
       // Show more detailed message
       alert(
-        `"${meal.name}" has been added to your meal plan for ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}. Click "Create Meal Plan" to save all assignments.`
+        `"${meal.name}" has been added to your meal plan for ${daysOfWeek.find(d => d.value === selectedDay)?.label}'s ${mealTypes.find(m => m.value === selectedMealType)?.label}. Click "Create Meal Plan" to save all assignments.`,
       );
 
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -974,6 +984,41 @@ export default function IntegratedMealAssignmentModal({
     console.log('Removing meal from slot:', key);
 
     setSelectedMeals(prev => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
+  };
+
+  // Get side for a specific slot
+  const getSideForSlot = (dayOfWeek: number, mealType: string): SideItem | null => {
+    const key = `${dayOfWeek}_${mealType}`;
+    const sideId = selectedSides[key];
+    if (!sideId) return null;
+    return sides.find(side => side.id === sideId) || null;
+  };
+
+  // Handle side selection
+  const handleSideSelect = (dayOfWeek: number, mealType: string, sideId: string) => {
+    const key = `${dayOfWeek}_${mealType}`;
+    if (sideId === '') {
+      setSelectedSides(prev => {
+        const updated = { ...prev };
+        delete updated[key];
+        return updated;
+      });
+    } else {
+      setSelectedSides(prev => ({
+        ...prev,
+        [key]: sideId,
+      }));
+    }
+  };
+
+  // Remove a side from a slot
+  const removeSideFromSlot = (dayOfWeek: number, mealType: string) => {
+    const key = `${dayOfWeek}_${mealType}`;
+    setSelectedSides(prev => {
       const updated = { ...prev };
       delete updated[key];
       return updated;
@@ -1151,7 +1196,7 @@ export default function IntegratedMealAssignmentModal({
             const personalizedCopy = await clientApi.createPersonalizedMeal(
               mealData,
               selectedClientId,
-              selection.mealId
+              selection.mealId,
             );
             console.log('Auto-created personalized copy:', personalizedCopy.id, 'for original meal:', selection.mealId);
             return { key, mealId: personalizedCopy.id, isAutoPersonalized: true };
@@ -1180,7 +1225,7 @@ export default function IntegratedMealAssignmentModal({
         } else {
           // Some meals failed, but we can continue with the ones that worked
           alert(
-            `${failedMeals.length} out of ${savedPersonalizedMeals.length} personalized meals failed to save. The meal plan will be created with only the successfully saved meals.`
+            `${failedMeals.length} out of ${savedPersonalizedMeals.length} personalized meals failed to save. The meal plan will be created with only the successfully saved meals.`,
           );
         }
       }
@@ -1233,6 +1278,30 @@ export default function IntegratedMealAssignmentModal({
 
       console.log('Final meal assignments to create:', finalMealAssignments);
 
+      // Create side assignments
+      const sideAssignments = Object.entries(selectedSides)
+        .map(([key, sideId]) => {
+          const [dayOfWeek, mealType] = key.split('_');
+
+          if (!isValidSlotMealType(mealType)) {
+            console.warn(`Skipping invalid side assignment key: ${key}`);
+            return null;
+          }
+
+          return {
+            sideId,
+            dayOfWeek: parseInt(dayOfWeek),
+            mealType: mealType.toUpperCase() as 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK',
+          };
+        })
+        .filter(assignment => assignment !== null) as Array<{
+        sideId: string;
+        dayOfWeek: number;
+        mealType: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+      }>;
+
+      console.log('Final side assignments to create:', sideAssignments);
+
       try {
         let mealPlan;
 
@@ -1263,7 +1332,7 @@ export default function IntegratedMealAssignmentModal({
               planName,
               startDate,
               endDate || undefined,
-              notes || undefined
+              notes || undefined,
             );
 
             setSuccessMessage('Meal plan updated successfully!');
@@ -1278,7 +1347,7 @@ export default function IntegratedMealAssignmentModal({
               planName,
               startDate,
               endDate || undefined,
-              notes || undefined
+              notes || undefined,
             );
 
             setSuccessMessage('Created new meal plan since update failed!');
@@ -1297,7 +1366,7 @@ export default function IntegratedMealAssignmentModal({
             planName,
             startDate,
             endDate || undefined,
-            notes || undefined
+            notes || undefined,
           );
 
           setSuccessMessage('Meal plan created successfully!');
@@ -1318,13 +1387,13 @@ export default function IntegratedMealAssignmentModal({
       } catch (error) {
         console.error('Failed to save meal plan:', error);
         alert(
-          `Failed to ${isEditingExistingPlan ? 'update' : 'create'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to ${isEditingExistingPlan ? 'update' : 'create'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
       }
     } catch (error) {
       console.error('Error in meal plan submission process:', error);
       alert(
-        `Error ${isEditingExistingPlan ? 'updating' : 'creating'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Error ${isEditingExistingPlan ? 'updating' : 'creating'} meal plan: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     } finally {
       setLoading(false);
@@ -1333,6 +1402,7 @@ export default function IntegratedMealAssignmentModal({
 
   const selectedMealEntries = Object.entries(selectedMeals);
   const totalSelectedMeals = selectedMealEntries.length;
+  const totalSelectedSides = Object.keys(selectedSides).length;
   const personalizedMealsCount = Object.values(selectedMeals).filter(selection => selection.isPersonalized).length;
   const totalAssignedCalories = selectedMealEntries.reduce((total, [_key, selection]) => {
     const meal =
@@ -1347,7 +1417,7 @@ export default function IntegratedMealAssignmentModal({
     startDate && endDate
       ? `${Math.max(
           1,
-          Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+          Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)),
         )} days`
       : 'Ongoing';
 
@@ -1356,6 +1426,167 @@ export default function IntegratedMealAssignmentModal({
   const isStartDateReady = Boolean(startDate);
   const hasMealsReady = totalSelectedMeals > 0;
   const canSubmitMealPlan = !loading && isClientReady && isPlanNameReady && isStartDateReady && hasMealsReady;
+
+  // ─── Inline side image picker ────────────────────────────────────
+  function SideImagePicker({
+    slotKey,
+    dayOfWeek,
+    mealTypeValue,
+  }: {
+    slotKey: string;
+    dayOfWeek: number;
+    mealTypeValue: string;
+  }) {
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const isOpen = sidePickerSlot === slotKey;
+    const currentSide = getSideForSlot(dayOfWeek, mealTypeValue);
+
+    // Close picker when clicking outside
+    useEffect(() => {
+      if (!isOpen) return;
+      function handleClickOutside(e: MouseEvent) {
+        if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+          setSidePickerSlot(null);
+        }
+      }
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
+    function onSelect(sideId: string) {
+      handleSideSelect(dayOfWeek, mealTypeValue, sideId);
+      setSidePickerSlot(null);
+    }
+
+    return (
+      <div ref={wrapperRef} className="relative">
+        {/* Trigger */}
+        {currentSide ? (
+          <div
+            className="mt-2 flex items-center gap-2 rounded-lg border p-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+            onClick={() => setSidePickerSlot(isOpen ? null : slotKey)}
+          >
+            {currentSide.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={currentSide.imageUrl}
+                alt={currentSide.name}
+                className="w-10 h-10 rounded object-cover shrink-0"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded flex items-center justify-center shrink-0"
+                style={{ background: 'var(--color-surface)' }}
+              >
+                <Leaf size={16} style={{ color: 'var(--color-accent)' }} />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                {currentSide.name}
+              </div>
+              <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                {currentSide.type === 'SOUP' ? 'Soup' : 'Salad'} · {currentSide.calories} cal
+              </div>
+            </div>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                removeSideFromSlot(dayOfWeek, mealTypeValue);
+              }}
+              className="p-0.5 rounded hover:bg-red-500 hover:bg-opacity-10 shrink-0"
+              style={{ color: 'var(--color-danger)' }}
+              aria-label="Remove side"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setSidePickerSlot(isOpen ? null : slotKey)}
+            className="mt-2 w-full flex items-center justify-center gap-1 rounded-lg border border-dashed py-1.5 text-xs transition-colors hover:opacity-80"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+          >
+            <Leaf size={12} />
+            Add side
+          </button>
+        )}
+
+        {/* Dropdown picker */}
+        {isOpen && (
+          <div
+            className="absolute z-50 mt-1 left-0 right-0 rounded-xl border shadow-xl overflow-hidden"
+            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)', minWidth: '220px' }}
+          >
+            <div
+              className="p-2 border-b text-xs font-semibold"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+            >
+              Choose a side
+            </div>
+            {/* No side option */}
+            <button
+              onClick={() => onSelect('')}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:opacity-80 transition-opacity border-b"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+            >
+              <div
+                className="w-10 h-10 rounded flex items-center justify-center shrink-0"
+                style={{ background: 'var(--color-surface)' }}
+              >
+                <X size={14} />
+              </div>
+              <span>No side</span>
+            </button>
+            <div className="overflow-y-auto" style={{ maxHeight: '240px' }}>
+              {sides.length === 0 ? (
+                <div className="px-3 py-4 text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+                  No sides available
+                </div>
+              ) : (
+                sides.map(side => (
+                  <button
+                    key={side.id}
+                    onClick={() => onSelect(side.id)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:opacity-80 transition-opacity border-b last:border-b-0"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      background:
+                        selectedSides[slotKey] === side.id ? 'var(--color-accent-translucent)' : 'transparent',
+                      color: 'var(--color-text)',
+                      textAlign: 'left',
+                    }}
+                  >
+                    {side.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={side.imageUrl} alt={side.name} className="w-10 h-10 rounded object-cover shrink-0" />
+                    ) : (
+                      <div
+                        className="w-10 h-10 rounded flex items-center justify-center shrink-0"
+                        style={{ background: 'var(--color-surface)' }}
+                      >
+                        <Leaf size={14} style={{ color: 'var(--color-accent)' }} />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="font-semibold truncate">{side.name}</div>
+                      <div style={{ color: 'var(--color-text-muted)' }}>
+                        {side.type === 'SOUP' ? 'Soup' : 'Salad'} · {side.calories} cal
+                      </div>
+                    </div>
+                    {selectedSides[slotKey] === side.id && (
+                      <Check size={12} className="shrink-0" style={{ color: 'var(--color-accent)' }} />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!isOpen) return null;
 
@@ -1638,6 +1869,20 @@ export default function IntegratedMealAssignmentModal({
                                         Remove
                                       </button>
                                     </div>
+                                    <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                                      <div
+                                        className="text-xs font-semibold mb-1 flex items-center gap-1"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                      >
+                                        <Leaf size={12} />
+                                        Side
+                                      </div>
+                                      <SideImagePicker
+                                        slotKey={`${day.value}_${mealType.value}`}
+                                        dayOfWeek={day.value}
+                                        mealTypeValue={mealType.value}
+                                      />
+                                    </div>
                                   </div>
                                 ) : (
                                   <button
@@ -1754,6 +1999,24 @@ export default function IntegratedMealAssignmentModal({
                                           </div>
                                         )}
                                       </div>
+                                      {/* Optional Side Section */}
+                                      <div
+                                        className="mt-3 pt-3 border-t"
+                                        style={{ borderColor: 'var(--color-border)' }}
+                                      >
+                                        <div
+                                          className="text-xs font-semibold mb-1 flex items-center gap-1"
+                                          style={{ color: 'var(--color-text-muted)' }}
+                                        >
+                                          <Leaf size={12} />
+                                          Side
+                                        </div>
+                                        <SideImagePicker
+                                          slotKey={`${day.value}_${mealType.value}`}
+                                          dayOfWeek={day.value}
+                                          mealTypeValue={mealType.value}
+                                        />
+                                      </div>
                                       <button
                                         onClick={() => removeMealFromSlot(day.value, mealType.value)}
                                         className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-500 hover:bg-opacity-10"
@@ -1815,16 +2078,20 @@ export default function IntegratedMealAssignmentModal({
                       <div className="text-base font-semibold">{totalSelectedMeals}</div>
                     </div>
                     <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
+                      <div style={{ color: 'var(--color-text-muted)' }}>Total Sides</div>
+                      <div className="text-base font-semibold">{totalSelectedSides}</div>
+                    </div>
+                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
                       <div style={{ color: 'var(--color-text-muted)' }}>Avg Calories</div>
                       <div className="text-base font-semibold">{averageDailyCalories}</div>
                     </div>
                     <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
-                      <div style={{ color: 'var(--color-text-muted)' }}>Personalized</div>
-                      <div className="text-base font-semibold">{personalizedMealsCount}</div>
-                    </div>
-                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
                       <div style={{ color: 'var(--color-text-muted)' }}>Duration</div>
                       <div className="text-base font-semibold">{durationLabel}</div>
+                    </div>
+                    <div className="rounded-lg p-2" style={{ background: 'var(--color-surface)' }}>
+                      <div style={{ color: 'var(--color-text-muted)' }}>Personalized</div>
+                      <div className="text-base font-semibold">{personalizedMealsCount}</div>
                     </div>
                   </div>
                 </div>

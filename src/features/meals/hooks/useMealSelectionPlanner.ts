@@ -8,7 +8,13 @@ import {
   USER_MEAL_OPTIONS_URL,
   USER_MEAL_SELECTION_URL,
 } from '@/features/meals/api/mealSelection.api';
-import type { MealMacroTotals, MealOption, MealTypeKey, SelectionItem } from '@/features/meals/types/mealSelection.types';
+import type {
+  MealMacroTotals,
+  MealOption,
+  MealTypeKey,
+  SelectionItem,
+  SideProgramOption,
+} from '@/features/meals/types/mealSelection.types';
 
 const REQUIRED_TYPES: MealTypeKey[] = ['BREAKFAST', 'LUNCH', 'DINNER'];
 
@@ -19,12 +25,12 @@ function emptyTotals(): MealMacroTotals {
 function totalsFromItems(items: SelectionItem[]): MealMacroTotals {
   return items.reduce(
     (acc, item) => ({
-      calories: Math.round(acc.calories + item.meal.calories * item.portion),
-      protein: Math.round(acc.protein + item.meal.protein * item.portion),
-      carbs: Math.round(acc.carbs + item.meal.carbs * item.portion),
-      fat: Math.round(acc.fat + item.meal.fat * item.portion),
+      calories: Math.round(acc.calories + item.meal.calories * item.portion + (item.side?.calories ?? 0)),
+      protein: Math.round(acc.protein + item.meal.protein * item.portion + (item.side?.protein ?? 0)),
+      carbs: Math.round(acc.carbs + item.meal.carbs * item.portion + (item.side?.carbs ?? 0)),
+      fat: Math.round(acc.fat + item.meal.fat * item.portion + (item.side?.fat ?? 0)),
     }),
-    emptyTotals()
+    emptyTotals(),
   );
 }
 
@@ -38,6 +44,24 @@ export function useMealSelectionPlanner() {
   const [saveError, setSaveError] = useState<ApiError | null>(null);
 
   const snackMax = optionsSWR.data?.constraints?.snackMax ?? 2;
+
+  const sideOptions = useMemo<SideProgramOption[]>(() => {
+    if (!optionsSWR.data?.optionsByType) return [];
+
+    return [...optionsSWR.data.optionsByType.LUNCH, ...optionsSWR.data.optionsByType.DINNER]
+      .filter(
+        (option): option is MealOption & { mealType: 'LUNCH' | 'DINNER'; side: NonNullable<MealOption['side']> } =>
+          (option.mealType === 'LUNCH' || option.mealType === 'DINNER') && Boolean(option.side),
+      )
+      .map(option => ({
+        sourceAssignmentId: option.sourceAssignmentId,
+        sourceMealType: option.mealType,
+        meal: option.meal,
+        portion: option.portion,
+        scheduledTime: option.scheduledTime,
+        side: option.side,
+      }));
+  }, [optionsSWR.data?.optionsByType]);
 
   useEffect(() => {
     if (hasTouchedDraft) return;
@@ -58,7 +82,7 @@ export function useMealSelectionPlanner() {
       carbs: selectedTotals.carbs - coachTargetTotals.carbs,
       fat: selectedTotals.fat - coachTargetTotals.fat,
     }),
-    [selectedTotals, coachTargetTotals]
+    [selectedTotals, coachTargetTotals],
   );
 
   const selectedByType = useMemo(() => {
@@ -67,7 +91,7 @@ export function useMealSelectionPlanner() {
         acc[item.mealType].push(item);
         return acc;
       },
-      { BREAKFAST: [], LUNCH: [], DINNER: [], SNACK: [] }
+      { BREAKFAST: [], LUNCH: [], DINNER: [], SNACK: [] },
     );
   }, [draftItems]);
 
@@ -80,11 +104,11 @@ export function useMealSelectionPlanner() {
     if (source.length !== draftItems.length) return true;
 
     const sourceKey = source
-      .map(item => `${item.mealType}:${item.slotIndex}:${item.mealId}`)
+      .map(item => `${item.mealType}:${item.slotIndex}:${item.mealId}:${item.sourceAssignmentId ?? ''}`)
       .sort()
       .join('|');
     const draftKey = draftItems
-      .map(item => `${item.mealType}:${item.slotIndex}:${item.mealId}`)
+      .map(item => `${item.mealType}:${item.slotIndex}:${item.mealId}:${item.sourceAssignmentId ?? ''}`)
       .sort()
       .join('|');
 
@@ -100,7 +124,7 @@ export function useMealSelectionPlanner() {
 
       if (option.mealType === 'SNACK') {
         const existingSnackIndex = current.findIndex(
-          item => item.mealType === 'SNACK' && item.mealId === option.meal.id
+          item => item.mealType === 'SNACK' && item.mealId === option.meal.id,
         );
 
         if (existingSnackIndex >= 0) {
@@ -130,6 +154,7 @@ export function useMealSelectionPlanner() {
             mealId: option.meal.id,
             sourceAssignmentId: option.sourceAssignmentId,
             portion: option.portion,
+            side: option.side ?? null,
             meal: option.meal,
           },
         ];
@@ -144,6 +169,7 @@ export function useMealSelectionPlanner() {
           mealId: option.meal.id,
           sourceAssignmentId: option.sourceAssignmentId,
           portion: option.portion,
+          side: option.side ?? null,
           meal: option.meal,
         },
       ];
@@ -187,8 +213,18 @@ export function useMealSelectionPlanner() {
     }
   }
 
-  function isSelected(mealType: MealTypeKey, mealId: string): boolean {
-    return draftItems.some(item => item.mealType === mealType && item.mealId === mealId);
+  function isSelected(mealType: MealTypeKey, mealId: string, sourceAssignmentId?: string | null): boolean {
+    return draftItems.some(item => {
+      if (item.mealType !== mealType || item.mealId !== mealId) {
+        return false;
+      }
+
+      if (sourceAssignmentId) {
+        return item.sourceAssignmentId === sourceAssignmentId;
+      }
+
+      return true;
+    });
   }
 
   const loading = optionsSWR.isLoading || selectionSWR.isLoading;
@@ -199,6 +235,7 @@ export function useMealSelectionPlanner() {
     error,
     saveError,
     optionsByType,
+    sideOptions,
     draftItems,
     selectedByType,
     selectedTotals,

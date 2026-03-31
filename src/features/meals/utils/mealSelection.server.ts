@@ -19,18 +19,39 @@ type ClientWithAssignments = {
       dayOfWeek: number;
       portion: number;
       scheduledTime?: string | null;
-      meal: {
+      side?: {
         id: string;
         name: string;
-        type: string;
+        type: 'SALAD' | 'SOUP';
         calories: number;
         protein: number;
         carbs: number;
         fat: number;
+        fiber?: number | null;
+        imageUrl?: string | null;
+        ingredients: string[];
+        spices: string[];
+        instructions: string[];
+        foodOrigin?: string | null;
+      } | null;
+      meal: {
+        id: string;
+        name: string;
+        type: string;
+        description?: string | null;
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        ingredients?: string | null;
+        instructions?: string | null;
+        category?: string | null;
+        difficulty?: string | null;
         imageUrl?: string | null;
         prepTime?: number | null;
         cookTime?: number | null;
         servings?: number | null;
+        tags?: string | null;
       };
     }>;
   }>;
@@ -46,6 +67,7 @@ export async function getClientCoachAssignedMealOptions(clientId: string): Promi
           mealAssignments: {
             include: {
               meal: true,
+              side: true,
             },
             orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }, { createdAt: 'asc' }],
           },
@@ -77,7 +99,7 @@ export async function getClientCoachAssignedMealOptions(clientId: string): Promi
       const mealType = assignment.mealType as MealTypeKey;
       if (!(mealType in grouped)) continue;
 
-      const dedupeKey = `${assignment.meal.id}`;
+      const dedupeKey = `${assignment.meal.id}:${assignment.side?.id ?? 'no-side'}`;
       if (seen[mealType].has(dedupeKey)) continue;
       seen[mealType].add(dedupeKey);
 
@@ -86,18 +108,41 @@ export async function getClientCoachAssignedMealOptions(clientId: string): Promi
         mealType,
         portion: assignment.portion || 1,
         scheduledTime: assignment.scheduledTime ?? null,
+        side: assignment.side
+          ? {
+              id: assignment.side.id,
+              name: assignment.side.name,
+              type: assignment.side.type,
+              calories: assignment.side.calories,
+              protein: assignment.side.protein,
+              carbs: assignment.side.carbs,
+              fat: assignment.side.fat,
+              fiber: assignment.side.fiber ?? null,
+              imageUrl: assignment.side.imageUrl ?? null,
+              ingredients: assignment.side.ingredients,
+              spices: assignment.side.spices,
+              instructions: assignment.side.instructions,
+              foodOrigin: assignment.side.foodOrigin ?? null,
+            }
+          : null,
         meal: {
           id: assignment.meal.id,
           name: assignment.meal.name,
           type: assignment.meal.type,
+          description: assignment.meal.description ?? null,
           calories: assignment.meal.calories,
           protein: assignment.meal.protein,
           carbs: assignment.meal.carbs,
           fat: assignment.meal.fat,
+          ingredients: assignment.meal.ingredients ?? null,
+          instructions: assignment.meal.instructions ?? null,
+          category: assignment.meal.category ?? null,
+          difficulty: assignment.meal.difficulty ?? null,
           imageUrl: assignment.meal.imageUrl ?? null,
           prepTime: assignment.meal.prepTime ?? null,
           cookTime: assignment.meal.cookTime ?? null,
           servings: assignment.meal.servings ?? 1,
+          tags: assignment.meal.tags ?? null,
         },
       });
     }
@@ -115,7 +160,7 @@ export function buildBaselineFromOptions(optionsByType: Record<MealTypeKey, Meal
 
 export function hydrateSelectionAgainstOptions(
   optionsByType: Record<MealTypeKey, MealOption[]>,
-  rawItems: Array<{ mealType: string; slotIndex: number; mealId: string; sourceMealAssignmentId?: string | null }>
+  rawItems: Array<{ mealType: string; slotIndex: number; mealId: string; sourceMealAssignmentId?: string | null }>,
 ): UserSelectionItem[] {
   const hydrated: UserSelectionItem[] = [];
 
@@ -123,7 +168,13 @@ export function hydrateSelectionAgainstOptions(
     const mealType = item.mealType as MealTypeKey;
     if (!optionsByType[mealType]) return;
 
-    const option = optionsByType[mealType].find(candidate => candidate.meal.id === item.mealId);
+    const option = optionsByType[mealType].find(candidate => {
+      if (item.sourceMealAssignmentId) {
+        return candidate.sourceAssignmentId === item.sourceMealAssignmentId;
+      }
+
+      return candidate.meal.id === item.mealId;
+    });
     if (!option) return;
 
     hydrated.push({
@@ -132,6 +183,7 @@ export function hydrateSelectionAgainstOptions(
       mealId: option.meal.id,
       sourceAssignmentId: item.sourceMealAssignmentId ?? option.sourceAssignmentId,
       portion: option.portion,
+      side: option.side ?? null,
       meal: option.meal,
     });
   });

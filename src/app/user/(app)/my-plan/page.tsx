@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { AlertCircle, CheckCircle2, ChevronRight, Save, Undo2, Utensils, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, Leaf, Save, Undo2, Utensils, X } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
@@ -49,6 +49,16 @@ export default function UserMyPlanPage() {
 
   const totalSelectedMeals = useMemo(() => {
     return TYPE_ORDER.reduce((acc, type) => acc + selectedByType[type].length, 0);
+  }, [selectedByType]);
+
+  const selectedSides = useMemo(() => {
+    return [selectedByType.LUNCH[0], selectedByType.DINNER[0]]
+      .filter((item): item is NonNullable<typeof item> => Boolean(item?.side))
+      .map(item => ({
+        mealType: item.mealType,
+        side: item.side!,
+        mealName: item.meal.name,
+      }));
   }, [selectedByType]);
 
   const orderedSections = useMemo(() => {
@@ -253,6 +263,65 @@ export default function UserMyPlanPage() {
               </section>
             ))
           : null}
+
+        {!loading && !error ? (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-[var(--color-text)]">Sides</h2>
+                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+                  {selectedSides.length}
+                </span>
+              </div>
+            </div>
+
+            {selectedSides.length === 0 ? (
+              <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
+                No sides selected yet. Choose a linked lunch or dinner side from Program.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {selectedSides.map(item => (
+                  <article
+                    key={`${item.mealType}_${item.side.id}`}
+                    className="overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.16)]"
+                  >
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={item.side.imageUrl?.trim() ? item.side.imageUrl : fallbackImage}
+                        alt={item.side.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+
+                      <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur inline-flex items-center gap-1">
+                        <Leaf size={12} />
+                        {item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 p-4">
+                      <div>
+                        <p className="line-clamp-1 text-base font-semibold text-[var(--color-text)]">
+                          {item.side.name}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
+                          {item.side.calories} kcal • Protein {item.side.protein}g • Carbs {item.side.carbs}g • Fat{' '}
+                          {item.side.fat}g
+                        </p>
+                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                          Linked to {item.mealType.toLowerCase()}: {item.mealName}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
       </div>
 
       {swapState ? (
@@ -299,13 +368,15 @@ export default function UserMyPlanPage() {
                         <div key={option.sourceAssignmentId} className="w-[85vw] max-w-[330px] shrink-0 snap-start">
                           <MealOptionCard
                             option={option}
-                            selected={isSelected(option.mealType, option.meal.id)}
+                            selected={isSelected(option.mealType, option.meal.id, option.sourceAssignmentId)}
                             onSelect={() => handleSelectReplacement(option)}
                             onPreview={() => {
                               handleSelectReplacement(option);
                             }}
                             disabled={
-                              option.mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull
+                              option.mealType === 'SNACK' &&
+                              !isSelected('SNACK', option.meal.id, option.sourceAssignmentId) &&
+                              isSnackFull
                             }
                           />
                         </div>

@@ -116,9 +116,13 @@ export default function UserMealsPage() {
                 <div key={`${option.mealType}_${option.meal.id}`} className="space-y-2">
                   <MealOptionCard
                     option={option}
-                    selected={isSelected(option.mealType, option.meal.id)}
+                    selected={isSelected(option.mealType, option.meal.id, option.sourceAssignmentId)}
                     onSelect={() => selectOption(option)}
-                    disabled={option.mealType === 'SNACK' && !isSelected('SNACK', option.meal.id) && isSnackFull}
+                    disabled={
+                      option.mealType === 'SNACK' &&
+                      !isSelected('SNACK', option.meal.id, option.sourceAssignmentId) &&
+                      isSnackFull
+                    }
                   />
                   <button
                     type="button"
@@ -139,18 +143,17 @@ export default function UserMealsPage() {
             {(['BREAKFAST', 'LUNCH', 'DINNER'] as const).map(type => {
               const item = selectedByType[type][0];
               return (
-                <SelectionRow
-                  key={type}
-                  label={type}
-                  value={item ? item.meal.name : 'Not selected'}
-                  muted={!item}
-                />
+                <SelectionRow key={type} label={type} value={item ? item.meal.name : 'Not selected'} muted={!item} />
               );
             })}
 
             <SelectionRow
               label="SNACKS"
-              value={selectedByType.SNACK.length > 0 ? selectedByType.SNACK.map(item => item.meal.name).join(', ') : 'No snack selected'}
+              value={
+                selectedByType.SNACK.length > 0
+                  ? selectedByType.SNACK.map(item => item.meal.name).join(', ')
+                  : 'No snack selected'
+              }
               muted={selectedByType.SNACK.length === 0}
             />
           </div>
@@ -184,17 +187,7 @@ export default function UserMealsPage() {
   );
 }
 
-function SlotState({
-  label,
-  count,
-  max,
-  required,
-}: {
-  label: string;
-  count: number;
-  max: number;
-  required?: boolean;
-}) {
+function SlotState({ label, count, max, required }: { label: string; count: number; max: number; required?: boolean }) {
   const isMet = required ? count === max : count <= max;
 
   return (
@@ -214,7 +207,9 @@ function SelectionRow({ label, value, muted }: { label: string; value: string; m
   return (
     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
       <p className="text-[11px] text-[var(--color-text-muted)]">{label}</p>
-      <p className={['mt-1 text-sm', muted ? 'text-[var(--color-text-muted)]' : 'text-[var(--color-text)]'].join(' ')}>{value}</p>
+      <p className={['mt-1 text-sm', muted ? 'text-[var(--color-text-muted)]' : 'text-[var(--color-text)]'].join(' ')}>
+        {value}
+      </p>
     </div>
   );
 }

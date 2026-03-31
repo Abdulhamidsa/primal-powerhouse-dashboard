@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import AddMealModal from '@/components/AddMealModal';
 import MealBuilderModal from '@/components/MealBuilderModal';
 import EditMealModal from '@/components/EditMealModal';
@@ -13,6 +13,7 @@ import { MealFilterType, MealListItem, mealTypes } from '@/lib/meal-planner/type
 import { MealsGrid } from './MealsGrid';
 import { DeleteMealModal } from './DeleteMealModal';
 import { useMeals } from '@/hooks/useMeals';
+import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
 import { convertToMealType } from '@/lib/meal-planner/adaptoers/mealToDetailMeal';
 // import MealGeneratorPanel from '@/features/meals/components/MealGeneratorPanel';
 
@@ -27,26 +28,38 @@ export default function MealsPage() {
   const [deleting, setDeleting] = useState(false);
   const [selectedType, setSelectedType] = useState<MealFilterType>('ALL');
   const { meals, isLoading: loading, refreshMeals } = useMeals();
-  console.log(
-    'heeyy',
-    selectedType,
-    meals.filter(meal => meal.type === 'LUNCH'),
-  );
-  // meals lenght by type
+  const { sides = [], loadSides } = useSideLibrary();
+
+  useEffect(() => {
+    loadSides();
+  }, [loadSides]);
 
   const filteredMeals = useMemo(() => {
+    if (selectedType === 'SIDES') {
+      return sides.map(side => ({
+        ...side,
+        type: 'SIDES' as const,
+        prepTime: 0,
+        cookTime: 10,
+        servings: 1,
+        tags: ['side', side.type === 'SALAD' ? 'salad' : 'soup'],
+        createdAt: side.createdAt || new Date().toISOString(),
+        updatedAt: side.updatedAt || new Date().toISOString(),
+      })) as unknown as MealListItem[];
+    }
     return selectedType === 'ALL' ? meals : meals.filter(meal => meal.type === selectedType);
-  }, [meals, selectedType]);
+  }, [meals, selectedType, sides]);
 
   const mealCounts = useMemo(
     () => ({
-      ALL: meals.length,
+      ALL: meals.length + sides.length,
       BREAKFAST: meals.filter(meal => meal.type === 'BREAKFAST').length,
       LUNCH: meals.filter(meal => meal.type === 'LUNCH').length,
       DINNER: meals.filter(meal => meal.type === 'DINNER').length,
       SNACK: meals.filter(meal => meal.type === 'SNACK').length,
+      SIDES: sides.length,
     }),
-    [meals],
+    [meals, sides],
   );
 
   const handleViewMeal = useCallback((meal: MealListItem) => {

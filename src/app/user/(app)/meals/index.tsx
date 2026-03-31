@@ -4,6 +4,21 @@ export interface MealAssignment {
   dayOfWeek: number;
   portion: number;
   scheduledTime?: string;
+  side?: {
+    id: string;
+    name: string;
+    type: 'SALAD' | 'SOUP';
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber?: number | null;
+    imageUrl?: string | null;
+    ingredients: string[];
+    spices: string[];
+    instructions: string[];
+    foodOrigin?: string | null;
+  } | null;
   meal: {
     id: string;
     name: string;

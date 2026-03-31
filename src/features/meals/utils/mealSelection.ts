@@ -19,18 +19,39 @@ export type MealOption = {
   mealType: MealTypeKey;
   portion: number;
   scheduledTime: string | null;
-  meal: {
+  side?: {
     id: string;
     name: string;
-    type: string;
+    type: 'SALAD' | 'SOUP';
     calories: number;
     protein: number;
     carbs: number;
     fat: number;
+    fiber?: number | null;
+    imageUrl?: string | null;
+    ingredients: string[];
+    spices: string[];
+    instructions: string[];
+    foodOrigin?: string | null;
+  } | null;
+  meal: {
+    id: string;
+    name: string;
+    type: string;
+    description?: string | null;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    ingredients?: string | null;
+    instructions?: string | null;
+    category?: string | null;
+    difficulty?: string | null;
     imageUrl?: string | null;
     prepTime?: number | null;
     cookTime?: number | null;
     servings?: number | null;
+    tags?: string | null;
   };
 };
 
@@ -40,6 +61,7 @@ export type UserSelectionItem = {
   mealId: string;
   sourceAssignmentId?: string | null;
   portion: number;
+  side?: MealOption['side'];
   meal: MealOption['meal'];
 };
 
@@ -50,13 +72,14 @@ export function emptyMacroTotals(): MealSelectionMacroTotals {
 export function addMacros(
   totals: MealSelectionMacroTotals,
   meal: Pick<MealOption['meal'], 'calories' | 'protein' | 'carbs' | 'fat'>,
-  portion: number
+  side: Pick<NonNullable<MealOption['side']>, 'calories' | 'protein' | 'carbs' | 'fat'> | null | undefined,
+  portion: number,
 ): MealSelectionMacroTotals {
   return {
-    calories: totals.calories + meal.calories * portion,
-    protein: totals.protein + meal.protein * portion,
-    carbs: totals.carbs + meal.carbs * portion,
-    fat: totals.fat + meal.fat * portion,
+    calories: totals.calories + meal.calories * portion + (side?.calories ?? 0),
+    protein: totals.protein + meal.protein * portion + (side?.protein ?? 0),
+    carbs: totals.carbs + meal.carbs * portion + (side?.carbs ?? 0),
+    fat: totals.fat + meal.fat * portion + (side?.fat ?? 0),
   };
 }
 
@@ -82,6 +105,7 @@ export function buildBaselineSelection(optionsByType: Record<MealTypeKey, MealOp
       mealId: option.meal.id,
       sourceAssignmentId: option.sourceAssignmentId,
       portion: option.portion,
+      side: option.side ?? null,
       meal: option.meal,
     });
   });
@@ -93,6 +117,7 @@ export function buildBaselineSelection(optionsByType: Record<MealTypeKey, MealOp
       mealId: option.meal.id,
       sourceAssignmentId: option.sourceAssignmentId,
       portion: option.portion,
+      side: option.side ?? null,
       meal: option.meal,
     });
   });
@@ -100,14 +125,19 @@ export function buildBaselineSelection(optionsByType: Record<MealTypeKey, MealOp
   return baseline;
 }
 
-export function computeSelectionTotals(items: Array<Pick<UserSelectionItem, 'portion' | 'meal'>>): MealSelectionMacroTotals {
-  const totals = items.reduce((acc, item) => addMacros(acc, item.meal, item.portion), emptyMacroTotals());
+export function computeSelectionTotals(
+  items: Array<Pick<UserSelectionItem, 'portion' | 'meal' | 'side'>>,
+): MealSelectionMacroTotals {
+  const totals = items.reduce(
+    (acc, item) => addMacros(acc, item.meal, item.side ?? null, item.portion),
+    emptyMacroTotals(),
+  );
   return roundMacroTotals(totals);
 }
 
 export function macroDelta(
   selected: MealSelectionMacroTotals,
-  baseline: MealSelectionMacroTotals
+  baseline: MealSelectionMacroTotals,
 ): MealSelectionMacroTotals {
   return {
     calories: selected.calories - baseline.calories,

@@ -133,7 +133,7 @@ export interface ScaledRecipe {
 }
 
 // Utility types for meal filtering
-export const mealTypes = ['ALL', 'BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const;
+export const mealTypes = ['ALL', 'BREAKFAST', 'LUNCH', 'DINNER', 'SNACK', 'SIDES'] as const;
 export type MealFilterType = (typeof mealTypes)[number];
 
 // Type for meal list items returned from the API

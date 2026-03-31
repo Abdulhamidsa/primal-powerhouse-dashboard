@@ -6,6 +6,7 @@ import { useMealPlanRecalculation } from '@/features/meal-plan-recalculation/hoo
 import type {
   MealPlanRecalculationResult,
   MealPortionDelta,
+  MealSlotSummary,
   OptimizationMode,
 } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
 import type { ApiError } from '@/lib/request';
@@ -45,6 +46,18 @@ export function MealPlanRecalculationModal({
     const calories = Number(newDailyCalories);
     return !disabled && Number.isFinite(calories) && calories > 0;
   }, [disabled, newDailyCalories]);
+
+  const sortedDeltas = useMemo(
+    () =>
+      previewResult?.deltas.slice().sort((left, right) => {
+        const order = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
+        const mealTypeDiff = order.indexOf(left.mealType) - order.indexOf(right.mealType);
+        if (mealTypeDiff !== 0) return mealTypeDiff;
+        if (left.dayOfWeek !== right.dayOfWeek) return left.dayOfWeek - right.dayOfWeek;
+        return left.mealName.localeCompare(right.mealName);
+      }) ?? [],
+    [previewResult],
+  );
 
   if (!isOpen) return null;
 
@@ -105,7 +118,7 @@ export function MealPlanRecalculationModal({
               Adjust Plan Calories
             </h3>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-              Preview portion updates first, then confirm apply.
+              Preview slot-based portion updates first, then confirm apply.
             </p>
           </div>
           <button
@@ -219,11 +232,22 @@ export function MealPlanRecalculationModal({
 
         {previewResult && (
           <div className="mb-5 space-y-4">
+            <div>
+              <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                Slot Summaries
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {previewResult.slotSummaries.map(summary => (
+                  <SlotSummaryCard key={summary.mealType} summary={summary} />
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatItem label="Target kcal" value={previewResult.targets.calories} />
-              <StatItem label="Projected kcal" value={previewResult.projectedTotals.calories} />
-              <StatItem label="Target protein" value={`${previewResult.targets.protein}g`} />
-              <StatItem label="Accuracy" value={`${previewResult.expectedAccuracyPercent.toFixed(1)}%`} />
+              <StatItem label="Daily Target kcal" value={previewResult.targets.calories} />
+              <StatItem label="Daily Projected kcal" value={previewResult.projectedTotals.calories} />
+              <StatItem label="Daily Target protein" value={`${previewResult.targets.protein}g`} />
+              <StatItem label="Overall accuracy" value={`${previewResult.expectedAccuracyPercent.toFixed(1)}%`} />
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -247,6 +271,7 @@ export function MealPlanRecalculationModal({
                 <table className="w-full text-sm">
                   <thead style={{ background: 'var(--color-bg-alt)' }}>
                     <tr>
+                      <th className="text-left px-3 py-2">Type</th>
                       <th className="text-left px-3 py-2">Meal</th>
                       <th className="text-left px-3 py-2">Day</th>
                       <th className="text-left px-3 py-2">Old</th>
@@ -254,8 +279,9 @@ export function MealPlanRecalculationModal({
                     </tr>
                   </thead>
                   <tbody>
-                    {previewResult.deltas.map(delta => (
+                    {sortedDeltas.map(delta => (
                       <tr key={delta.assignmentId} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                        <td className="px-3 py-2">{formatMealTypeLabel(delta.mealType)}</td>
                         <td className="px-3 py-2">{delta.mealName}</td>
                         <td className="px-3 py-2">{delta.dayOfWeek}</td>
                         <td className="px-3 py-2">{delta.oldPortion.toFixed(1)}x</td>
@@ -316,4 +342,65 @@ function StatItem({ label, value }: { label: string; value: string | number }) {
       </p>
     </div>
   );
+}
+
+function SlotSummaryCard({ summary }: { summary: MealSlotSummary }) {
+  const proteinGap = summary.target.protein - summary.projected.protein;
+  const carbGap = summary.target.carbs - summary.projected.carbs;
+  const fatGap = summary.target.fat - summary.projected.fat;
+
+  return (
+    <div
+      className="rounded-xl border p-4"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+            {formatMealTypeLabel(summary.mealType)}
+          </p>
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {summary.included
+              ? `Normalized across ${summary.coverageDays}/${summary.expectedDays} days`
+              : `Skipped: ${summary.coverageDays}/${summary.expectedDays} days covered`}
+          </p>
+        </div>
+        <p className="text-xs font-medium" style={{ color: summary.included ? 'var(--color-text)' : '#f59e0b' }}>
+          {summary.included ? `${summary.expectedAccuracyPercent?.toFixed(1) ?? '0.0'}%` : 'Skipped'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+        <MiniStat label="Target kcal" value={summary.target.calories} />
+        <MiniStat label="Projected kcal" value={summary.projected.calories} />
+        <MiniStat label="Protein gap" value={`${proteinGap}g`} />
+        <MiniStat label="Carb gap" value={`${carbGap}g`} />
+        <MiniStat label="Fat gap" value={`${fatGap}g`} />
+        <MiniStat label="Bounds" value={summary.hasBoundsClamping ? 'Limited' : 'Free'} />
+      </div>
+
+      {summary.warning && (
+        <p className="text-xs" style={{ color: summary.included ? 'var(--color-text-muted)' : '#f59e0b' }}>
+          {summary.warning}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div>
+      <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+        {label}
+      </p>
+      <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function formatMealTypeLabel(value: string): string {
+  return value.charAt(0) + value.slice(1).toLowerCase();
 }

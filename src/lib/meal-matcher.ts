@@ -76,7 +76,7 @@ export function matchIngredientToFood(
   inputName: string,
   grams: number,
   foods: FoodGenerationReadyRow[],
-  minScore = 50,
+  minScore = 60,
 ): MatchedIngredient | null {
   let best: FoodGenerationReadyRow | null = null;
   let bestScore = 0;

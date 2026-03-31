@@ -9,6 +9,7 @@ const cuisineOriginSchema = z.enum([
   'Italian',
   'Asian',
   'Indian',
+  'Syrian',
 ]);
 
 export const generateMealTemplateRequestSchema = z.object({

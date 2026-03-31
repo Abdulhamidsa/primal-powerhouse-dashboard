@@ -71,7 +71,7 @@ export async function PUT(request: NextRequest) {
           error: 'Invalid meal selection payload',
           details: parsed.error.flatten(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -79,17 +79,30 @@ export async function PUT(request: NextRequest) {
     const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
 
     const validByType = {
-      BREAKFAST: new Set(optionsByType.BREAKFAST.map(option => option.meal.id)),
-      LUNCH: new Set(optionsByType.LUNCH.map(option => option.meal.id)),
-      DINNER: new Set(optionsByType.DINNER.map(option => option.meal.id)),
-      SNACK: new Set(optionsByType.SNACK.map(option => option.meal.id)),
+      BREAKFAST: new Map(optionsByType.BREAKFAST.map(option => [option.sourceAssignmentId, option.meal.id])),
+      LUNCH: new Map(optionsByType.LUNCH.map(option => [option.sourceAssignmentId, option.meal.id])),
+      DINNER: new Map(optionsByType.DINNER.map(option => [option.sourceAssignmentId, option.meal.id])),
+      SNACK: new Map(optionsByType.SNACK.map(option => [option.sourceAssignmentId, option.meal.id])),
     };
 
     for (const item of payload.items) {
-      if (!validByType[item.mealType].has(item.mealId)) {
+      const optionMap = validByType[item.mealType];
+
+      if (item.sourceAssignmentId) {
+        if (optionMap.get(item.sourceAssignmentId) !== item.mealId) {
+          return jsonWithCache(
+            { error: `Selected meal is not available in coach-approved ${item.mealType.toLowerCase()} options` },
+            { status: 400 },
+          );
+        }
+
+        continue;
+      }
+
+      if (![...optionMap.values()].includes(item.mealId)) {
         return jsonWithCache(
           { error: `Selected meal is not available in coach-approved ${item.mealType.toLowerCase()} options` },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -122,8 +135,8 @@ export async function PUT(request: NextRequest) {
     });
 
     const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
-  const coachTargets = await getClientCoachMacroTargets(user.userId);
-  const comparisonTotals = coachTargets ?? baselineTotals;
+    const coachTargets = await getClientCoachMacroTargets(user.userId);
+    const comparisonTotals = coachTargets ?? baselineTotals;
 
     const selectedItems = hydrateSelectionAgainstOptions(optionsByType, payload.items);
     const selectedTotals = computeSelectionTotals(selectedItems);

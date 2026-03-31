@@ -1,7 +1,8 @@
 import React from 'react';
+import { Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type MealFilterType = 'ALL' | 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+type MealFilterType = 'ALL' | 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK' | 'SIDES';
 
 type MealFiltersProps = {
   mealTypes: MealFilterType[];
@@ -29,7 +30,17 @@ export const MealFilters = ({ mealTypes, selectedType, onSelectType, mealCounts 
                     : 'bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-surface)]'
                 }`}
               >
-                {type === 'ALL' ? 'All Meals' : type.charAt(0) + type.slice(1).toLowerCase()} ({mealCounts[type] ?? 0})
+                {type === 'SIDES' ? (
+                  <>
+                    <Leaf size={14} className="inline mr-1" />
+                    Sides
+                  </>
+                ) : type === 'ALL' ? (
+                  'All Meals'
+                ) : (
+                  type.charAt(0) + type.slice(1).toLowerCase()
+                )}{' '}
+                ({mealCounts[type] ?? 0})
               </Button>
             </React.Fragment>
           );

@@ -9,29 +9,31 @@ const PROGRAM_MEAL_CARDS = [
     key: 'breakfast',
     title: 'Breakfast',
     href: '/user/program/breakfast',
-    image:
-      'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=1400&q=80',
   },
   {
     key: 'lunch',
     title: 'Lunch',
     href: '/user/program/lunch',
-    image:
-      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1400&q=80',
   },
   {
     key: 'dinner',
     title: 'Dinner',
     href: '/user/program/dinner',
-    image:
-      'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=1400&q=80',
   },
   {
     key: 'snack',
     title: 'Snacks',
     href: '/user/program/snack',
-    image:
-      'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80',
+  },
+  {
+    key: 'sides',
+    title: 'Sides',
+    href: '/user/program/sides',
+    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1400&q=80',
   },
 ] as const;
 
@@ -40,29 +42,25 @@ const TRAINING_CARDS = [
     key: 'assigned',
     title: 'Assigned Workouts',
     href: '/user/training',
-    image:
-      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=80',
   },
   {
     key: 'videos',
     title: 'Exercise Videos',
     href: '/user/training/videos',
-    image:
-      'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=80',
   },
   {
     key: 'mobility',
     title: 'Mobility',
     href: '/user/training/mobility',
-    image:
-      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80',
   },
   {
     key: 'recovery',
     title: 'Recovery',
     href: '/user/training/recovery',
-    image:
-      'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=1400&q=80',
   },
 ] as const;
 
@@ -71,7 +69,7 @@ type ProgramTab = 'meals' | 'training';
 export default function UserProgramPage() {
   const [activeTab, setActiveTab] = useState<ProgramTab>('meals');
 
-  const cards = activeTab === 'meals' ? PROGRAM_MEAL_CARDS :PROGRAM_MEAL_CARDS ;
+  const cards = activeTab === 'meals' ? PROGRAM_MEAL_CARDS : TRAINING_CARDS;
 
   return (
     <div className="px-4 pb-8 pt-4 md:px-5">
@@ -84,9 +82,7 @@ export default function UserProgramPage() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">
-                Program
-              </h1>
+              <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">Program</h1>
               <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
                 {activeTab === 'meals'
                   ? 'Pick a meal type to view options and assign your meals.'

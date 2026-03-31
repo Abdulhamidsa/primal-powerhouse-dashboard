@@ -26,6 +26,18 @@ export type RecalculationMacroTargets = {
   fat: number;
 };
 
+export type MealSlotSummary = {
+  mealType: string;
+  included: boolean;
+  coverageDays: number;
+  expectedDays: number;
+  target: RecalculationMacroTargets;
+  projected: RecalculationMacroTargets;
+  expectedAccuracyPercent: number | null;
+  hasBoundsClamping: boolean;
+  warning: string | null;
+};
+
 export type MealPlanRecalculationResult = {
   mealPlanId: string;
   clientId: string;
@@ -36,6 +48,7 @@ export type MealPlanRecalculationResult = {
   projectedTotals: RecalculationMacroTargets;
   expectedAccuracyPercent: number;
   hasBoundsClamping: boolean;
+  slotSummaries: MealSlotSummary[];
   deltas: MealPortionDelta[];
   warning: string | null;
   mode: RecalculationMode;
