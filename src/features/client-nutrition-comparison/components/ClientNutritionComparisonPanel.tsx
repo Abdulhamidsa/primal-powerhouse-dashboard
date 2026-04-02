@@ -32,6 +32,29 @@ function sourceLabel(source: DailyNutritionComparison['source']): string {
   return 'Target source: None';
 }
 
+function intakeSourceLabel(source: DailyNutritionComparison['intakeSource']): string {
+  if (source === 'override') return 'Intake source: Manual override';
+  if (source === 'auto') return 'Intake source: Completed meals';
+  return 'Intake source: No meal completions';
+}
+
+function mealTypeLabel(mealType: DailyNutritionComparison['mealTimeline'][number]['mealType']): string {
+  if (mealType === 'BREAKFAST') return 'Breakfast';
+  if (mealType === 'LUNCH') return 'Lunch';
+  if (mealType === 'DINNER') return 'Dinner';
+  return 'Snack';
+}
+
+function formatCompletionTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return isoDate;
+
+  return date.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function formatDateForUi(dateKey: string): string {
   const date = new Date(`${dateKey}T00:00:00`);
   if (Number.isNaN(date.getTime())) return dateKey;
@@ -160,8 +183,65 @@ export function ClientNutritionComparisonPanel({ clientId }: { clientId: string 
         </div>
 
         <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>
-          Calculated for: {formatDateForUi(selectedRow.dateKey)}. {sourceLabel(selectedRow.source)}
+          Calculated for: {formatDateForUi(selectedRow.dateKey)}. {sourceLabel(selectedRow.source)}.{' '}
+          {intakeSourceLabel(selectedRow.intakeSource)}.
         </p>
+
+        <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div className="rounded-xl border px-3 py-2" style={{ borderColor: 'var(--color-border)' }}>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Meals completed
+            </p>
+            <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              {selectedRow.mealCompletionCount}/{selectedRow.mealSelectionCount}
+            </p>
+          </div>
+
+          <div className="rounded-xl border px-3 py-2" style={{ borderColor: 'var(--color-border)' }}>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Completion rate
+            </p>
+            <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              {Math.round(selectedRow.mealCompletionPercentage)}%
+            </p>
+          </div>
+
+          <div className="rounded-xl border px-3 py-2" style={{ borderColor: 'var(--color-border)' }}>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Timeline entries
+            </p>
+            <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              {selectedRow.mealTimeline.length}
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-4 rounded-xl border p-3" style={{ borderColor: 'var(--color-border)' }}>
+          <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+            Meal completion timeline
+          </p>
+
+          {selectedRow.mealTimeline.length === 0 ? (
+            <p className="mt-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              No meals marked as completed for this day.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-1.5">
+              {selectedRow.mealTimeline.map((entry, index) => (
+                <li
+                  key={`${entry.mealType}:${entry.slotIndex}:${entry.completedAt}:${index}`}
+                  className="flex items-center justify-between gap-3 text-xs"
+                >
+                  <span style={{ color: 'var(--color-text)' }}>
+                    {mealTypeLabel(entry.mealType)} #{entry.slotIndex + 1}
+                    {entry.mealName ? ` - ${entry.mealName}` : ''}
+                  </span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{formatCompletionTime(entry.completedAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {!selectedRow.target ? (
           renderEmptyCard()
@@ -250,6 +330,7 @@ export function ClientNutritionComparisonPanel({ clientId }: { clientId: string 
               <tr className="border-b" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
                 <th className="text-left py-2">Date</th>
                 <th className="text-left py-2">Status</th>
+                <th className="text-left py-2">Meals</th>
                 <th className="text-left py-2">Target</th>
                 <th className="text-left py-2">Actual</th>
                 <th className="text-left py-2">Remaining</th>
@@ -273,6 +354,9 @@ export function ClientNutritionComparisonPanel({ clientId }: { clientId: string 
                     <span className={`px-2 py-0.5 rounded-full text-xs border ${statusClass(row.status)}`}>
                       {statusLabel(row.status)}
                     </span>
+                  </td>
+                  <td className="py-2" style={{ color: 'var(--color-text)' }}>
+                    {row.mealCompletionCount}/{row.mealSelectionCount}
                   </td>
                   <td className="py-2" style={{ color: 'var(--color-text)' }}>
                     {renderMacroValue(row.target, 'calories', ' kcal')}

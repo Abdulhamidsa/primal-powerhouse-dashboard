@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
       consentAnalytics?: boolean;
       consentMarketingNotifications?: boolean;
       consentOptionalTracking?: boolean;
+      consentMessageNotifications?: boolean;
     };
 
     return jsonWithCache({
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest) {
         analytics: Boolean(typedClient.consentAnalytics),
         marketingNotifications: Boolean(typedClient.consentMarketingNotifications),
         optionalTracking: Boolean(typedClient.consentOptionalTracking),
+        messageNotifications: Boolean(typedClient.consentMessageNotifications),
       },
       exportJobs: exportJobs.map((job: any) => ({
         ...job,

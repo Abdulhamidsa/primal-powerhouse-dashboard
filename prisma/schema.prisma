@@ -72,6 +72,7 @@ model Client {
   consentAnalytics              Boolean   @default(false)
   consentMarketingNotifications Boolean   @default(false)
   consentOptionalTracking       Boolean   @default(false)
+  consentMessageNotifications   Boolean   @default(false)
   privacyUpdatedAt              DateTime?
   deactivatedAt                 DateTime?
   anonymizedAt                  DateTime?
@@ -95,10 +96,13 @@ model Client {
   dailyNutritionLogs DailyNutritionLog[]
   dailyTrainingLogs DailyTrainingLog[]
   dailyCheckIns     DailyCheckIn[]
+  mealCompletions   MealCompletion[]
+  dailyIntakeOverrides DailyIntakeOverride[]
   mealSelectionSet  UserMealSelectionSet?
   privacyExportJobs PrivacyExportJob[]
   deletionRequests  DeletionRequest[]
   conversations     Conversation[]
+  pushSubscriptions PushSubscription[]
 
   @@map("clients")
 }
@@ -123,6 +127,22 @@ model Conversation {
   @@index([coachId])
   @@index([lastMessageAt])
   @@map("conversations")
+}
+
+model PushSubscription {
+  id         String   @id @default(cuid())
+  clientId   String
+  endpoint   String
+  p256dh     String
+  auth       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, endpoint])
+  @@index([clientId])
+  @@map("push_subscriptions")
 }
 
 model Message {
@@ -197,6 +217,7 @@ model Meal {
 
   mealAssignments MealAssignment[]
   mealSelectionItems UserMealSelectionItem[]
+  mealCompletions MealCompletion[]
 
   @@map("meals")
 }
@@ -398,6 +419,53 @@ model UserMealSelectionItem {
   @@index([selectionSetId])
   @@index([mealType])
   @@map("user_meal_selection_items")
+}
+
+model MealCompletion {
+  id                     String   @id @default(cuid())
+  clientId               String
+  mealId                 String
+  dayDate                DateTime
+  mealType               MealType
+  slotIndex              Int      @default(0)
+  sourceMealAssignmentId String?
+  portionSnapshot        Float    @default(1.0)
+  caloriesSnapshot       Float
+  proteinSnapshot        Float
+  carbsSnapshot          Float
+  fatSnapshot            Float
+  completedAt            DateTime @default(now())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, dayDate, mealType, slotIndex])
+  @@index([clientId])
+  @@index([dayDate])
+  @@index([mealId])
+  @@map("meal_completions")
+}
+
+model DailyIntakeOverride {
+  id        String   @id @default(cuid())
+  clientId  String
+  dayDate   DateTime
+  calories  Float
+  protein   Float
+  carbs     Float
+  fat       Float
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, dayDate])
+  @@index([clientId])
+  @@index([dayDate])
+  @@map("daily_intake_overrides")
 }
 
 model VideoAssignment {

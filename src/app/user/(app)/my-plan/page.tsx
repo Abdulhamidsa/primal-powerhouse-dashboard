@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, ChevronRight, Save, ShoppingCart, Undo2, Utensils, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Save, ShoppingCart, Undo2, Utensils, X } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
+import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { PlanSelectedMealCard } from '@/features/meals/components/PlanSelectedMealCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
@@ -38,6 +39,14 @@ export default function UserMyPlanPage() {
     resetDraftToSaved,
   } = useMealSelectionPlanner();
 
+  const {
+    summary: adherenceSummary,
+    error: adherenceError,
+    isCompleted,
+    isPending,
+    toggleCompletion,
+  } = useMealAdherenceToday();
+
   const [swapState, setSwapState] = useState<{
     mealType: MealTypeKey;
     currentMealId: string;
@@ -67,6 +76,17 @@ export default function UserMyPlanPage() {
       items: selectedByType[type],
     }));
   }, [selectedByType]);
+
+  const completedAtByKey = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const completion of adherenceSummary?.completions ?? []) {
+      const key = `${completion.mealType}:${completion.slotIndex}:${completion.mealId}`;
+      map.set(key, completion.completedAt);
+    }
+
+    return map;
+  }, [adherenceSummary?.completions]);
 
   const swapOptions = useMemo(() => {
     if (!swapState || !optionsByType) return [];
@@ -146,6 +166,13 @@ export default function UserMyPlanPage() {
               </p>
 
               <div className="mt-3 flex flex-wrap gap-2">
+                {adherenceSummary ? (
+                  <span className="rounded-full bg-[var(--color-accent-translucent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)]">
+                    {adherenceSummary.completion.completedCount}/{adherenceSummary.completion.totalSelectedCount}{' '}
+                    completed
+                  </span>
+                ) : null}
+
                 <button
                   type="button"
                   onClick={handleGenerateShoppingList}
@@ -206,6 +233,13 @@ export default function UserMyPlanPage() {
           </div>
         ) : null}
 
+        {adherenceError ? (
+          <div className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-3 text-sm text-red-300">
+            <AlertCircle size={16} />
+            <span>{adherenceError.message}</span>
+          </div>
+        ) : null}
+
         {!loading && !error
           ? orderedSections.map(section => (
               <section key={section.type} className="space-y-3">
@@ -230,7 +264,7 @@ export default function UserMyPlanPage() {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {section.items.map(item => (
                       <PlanSelectedMealCard
-                        key={`${item.mealType}_${item.slotIndex}_${item.mealId}`}
+                        key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
                         badgeLabel={TYPE_LABEL[section.type]}
                         name={item.meal.name}
                         imageUrl={item.meal.imageUrl}
@@ -241,26 +275,11 @@ export default function UserMyPlanPage() {
                         ingredientsSource={item.meal.ingredients}
                         spicesSource={item.meal.spices}
                         instructionsSource={item.meal.instructions}
-                        actions={
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
-                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--color-accent-translucent)] px-3 py-2.5 text-sm font-medium text-[var(--color-text)] transition-opacity hover:opacity-90"
-                            >
-                              Swipe
-                              <ChevronRight size={16} />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => router.push(`/user/meals/${item.meal.id}`)}
-                              className="inline-flex items-center justify-center rounded-2xl border border-[var(--color-border)] px-3 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
-                            >
-                              Open details
-                            </button>
-                          </>
-                        }
+                        isCompleted={isCompleted(item)}
+                        completedAt={completedAtByKey.get(`${item.mealType}:${item.slotIndex}:${item.mealId}`)}
+                        isPending={isPending(item)}
+                        onToggleCompletion={() => toggleCompletion(item)}
+                        onSwap={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
                       />
                     ))}
                   </div>

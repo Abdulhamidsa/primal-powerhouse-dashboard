@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest) {
       return jsonWithCache({ error: 'Invalid consent payload' }, { status: 400 });
     }
 
-    const { analytics, marketingNotifications, optionalTracking } = parsed.data;
+    const { analytics, marketingNotifications, optionalTracking, messageNotifications } = parsed.data;
 
     try {
       await (prisma as any).client.update({
@@ -50,6 +50,7 @@ export async function PUT(request: NextRequest) {
           consentAnalytics: analytics,
           consentMarketingNotifications: marketingNotifications,
           consentOptionalTracking: optionalTracking,
+          consentMessageNotifications: messageNotifications,
           privacyUpdatedAt: new Date(),
         },
       });

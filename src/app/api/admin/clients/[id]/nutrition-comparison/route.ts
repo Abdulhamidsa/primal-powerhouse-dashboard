@@ -7,7 +7,9 @@ import { clientNutritionComparisonResponseSchema } from '@/features/client-nutri
 import type {
   ComparisonSource,
   DailyNutritionComparison,
+  IntakeSource,
   MacroTarget,
+  MealCompletionTimelineEntry,
   NutritionStatus,
 } from '@/features/client-nutrition-comparison/types/clientNutritionComparison.types';
 
@@ -84,39 +86,8 @@ function average(values: number[]): number | null {
   return round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
-function dayOfWeekTargetFromAssignments(
-  assignments: Array<{
-    dayOfWeek: number;
-    portion: number;
-    meal: { calories: number; protein: number; carbs: number; fat: number };
-  }>
-): Map<number, MacroTarget> {
-  const byDay = new Map<number, MacroTarget>();
-
-  for (const assignment of assignments) {
-    const current = byDay.get(assignment.dayOfWeek) ?? {
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0,
-    };
-
-    const portion = Number.isFinite(assignment.portion) && assignment.portion > 0 ? assignment.portion : 1;
-
-    current.calories += assignment.meal.calories * portion;
-    current.protein += assignment.meal.protein * portion;
-    current.carbs += assignment.meal.carbs * portion;
-    current.fat += assignment.meal.fat * portion;
-
-    byDay.set(assignment.dayOfWeek, {
-      calories: round(current.calories),
-      protein: round(current.protein),
-      carbs: round(current.carbs),
-      fat: round(current.fat),
-    });
-  }
-
-  return byDay;
+function toDateKeyUtc(date: Date): string {
+  return date.toISOString().slice(0, 10);
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -136,7 +107,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const oldestDateStart = parseDateKeyLocal(oldestDateKey);
     const newestDateEndExclusive = addDays(parseDateKeyLocal(newestDateKey), 1);
 
-    const [client, nutritionLogs, activeMealPlans] = await Promise.all([
+    const [client, nutritionLogs, mealCompletions, intakeOverrides, selectionSet] = await Promise.all([
       (prisma as any).client.findUnique({
         where: { id: clientId },
         select: {
@@ -159,24 +130,46 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           status: true,
         },
       }),
-      (prisma as any).mealPlan.findMany({
+      (prisma as any).mealCompletion.findMany({
         where: {
           clientId,
-          isActive: true,
+          dayDate: {
+            gte: oldestDateStart,
+            lt: newestDateEndExclusive,
+          },
+        },
+        include: {
+          meal: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      }),
+      (prisma as any).dailyIntakeOverride.findMany({
+        where: {
+          clientId,
+          dayDate: {
+            gte: oldestDateStart,
+            lt: newestDateEndExclusive,
+          },
         },
         select: {
-          mealAssignments: {
+          dayDate: true,
+          calories: true,
+          protein: true,
+          carbs: true,
+          fat: true,
+        },
+      }),
+      (prisma as any).userMealSelectionSet.findUnique({
+        where: {
+          clientId,
+        },
+        select: {
+          items: {
             select: {
-              dayOfWeek: true,
-              portion: true,
-              meal: {
-                select: {
-                  calories: true,
-                  protein: true,
-                  carbs: true,
-                  fat: true,
-                },
-              },
+              id: true,
             },
           },
         },
@@ -205,14 +198,79 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       statusByDate.set(toDateKeyLocal(log.dayDate), log.status);
     }
 
-    const allAssignments = activeMealPlans.flatMap((plan: any) => plan.mealAssignments ?? []);
-    const assignmentsByDay = dayOfWeekTargetFromAssignments(allAssignments);
+    const mealSelectionCount = selectionSet?.items?.length ?? 0;
+
+    const completionTimelineByDate = new Map<string, MealCompletionTimelineEntry[]>();
+    const completionTotalsByDate = new Map<string, MacroTarget>();
+
+    for (const completion of mealCompletions) {
+      const dateKey = toDateKeyUtc(completion.dayDate);
+      const timeline = completionTimelineByDate.get(dateKey) ?? [];
+
+      timeline.push({
+        mealType: completion.mealType,
+        slotIndex: completion.slotIndex,
+        mealName: completion.meal?.name ?? null,
+        completedAt: completion.completedAt.toISOString(),
+      });
+
+      completionTimelineByDate.set(dateKey, timeline);
+
+      const currentTotals = completionTotalsByDate.get(dateKey) ?? {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      };
+
+      currentTotals.calories += Number(completion.caloriesSnapshot ?? 0);
+      currentTotals.protein += Number(completion.proteinSnapshot ?? 0);
+      currentTotals.carbs += Number(completion.carbsSnapshot ?? 0);
+      currentTotals.fat += Number(completion.fatSnapshot ?? 0);
+
+      completionTotalsByDate.set(dateKey, {
+        calories: round(currentTotals.calories),
+        protein: round(currentTotals.protein),
+        carbs: round(currentTotals.carbs),
+        fat: round(currentTotals.fat),
+      });
+    }
+
+    for (const [, timeline] of completionTimelineByDate) {
+      timeline.sort((a, b) => (a.completedAt < b.completedAt ? -1 : 1));
+    }
+
+    const intakeOverrideByDate = new Map<string, MacroTarget>();
+    for (const override of intakeOverrides) {
+      intakeOverrideByDate.set(toDateKeyUtc(override.dayDate), {
+        calories: round(Number(override.calories ?? 0)),
+        protein: round(Number(override.protein ?? 0)),
+        carbs: round(Number(override.carbs ?? 0)),
+        fat: round(Number(override.fat ?? 0)),
+      });
+    }
 
     const days: DailyNutritionComparison[] = recentDateKeys.map(dateKey => {
       const status = statusByDate.get(dateKey) ?? null;
       const adherenceFactor = getAdherenceFactor(status);
-      const dayOfWeek = parseDateKeyLocal(dateKey).getDay();
-      const plannedActual = assignmentsByDay.get(dayOfWeek) ?? null;
+      const completionTimeline = completionTimelineByDate.get(dateKey) ?? [];
+      const mealCompletionCount = completionTimeline.length;
+      const mealCompletionPercentage =
+        mealSelectionCount > 0 ? round((mealCompletionCount / mealSelectionCount) * 100) : 0;
+
+      const overrideActual = intakeOverrideByDate.get(dateKey) ?? null;
+      const completionActual = completionTotalsByDate.get(dateKey) ?? null;
+
+      let actual: MacroTarget | null = null;
+      let intakeSource: IntakeSource = 'none';
+
+      if (overrideActual) {
+        actual = overrideActual;
+        intakeSource = 'override';
+      } else if (completionActual) {
+        actual = completionActual;
+        intakeSource = 'auto';
+      }
 
       let source: ComparisonSource = 'none';
       let target: MacroTarget | null = null;
@@ -228,13 +286,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           status,
           adherenceFactor,
           source,
+          intakeSource,
+          mealCompletionCount,
+          mealSelectionCount,
+          mealCompletionPercentage,
+          mealTimeline: completionTimeline,
           target,
-          actual: plannedActual,
-          remaining: target && plannedActual ? subtractTargets(target, plannedActual) : null,
+          actual,
+          remaining: target && actual ? subtractTargets(target, actual) : null,
         };
       }
-
-      const actual = plannedActual;
 
       if (!actual) {
         return {
@@ -242,6 +303,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           status,
           adherenceFactor,
           source,
+          intakeSource,
+          mealCompletionCount,
+          mealSelectionCount,
+          mealCompletionPercentage,
+          mealTimeline: completionTimeline,
           target,
           actual: null,
           remaining: null,
@@ -255,6 +321,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         status,
         adherenceFactor,
         source,
+        intakeSource,
+        mealCompletionCount,
+        mealSelectionCount,
+        mealCompletionPercentage,
+        mealTimeline: completionTimeline,
         target,
         actual,
         remaining,
@@ -279,7 +350,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         id: client.id,
         name: client.name,
       },
-      estimationNote: 'Actual intake is calculated from active meal-plan assignments for each day (portion-adjusted).',
+      estimationNote:
+        'Actual intake is calculated from completed meals by default; manual override values are shown when present.',
       today,
       summary,
       days,

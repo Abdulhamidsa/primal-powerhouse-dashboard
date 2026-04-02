@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Shield, Download, Trash2, LogOut } from 'lucide-react';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { privacyConsentSchema, privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
+import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 
 export function PrivacyDataCenter() {
   const router = useRouter();
   const { data, isLoading, error } = usePrivacyCenter();
   const { updateConsent, startExport, requestDeletion, logoutAll } = usePrivacyActions();
+  const { status: pushStatus, isLoading: isPushLoading, subscribe, unsubscribe } = usePushSubscription();
 
   const [isSavingConsent, setIsSavingConsent] = useState(false);
   const [isRequestingExport, setIsRequestingExport] = useState(false);
@@ -27,7 +29,9 @@ export function PrivacyDataCenter() {
 
   const latestJob = data.exportJobs[0] ?? null;
 
-  const handleConsentToggle = async (key: 'analytics' | 'marketingNotifications' | 'optionalTracking') => {
+  const handleConsentToggle = async (
+    key: 'analytics' | 'marketingNotifications' | 'optionalTracking' | 'messageNotifications',
+  ) => {
     const next = {
       ...data.consents,
       [key]: !data.consents[key],
@@ -38,6 +42,16 @@ export function PrivacyDataCenter() {
 
     try {
       setIsSavingConsent(true);
+
+      if (key === 'messageNotifications') {
+        if (parsed.data.messageNotifications) {
+          const ok = await subscribe();
+          if (!ok) return;
+        } else {
+          await unsubscribe();
+        }
+      }
+
       await updateConsent(parsed.data);
     } finally {
       setIsSavingConsent(false);
@@ -114,6 +128,32 @@ export function PrivacyDataCenter() {
               </button>
             </label>
           ))}
+
+          <label className="flex items-center justify-between gap-3">
+            <div className="flex flex-col">
+              <span className="text-sm text-foreground">Message Push Notifications</span>
+              {pushStatus === 'unsupported' && (
+                <span className="text-xs text-muted-foreground">Not supported by your browser</span>
+              )}
+              {pushStatus === 'denied' && (
+                <span className="text-xs text-destructive">Permission denied — enable in browser settings</span>
+              )}
+            </div>
+            <button
+              type="button"
+              disabled={isSavingConsent || isPushLoading || pushStatus === 'unsupported' || pushStatus === 'denied'}
+              onClick={() => handleConsentToggle('messageNotifications')}
+              className={`h-7 w-12 rounded-full transition-colors ${
+                data.consents.messageNotifications ? 'bg-accent' : 'bg-muted'
+              } disabled:opacity-50`}
+            >
+              <span
+                className={`block h-5 w-5 rounded-full bg-white transition-transform ${
+                  data.consents.messageNotifications ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </label>
         </div>
       </section>
 

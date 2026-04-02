@@ -18,6 +18,7 @@ import {
   toConversationChannel,
   toUserChannel,
 } from '@/lib/realtime/pusher-server';
+import { sendPushToClient } from '@/lib/push/push-notifications';
 
 type AttachmentRecord = {
   type: 'image' | 'video' | 'audio';
@@ -292,6 +293,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       });
     } catch (error) {
       console.error('Failed to publish realtime chat event:', error);
+    }
+  }
+
+  // Send browser push notification when coach sends to client
+  if (actor.type === 'coach' || actor.type === 'admin') {
+    try {
+      const recipientClient = await (prisma as any).client.findUnique({
+        where: { id: conversation.clientId },
+        select: { consentMessageNotifications: true },
+      });
+      if (recipientClient?.consentMessageNotifications) {
+        await sendPushToClient(conversation.clientId, {
+          title: 'New message from your coach',
+          body: 'You have a new message. Tap to view.',
+          url: '/user/messages',
+        });
+      }
+    } catch (error) {
+      console.error('[PUSH] Failed to send push notification:', error);
     }
   }
 

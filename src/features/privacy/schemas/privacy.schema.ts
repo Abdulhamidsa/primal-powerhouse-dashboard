@@ -4,6 +4,7 @@ export const privacyConsentSchema = z.object({
   analytics: z.boolean(),
   marketingNotifications: z.boolean(),
   optionalTracking: z.boolean(),
+  messageNotifications: z.boolean(),
 });
 
 export const privacyDeleteRequestSchema = z.object({
