@@ -49,8 +49,7 @@ export default function UserDashboardPage() {
     day: 'numeric',
   });
 
-  const coachMessage =
-    user?.motivationalMessage || 'No coach message yet. Check back after your next review.';
+  const coachMessage = user?.motivationalMessage || 'No coach message yet. Check back after your next review.';
 
   const todayActions = [
     {
@@ -70,7 +69,7 @@ export default function UserDashboardPage() {
       badge: 'New',
     },
     {
-      title: 'Review today\'s meals',
+      title: "Review today's meals",
       description: 'See your current meal plan.',
       href: '/user/program?tab=meals',
       icon: Utensils,
