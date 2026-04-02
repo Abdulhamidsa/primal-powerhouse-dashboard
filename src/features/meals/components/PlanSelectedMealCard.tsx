@@ -181,10 +181,7 @@ function MealDetailModal({
   const [activeTab, setActiveTab] = useState<PlanSelectedMealCardTabKey>('photo');
 
   return (
-    <div
-      className="fixed inset-0 z-[80] bg-black/60 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[80] bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="flex min-h-full items-center justify-center">
         <div
           className="w-full max-w-md overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
