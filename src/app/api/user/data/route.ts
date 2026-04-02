@@ -6,6 +6,7 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 export type DashboardUser = {
   id: string;
   name: string;
+  avatar?: string | null;
   motivationalMessage?: string | null;
   coach?: { name: string } | null;
   currentWeight?: number | null;
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        avatar: true,
         motivationalMessage: true,
         currentWeight: true,
         targetWeight: true,
@@ -41,6 +43,7 @@ export async function GET(request: NextRequest) {
     const payload: DashboardUser = {
       id: client.id,
       name: client.name,
+      avatar: client.avatar,
       motivationalMessage: client.motivationalMessage,
       coach: client.coach,
       currentWeight: client.currentWeight,

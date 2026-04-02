@@ -149,6 +149,10 @@
    GLOBAL SCROLLBAR – iOS INVISIBLE, DESKTOP SUBTLE
    ========================================================= */
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   * {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -162,12 +166,12 @@
   @media (hover: hover) and (pointer: fine) {
     * {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+      scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
     }
 
     *::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
     }
 
     *::-webkit-scrollbar-track {
@@ -175,12 +179,20 @@
     }
 
     *::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.25);
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 2px solid transparent;
+      background-clip: content-box;
       border-radius: 999px;
+      min-height: 36px;
+      transition: background-color 150ms ease;
     }
 
     *::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.34);
+    }
+
+    *::-webkit-scrollbar-corner {
+      background: transparent;
     }
   }
 }

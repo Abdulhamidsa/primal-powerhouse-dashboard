@@ -15,9 +15,11 @@ import {
   MessageSquare,
   ClipboardCheck,
   CalendarCheck2,
+  ShoppingBag,
 } from 'lucide-react';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
+import { useUserData } from '@/hooks/useUserData';
 
 type NavItem = {
   name: string;
@@ -93,10 +95,11 @@ const userNavItems: NavItem[] = [
     description: 'Meals & training',
   },
   {
-    name: 'Profile',
-    href: '/user/profile',
-    icon: User,
-    description: 'My profile',
+    name: 'Shopping List',
+    mobileName: 'Shopping',
+    href: '/user/shopping-list',
+    icon: ShoppingBag,
+    description: 'Groceries & prep',
   },
 ];
 
@@ -170,7 +173,10 @@ const MobileTabItem = React.memo(function MobileTabItem({
   return (
     <Link
       href={item.href}
-      className="relative flex flex-col items-center justify-center min-w-[60px] px-2 py-2 rounded-xl"
+      className={cn(
+        'relative flex min-w-[60px] flex-col items-center justify-center rounded-xl px-2 py-2 transition-colors',
+        active ? 'bg-background/85 shadow-sm' : 'hover:bg-background/45',
+      )}
     >
       <div className={active ? 'text-primary' : 'text-muted-foreground'}>
         <Icon size={20} />
@@ -198,6 +204,7 @@ export default function Navigation({
 }) {
   const pathname = usePathname();
   const { unreadTotal } = useChatUnread();
+  const { user } = useUserData();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
@@ -320,6 +327,48 @@ export default function Navigation({
         </div>
       </header>
 
+      {userType === 'user' ? (
+        <div
+          className="sticky top-0 z-20 border-b border-border bg-card/80 px-4 pb-2 pt-3 backdrop-blur-xl lg:hidden"
+          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        >
+          <div className="mx-auto flex w-full max-w-xl items-center justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Primal Power</p>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/user/chat"
+                aria-label="Open chat"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <MessageSquare size={18} />
+                {unreadTotal > 0 ? (
+                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
+                ) : null}
+              </Link>
+
+              <Link
+                href="/user/profile"
+                aria-label="Open profile"
+                className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {user?.avatar ? (
+                  <Image
+                    src={user.avatar}
+                    alt={user.name ?? 'Profile'}
+                    width={40}
+                    height={40}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <User size={18} />
+                )}
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <main
         className={cn(
           'w-full',
@@ -333,9 +382,20 @@ export default function Navigation({
             <p className="text-center text-sm text-muted-foreground">Select an option from the navigation</p>
           </div>
         )}
+
+        {!isChatRoute ? (
+          <div
+            className="lg:hidden"
+            style={{ height: 'calc(7rem + env(safe-area-inset-bottom))' }}
+            aria-hidden="true"
+          />
+        ) : null}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 pb-6 z-40 h-24 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 h-24 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
+        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
+      >
         <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
           {navItems.map(item => (
             <MobileTabItem

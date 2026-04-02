@@ -4,6 +4,7 @@ import type { ApiError } from '@/lib/fetcher';
 
 export type UserData = {
   name: string;
+  avatar?: string | null;
   motivationalMessage?: string;
   goalWeight?: number | null;
 };
