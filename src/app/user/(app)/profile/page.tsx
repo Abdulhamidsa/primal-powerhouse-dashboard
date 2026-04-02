@@ -309,6 +309,22 @@ export default function UserProfilePage() {
           )}
 
           {/* Action Buttons */}
+
+          <FeedbackModal isOpen={isFeedbackOpen} onCloseAction={() => setIsFeedbackOpen(false)} />
+          <ProfileAvatarEditModal
+            isOpen={isAvatarModalOpen}
+            currentImageUrl={userData?.avatar ?? undefined}
+            onCloseAction={() => setIsAvatarModalOpen(false)}
+            onSavedAction={result => {
+              setUserData(result.user);
+              setIsAvatarModalOpen(false);
+              window.alert('Profile picture updated successfully.');
+            }}
+          />
+          <SettingsGroup>
+            <div className="ml-16 h-px bg-border/60" />
+            <UpdateAppButton />
+          </SettingsGroup>
           <SettingsGroup>
             <button
               type="button"
@@ -336,22 +352,6 @@ export default function UserProfilePage() {
                 <LogOut className="h-4 w-4" />
               </div>
             </button>
-          </SettingsGroup>
-
-          <FeedbackModal isOpen={isFeedbackOpen} onCloseAction={() => setIsFeedbackOpen(false)} />
-          <ProfileAvatarEditModal
-            isOpen={isAvatarModalOpen}
-            currentImageUrl={userData?.avatar ?? undefined}
-            onCloseAction={() => setIsAvatarModalOpen(false)}
-            onSavedAction={result => {
-              setUserData(result.user);
-              setIsAvatarModalOpen(false);
-              window.alert('Profile picture updated successfully.');
-            }}
-          />
-          <SettingsGroup>
-            <div className="ml-16 h-px bg-border/60" />
-            <UpdateAppButton />
           </SettingsGroup>
         </div>
       </div>

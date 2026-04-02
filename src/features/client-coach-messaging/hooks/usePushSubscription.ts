@@ -10,25 +10,11 @@ export function usePushSubscription() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-      setStatus('unsupported');
-      return;
-    }
-
-    if (Notification.permission === 'denied') {
-      setStatus('denied');
-      return;
-    }
-
-    navigator.serviceWorker.ready.then(reg => {
-      reg.pushManager.getSubscription().then(existing => {
-        setStatus(existing ? 'subscribed' : 'unsubscribed');
-      });
-    });
+    void syncSubscriptionStatus();
   }, []);
 
   const subscribe = useCallback(async (): Promise<boolean> => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!isPushSupported()) {
       setStatus('unsupported');
       return false;
     }
@@ -42,9 +28,15 @@ export function usePushSubscription() {
         return false;
       }
 
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await getOrCreateServiceWorkerRegistration();
+      if (!reg) {
+        setStatus('unsupported');
+        return false;
+      }
+
       const existing = await reg.pushManager.getSubscription();
       if (existing) {
+        await subscribePush(existing.toJSON() as PushSubscriptionJSON);
         setStatus('subscribed');
         return true;
       }
@@ -69,10 +61,20 @@ export function usePushSubscription() {
   }, []);
 
   const unsubscribe = useCallback(async (): Promise<boolean> => {
+    if (!isPushSupported()) {
+      setStatus('unsupported');
+      return false;
+    }
+
     try {
       setIsLoading(true);
 
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await getOrCreateServiceWorkerRegistration();
+      if (!reg) {
+        setStatus('unsupported');
+        return false;
+      }
+
       const existing = await reg.pushManager.getSubscription();
       if (!existing) {
         setStatus('unsubscribed');
@@ -92,6 +94,52 @@ export function usePushSubscription() {
   }, []);
 
   return { status, isLoading, subscribe, unsubscribe };
+
+  async function syncSubscriptionStatus() {
+    if (!isPushSupported()) {
+      setStatus('unsupported');
+      return;
+    }
+
+    if (Notification.permission === 'denied') {
+      setStatus('denied');
+      return;
+    }
+
+    try {
+      const reg = await getOrCreateServiceWorkerRegistration();
+      if (!reg) {
+        setStatus('unsupported');
+        return;
+      }
+
+      const existing = await reg.pushManager.getSubscription();
+      setStatus(existing ? 'subscribed' : 'unsubscribed');
+    } catch (err) {
+      console.error('[PUSH] Failed to read subscription status:', err);
+      setStatus('unsubscribed');
+    }
+  }
+}
+
+function isPushSupported() {
+  return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+}
+
+async function getOrCreateServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (!isPushSupported()) return null;
+
+  const existing = await navigator.serviceWorker.getRegistration('/');
+  if (existing) {
+    return existing;
+  }
+
+  try {
+    return await navigator.serviceWorker.register('/sw.js');
+  } catch (err) {
+    console.error('[PUSH] Failed to register service worker:', err);
+    return null;
+  }
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {

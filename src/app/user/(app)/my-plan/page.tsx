@@ -267,13 +267,11 @@ export default function UserMyPlanPage() {
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
                         badgeLabel={TYPE_LABEL[section.type]}
                         name={item.meal.name}
-                        imageUrl={item.meal.imageUrl}
                         calories={item.meal.calories}
                         protein={item.meal.protein}
                         carbs={item.meal.carbs}
                         fat={item.meal.fat}
                         ingredientsSource={item.meal.ingredients}
-                        spicesSource={item.meal.spices}
                         instructionsSource={item.meal.instructions}
                         isCompleted={isCompleted(item)}
                         completedAt={completedAtByKey.get(`${item.mealType}:${item.slotIndex}:${item.mealId}`)}
@@ -310,13 +308,11 @@ export default function UserMyPlanPage() {
                     key={`${item.mealType}_${item.side.id}`}
                     badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
                     name={item.side.name}
-                    imageUrl={item.side.imageUrl}
                     calories={item.side.calories}
                     protein={item.side.protein}
                     carbs={item.side.carbs}
                     fat={item.side.fat}
                     ingredientsSource={item.side.ingredients}
-                    spicesSource={item.side.spices}
                     instructionsSource={item.side.instructions}
                     helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
                   />
