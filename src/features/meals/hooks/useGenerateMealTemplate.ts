@@ -5,6 +5,7 @@ import { generateMealTemplateApi } from '@/features/meals/api/mealTemplateGenera
 import type {
   BuilderMealType,
   FoodOrigin,
+  GenerateMealTemplateOptions,
   GeneratedMealTemplate,
 } from '@/features/meals/types/mealTemplateGeneration.types';
 
@@ -19,6 +20,7 @@ export function useGenerateMealTemplate() {
   const generateTemplate = async (
     mealType: BuilderMealType,
     foodOrigin?: FoodOrigin,
+    preferredProtein?: string,
   ): Promise<GeneratedMealTemplate> => {
     setLoading(true);
     setError(null);
@@ -27,9 +29,10 @@ export function useGenerateMealTemplate() {
       const result = await generateMealTemplateApi(mealType, {
         strictMatchMode: 'strict',
         foodOrigin,
+        preferredProtein,
         avoidCoreDishReferences: recentCoreDishReferences.slice(0, 3),
         avoidMealNames: recentMealNames.slice(0, 6),
-      });
+      } satisfies GenerateMealTemplateOptions);
       setData(result);
       setRegenerationCount(prev => prev + 1);
       setRecentCoreDishReferences(prev => {

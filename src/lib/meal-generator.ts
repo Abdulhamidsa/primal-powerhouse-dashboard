@@ -79,7 +79,7 @@ async function generateMealSuggestions(
 ): Promise<AiMealSuggestion[]> {
   const requestedCount = Math.max(1, input.mealCount ?? 5);
   const candidateCount = Math.min(60, Math.max(20, requestedCount * 5));
-  const allowedIngredients = buildPromptIngredientNames(foods, 400);
+  const allowedIngredients = buildPromptIngredientNames(foods, 800);
 
   const basePrompt = buildMealPrompt({
     ...input,

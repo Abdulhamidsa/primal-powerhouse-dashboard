@@ -5,6 +5,12 @@ import { prisma } from '@/lib/prisma';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import {
+  buildMainProteinOptions,
+  isFoodMatchingProteinSelection,
+  isMainProteinCandidate,
+  type ProteinSelectableMealType,
+} from '@/lib/main-protein';
+import {
   generateMealTemplateRequestSchema,
   mealTemplateAiResponseSchema,
   type MealTemplateAiResponse,
@@ -14,7 +20,17 @@ import type { FoodGenerationReadyRow } from '@/types/meal';
 type BuilderMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 type MatchMode = 'strict' | 'lenient';
 
-const ALLOWED_CUISINES = ['Syrian', 'Middle Eastern', 'Western', 'Greek', 'Mediterranean'] as const;
+const ALLOWED_CUISINES = [
+  'Syrian',
+  'Middle Eastern',
+  'Western',
+  'Greek',
+  'Mediterranean',
+  'Italian',
+  'Mexican',
+  'Asian',
+  'Indian',
+] as const;
 type FoodOrigin = (typeof ALLOWED_CUISINES)[number];
 
 type DishBlueprint = {
@@ -369,6 +385,78 @@ const FAMOUS_DISHES: DishBlueprint[] = [
     carbs: ['banana', 'berries'],
     keyIngredients: ['protein powder', 'banana', 'berries', 'greek yogurt', 'chia seeds'],
   },
+  {
+    name: 'Chicken tikka masala bowl',
+    cuisineStyle: 'Indian',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['chicken'],
+    carbs: ['rice'],
+    keyIngredients: ['chicken breast', 'tomato', 'garlic', 'ginger', 'plain yogurt', 'rice'],
+  },
+  {
+    name: 'Chana masala with rice',
+    cuisineStyle: 'Indian',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['chickpeas'],
+    carbs: ['rice', 'chickpeas'],
+    keyIngredients: ['chickpeas', 'tomato', 'onion', 'garlic', 'ginger', 'rice'],
+  },
+  {
+    name: 'Chicken teriyaki rice bowl',
+    cuisineStyle: 'Asian',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['chicken'],
+    carbs: ['rice'],
+    keyIngredients: ['chicken breast', 'rice', 'soy sauce', 'garlic', 'ginger', 'broccoli'],
+  },
+  {
+    name: 'Beef and broccoli stir fry',
+    cuisineStyle: 'Asian',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['beef'],
+    carbs: ['rice'],
+    keyIngredients: ['beef strips', 'broccoli', 'rice', 'soy sauce', 'garlic', 'ginger'],
+  },
+  {
+    name: 'Chicken fajita wrap',
+    cuisineStyle: 'Mexican',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['chicken'],
+    carbs: ['wrap'],
+    keyIngredients: ['chicken breast', 'tortilla wrap', 'bell pepper', 'onion', 'paprika', 'tomato'],
+  },
+  {
+    name: 'Beef taco bowl',
+    cuisineStyle: 'Mexican',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['beef'],
+    carbs: ['rice'],
+    keyIngredients: ['lean beef mince', 'rice', 'tomato', 'onion', 'avocado', 'paprika'],
+  },
+  {
+    name: 'Turkey meatball marinara',
+    cuisineStyle: 'Italian',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['turkey'],
+    carbs: ['pasta'],
+    keyIngredients: ['turkey mince', 'pasta', 'tomato sauce', 'garlic', 'basil'],
+  },
+  {
+    name: 'Caprese chicken pasta',
+    cuisineStyle: 'Italian',
+    mealTypes: ['LUNCH', 'DINNER'],
+    famous: true,
+    proteins: ['chicken'],
+    carbs: ['pasta'],
+    keyIngredients: ['chicken breast', 'pasta', 'tomato', 'basil', 'mozzarella'],
+  },
 ];
 
 function normalizeText(value: string): string {
@@ -480,16 +568,29 @@ function getDishPool(mealType: BuilderMealType, foodOrigin?: FoodOrigin): DishBl
   return byMealType;
 }
 
+function isDishCompatibleWithPreferredProtein(dish: DishBlueprint, preferredProtein: string): boolean {
+  const selected = normalizeText(preferredProtein);
+  if (!selected) return true;
+
+  const searchable = [dish.name, ...dish.proteins, ...dish.keyIngredients].map(normalizeText);
+  return searchable.some(value => value.includes(selected) || selected.includes(value));
+}
+
 function buildDishLock(
   mealType: BuilderMealType,
   attempt: number,
   foodOrigin: FoodOrigin | undefined,
   avoidMealNames: string[],
+  preferredProtein?: string,
 ): DishBlueprint {
   const pool = getDishPool(mealType, foodOrigin);
   const normalizedAvoid = new Set(avoidMealNames.map(normalizeText));
   const filteredPool = pool.filter(dish => !normalizedAvoid.has(normalizeText(dish.name)));
-  const effectivePool = filteredPool.length > 0 ? filteredPool : pool;
+  const proteinFilteredPool = preferredProtein
+    ? filteredPool.filter(dish => isDishCompatibleWithPreferredProtein(dish, preferredProtein))
+    : filteredPool;
+  const effectivePool =
+    proteinFilteredPool.length > 0 ? proteinFilteredPool : filteredPool.length > 0 ? filteredPool : pool;
   const seed = Math.floor(Math.random() * Math.max(1, effectivePool.length));
   return rotatePick(effectivePool, attempt, seed);
 }
@@ -504,12 +605,14 @@ function buildIngredientShortlist(
     fatG: number;
   }>,
   dishLock: DishBlueprint,
+  preferredProtein?: string,
 ): string[] {
   const relevantTerms = uniqueStrings([
     ...dishLock.proteins,
     ...dishLock.carbs,
     ...dishLock.keyIngredients,
     dishLock.name,
+    preferredProtein ?? '',
   ]).map(normalizeText);
 
   const exactishMatches = foods.filter(food => {
@@ -520,22 +623,25 @@ function buildIngredientShortlist(
   const proteinRich = foods
     .filter(food => food.proteinG >= 10)
     .sort((a, b) => {
+      const aProteinMatch = preferredProtein && isFoodMatchingProteinSelection(a, preferredProtein) ? 0 : 1;
+      const bProteinMatch = preferredProtein && isFoodMatchingProteinSelection(b, preferredProtein) ? 0 : 1;
+      if (aProteinMatch !== bProteinMatch) return aProteinMatch - bProteinMatch;
       const aPriority = a.source === FoodSource.CUSTOM ? 0 : 1;
       const bPriority = b.source === FoodSource.CUSTOM ? 0 : 1;
       if (aPriority !== bPriority) return aPriority - bPriority;
       return b.proteinG - a.proteinG;
     })
-    .slice(0, 20);
+    .slice(0, 40);
 
   const carbRich = foods
     .filter(food => food.carbsG >= 15)
     .sort((a, b) => b.carbsG - a.carbsG)
-    .slice(0, 20);
+    .slice(0, 40);
 
   const fatRich = foods
     .filter(food => food.fatG >= 8)
     .sort((a, b) => b.fatG - a.fatG)
-    .slice(0, 10);
+    .slice(0, 20);
 
   const merged = uniqueStrings([
     ...exactishMatches.map(item => item.name),
@@ -544,7 +650,25 @@ function buildIngredientShortlist(
     ...fatRich.map(item => item.name),
   ]);
 
-  return merged.slice(0, 80);
+  return merged.slice(0, 160);
+}
+
+function validatePreferredProtein(aiMeal: MealTemplateAiResponse, preferredProtein?: string): string | null {
+  if (!preferredProtein) return null;
+  const mealText = normalizeText(
+    [aiMeal.mealName, aiMeal.coreDishReference, ...aiMeal.ingredients.map(i => i.name)].join(' '),
+  );
+  const selected = normalizeText(preferredProtein);
+
+  if (!selected) return null;
+  if (mealText.includes(selected)) return null;
+
+  const selectedTokens = selected.split(' ').filter(token => token.length >= 3);
+  if (selectedTokens.some(token => mealText.includes(token))) {
+    return null;
+  }
+
+  return `Preferred protein not respected: expected ${preferredProtein}`;
 }
 
 function validateMealTypeRules(aiMeal: MealTemplateAiResponse, mealType: BuilderMealType): string | null {
@@ -838,6 +962,7 @@ function buildPrompt(input: {
   avoidCoreDishReferences: string[];
   avoidMealNames: string[];
   targetComplexity: 'simple' | 'advanced';
+  preferredProtein?: string;
 }) {
   const isSnack = input.mealType === 'SNACK';
   const isBreakfast = input.mealType === 'BREAKFAST';
@@ -872,7 +997,7 @@ ${input.dishLock.keyIngredients.map(item => `  - ${item}`).join('\n')}
 
 PROTEIN DIRECTION:
 - Expected protein family:
-${input.dishLock.proteins.map(item => `  - ${item}`).join('\n')}
+${input.preferredProtein ? `  - ${input.preferredProtein} (coach selected; must be primary)` : input.dishLock.proteins.map(item => `  - ${item}`).join('\n')}
 
 CARB DIRECTION:
 - Expected carb or base family:
@@ -949,7 +1074,7 @@ OUTPUT RULES:
 Return this exact JSON shape:
 {
   "mealName": "string",
-  "cuisineStyle": "Syrian|Middle Eastern|Western|Greek|Mediterranean",
+  "cuisineStyle": "Syrian|Middle Eastern|Western|Greek|Mediterranean|Italian|Mexican|Asian|Indian",
   "coreDishReference": "${input.dishLock.name}",
   "complexity": "simple|advanced",
   "servings": 1,
@@ -973,6 +1098,20 @@ export async function POST(request: Request) {
     const foodOrigin = parsed.data.foodOrigin as FoodOrigin | undefined;
     const avoidCoreDishReferences = parsed.data.avoidCoreDishReferences ?? [];
     const avoidMealNames = parsed.data.avoidMealNames ?? [];
+    const preferredProtein =
+      mealType === 'BREAKFAST' || mealType === 'LUNCH' || mealType === 'DINNER'
+        ? parsed.data.preferredProtein?.trim() || undefined
+        : undefined;
+
+    if (mealType === 'DINNER' && preferredProtein && normalizeText(preferredProtein).includes('egg')) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Egg-focused proteins are not supported for dinner generation. Pick another protein.',
+        },
+        { status: 400 },
+      );
+    }
 
     const persistedMealNames = await prisma.meal.findMany({
       where: {
@@ -1023,6 +1162,45 @@ export async function POST(request: Request) {
       return a.name.localeCompare(b.name);
     });
 
+    if (preferredProtein) {
+      const mealTypeForProtein = mealType as ProteinSelectableMealType;
+      const hasDishSupport = getDishPool(mealType, foodOrigin).some(dish =>
+        isDishCompatibleWithPreferredProtein(dish, preferredProtein),
+      );
+
+      if (!hasDishSupport) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `No dish templates currently support \"${preferredProtein}\" for this meal type and origin. Choose another main protein.`,
+          },
+          { status: 400 },
+        );
+      }
+
+      const matchingPreferredFoods = foodsByPriority.filter(
+        food =>
+          isFoodMatchingProteinSelection(food, preferredProtein) && isMainProteinCandidate(food, mealTypeForProtein),
+      );
+
+      if (matchingPreferredFoods.length === 0) {
+        const suggestions = buildMainProteinOptions(foodsByPriority, mealTypeForProtein)
+          .slice(0, 3)
+          .map(item => item.label)
+          .join(', ');
+
+        return NextResponse.json(
+          {
+            success: false,
+            message: suggestions
+              ? `No strong main-protein foods found for "${preferredProtein}". Try: ${suggestions}.`
+              : `No strong main-protein foods found for "${preferredProtein}".`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const foodRows = toFoodGenerationRows(foodsByPriority);
     const foodMetaById = new Map(
       foodsByPriority.map(food => [
@@ -1043,8 +1221,8 @@ export async function POST(request: Request) {
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
-        const dishLock = buildDishLock(mealType, attempt, foodOrigin, mergedAvoidMealNames);
-        const pantryShortlist = buildIngredientShortlist(foodsByPriority, dishLock);
+        const dishLock = buildDishLock(mealType, attempt, foodOrigin, mergedAvoidMealNames, preferredProtein);
+        const pantryShortlist = buildIngredientShortlist(foodsByPriority, dishLock, preferredProtein);
         const targetComplexity: 'simple' | 'advanced' = Math.random() < 0.82 ? 'simple' : 'advanced';
 
         const response = await azureOpenAI.chat.completions.create({
@@ -1067,6 +1245,7 @@ export async function POST(request: Request) {
                 avoidCoreDishReferences,
                 avoidMealNames: mergedAvoidMealNames,
                 targetComplexity,
+                preferredProtein,
               }),
             },
           ],
@@ -1101,6 +1280,12 @@ export async function POST(request: Request) {
         const identityError = validateDishIdentity(aiMeal, dishLock);
         if (identityError) {
           lastErrorMessage = identityError;
+          continue;
+        }
+
+        const preferredProteinError = validatePreferredProtein(aiMeal, preferredProtein);
+        if (preferredProteinError) {
+          lastErrorMessage = preferredProteinError;
           continue;
         }
 

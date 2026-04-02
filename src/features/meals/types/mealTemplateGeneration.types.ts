@@ -2,6 +2,7 @@ import type { MacroTotals } from '@/types/meal';
 import type { UnmatchedIngredientInput } from '@/types/meal';
 
 export type BuilderMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+export type ProteinSelectableMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER';
 export type FoodOrigin =
   | 'Middle Eastern'
   | 'Western'
@@ -50,5 +51,27 @@ export type RematchMealIngredientsResponse = {
 export type GenerateMealTemplateApiResponse = {
   success: boolean;
   data?: GeneratedMealTemplate;
+  message?: string;
+};
+
+export type GenerateMealTemplateOptions = {
+  avoidCoreDishReferences?: string[];
+  avoidMealNames?: string[];
+  strictMatchMode?: 'strict' | 'lenient';
+  foodOrigin?: FoodOrigin;
+  preferredProtein?: string;
+};
+
+export type MainProteinOption = {
+  key: string;
+  label: string;
+  count: number;
+  sampleName: string;
+  maxProteinPer100g: number;
+};
+
+export type MainProteinOptionsApiResponse = {
+  success: boolean;
+  data?: MainProteinOption[];
   message?: string;
 };

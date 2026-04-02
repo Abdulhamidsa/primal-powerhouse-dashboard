@@ -16,6 +16,7 @@ export const generateMealTemplateRequestSchema = z.object({
   mealType: z.enum(['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK']),
   strictMatchMode: z.enum(['strict', 'lenient']).default('strict'),
   foodOrigin: cuisineOriginSchema.optional(),
+  preferredProtein: z.string().trim().min(2).max(80).optional(),
   avoidCoreDishReferences: z.array(z.string().trim().min(1).max(120)).max(12).optional(),
   avoidMealNames: z.array(z.string().trim().min(1).max(140)).max(20).optional(),
 });

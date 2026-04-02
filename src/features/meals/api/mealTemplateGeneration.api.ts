@@ -1,26 +1,25 @@
 import { httpClient } from '@/lib/http/client';
 import type {
   BuilderMealType,
-  FoodOrigin,
+  GenerateMealTemplateOptions,
   GenerateMealTemplateApiResponse,
   GeneratedMealTemplate,
+  MainProteinOptionsApiResponse,
+  ProteinSelectableMealType,
+  MainProteinOption,
   RematchMealIngredientsResponse,
 } from '@/features/meals/types/mealTemplateGeneration.types';
 import type { UnmatchedIngredientInput } from '@/types/meal';
 
 export async function generateMealTemplateApi(
   mealType: BuilderMealType,
-  options?: {
-    avoidCoreDishReferences?: string[];
-    avoidMealNames?: string[];
-    strictMatchMode?: 'strict' | 'lenient';
-    foodOrigin?: FoodOrigin;
-  },
+  options?: GenerateMealTemplateOptions,
 ): Promise<GeneratedMealTemplate> {
   const res = await httpClient.post<GenerateMealTemplateApiResponse>('/api/mealsAI/generate-meal-template', {
     mealType,
     strictMatchMode: options?.strictMatchMode ?? 'strict',
     foodOrigin: options?.foodOrigin,
+    preferredProtein: options?.preferredProtein,
     avoidCoreDishReferences: options?.avoidCoreDishReferences,
     avoidMealNames: options?.avoidMealNames,
   });
@@ -36,6 +35,22 @@ export async function generateMealTemplateApi(
   return res.data;
 }
 
+export async function fetchMainProteinOptionsApi(mealType: ProteinSelectableMealType): Promise<MainProteinOption[]> {
+  const res = await httpClient.get<MainProteinOptionsApiResponse>(
+    `/api/mealsAI/protein-options?mealType=${encodeURIComponent(mealType)}`,
+  );
+
+  if (!res) {
+    throw new Error('No response from protein options API');
+  }
+
+  if (!res.success || !res.data) {
+    throw new Error(res.message ?? 'Failed to fetch protein options');
+  }
+
+  return res.data;
+}
+
 export async function rematchMealIngredientsApi(
   unmatchedIngredients: UnmatchedIngredientInput[],
 ): Promise<RematchMealIngredientsResponse> {
@@ -46,6 +61,7 @@ export async function rematchMealIngredientsApi(
 
 const mealTemplateGenerationApi = {
   generateMealTemplate: generateMealTemplateApi,
+  fetchMainProteinOptions: fetchMainProteinOptionsApi,
   rematchMealIngredients: rematchMealIngredientsApi,
 };
 

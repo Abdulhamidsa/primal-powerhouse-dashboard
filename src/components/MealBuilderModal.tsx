@@ -5,6 +5,7 @@ import { ChevronDown, Copy, Sparkles } from 'lucide-react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
 import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 import { useGenerateMealTemplate } from '@/features/meals/hooks/useGenerateMealTemplate';
+import { useMainProteinOptions } from '@/features/meals/hooks/useMainProteinOptions';
 import { createSide, generateSideTemplate } from '@/features/sides/api/sides.api';
 import { DataService } from '@/services/dataService';
 import { httpClient } from '@/lib/http/client';
@@ -12,7 +13,11 @@ import IngredientSearch from './IngredientSearch';
 import SelectedIngredientRow from './SelectedIngredientRow';
 import TotalsPanel from './TotalsPanel';
 import type { SelectedIngredient } from '@/types/openFoodFacts';
-import type { BuilderMealType, FoodOrigin } from '@/features/meals/types/mealTemplateGeneration.types';
+import type {
+  BuilderMealType,
+  FoodOrigin,
+  ProteinSelectableMealType,
+} from '@/features/meals/types/mealTemplateGeneration.types';
 import type { SideType } from '@/features/sides/types/side.types';
 import FoodForm from '@/features/foods/components/FoodForm';
 import type { FoodFormPrefill } from '@/features/foods/components/FoodForm';
@@ -121,6 +126,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const [instructions, setInstructions] = useState<string[]>(['']);
   const [spices, setSpices] = useState<string[]>(['']);
   const [foodOrigin, setFoodOrigin] = useState<'ANY' | FoodOrigin>('ANY');
+  const [preferredProtein, setPreferredProtein] = useState<'ANY' | string>('ANY');
   const [sideType, setSideType] = useState<SideType>('SALAD');
   const [recentSideNames, setRecentSideNames] = useState<string[]>([]);
   const [unmatchedIngredients, setUnmatchedIngredients] = useState<UnmatchedIngredientInput[]>([]);
@@ -146,6 +152,16 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
 
   const selectedIds = useMemo(() => new Set(state.selectedIngredients.map(ing => ing.id)), [state.selectedIngredients]);
   const isSideMode = state.type === 'SIDE';
+  const proteinSelectableMealType =
+    state.type === 'BREAKFAST' || state.type === 'LUNCH' || state.type === 'DINNER'
+      ? (state.type as ProteinSelectableMealType)
+      : null;
+
+  const {
+    loading: proteinOptionsLoading,
+    error: proteinOptionsError,
+    options: mainProteinOptions,
+  } = useMainProteinOptions(proteinSelectableMealType);
 
   const totals = calculateTotals();
   const perServing = calculatePerServingNutrition();
@@ -163,6 +179,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       resetTemplateGenerator();
       setAiNotice('');
       setFoodOrigin('ANY');
+      setPreferredProtein('ANY');
       setSideType('SALAD');
       setRecentSideNames([]);
       setFoodFormPrefill(null);
@@ -170,6 +187,24 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       setUnmatchedIngredients([]);
     }
   }, [isOpen, resetPromptState, resetTemplateGenerator]);
+
+  useEffect(() => {
+    if (proteinSelectableMealType === null) {
+      setPreferredProtein('ANY');
+    }
+  }, [proteinSelectableMealType]);
+
+  useEffect(() => {
+    if (preferredProtein === 'ANY') {
+      return;
+    }
+
+    if (mainProteinOptions.some(option => option.key === preferredProtein)) {
+      return;
+    }
+
+    setPreferredProtein('ANY');
+  }, [mainProteinOptions, preferredProtein]);
 
   if (!isOpen) return null;
 
@@ -308,6 +343,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       setSpices(['']);
       setSideType('SALAD');
       setFoodOrigin('ANY');
+      setPreferredProtein('ANY');
       setSelectedImageFile(null);
       setFoodFormPrefill(null);
       setPendingIngredientRecovery(null);
@@ -615,6 +651,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         const template = await generateTemplate(
           state.type as BuilderMealType,
           foodOrigin === 'ANY' ? undefined : foodOrigin,
+          preferredProtein === 'ANY' ? undefined : preferredProtein,
         );
 
         setState(prev => ({
@@ -640,7 +677,12 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
         });
 
         const originLabel = foodOrigin === 'ANY' ? 'Any origin' : `Origin: ${foodOrigin}`;
-        const baseNotice = `AI meal ready: ${template.coreDishReference} (${template.cuisineStyle}) | ${originLabel}`;
+        const selectedProteinLabel =
+          preferredProtein === 'ANY'
+            ? 'Any protein'
+            : (mainProteinOptions.find(option => option.key === preferredProtein)?.label ?? preferredProtein);
+        const proteinLabel = `Protein: ${selectedProteinLabel}`;
+        const baseNotice = `AI meal ready: ${template.coreDishReference} (${template.cuisineStyle}) | ${originLabel} | ${proteinLabel}`;
         if (template.warnings.length > 0) {
           setAiNotice(`${baseNotice}. Notes: ${template.warnings.join(' ')}`);
         } else {
@@ -694,6 +736,12 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
               {aiGenerationError && (
                 <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
                   {aiGenerationError}
+                </div>
+              )}
+
+              {proteinOptionsError && !isSideMode && state.type !== 'SNACK' && (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  {proteinOptionsError}
                 </div>
               )}
 
@@ -772,6 +820,25 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       ))}
                     </select>
                   </div>
+
+                  {!isSideMode && state.type !== 'SNACK' && (
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Main Protein</label>
+                      <select
+                        value={preferredProtein}
+                        onChange={e => setPreferredProtein(e.target.value as 'ANY' | string)}
+                        className="input-base w-full appearance-none"
+                        disabled={proteinOptionsLoading}
+                      >
+                        <option value="ANY">Any</option>
+                        {mainProteinOptions.map(option => (
+                          <option key={option.key} value={option.key}>
+                            {option.label} ({option.count})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div>
                     <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Servings</label>
