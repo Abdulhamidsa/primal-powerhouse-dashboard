@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
+import { Bell, LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
 import UpdateAppButton from '@/components/UpdateAppButton';
+import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
+import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 
@@ -53,14 +55,61 @@ function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: strin
   );
 }
 
+function ToggleRow({
+  icon,
+  label,
+  description,
+  checked,
+  disabled,
+  onToggle,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted/50">{icon}</div>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={disabled}
+        aria-pressed={checked}
+        className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors ${
+          checked ? 'bg-accent' : 'bg-muted'
+        } disabled:cursor-not-allowed disabled:opacity-50`}
+      >
+        <span
+          className={`absolute top-1 block h-5 w-5 rounded-full bg-white transition-transform ${
+            checked ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 export default function UserProfilePage() {
   const router = useRouter();
   const { themePreference, setThemePreference, themeOptions } = useThemePreference();
+  const { data: privacyData, isLoading: isPrivacyLoading } = usePrivacyCenter();
+  const { updateConsent } = usePrivacyActions();
+  const { status: pushStatus, isLoading: isPushLoading, subscribe, unsubscribe } = usePushSubscription();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -95,6 +144,30 @@ export default function UserProfilePage() {
       window.location.href = '/user/login';
     } catch (error) {
       console.error('Sign out error:', error);
+    }
+  };
+
+  const handleNotificationToggle = async () => {
+    if (!privacyData || isSavingNotifications) return;
+
+    const nextMessageNotifications = !privacyData.consents.messageNotifications;
+
+    try {
+      setIsSavingNotifications(true);
+
+      if (nextMessageNotifications) {
+        const ok = await subscribe();
+        if (!ok) return;
+      } else {
+        await unsubscribe();
+      }
+
+      await updateConsent({
+        ...privacyData.consents,
+        messageNotifications: nextMessageNotifications,
+      });
+    } finally {
+      setIsSavingNotifications(false);
     }
   };
 
@@ -173,6 +246,24 @@ export default function UserProfilePage() {
                 options={themeOptions}
                 onChangeAction={setThemePreference}
               />
+
+              <SettingsGroup title="Notifications">
+                <ToggleRow
+                  icon={<Bell className="h-4 w-4" />}
+                  label="Coach Messages"
+                  description={
+                    pushStatus === 'unsupported'
+                      ? 'This browser does not support push notifications.'
+                      : pushStatus === 'denied'
+                        ? 'Notifications are blocked in your browser settings.'
+                        : 'Get alerted when your coach sends you a new message.'
+                  }
+                  checked={Boolean(privacyData?.consents.messageNotifications)}
+                  disabled={isPrivacyLoading || isSavingNotifications || isPushLoading || pushStatus === 'unsupported'}
+                  onToggle={handleNotificationToggle}
+                />
+                <div className="ml-16 h-px bg-transparent" />
+              </SettingsGroup>
             </>
           )}
 
