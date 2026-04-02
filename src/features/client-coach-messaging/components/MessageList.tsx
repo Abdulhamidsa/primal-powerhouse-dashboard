@@ -18,7 +18,7 @@ function getInitials(name: string): string {
 
 function resolveSenderIdentity(
   role: ChatMessage['senderRole'],
-  conversation: ConversationSummary | null
+  conversation: ConversationSummary | null,
 ): { label: string; avatarUrl: string | null; initials: string } {
   if (role === 'CLIENT') {
     const label = conversation?.clientName || 'Client';
@@ -140,13 +140,10 @@ export function MessageList({
               <article
                 className={`w-fit rounded-[22px] border px-3.5 py-2.5 shadow-sm ${ownMessage ? 'self-end' : 'self-start'}`}
                 style={{
-                  borderColor:
-                    message.deliveryStatus === 'failed'
-                      ? 'color-mix(in srgb, var(--color-danger) 35%, var(--color-border))'
-                      : 'var(--color-border)',
+                  borderColor: message.deliveryStatus === 'failed' ? 'var(--color-danger)' : 'var(--color-border)',
                   background:
                     message.deliveryStatus === 'failed'
-                      ? 'color-mix(in srgb, var(--color-danger) 8%, var(--color-surface))'
+                      ? 'var(--color-danger-muted)'
                       : ownMessage
                         ? 'color-mix(in srgb, var(--color-accent) 28%, var(--color-surface))'
                         : 'var(--color-surface)',

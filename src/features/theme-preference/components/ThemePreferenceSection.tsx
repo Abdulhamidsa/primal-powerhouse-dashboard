@@ -45,7 +45,10 @@ export function ThemePreferenceSection({ value, options, onChangeAction }: Theme
                 )}
                 aria-pressed={active}
               >
-                <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: `var(${option.swatchVarName})` }} />
+                <span
+                  className="h-3.5 w-3.5 rounded-full"
+                  style={{ backgroundColor: `var(${option.swatchVarName})` }}
+                />
                 <span className="text-sm font-medium">{option.label}</span>
                 {active ? <Check className="ml-auto h-4 w-4 text-[var(--color-accent)]" /> : null}
               </button>

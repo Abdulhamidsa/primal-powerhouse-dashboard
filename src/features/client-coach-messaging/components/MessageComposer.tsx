@@ -210,8 +210,8 @@ export function MessageComposer({
         <div
           className="flex items-center justify-between gap-3 rounded-2xl border px-3 py-2"
           style={{
-            borderColor: 'color-mix(in srgb, var(--color-danger) 35%, var(--color-border))',
-            background: 'color-mix(in srgb, var(--color-danger) 6%, var(--color-surface))',
+            borderColor: 'var(--color-danger)',
+            background: 'var(--color-danger-muted)',
           }}
         >
           <span className="inline-flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--color-danger)' }}>
