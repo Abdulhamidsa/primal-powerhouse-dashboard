@@ -8,6 +8,8 @@ import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
 import UpdateAppButton from '@/components/UpdateAppButton';
+import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
+import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 
 interface UserData {
   id: string;
@@ -53,6 +55,7 @@ function StaticRow({ icon, label, value }: { icon: React.ReactNode; label: strin
 
 export default function UserProfilePage() {
   const router = useRouter();
+  const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -164,6 +167,12 @@ export default function UserProfilePage() {
                 <StaticRow icon={<Mail className="h-4 w-4" />} label="Email" value={userData?.email ?? 'Loading…'} />
                 <div className="ml-16 h-px bg-transparent" />
               </SettingsGroup>
+
+              <ThemePreferenceSection
+                value={themePreference}
+                options={themeOptions}
+                onChangeAction={setThemePreference}
+              />
             </>
           )}
 
@@ -250,10 +259,9 @@ export default function UserProfilePage() {
             }}
           />
           <SettingsGroup>
-  <div className="ml-16 h-px bg-border/60" />
-  <UpdateAppButton />
-
-</SettingsGroup>
+            <div className="ml-16 h-px bg-border/60" />
+            <UpdateAppButton />
+          </SettingsGroup>
         </div>
       </div>
     </div>

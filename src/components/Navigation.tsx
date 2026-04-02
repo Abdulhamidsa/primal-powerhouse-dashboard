@@ -20,6 +20,7 @@ import {
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/hooks/useUserData';
+import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 
 type NavItem = {
   name: string;
@@ -205,6 +206,7 @@ export default function Navigation({
   const pathname = usePathname();
   const { unreadTotal } = useChatUnread();
   const { user } = useUserData();
+  useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';

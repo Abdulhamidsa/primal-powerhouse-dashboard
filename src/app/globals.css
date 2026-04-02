@@ -29,6 +29,63 @@
     --color-accent-translucent: rgba(184, 106, 78, 0.1);
   }
 
+  :root[data-theme='ember'] {
+    --color-bg: #0d0d0d;
+    --color-accent: #b86a4e;
+    --color-accent-muted: rgba(184, 106, 78, 0.2);
+    --color-accent-translucent: rgba(184, 106, 78, 0.1);
+    --color-text-on-accent: #ffffff;
+  }
+
+  :root[data-theme='ocean'] {
+    --color-bg: #0a111a;
+    --color-accent: #3b82f6;
+    --color-accent-muted: rgba(59, 130, 246, 0.2);
+    --color-accent-translucent: rgba(59, 130, 246, 0.1);
+    --color-text-on-accent: #ffffff;
+  }
+
+  :root[data-theme='forest'] {
+    --color-bg: #0c1410;
+    --color-accent: #22c55e;
+    --color-accent-muted: rgba(34, 197, 94, 0.2);
+    --color-accent-translucent: rgba(34, 197, 94, 0.1);
+    --color-text-on-accent: #052e16;
+  }
+
+  :root[data-theme='ruby'] {
+    --color-bg: #150d11;
+    --color-accent: #ef4444;
+    --color-accent-muted: rgba(239, 68, 68, 0.2);
+    --color-accent-translucent: rgba(239, 68, 68, 0.1);
+    --color-text-on-accent: #ffffff;
+  }
+
+  html[data-theme],
+  html[data-theme] body {
+    background-color: var(--color-bg) !important;
+  }
+
+  html[data-theme] .bg-background {
+    background-color: var(--color-bg) !important;
+  }
+
+  html[data-theme] .bg-accent {
+    background-color: var(--color-accent) !important;
+  }
+
+  html[data-theme] .text-accent {
+    color: var(--color-accent) !important;
+  }
+
+  html[data-theme] .border-accent {
+    border-color: var(--color-accent) !important;
+  }
+
+  html[data-theme] .text-accent-foreground {
+    color: var(--color-text-on-accent) !important;
+  }
+
   * {
     @apply border-border;
     -webkit-tap-highlight-color: transparent;
