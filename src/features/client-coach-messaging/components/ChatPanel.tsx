@@ -17,7 +17,7 @@ function clampSidebarWidth(nextWidth: number): number {
   return Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(nextWidth)));
 }
 
-export function ChatPanel({  hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
+export function ChatPanel({ hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
   const previousConversationIdRef = useRef<string | null>(null);
@@ -34,8 +34,6 @@ export function ChatPanel({  hideConversationList = false }: { title?: string; h
     sendMessage,
     retryMessage,
   } = useConversationMessages(selectedConversationId);
-
-
 
   useEffect(() => {
     if (hideConversationList || typeof window === 'undefined') return;
@@ -121,165 +119,98 @@ export function ChatPanel({  hideConversationList = false }: { title?: string; h
   };
 
   return (
-  <div className="flex h-full flex-col overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
-  <div ref={containerRef} className="flex min-h-0 flex-1 flex-col md:flex-row">
-    {!hideConversationList ? (
-      <aside
-        className="shrink-0 border-b p-2 md:min-w-[320px] md:w-[var(--chat-sidebar-width)] md:max-w-[620px] md:border-b-0 md:border-r"
-        style={{
-          borderColor: 'var(--color-border)',
-          ['--chat-sidebar-width' as string]: sidebarWidth ? `${sidebarWidth}px` : undefined,
-        }}
-      >
-        {isConversationsLoading ? (
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            Loading conversations...
-          </p>
-        ) : (
-          <div className="space-y-1">
-            {sortedConversations.map(conversation => (
-              <button
-                key={conversation.id}
-                type="button"
-                onClick={() => setSelectedConversationId(conversation.id)}
-                className="w-full rounded-2xl border px-3 py-3 text-left transition-all"
-                style={{
-                  borderColor:
-                    selectedConversationId === conversation.id ? 'var(--color-accent)' : 'var(--color-border)',
-                  background:
-                    selectedConversationId === conversation.id
-                      ? 'var(--color-accent-muted)'
-                      : 'var(--color-surface)',
-                }}
-              >
-                <p className="truncate text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-                  {conversation.clientName}
-                </p>
-                <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-                  {conversation.unreadCount > 0 ? `${conversation.unreadCount} unread` : 'No unread'}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
-      </aside>
-    ) : null}
+    <div className="flex h-full flex-col overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div ref={containerRef} className="flex min-h-0 flex-1 flex-col md:flex-row">
+        {!hideConversationList ? (
+          <aside
+            className="shrink-0 border-b p-2 md:min-w-[320px] md:w-[var(--chat-sidebar-width)] md:max-w-[620px] md:border-b-0 md:border-r"
+            style={{
+              borderColor: 'var(--color-border)',
+              ['--chat-sidebar-width' as string]: sidebarWidth ? `${sidebarWidth}px` : undefined,
+            }}
+          >
+            {isConversationsLoading ? (
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                Loading conversations...
+              </p>
+            ) : (
+              <div className="space-y-1">
+                {sortedConversations.map(conversation => (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() => setSelectedConversationId(conversation.id)}
+                    className="w-full rounded-2xl border px-3 py-3 text-left transition-all"
+                    style={{
+                      borderColor:
+                        selectedConversationId === conversation.id ? 'var(--color-accent)' : 'var(--color-border)',
+                      background:
+                        selectedConversationId === conversation.id
+                          ? 'var(--color-accent-muted)'
+                          : 'var(--color-surface)',
+                    }}
+                  >
+                    <p className="truncate text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                      {conversation.clientName}
+                    </p>
+                    <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                      {conversation.unreadCount > 0 ? `${conversation.unreadCount} unread` : 'No unread'}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </aside>
+        ) : null}
 
-    {!hideConversationList ? (
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize conversation list"
-        onMouseDown={startDrag}
-        className={`hidden w-1 cursor-col-resize md:block ${isDragging ? 'bg-[var(--color-accent)]' : 'bg-transparent'}`}
-      />
-    ) : null}
+        {!hideConversationList ? (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize conversation list"
+            onMouseDown={startDrag}
+            className={`hidden w-1 cursor-col-resize md:block ${isDragging ? 'bg-[var(--color-accent)]' : 'bg-transparent'}`}
+          />
+        ) : null}
 
-    <section className="flex min-h-0 flex-1 flex-col">
-      <div
-        className="border-b px-4 py-4"
-        style={{
-          borderColor: 'var(--color-border)',
-          background:
-            'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent) 0%, var(--color-surface) 100%)',
-        }}
-      >
-        <div className="flex items-center gap-3">
- 
-
-          <div className="min-w-0">
- <div className="flex items-center gap-3">
-  <div
-    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] border text-sm font-semibold shadow-sm"
-    style={{
-      borderColor: 'color-mix(in srgb, var(--color-border) 78%, transparent)',
-      background:
-        'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, white 12%) 0%, var(--color-surface) 100%)',
-      color: 'var(--color-text)',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
-    }}
-  >
-    {(conversation?.coachName || conversation?.clientName || '?').slice(0, 1).toUpperCase()}
-  </div>
-
-  <div className="min-w-0 flex-1">
-    <div className="flex items-center gap-2">
-      <h2
-        className="truncate text-[15px] font-semibold leading-none md:text-base"
-        style={{ color: 'var(--color-text)' }}
-      >
-        {conversation?.coachName || conversation?.clientName || 'Select a conversation'}
-      </h2>
-
-      {conversation?.unreadCount ? (
-        <span
-          className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold leading-none"
-          style={{
-            background: 'var(--color-accent)',
-            color: 'white',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
-          }}
-        >
-          {conversation.unreadCount}
-        </span>
-      ) : null}
-    </div>
-
-      {conversation ? (
-        <div className="mt-1 flex items-center gap-2">
-          {conversation.lastMessageAt ? ( 
-            <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-              Last message{' '}
-              {new Date(conversation.lastMessageAt).toLocaleString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',  
-                minute: '2-digit',
-              })}
+        <section className="flex min-h-0 flex-1 flex-col">
+          <div
+            className="border-b px-4 py-2.5"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+          >
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              Coach chat
             </p>
-          ) : null}
-          <p
-            className="text-[11px] font-medium"
-            style={{ color: 'var(--color-text-muted)' }}
-          > 
-          </p>
-        </div>
-      ) : null}
-  </div>
-</div>
           </div>
-        </div>
-      </div>
 
-      <div
-        ref={messageViewportRef}
-        className="flex-1 overflow-y-auto px-3 py-4 md:px-4"
-        style={{
-          background:
-            'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 7%, transparent) 0%, transparent 38%), var(--color-bg-alt)',
-        }}
-      >
-        {isMessagesLoading ? (
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            Loading messages...
-          </p>
-        ) : (
-          <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
-        )}
-      </div>
+          <div
+            ref={messageViewportRef}
+            className="flex-1 overflow-y-auto px-3 py-4 md:px-4"
+            style={{ background: 'var(--color-bg-alt)' }}
+          >
+            {isMessagesLoading ? (
+              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                Loading messages...
+              </p>
+            ) : (
+              <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
+            )}
+          </div>
 
-      <div
-        className="border-t"
-        style={{
-          borderColor: 'var(--color-border)',
-          background:
-            'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 82%, transparent) 0%, var(--color-surface) 100%)',
-        }}
-      >
-        <MessageComposer conversationId={selectedConversationId} onSendAction={sendMessage} />
+          <div
+            className="border-t pb-[calc(6.25rem+env(safe-area-inset-bottom))] lg:pb-0"
+            style={{
+              borderColor: 'var(--color-border)',
+              background: 'var(--color-surface)',
+            }}
+          >
+            <MessageComposer conversationId={selectedConversationId} onSendAction={sendMessage} />
+          </div>
+        </section>
       </div>
-    </section>
-  </div>
-</div>
+    </div>
   );
 }

@@ -375,7 +375,15 @@ export default function Navigation({
         className={cn(
           'w-full',
           isChatRoute
-            ? ['h-[calc(100dvh-96px)]', 'overflow-hidden', 'pb-0', 'lg:h-[calc(100dvh-96px)]', 'lg:px-6', 'lg:py-6']
+            ? [
+                'min-h-[calc(100dvh-96px)]',
+                'overflow-hidden',
+                'pb-0',
+                'lg:h-[calc(100dvh-96px)]',
+                'lg:min-h-0',
+                'lg:px-6',
+                'lg:py-6',
+              ]
             : ['min-h-[calc(100dvh-96px)]', 'overflow-y-auto', 'pb-0', 'lg:min-h-[calc(100dvh-96px)]'],
         )}
       >

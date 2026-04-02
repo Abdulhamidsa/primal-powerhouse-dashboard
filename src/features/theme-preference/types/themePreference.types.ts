@@ -6,12 +6,12 @@ export type ThemePreference = z.infer<typeof themePreferenceSchema>;
 export type ThemeOption = {
   value: ThemePreference;
   label: string;
-  swatchClassName: string;
+  swatchVarName: string;
 };
 
 export const THEME_OPTIONS: ThemeOption[] = [
-  { value: 'ember', label: 'Ember', swatchClassName: 'bg-[#b86a4e]' },
-  { value: 'ocean', label: 'Ocean', swatchClassName: 'bg-[#3b82f6]' },
-  { value: 'forest', label: 'Forest', swatchClassName: 'bg-[#22c55e]' },
-  { value: 'ruby', label: 'Ruby', swatchClassName: 'bg-[#ef4444]' },
+  { value: 'ember', label: 'Ember', swatchVarName: '--theme-ember-accent' },
+  { value: 'ocean', label: 'Ocean', swatchVarName: '--theme-ocean-accent' },
+  { value: 'forest', label: 'Forest', swatchVarName: '--theme-forest-accent' },
+  { value: 'ruby', label: 'Ruby', swatchVarName: '--theme-ruby-accent' },
 ];

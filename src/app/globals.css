@@ -27,6 +27,12 @@
     /* Accent variations */
     --color-accent-muted: rgba(184, 106, 78, 0.2);
     --color-accent-translucent: rgba(184, 106, 78, 0.1);
+
+    /* Theme swatch colors */
+    --theme-ember-accent: #b86a4e;
+    --theme-ocean-accent: #3b82f6;
+    --theme-forest-accent: #22c55e;
+    --theme-ruby-accent: #ef4444;
   }
 
   :root[data-theme='ember'] {
