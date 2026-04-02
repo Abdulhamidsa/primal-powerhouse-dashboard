@@ -18,7 +18,7 @@ import {
   toConversationChannel,
   toUserChannel,
 } from '@/lib/realtime/pusher-server';
-import { sendPushToClient } from '@/lib/push/push-notifications';
+import { logPushDeliveryResult, sendPushToClient } from '@/lib/push/push-notifications';
 
 type AttachmentRecord = {
   type: 'image' | 'video' | 'audio';
@@ -298,16 +298,47 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // Send browser push notification when coach sends to client
   if (actor.type === 'coach' || actor.type === 'admin') {
+    const pushPayload = {
+      title: 'New message from your coach',
+      body: 'You have a new message. Tap to view.',
+      url: '/user/messages',
+    };
+
     try {
       const recipientClient = await (prisma as any).client.findUnique({
         where: { id: conversation.clientId },
         select: { consentMessageNotifications: true },
       });
+
       if (recipientClient?.consentMessageNotifications) {
-        await sendPushToClient(conversation.clientId, {
-          title: 'New message from your coach',
-          body: 'You have a new message. Tap to view.',
-          url: '/user/messages',
+        await sendPushToClient(conversation.clientId, pushPayload, {
+          source: 'coach-message',
+          metadata: {
+            actorId: actor.userId,
+            actorType: actor.type,
+            conversationId,
+            messageId: created.id,
+          },
+        });
+      } else {
+        await logPushDeliveryResult({
+          clientId: conversation.clientId,
+          source: 'coach-message',
+          payload: pushPayload,
+          result: {
+            status: 'skipped',
+            subscriptionCount: 0,
+            successCount: 0,
+            failureCount: 0,
+            staleCount: 0,
+            reason: 'consent_disabled',
+          },
+          metadata: {
+            actorId: actor.userId,
+            actorType: actor.type,
+            conversationId,
+            messageId: created.id,
+          },
         });
       }
     } catch (error) {

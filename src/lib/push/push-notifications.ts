@@ -24,6 +24,23 @@ export type PushPayload = {
   url: string;
 };
 
+export type PushDeliveryStatus = 'sent' | 'partial' | 'failed' | 'skipped';
+
+export type PushSendResult = {
+  status: PushDeliveryStatus;
+  subscriptionCount: number;
+  successCount: number;
+  failureCount: number;
+  staleCount: number;
+  reason?: string;
+};
+
+type PushSendOptions = {
+  source: 'coach-message' | 'test';
+  reason?: string;
+  metadata?: Record<string, unknown>;
+};
+
 type StoredSubscription = {
   id: string;
   endpoint: string;
@@ -39,7 +56,46 @@ async function removeStaleSubscription(subscriptionId: string) {
   }
 }
 
-export async function sendPushToClient(clientId: string, payload: PushPayload): Promise<void> {
+export async function logPushDeliveryResult({
+  clientId,
+  source,
+  payload,
+  result,
+  metadata,
+}: {
+  clientId: string;
+  source: 'coach-message' | 'test';
+  payload: PushPayload;
+  result: PushSendResult;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    const model = (prisma as any).notificationDeliveryLog;
+    if (!model) return;
+
+    await model.create({
+      data: {
+        clientId,
+        source,
+        status: result.status,
+        subscriptionCount: result.subscriptionCount,
+        successCount: result.successCount,
+        failureCount: result.failureCount,
+        staleCount: result.staleCount,
+        reason: result.reason ?? null,
+        payloadJson: JSON.stringify({ payload, metadata: metadata ?? null }),
+      },
+    });
+  } catch (error) {
+    console.error('[PUSH] Failed to write delivery log:', error);
+  }
+}
+
+export async function sendPushToClient(
+  clientId: string,
+  payload: PushPayload,
+  options: PushSendOptions,
+): Promise<PushSendResult> {
   ensureInitialized();
 
   const subscriptions: StoredSubscription[] = await (prisma as any).pushSubscription.findMany({
@@ -47,25 +103,58 @@ export async function sendPushToClient(clientId: string, payload: PushPayload): 
     select: { id: true, endpoint: true, p256dh: true, auth: true },
   });
 
-  if (subscriptions.length === 0) return;
+  if (subscriptions.length === 0) {
+    const result: PushSendResult = {
+      status: 'skipped',
+      subscriptionCount: 0,
+      successCount: 0,
+      failureCount: 0,
+      staleCount: 0,
+      reason: options.reason ?? 'no_subscriptions',
+    };
+    await logPushDeliveryResult({ clientId, source: options.source, payload, result, metadata: options.metadata });
+    return result;
+  }
 
   const notification = JSON.stringify(payload);
-
-  await Promise.allSettled(
+  const attempts = await Promise.all(
     subscriptions.map(async sub => {
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           notification,
         );
+        return { outcome: 'sent' as const };
       } catch (err: any) {
-        // 410 Gone / 404 Not Found = subscription expired, clean it up
         if (err?.statusCode === 410 || err?.statusCode === 404) {
           await removeStaleSubscription(sub.id);
-        } else {
-          console.error(`[PUSH] Failed to send to subscription ${sub.id}:`, err?.message);
+          return { outcome: 'stale' as const };
         }
+
+        console.error(`[PUSH] Failed to send to subscription ${sub.id}:`, err?.message);
+        return { outcome: 'failed' as const };
       }
     }),
   );
+
+  const successCount = attempts.filter(item => item.outcome === 'sent').length;
+  const staleCount = attempts.filter(item => item.outcome === 'stale').length;
+  const failureCount = attempts.filter(item => item.outcome === 'failed').length;
+
+  const result: PushSendResult = {
+    status:
+      successCount === subscriptions.length
+        ? 'sent'
+        : successCount > 0 || staleCount > 0
+          ? 'partial'
+          : 'failed',
+    subscriptionCount: subscriptions.length,
+    successCount,
+    failureCount,
+    staleCount,
+    reason: options.reason,
+  };
+
+  await logPushDeliveryResult({ clientId, source: options.source, payload, result, metadata: options.metadata });
+  return result;
 }

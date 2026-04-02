@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Bell, LogOut, Mail, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
+import { Bell, LogOut, Mail, Smartphone, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
@@ -98,18 +98,42 @@ function ToggleRow({
   );
 }
 
+function NotificationStatusPill({ label, tone = 'neutral' }: { label: string; tone?: 'neutral' | 'good' | 'warn' }) {
+  const toneClassName =
+    tone === 'good'
+      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+      : tone === 'warn'
+        ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+        : 'bg-muted/50 text-muted-foreground border-border';
+
+  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${toneClassName}`}>{label}</span>;
+}
+
 export default function UserProfilePage() {
   const router = useRouter();
   const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const { data: privacyData, isLoading: isPrivacyLoading } = usePrivacyCenter();
   const { updateConsent } = usePrivacyActions();
-  const { status: pushStatus, isLoading: isPushLoading, subscribe, unsubscribe } = usePushSubscription();
+  const {
+    status: pushStatus,
+    isLoading: isPushLoading,
+    isTesting,
+    subscribe,
+    unsubscribe,
+    testNotification,
+    installState,
+    platform,
+    permissionState,
+    isServiceWorkerReady,
+    errorMessage,
+  } = usePushSubscription();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+  const [testFeedback, setTestFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -170,6 +194,46 @@ export default function UserProfilePage() {
       setIsSavingNotifications(false);
     }
   };
+
+  const handleTestNotification = async () => {
+    setTestFeedback(null);
+    const result = await testNotification();
+    if (!result) {
+      setTestFeedback('Test notification could not be sent. Check the setup details below and try again.');
+      return;
+    }
+
+    if (result.result.status === 'sent' || result.result.status === 'partial') {
+      setTestFeedback('Test notification sent. If nothing appears, check your phone notification settings and Home Screen install.');
+      return;
+    }
+
+    setTestFeedback(
+      result.result.reason === 'no_subscriptions'
+        ? 'No active push subscription was found for this device yet.'
+        : 'Test notification was skipped or failed. Please review the notification setup state below.',
+    );
+  };
+
+  const notificationDescription =
+    pushStatus === 'unsupported'
+      ? 'This browser does not support push notifications.'
+      : pushStatus === 'denied' || permissionState === 'denied'
+        ? 'Notifications are blocked in your browser or system settings.'
+        : pushStatus === 'subscribed'
+          ? 'This device is ready for coach message alerts.'
+          : installState === 'browser' && (platform === 'ios' || platform === 'android')
+            ? 'Install the app to your Home Screen for better background delivery.'
+            : 'Get alerted when your coach sends you a new message.';
+
+  const setupGuidance =
+    installState === 'browser' && platform === 'ios'
+      ? 'On iPhone, use Share > Add to Home Screen, then reopen the installed app and enable notifications there.'
+      : installState === 'browser' && platform === 'android'
+        ? 'On Android, install the app from your browser menu for the best chance of background notification delivery.'
+        : pushStatus === 'subscribed'
+          ? 'Best results come from using the installed Home Screen app with notifications allowed.'
+          : 'Notifications work best when the app is installed and opened from your Home Screen.';
 
   return (
     <div className="min-h-screen bg-background">
@@ -251,17 +315,54 @@ export default function UserProfilePage() {
                 <ToggleRow
                   icon={<Bell className="h-4 w-4" />}
                   label="Coach Messages"
-                  description={
-                    pushStatus === 'unsupported'
-                      ? 'This browser does not support push notifications.'
-                      : pushStatus === 'denied'
-                        ? 'Notifications are blocked in your browser settings.'
-                        : 'Get alerted when your coach sends you a new message.'
-                  }
+                  description={notificationDescription}
                   checked={Boolean(privacyData?.consents.messageNotifications)}
-                  disabled={isPrivacyLoading || isSavingNotifications || isPushLoading || pushStatus === 'unsupported'}
+                  disabled={
+                    isPrivacyLoading ||
+                    isSavingNotifications ||
+                    isPushLoading ||
+                    pushStatus === 'unsupported' ||
+                    permissionState === 'denied'
+                  }
                   onToggle={handleNotificationToggle}
                 />
+                <div className="px-4 pb-4">
+                  <div className="ml-12 rounded-2xl bg-muted/25 p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <NotificationStatusPill
+                        label={pushStatus === 'subscribed' ? 'Subscribed' : pushStatus === 'denied' ? 'Blocked' : pushStatus === 'unsupported' ? 'Unsupported' : 'Not enabled'}
+                        tone={pushStatus === 'subscribed' ? 'good' : pushStatus === 'denied' ? 'warn' : 'neutral'}
+                      />
+                      <NotificationStatusPill
+                        label={installState === 'installed' ? 'Home Screen app' : 'Browser tab'}
+                        tone={installState === 'installed' ? 'good' : 'neutral'}
+                      />
+                      <NotificationStatusPill
+                        label={isServiceWorkerReady ? 'Background ready' : 'Background not ready'}
+                        tone={isServiceWorkerReady ? 'good' : 'warn'}
+                      />
+                    </div>
+
+                    <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
+                      <Smartphone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <p>{setupGuidance}</p>
+                    </div>
+
+                    {errorMessage ? <p className="mt-3 text-xs text-destructive">{errorMessage}</p> : null}
+                    {testFeedback ? <p className="mt-3 text-xs text-foreground">{testFeedback}</p> : null}
+
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleTestNotification}
+                        disabled={isTesting || pushStatus !== 'subscribed'}
+                        className="inline-flex items-center rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isTesting ? 'Sending test…' : 'Send Test Notification'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <div className="ml-16 h-px bg-transparent" />
               </SettingsGroup>
             </>

@@ -103,6 +103,7 @@ model Client {
   deletionRequests  DeletionRequest[]
   conversations     Conversation[]
   pushSubscriptions PushSubscription[]
+  notificationDeliveryLogs NotificationDeliveryLog[]
 
   @@map("clients")
 }
@@ -143,6 +144,26 @@ model PushSubscription {
   @@unique([clientId, endpoint])
   @@index([clientId])
   @@map("push_subscriptions")
+}
+
+model NotificationDeliveryLog {
+  id                String   @id @default(cuid())
+  clientId          String
+  source            String
+  status            String
+  subscriptionCount Int      @default(0)
+  successCount      Int      @default(0)
+  failureCount      Int      @default(0)
+  staleCount        Int      @default(0)
+  reason            String?
+  payloadJson       String?
+  createdAt         DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId, createdAt])
+  @@index([source, createdAt])
+  @@map("notification_delivery_logs")
 }
 
 model Message {
