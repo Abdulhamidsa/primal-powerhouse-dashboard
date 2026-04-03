@@ -244,7 +244,7 @@ export default function Navigation({
   };
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className={cn('bg-background', isChatRoute ? 'flex h-dvh flex-col overflow-hidden' : 'min-h-dvh')}>
       <header className="sticky top-0 z-30 hidden border-b border-border bg-card/80 backdrop-blur-xl lg:block">
         <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
@@ -328,7 +328,6 @@ export default function Navigation({
           </div>
         </div>
       </header>
-
       {userType === 'user' ? (
         <div
           className="sticky top-0 z-20 border-b border-border bg-card/80 px-4 pb-2 pt-3 backdrop-blur-xl lg:hidden"
@@ -370,20 +369,11 @@ export default function Navigation({
           </div>
         </div>
       ) : null}
-
       <main
         className={cn(
           'w-full',
           isChatRoute
-            ? [
-                'min-h-[calc(100dvh-96px)]',
-                'overflow-hidden',
-                'pb-0',
-                'lg:h-[calc(100dvh-96px)]',
-                'lg:min-h-0',
-                'lg:px-6',
-                'lg:py-6',
-              ]
+            ? ['flex-1 min-h-0 overflow-hidden', 'lg:px-6', 'lg:py-6']
             : ['min-h-[calc(100dvh-96px)]', 'overflow-y-auto', 'pb-0', 'lg:min-h-[calc(100dvh-96px)]'],
         )}
       >
@@ -401,22 +391,23 @@ export default function Navigation({
           />
         ) : null}
       </main>
-
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-40 h-24 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
-        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
-      >
-        <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
-          {navItems.map(item => (
-            <MobileTabItem
-              key={item.href}
-              item={item}
-              active={isActivePath(pathname, item.href)}
-              unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
-            />
-          ))}
-        </div>
-      </nav>
+      {!isChatRoute ? (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-40 h-24 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
+          style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
+        >
+          <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
+            {navItems.map(item => (
+              <MobileTabItem
+                key={item.href}
+                item={item}
+                active={isActivePath(pathname, item.href)}
+                unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
+              />
+            ))}
+          </div>
+        </nav>
+      ) : null}{' '}
     </div>
   );
 }

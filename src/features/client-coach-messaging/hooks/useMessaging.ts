@@ -63,7 +63,7 @@ function normalizeAttachments(attachments: MessageAttachment[]): MessageAttachme
 function updateConversationListPreview(
   previous: ConversationListResponse | undefined,
   conversationId: string,
-  messageCreatedAt: string
+  messageCreatedAt: string,
 ): ConversationListResponse | undefined {
   if (!previous) return previous;
 
@@ -108,7 +108,7 @@ export function useEnsureConversation() {
 
       return conversation;
     },
-    [mutate]
+    [mutate],
   );
 
   return { ensureConversation };
@@ -126,7 +126,7 @@ export function useConversationMessages(conversationId: string | null) {
       // Realtime updates come from Pusher; polling can cause signed media URLs to rotate and appear as reloads.
       refreshInterval: 0,
       revalidateOnFocus: false,
-    }
+    },
   );
 
   useEffect(() => {
@@ -155,7 +155,7 @@ export function useConversationMessages(conversationId: string | null) {
         buildConversationsUrl(),
         (previous: ConversationListResponse | undefined) =>
           updateConversationListPreview(previous, message.conversationId, message.createdAt),
-        false
+        false,
       );
     };
 
@@ -166,6 +166,27 @@ export function useConversationMessages(conversationId: string | null) {
       pusher.unsubscribe(channelName);
     };
   }, [conversationId, mutate, globalMutate]);
+
+  // Optimistically clear unreadCount for this conversation as soon as messages are fetched.
+  // The server already writes clientLastReadAt on every message GET, so this just makes
+  // the navigation dot disappear immediately without waiting for the next conversations poll.
+  useEffect(() => {
+    if (!conversationId || !data) return;
+
+    globalMutate(
+      buildConversationsUrl(),
+      (previous: ConversationListResponse | undefined) => {
+        if (!previous) return previous;
+        const item = previous.items.find(c => c.id === conversationId);
+        if (!item || item.unreadCount === 0) return previous;
+        return {
+          ...previous,
+          items: previous.items.map(c => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)),
+        };
+      },
+      false,
+    );
+  }, [conversationId, data, globalMutate]);
 
   const markPending = (message: ChatMessage): ChatMessage => ({
     ...message,
@@ -222,7 +243,7 @@ export function useConversationMessages(conversationId: string | null) {
         const merged = dedupeMessagesById(
           previous.items
             .filter(item => item.id !== optimisticId)
-            .concat({ ...created, deliveryStatus: 'sent', clientTempId: optimisticId })
+            .concat({ ...created, deliveryStatus: 'sent', clientTempId: optimisticId }),
         );
 
         return {
@@ -235,7 +256,7 @@ export function useConversationMessages(conversationId: string | null) {
         buildConversationsUrl(),
         (previous: ConversationListResponse | undefined) =>
           updateConversationListPreview(previous, conversationId, created.createdAt),
-        false
+        false,
       );
     } catch (error) {
       mutate(previous => {
@@ -280,7 +301,7 @@ export function useConversationMessages(conversationId: string | null) {
           items: dedupeMessagesById(
             previous.items
               .filter(item => item.id !== messageId)
-              .concat({ ...created, deliveryStatus: 'sent', clientTempId: target.clientTempId ?? messageId })
+              .concat({ ...created, deliveryStatus: 'sent', clientTempId: target.clientTempId ?? messageId }),
           ),
         };
       }, false);
@@ -289,7 +310,7 @@ export function useConversationMessages(conversationId: string | null) {
         buildConversationsUrl(),
         (previous: ConversationListResponse | undefined) =>
           updateConversationListPreview(previous, conversationId, created.createdAt),
-        false
+        false,
       );
     } catch (error) {
       mutate(previous => {
@@ -327,7 +348,7 @@ export function useMessagingSelection(conversations: ConversationSummary[]) {
         const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bTime - aTime;
       }),
-    [conversations]
+    [conversations],
   );
 
   useEffect(() => {

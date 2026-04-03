@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { MessageList } from '@/features/client-coach-messaging/components/MessageList';
 import { MessageComposer } from '@/features/client-coach-messaging/components/MessageComposer';
 import {
@@ -18,9 +20,13 @@ function clampSidebarWidth(nextWidth: number): number {
 }
 
 export function ChatPanel({ hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
   const previousConversationIdRef = useRef<string | null>(null);
+  const hasInitialScrolledSet = useRef<Set<string>>(new Set());
+  const wasNearBottomRef = useRef(true);
+  const previousMessagesCountRef = useRef(0);
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -58,40 +64,58 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
     window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
   }, [hideConversationList, sidebarWidth]);
 
+  // Track whether the user is near the bottom so we know whether to auto-scroll on new messages.
+  useEffect(() => {
+    const viewport = messageViewportRef.current;
+    if (!viewport) return;
+    const onScroll = () => {
+      wasNearBottomRef.current = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <= 72;
+    };
+    viewport.addEventListener('scroll', onScroll, { passive: true });
+    return () => viewport.removeEventListener('scroll', onScroll);
+  }, []);
+
   useEffect(() => {
     const viewport = messageViewportRef.current;
     if (!viewport) return;
 
+    const convId = selectedConversationId ?? '';
     const conversationChanged = previousConversationIdRef.current !== selectedConversationId;
     previousConversationIdRef.current = selectedConversationId;
 
-    const distanceFromBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
-    const isNearBottom = distanceFromBottom <= 72;
+    const prevCount = previousMessagesCountRef.current;
+    previousMessagesCountRef.current = messages.length;
 
-    // Always jump to the bottom when switching conversations.
     if (conversationChanged) {
-      const animationFrameId = window.requestAnimationFrame(() => {
-        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' });
-      });
-
-      return () => window.cancelAnimationFrame(animationFrameId);
+      // Reset per-conversation state so the next load always jumps to bottom.
+      hasInitialScrolledSet.current.delete(convId);
+      wasNearBottomRef.current = true;
     }
 
-    // Keep user position intact when reading older messages.
-    if (!isNearBottom) {
+    // First time we have messages for this conversation: hard-jump to bottom.
+    if (!hasInitialScrolledSet.current.has(convId)) {
+      if (messages.length > 0) {
+        hasInitialScrolledSet.current.add(convId);
+        const id = window.requestAnimationFrame(() =>
+          viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' }),
+        );
+        return () => window.cancelAnimationFrame(id);
+      }
       return;
     }
 
-    const scrollToBottom = () => {
-      const nextDistanceFromBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
-      viewport.scrollTo({
-        top: viewport.scrollHeight,
-        behavior: nextDistanceFromBottom <= 12 ? 'auto' : 'smooth',
-      });
-    };
+    // Subsequent message additions (e.g. optimistic send, Pusher push):
+    // Always scroll when the user just sent (last message is pending).
+    // Otherwise only scroll if the user was near the bottom.
+    const lastMessage = messages[messages.length - 1];
+    const userJustSent = lastMessage?.deliveryStatus === 'pending';
 
-    const animationFrameId = window.requestAnimationFrame(scrollToBottom);
-    return () => window.cancelAnimationFrame(animationFrameId);
+    if (messages.length > prevCount && (userJustSent || wasNearBottomRef.current)) {
+      const id = window.requestAnimationFrame(() =>
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' }),
+      );
+      return () => window.cancelAnimationFrame(id);
+    }
   }, [selectedConversationId, messages]);
 
   const startDrag = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -175,9 +199,20 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
 
         <section className="flex min-h-0 flex-1 flex-col">
           <div
-            className="border-b px-4 py-2.5"
+            className="flex items-center gap-3 border-b px-4 py-2.5"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
+            {hideConversationList ? (
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label="Back"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--color-bg-alt)]"
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+              >
+                <ArrowLeft size={16} />
+              </button>
+            ) : null}
             <p
               className="text-[11px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: 'var(--color-text-muted)' }}
@@ -201,10 +236,11 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
           </div>
 
           <div
-            className="border-t pb-[calc(6.25rem+env(safe-area-inset-bottom))] lg:pb-0"
+            className="border-t"
             style={{
               borderColor: 'var(--color-border)',
               background: 'var(--color-surface)',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
           >
             <MessageComposer conversationId={selectedConversationId} onSendAction={sendMessage} />

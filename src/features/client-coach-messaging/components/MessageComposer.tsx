@@ -122,11 +122,15 @@ export function MessageComposer({
         queued = [...queued, uploadedVideo];
       }
 
-      await onSendAction(draft, queued);
+      // Clear the composer immediately so the UI feels instant.
+      // The optimistic message is injected inside onSendAction before the API call.
+      const draftToSend = draft;
       setDraft('');
       setAttachments([]);
       recorder.clearRecording();
       videoRecorder.clearRecording();
+
+      await onSendAction(draftToSend, queued);
     } catch (error) {
       console.error('Send message failed:', error);
     } finally {
