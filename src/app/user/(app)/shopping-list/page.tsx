@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import { CheckCheck, Clipboard, RefreshCcw, ShoppingBasket } from 'lucide-react';
+import { getUserMealSelection, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
 import { useGenerateShoppingList } from '@/features/meals/hooks/useGenerateShoppingList';
 import { loadShoppingListDraft } from '@/features/meals/utils/shoppingListStorage';
 import type { ShoppingListEntry } from '@/features/meals/types/shoppingList.types';
@@ -12,12 +14,33 @@ export default function ShoppingListPage() {
   const { run, isLoading, error, data } = useGenerateShoppingList();
   const [checkedById, setCheckedById] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    const draft = loadShoppingListDraft();
-    if (!draft.length) return;
+  const selectionSWR = useSWR(USER_MEAL_SELECTION_URL, getUserMealSelection);
 
-    void run({ items: draft });
-  }, [run]);
+  const savedItems = useMemo(() => {
+    return (selectionSWR.data?.selection?.items ?? []).map(item => ({
+      mealType: item.mealType,
+      slotIndex: item.slotIndex,
+      mealId: item.mealId,
+      sourceAssignmentId: item.sourceAssignmentId ?? null,
+    }));
+  }, [selectionSWR.data]);
+
+  const handleGenerate = () => {
+    if (savedItems.length) {
+      void run({ items: savedItems });
+      return;
+    }
+    const draft = loadShoppingListDraft();
+    if (draft.length) {
+      void run({ items: draft });
+    }
+  };
+
+  useEffect(() => {
+    if (!selectionSWR.data) return;
+    handleGenerate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionSWR.data]);
 
   useEffect(() => {
     if (!data?.selectionFingerprint) return;
@@ -110,16 +133,12 @@ export default function ShoppingListPage() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    const draft = loadShoppingListDraft();
-                    if (!draft.length) return;
-                    void run({ items: draft });
-                  }}
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-semibold text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={handleGenerate}
+                  disabled={isLoading || selectionSWR.isLoading}
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-translucent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <RefreshCcw size={12} />
-                  Regenerate
+                  Generate Shopping List
                 </button>
               </div>
             </div>

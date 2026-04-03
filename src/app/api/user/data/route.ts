@@ -14,7 +14,7 @@ export type DashboardUser = {
 };
 
 export async function GET(request: NextRequest) {
-  const { error, user } = await requireAuth(request);
+  const { error, user } = await requireAuth(request, 'client');
 
   if (error || !user) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

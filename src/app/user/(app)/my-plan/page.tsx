@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, Save, ShoppingCart, Undo2, Utensils, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Save, Undo2, Utensils, X } from 'lucide-react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
@@ -21,8 +20,6 @@ const TYPE_LABEL: Record<MealTypeKey, string> = {
 const TYPE_ORDER: MealTypeKey[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
 export default function UserMyPlanPage() {
-  const router = useRouter();
-
   const {
     loading,
     error,
@@ -122,16 +119,18 @@ export default function UserMyPlanPage() {
     setSwapState(null);
   };
 
-  const handleGenerateShoppingList = () => {
-    const draftSelection = draftItems.map(item => ({
-      mealType: item.mealType,
-      slotIndex: item.slotIndex,
-      mealId: item.mealId,
-      sourceAssignmentId: item.sourceAssignmentId ?? null,
-    }));
-
-    saveShoppingListDraft(draftSelection);
-    router.push('/user/shopping-list');
+  const handleSaveDraft = async () => {
+    const ok = await saveDraft();
+    if (ok) {
+      saveShoppingListDraft(
+        draftItems.map(item => ({
+          mealType: item.mealType,
+          slotIndex: item.slotIndex,
+          mealId: item.mealId,
+          sourceAssignmentId: item.sourceAssignmentId ?? null,
+        })),
+      );
+    }
   };
 
   return (
@@ -162,36 +161,17 @@ export default function UserMyPlanPage() {
               </div>
 
               <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
-                Choose your meals and keep your plan simple and consistent.
+                Select your meals for today. Your choices are saved and used to track adherence and build your shopping
+                list.
               </p>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {adherenceSummary ? (
                   <span className="rounded-full bg-[var(--color-accent-translucent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)]">
                     {adherenceSummary.completion.completedCount}/{adherenceSummary.completion.totalSelectedCount}{' '}
-                    completed
+                    completed today
                   </span>
                 ) : null}
-
-                <button
-                  type="button"
-                  onClick={handleGenerateShoppingList}
-                  disabled={!isPlanComplete || loading}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-semibold text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ShoppingCart size={12} />
-                  Generate Shopping List
-                </button>
-
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    isPlanComplete
-                      ? 'bg-emerald-500/12 text-emerald-400'
-                      : 'bg-[var(--color-accent-translucent)] text-[var(--color-accent)]'
-                  }`}
-                >
-                  {isPlanComplete ? 'Complete' : 'Incomplete'}
-                </span>
 
                 {hasChanges ? (
                   <span className="rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-400">
@@ -261,7 +241,7 @@ export default function UserMyPlanPage() {
                     No {TYPE_LABEL[section.type].toLowerCase()} selected yet.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="flex gap-4 ">
                     {section.items.map(item => (
                       <PlanSelectedMealCard
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
@@ -271,6 +251,7 @@ export default function UserMyPlanPage() {
                         protein={item.meal.protein}
                         carbs={item.meal.carbs}
                         fat={item.meal.fat}
+                        imageUrl={item.meal.imageUrl ?? undefined}
                         ingredientsSource={item.meal.ingredients}
                         instructionsSource={item.meal.instructions}
                         isCompleted={isCompleted(item)}
@@ -312,6 +293,7 @@ export default function UserMyPlanPage() {
                     protein={item.side.protein}
                     carbs={item.side.carbs}
                     fat={item.side.fat}
+                    imageUrl={item.side.imageUrl ?? undefined}
                     ingredientsSource={item.side.ingredients}
                     instructionsSource={item.side.instructions}
                     helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
@@ -419,7 +401,7 @@ export default function UserMyPlanPage() {
 
               <button
                 type="button"
-                onClick={saveDraft}
+                onClick={handleSaveDraft}
                 disabled={!hasChanges || isSaving}
                 className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >

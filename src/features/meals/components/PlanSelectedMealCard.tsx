@@ -1,8 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { CheckCircle2, Circle, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
+
+const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
 type PlanSelectedMealCardTabKey = 'ingredients' | 'instructions';
 
@@ -13,6 +16,7 @@ export function PlanSelectedMealCard({
   protein,
   carbs,
   fat,
+  imageUrl,
   ingredientsSource,
   instructionsSource,
   helperText,
@@ -28,6 +32,7 @@ export function PlanSelectedMealCard({
   protein: number;
   carbs: number;
   fat: number;
+  imageUrl?: string;
   ingredientsSource?: unknown;
   instructionsSource?: unknown;
   helperText?: string;
@@ -57,6 +62,16 @@ export function PlanSelectedMealCard({
           borderColor: isCompleted ? 'var(--color-accent)' : 'var(--color-border)',
         }}
       >
+        <div className="relative h-32 w-full">
+          <Image
+            src={imageUrl?.trim() ? imageUrl : fallbackImage}
+            alt={name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
+        </div>
         <div className="space-y-3 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -122,6 +137,7 @@ export function PlanSelectedMealCard({
           protein={protein}
           carbs={carbs}
           fat={fat}
+          imageUrl={imageUrl}
           ingredients={ingredients}
           instructions={instructions}
           onClose={() => setShowDetails(false)}
@@ -137,6 +153,7 @@ function MealDetailModal({
   protein,
   carbs,
   fat,
+  imageUrl,
   ingredients,
   instructions,
   onClose,
@@ -146,6 +163,7 @@ function MealDetailModal({
   protein: number;
   carbs: number;
   fat: number;
+  imageUrl?: string;
   ingredients: string[];
   instructions: string[];
   onClose: () => void;
@@ -161,34 +179,50 @@ function MealDetailModal({
   const [activeTab, setActiveTab] = useState<PlanSelectedMealCardTabKey>('ingredients');
 
   return (
-    <div
-      className="fixed inset-0 z-[120] overflow-y-auto bg-black/60 px-4 py-24 backdrop-blur-sm lg:py-8"
-      onClick={onClose}
-    >
-      <div className="flex min-h-full items-center justify-center">
+    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="flex min-h-full items-end justify-center md:items-center md:p-6">
         <div
-          className="w-full max-w-md overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
-          style={{ maxHeight: 'calc(100vh - 8rem)' }}
+          className="flex w-full flex-col overflow-hidden rounded-t-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(0,0,0,0.4)] md:max-w-lg md:rounded-[28px]"
+          style={{
+            maxHeight: '92dvh',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
           onClick={e => e.stopPropagation()}
         >
-          <div className="flex items-start justify-between gap-3 p-4 pb-3">
-            <div className="min-w-0">
-              <p className="line-clamp-1 text-base font-semibold text-[var(--color-text)]">{name}</p>
-              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
-                {calories} kcal • Protein {protein}g • Carbs {carbs}g • Fat {fat}g
+          {/* Drag handle — mobile only */}
+          <div className="flex shrink-0 justify-center pt-3 md:hidden">
+            <div className="h-1 w-10 rounded-full bg-[var(--color-border)]" />
+          </div>
+
+          {/* Hero image — full width */}
+          <div className="relative h-56 w-full shrink-0 md:h-64">
+            <Image
+              src={imageUrl?.trim() ? imageUrl : fallbackImage}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 512px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+            {/* Name overlay at bottom of image */}
+            <div className="absolute inset-x-0 bottom-0 p-4">
+              <p className="line-clamp-2 text-base font-semibold text-white drop-shadow-sm">{name}</p>
+              <p className="mt-0.5 text-xs text-white/80">
+                {calories} kcal • P {protein}g • C {carbs}g • F {fat}g
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+              className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60 active:scale-95"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
 
-          <div className="px-4 pb-2">
+          {/* Tabs */}
+          <div className="shrink-0 px-4 pt-3 pb-2">
             <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {availableTabs.map(tab => {
                 const isActive = activeTab === tab.key;
@@ -212,7 +246,8 @@ function MealDetailModal({
             </div>
           </div>
 
-          <div className="mx-4 mb-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)]">
+          {/* Scrollable list */}
+          <div className="mx-4 mb-4 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] [-webkit-overflow-scrolling:touch]">
             {activeTab === 'ingredients' ? (
               <ListContent items={ingredients} emptyState="No ingredients provided." />
             ) : (
@@ -239,7 +274,7 @@ function ListContent({
   }
 
   return (
-    <ul className="max-h-52 space-y-2 overflow-y-auto px-3 py-3">
+    <ul className="space-y-2 px-3 py-3">
       {items.map((item, index) => (
         <li key={`${item}-${index}`} className="flex items-start gap-2 text-xs leading-5 text-[var(--color-text)]">
           <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] text-[var(--color-text-muted)]">

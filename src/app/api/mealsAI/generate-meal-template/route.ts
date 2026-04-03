@@ -1162,42 +1162,30 @@ export async function POST(request: Request) {
       return a.name.localeCompare(b.name);
     });
 
+    let preferredProteinWarning: string | null = null;
+    let enforcePreferredProtein = Boolean(preferredProtein);
+
     if (preferredProtein) {
       const mealTypeForProtein = mealType as ProteinSelectableMealType;
       const hasDishSupport = getDishPool(mealType, foodOrigin).some(dish =>
         isDishCompatibleWithPreferredProtein(dish, preferredProtein),
       );
 
-      if (!hasDishSupport) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `No dish templates currently support \"${preferredProtein}\" for this meal type and origin. Choose another main protein.`,
-          },
-          { status: 400 },
-        );
-      }
-
       const matchingPreferredFoods = foodsByPriority.filter(
         food =>
           isFoodMatchingProteinSelection(food, preferredProtein) && isMainProteinCandidate(food, mealTypeForProtein),
       );
 
-      if (matchingPreferredFoods.length === 0) {
+      if (!hasDishSupport || matchingPreferredFoods.length === 0) {
+        enforcePreferredProtein = false;
         const suggestions = buildMainProteinOptions(foodsByPriority, mealTypeForProtein)
           .slice(0, 3)
           .map(item => item.label)
           .join(', ');
 
-        return NextResponse.json(
-          {
-            success: false,
-            message: suggestions
-              ? `No strong main-protein foods found for "${preferredProtein}". Try: ${suggestions}.`
-              : `No strong main-protein foods found for "${preferredProtein}".`,
-          },
-          { status: 400 },
-        );
+        preferredProteinWarning = suggestions
+          ? `Preferred protein "${preferredProtein}" could not be enforced for this meal type/origin, so generation used the best available template mix. Try: ${suggestions}.`
+          : `Preferred protein "${preferredProtein}" could not be enforced for this meal type/origin, so generation used the best available template mix.`;
       }
     }
 
@@ -1245,7 +1233,7 @@ export async function POST(request: Request) {
                 avoidCoreDishReferences,
                 avoidMealNames: mergedAvoidMealNames,
                 targetComplexity,
-                preferredProtein,
+                preferredProtein: enforcePreferredProtein ? preferredProtein : undefined,
               }),
             },
           ],
@@ -1284,7 +1272,7 @@ export async function POST(request: Request) {
         }
 
         const preferredProteinError = validatePreferredProtein(aiMeal, preferredProtein);
-        if (preferredProteinError) {
+        if (enforcePreferredProtein && preferredProteinError) {
           lastErrorMessage = preferredProteinError;
           continue;
         }
@@ -1328,6 +1316,10 @@ export async function POST(request: Request) {
         );
 
         const warnings: string[] = [];
+
+        if (preferredProteinWarning) {
+          warnings.push(preferredProteinWarning);
+        }
 
         if (unmatchedIngredients.length > 0) {
           warnings.push(
