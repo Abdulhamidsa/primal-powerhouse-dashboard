@@ -179,81 +179,74 @@ function MealDetailModal({
   const [activeTab, setActiveTab] = useState<PlanSelectedMealCardTabKey>('ingredients');
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex min-h-full items-end justify-center md:items-center md:p-6">
-        <div
-          className="flex w-full flex-col overflow-hidden rounded-t-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(0,0,0,0.4)] md:max-w-lg md:rounded-[28px]"
-          style={{
-            maxHeight: '92dvh',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          }}
-          onClick={e => e.stopPropagation()}
-        >
-          {/* Drag handle — mobile only */}
-          <div className="flex shrink-0 justify-center pt-3 md:hidden">
-            <div className="h-1 w-10 rounded-full bg-[var(--color-border)]" />
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="flex w-full max-w-sm flex-col overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
+        style={{ maxHeight: '85dvh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Hero image — full width */}
+        <div className="relative h-48 w-full shrink-0">
+          <Image
+            src={imageUrl?.trim() ? imageUrl : fallbackImage}
+            alt={name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 384px"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          {/* Name overlay at bottom of image */}
+          <div className="absolute inset-x-0 bottom-0 p-4">
+            <p className="line-clamp-2 text-base font-semibold text-white drop-shadow-sm">{name}</p>
+            <p className="mt-0.5 text-xs text-white/80">
+              {calories} kcal • P {protein}g • C {carbs}g • F {fat}g
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60 active:scale-95"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
-          {/* Hero image — full width */}
-          <div className="relative h-56 w-full shrink-0 md:h-64">
-            <Image
-              src={imageUrl?.trim() ? imageUrl : fallbackImage}
-              alt={name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 512px"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-            {/* Name overlay at bottom of image */}
-            <div className="absolute inset-x-0 bottom-0 p-4">
-              <p className="line-clamp-2 text-base font-semibold text-white drop-shadow-sm">{name}</p>
-              <p className="mt-0.5 text-xs text-white/80">
-                {calories} kcal • P {protein}g • C {carbs}g • F {fat}g
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60 active:scale-95"
-            >
-              <X size={16} />
-            </button>
+        {/* Tabs */}
+        <div className="shrink-0 px-4 pt-3 pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {availableTabs.map(tab => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium"
+                  style={{
+                    borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
+                    color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                    background: isActive ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
+                  }}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* Tabs */}
-          <div className="shrink-0 px-4 pt-3 pb-2">
-            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {availableTabs.map(tab => {
-                const isActive = activeTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setActiveTab(tab.key)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium"
-                    style={{
-                      borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                      color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                      background: isActive ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
-                    }}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Scrollable list */}
-          <div className="mx-4 mb-4 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] [-webkit-overflow-scrolling:touch]">
-            {activeTab === 'ingredients' ? (
-              <ListContent items={ingredients} emptyState="No ingredients provided." />
-            ) : (
-              <ListContent items={instructions} emptyState="No instructions provided." numbered />
-            )}
-          </div>
+        {/* Scrollable list */}
+        <div className="mx-4 mb-4 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] [-webkit-overflow-scrolling:touch]">
+          {activeTab === 'ingredients' ? (
+            <ListContent items={ingredients} emptyState="No ingredients provided." />
+          ) : (
+            <ListContent items={instructions} emptyState="No instructions provided." numbered />
+          )}
         </div>
       </div>
     </div>

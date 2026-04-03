@@ -241,7 +241,7 @@ export default function UserMyPlanPage() {
                     No {TYPE_LABEL[section.type].toLowerCase()} selected yet.
                   </div>
                 ) : (
-                  <div className="flex gap-4 ">
+                  <div className="grid w-full gap-4 ">
                     {section.items.map(item => (
                       <PlanSelectedMealCard
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
