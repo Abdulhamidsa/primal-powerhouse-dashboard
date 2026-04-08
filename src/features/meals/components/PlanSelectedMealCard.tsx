@@ -22,8 +22,8 @@ export function PlanSelectedMealCard({
   helperText,
   isCompleted = false,
   completedAt,
-  onToggleCompletion,
-  onSwap,
+  onToggleCompletionAction,
+  onSwapAction,
   isPending = false,
 }: {
   badgeLabel: string;
@@ -38,8 +38,8 @@ export function PlanSelectedMealCard({
   helperText?: string;
   isCompleted?: boolean;
   completedAt?: string;
-  onToggleCompletion?: () => void;
-  onSwap?: () => void;
+  onToggleCompletionAction?: () => void;
+  onSwapAction?: () => void;
   isPending?: boolean;
 }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -94,10 +94,10 @@ export function PlanSelectedMealCard({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-1">
-            {onToggleCompletion !== undefined ? (
+            {onToggleCompletionAction !== undefined ? (
               <button
                 type="button"
-                onClick={onToggleCompletion}
+                onClick={onToggleCompletionAction}
                 disabled={isPending}
                 aria-label={isCompleted ? 'Mark as not done' : 'Mark as done'}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
@@ -107,10 +107,10 @@ export function PlanSelectedMealCard({
               </button>
             ) : null}
 
-            {onSwap !== undefined ? (
+            {onSwapAction !== undefined ? (
               <button
                 type="button"
-                onClick={onSwap}
+                onClick={onSwapAction}
                 aria-label="Swap meal"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >

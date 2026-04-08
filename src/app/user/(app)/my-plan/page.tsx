@@ -257,8 +257,8 @@ export default function UserMyPlanPage() {
                         isCompleted={isCompleted(item)}
                         completedAt={completedAtByKey.get(`${item.mealType}:${item.slotIndex}:${item.mealId}`)}
                         isPending={isPending(item)}
-                        onToggleCompletion={() => toggleCompletion(item)}
-                        onSwap={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
+                        onToggleCompletionAction={() => toggleCompletion(item)}
+                        onSwapAction={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
                       />
                     ))}
                   </div>
