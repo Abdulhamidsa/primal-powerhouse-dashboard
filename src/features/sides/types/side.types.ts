@@ -23,6 +23,7 @@ export const SIDE_TYPE_OPTIONS: Array<{ value: SideType; label: string }> = [
 export const SIDE_FOOD_ORIGIN_OPTIONS: Array<{ value: 'ANY' | SideFoodOrigin; label: string }> = [
   { value: 'ANY', label: 'Any origin' },
   { value: 'Middle Eastern', label: 'Middle Eastern' },
+  { value: 'Syrian', label: 'Syrian' },
   { value: 'Western', label: 'Western' },
   { value: 'Greek', label: 'Greek' },
   { value: 'Mediterranean', label: 'Mediterranean' },
@@ -30,4 +31,8 @@ export const SIDE_FOOD_ORIGIN_OPTIONS: Array<{ value: 'ANY' | SideFoodOrigin; la
   { value: 'Italian', label: 'Italian' },
   { value: 'Asian', label: 'Asian' },
   { value: 'Indian', label: 'Indian' },
+  { value: 'Japanese', label: 'Japanese' },
+  { value: 'Korean', label: 'Korean' },
+  { value: 'Thai', label: 'Thai' },
+  { value: 'Turkish', label: 'Turkish' },
 ];

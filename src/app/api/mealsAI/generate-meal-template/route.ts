@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { FoodBaseUnit, FoodSource, MealType as PrismaMealType } from '@prisma/client';
+import { distance as levenshtein } from 'fastest-levenshtein';
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
 import { prisma } from '@/lib/prisma';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
@@ -15,40 +16,28 @@ import {
   mealTemplateAiResponseSchema,
   type MealTemplateAiResponse,
 } from '@/features/meals/schemas/generateMealTemplate.schema';
+import {
+  FAMOUS_DISHES,
+  ALLOWED_DISH_CUISINES,
+  type DishBlueprint,
+  type DishCuisineStyle,
+  type CookingMethod,
+} from '@/lib/meal-dishes';
 import type { FoodGenerationReadyRow } from '@/types/meal';
 
 type BuilderMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 type MatchMode = 'strict' | 'lenient';
 
-const ALLOWED_CUISINES = [
-  'Syrian',
-  'Middle Eastern',
-  'Western',
-  'Greek',
-  'Mediterranean',
-  'Italian',
-  'Mexican',
-  'Asian',
-  'Indian',
-] as const;
-type FoodOrigin = (typeof ALLOWED_CUISINES)[number];
-
-type DishBlueprint = {
-  name: string;
-  cuisineStyle: FoodOrigin;
-  mealTypes: BuilderMealType[];
-  famous: boolean;
-  proteins: string[];
-  carbs: string[];
-  keyIngredients: string[];
-  bannedIngredients?: string[];
-};
+// Re-export the imported cuisine list for use in validators
+const ALLOWED_CUISINES = ALLOWED_DISH_CUISINES;
+type FoodOrigin = DishCuisineStyle;
 
 type CandidateMeal = {
   mealName: string;
   type: BuilderMealType;
   cuisineStyle: FoodOrigin;
   coreDishReference: string;
+  cookingMethod: CookingMethod;
   complexity: 'simple' | 'advanced';
   servings: number;
   ingredients: Array<{
@@ -74,7 +63,17 @@ type CandidateMeal = {
     fiber: number;
   };
   warnings: string[];
-  unmatchedIngredients: Array<{ name: string; grams: number }>;
+  unmatchedIngredients: Array<{
+    name: string;
+    grams: number;
+    estimatedMacrosPer100g?: {
+      caloriesKcal: number;
+      proteinG: number;
+      carbsG: number;
+      fatG: number;
+      fiberG: number;
+    };
+  }>;
   score: number;
   matchCoverage: number;
 };
@@ -159,305 +158,7 @@ const FLAVOR_TERMS = [
   'labneh',
 ] as const;
 
-const FAMOUS_DISHES: DishBlueprint[] = [
-  {
-    name: 'Shish tawook plate',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['rice', 'pita'],
-    keyIngredients: ['chicken breast', 'garlic', 'lemon', 'yogurt', 'paprika', 'rice', 'parsley'],
-  },
-  {
-    name: 'Chicken shawarma plate',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['rice', 'pita'],
-    keyIngredients: ['chicken breast', 'garlic', 'yogurt', 'paprika', 'cumin', 'rice', 'tomato'],
-  },
-  {
-    name: 'Beef kofta with rice',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['beef'],
-    carbs: ['rice'],
-    keyIngredients: ['lean beef mince', 'parsley', 'onion', 'allspice', 'cumin', 'rice'],
-  },
-  {
-    name: 'Freekeh with chicken',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['freekeh'],
-    keyIngredients: ['chicken breast', 'freekeh', 'onion', 'cinnamon', 'allspice', 'parsley'],
-  },
-  {
-    name: 'Mujaddara with yogurt',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['lentils'],
-    carbs: ['lentils', 'rice'],
-    keyIngredients: ['lentils', 'rice', 'onion', 'cumin', 'plain yogurt'],
-  },
-  {
-    name: 'Shakshuka',
-    cuisineStyle: 'Middle Eastern',
-    mealTypes: ['BREAKFAST', 'LUNCH'],
-    famous: true,
-    proteins: ['egg'],
-    carbs: [],
-    keyIngredients: ['eggs', 'tomato', 'onion', 'garlic', 'paprika', 'cumin'],
-  },
-  {
-    name: 'Greek yogurt protein bowl',
-    cuisineStyle: 'Greek',
-    mealTypes: ['BREAKFAST', 'SNACK'],
-    famous: true,
-    proteins: ['yogurt'],
-    carbs: ['oats', 'fruit'],
-    keyIngredients: ['greek yogurt', 'oats', 'berries', 'banana', 'chia seeds'],
-  },
-  {
-    name: 'Overnight oats',
-    cuisineStyle: 'Western',
-    mealTypes: ['BREAKFAST', 'SNACK'],
-    famous: true,
-    proteins: ['yogurt', 'protein powder'],
-    carbs: ['oats'],
-    keyIngredients: ['oats', 'greek yogurt', 'protein powder', 'berries', 'banana'],
-  },
-  {
-    name: 'Protein pancakes',
-    cuisineStyle: 'Western',
-    mealTypes: ['BREAKFAST'],
-    famous: true,
-    proteins: ['egg', 'protein powder'],
-    carbs: ['oats', 'banana'],
-    keyIngredients: ['eggs', 'oats', 'banana', 'protein powder', 'cinnamon'],
-  },
-  {
-    name: 'Breakfast burrito',
-    cuisineStyle: 'Western',
-    mealTypes: ['BREAKFAST'],
-    famous: true,
-    proteins: ['egg', 'turkey'],
-    carbs: ['wrap'],
-    keyIngredients: ['eggs', 'tortilla wrap', 'turkey mince', 'cheese', 'tomato'],
-  },
-  {
-    name: 'Chicken souvlaki bowl',
-    cuisineStyle: 'Greek',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['rice', 'potato'],
-    keyIngredients: ['chicken breast', 'lemon', 'garlic', 'oregano', 'rice', 'cucumber', 'greek yogurt'],
-  },
-  {
-    name: 'Turkey meatballs with tomato pasta',
-    cuisineStyle: 'Mediterranean',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['turkey'],
-    carbs: ['pasta'],
-    keyIngredients: ['turkey mince', 'pasta', 'tomato sauce', 'garlic', 'basil'],
-  },
-  {
-    name: 'Beef bolognese pasta',
-    cuisineStyle: 'Western',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['beef'],
-    carbs: ['pasta'],
-    keyIngredients: ['lean beef mince', 'pasta', 'tomato sauce', 'onion', 'garlic', 'basil'],
-  },
-  {
-    name: 'Beef burrito bowl',
-    cuisineStyle: 'Western',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['beef'],
-    carbs: ['rice'],
-    keyIngredients: ['lean beef mince', 'rice', 'tomato', 'avocado', 'yogurt', 'paprika'],
-  },
-  {
-    name: 'Chicken fajita rice bowl',
-    cuisineStyle: 'Western',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['rice'],
-    keyIngredients: ['chicken breast', 'rice', 'bell pepper', 'onion', 'paprika', 'cumin'],
-  },
-  {
-    name: 'Pan-seared salmon with roasted vegetables',
-    cuisineStyle: 'Mediterranean',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['salmon'],
-    carbs: ['potato'],
-    keyIngredients: ['salmon fillet', 'potato', 'zucchini', 'tomato', 'olive oil', 'lemon'],
-  },
-  {
-    name: 'Salmon with quinoa and greens',
-    cuisineStyle: 'Mediterranean',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['salmon'],
-    carbs: ['quinoa'],
-    keyIngredients: ['salmon fillet', 'quinoa', 'spinach', 'lemon', 'olive oil'],
-  },
-  {
-    name: 'Grilled sirloin steak with roasted vegetables',
-    cuisineStyle: 'Western',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['steak', 'beef'],
-    carbs: ['potato'],
-    keyIngredients: ['sirloin steak', 'potato', 'broccoli', 'garlic', 'olive oil'],
-  },
-  {
-    name: 'Beef stir fry with broccoli',
-    cuisineStyle: 'Western',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['beef'],
-    carbs: ['rice'],
-    keyIngredients: ['beef strips', 'broccoli', 'rice', 'soy sauce', 'garlic', 'ginger'],
-  },
-  {
-    name: 'Tuna pasta salad',
-    cuisineStyle: 'Mediterranean',
-    mealTypes: ['LUNCH', 'SNACK'],
-    famous: true,
-    proteins: ['tuna'],
-    carbs: ['pasta'],
-    keyIngredients: ['tuna', 'pasta', 'cucumber', 'tomato', 'plain yogurt', 'lemon'],
-  },
-  {
-    name: 'Tuna arabi pita',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['LUNCH', 'SNACK'],
-    famous: true,
-    proteins: ['tuna'],
-    carbs: ['pita'],
-    keyIngredients: ['tuna', 'pita bread', 'plain yogurt', 'parsley', 'lemon'],
-  },
-  {
-    name: 'Labneh breakfast plate',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['BREAKFAST', 'SNACK'],
-    famous: true,
-    proteins: ['labneh'],
-    carbs: ['bread'],
-    keyIngredients: ['labneh', 'tomato', 'cucumber', 'olive oil', 'zaatar', 'pita bread'],
-  },
-  {
-    name: 'Ful medames',
-    cuisineStyle: 'Syrian',
-    mealTypes: ['BREAKFAST', 'LUNCH'],
-    famous: true,
-    proteins: ['chickpeas'],
-    carbs: ['chickpeas', 'bread'],
-    keyIngredients: ['fava beans', 'garlic', 'lemon', 'olive oil', 'parsley', 'tomato'],
-  },
-  {
-    name: 'Cottage cheese fruit bowl',
-    cuisineStyle: 'Western',
-    mealTypes: ['BREAKFAST', 'SNACK'],
-    famous: true,
-    proteins: ['cottage cheese'],
-    carbs: ['fruit'],
-    keyIngredients: ['cottage cheese', 'berries', 'banana', 'chia seeds'],
-  },
-  {
-    name: 'Protein smoothie bowl',
-    cuisineStyle: 'Western',
-    mealTypes: ['BREAKFAST', 'SNACK'],
-    famous: true,
-    proteins: ['protein powder', 'yogurt'],
-    carbs: ['banana', 'berries'],
-    keyIngredients: ['protein powder', 'banana', 'berries', 'greek yogurt', 'chia seeds'],
-  },
-  {
-    name: 'Chicken tikka masala bowl',
-    cuisineStyle: 'Indian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['rice'],
-    keyIngredients: ['chicken breast', 'tomato', 'garlic', 'ginger', 'plain yogurt', 'rice'],
-  },
-  {
-    name: 'Chana masala with rice',
-    cuisineStyle: 'Indian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chickpeas'],
-    carbs: ['rice', 'chickpeas'],
-    keyIngredients: ['chickpeas', 'tomato', 'onion', 'garlic', 'ginger', 'rice'],
-  },
-  {
-    name: 'Chicken teriyaki rice bowl',
-    cuisineStyle: 'Asian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['rice'],
-    keyIngredients: ['chicken breast', 'rice', 'soy sauce', 'garlic', 'ginger', 'broccoli'],
-  },
-  {
-    name: 'Beef and broccoli stir fry',
-    cuisineStyle: 'Asian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['beef'],
-    carbs: ['rice'],
-    keyIngredients: ['beef strips', 'broccoli', 'rice', 'soy sauce', 'garlic', 'ginger'],
-  },
-  {
-    name: 'Chicken fajita wrap',
-    cuisineStyle: 'Mexican',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['wrap'],
-    keyIngredients: ['chicken breast', 'tortilla wrap', 'bell pepper', 'onion', 'paprika', 'tomato'],
-  },
-  {
-    name: 'Beef taco bowl',
-    cuisineStyle: 'Mexican',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['beef'],
-    carbs: ['rice'],
-    keyIngredients: ['lean beef mince', 'rice', 'tomato', 'onion', 'avocado', 'paprika'],
-  },
-  {
-    name: 'Turkey meatball marinara',
-    cuisineStyle: 'Italian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['turkey'],
-    carbs: ['pasta'],
-    keyIngredients: ['turkey mince', 'pasta', 'tomato sauce', 'garlic', 'basil'],
-  },
-  {
-    name: 'Caprese chicken pasta',
-    cuisineStyle: 'Italian',
-    mealTypes: ['LUNCH', 'DINNER'],
-    famous: true,
-    proteins: ['chicken'],
-    carbs: ['pasta'],
-    keyIngredients: ['chicken breast', 'pasta', 'tomato', 'basil', 'mozzarella'],
-  },
-];
+// FAMOUS_DISHES is now imported from @/lib/meal-dishes (150+ dishes across 13 cuisines)
 
 function normalizeText(value: string): string {
   return value
@@ -469,10 +170,6 @@ function normalizeText(value: string): string {
 
 function uniqueStrings(values: string[]): string[] {
   return Array.from(new Set(values.map(v => v.trim()).filter(Boolean)));
-}
-
-function isSyrianMode(foodOrigin?: FoodOrigin): boolean {
-  return foodOrigin === 'Syrian';
 }
 
 function rotatePick<T>(items: readonly T[], attempt: number, seed = 0): T {
@@ -581,16 +278,34 @@ function buildDishLock(
   attempt: number,
   foodOrigin: FoodOrigin | undefined,
   avoidMealNames: string[],
+  avoidCuisines: string[],
+  avoidCookingMethods: string[],
   preferredProtein?: string,
 ): DishBlueprint {
   const pool = getDishPool(mealType, foodOrigin);
   const normalizedAvoid = new Set(avoidMealNames.map(normalizeText));
-  const filteredPool = pool.filter(dish => !normalizedAvoid.has(normalizeText(dish.name)));
+  const avoidCuisinesNorm = new Set(avoidCuisines.map(s => s.toLowerCase()));
+  const avoidMethodsNorm = new Set(avoidCookingMethods.map(s => s.toLowerCase()));
+
+  // Remove recently generated meal names
+  const notRecentPool = pool.filter(dish => !normalizedAvoid.has(normalizeText(dish.name)));
+
+  // Prefer dishes with cuisine AND cooking method not recently used
+  const diversePool = notRecentPool.filter(
+    dish =>
+      !avoidCuisinesNorm.has(dish.cuisineStyle.toLowerCase()) &&
+      !avoidMethodsNorm.has(dish.cookingMethod.toLowerCase()),
+  );
+
+  // Fall back progressively: diverse → not-recent → full pool
+  const basePool = diversePool.length > 0 ? diversePool : notRecentPool.length > 0 ? notRecentPool : pool;
+
   const proteinFilteredPool = preferredProtein
-    ? filteredPool.filter(dish => isDishCompatibleWithPreferredProtein(dish, preferredProtein))
-    : filteredPool;
-  const effectivePool =
-    proteinFilteredPool.length > 0 ? proteinFilteredPool : filteredPool.length > 0 ? filteredPool : pool;
+    ? basePool.filter(dish => isDishCompatibleWithPreferredProtein(dish, preferredProtein))
+    : basePool;
+
+  const effectivePool = proteinFilteredPool.length > 0 ? proteinFilteredPool : basePool.length > 0 ? basePool : pool;
+
   const seed = Math.floor(Math.random() * Math.max(1, effectivePool.length));
   return rotatePick(effectivePool, attempt, seed);
 }
@@ -870,7 +585,13 @@ function matchIngredients(
     .map(result => result.match)
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  const unmatchedIngredients = ingredientMatchResults.filter(result => !result.match).map(result => result.input);
+  const unmatchedIngredients = ingredientMatchResults
+    .filter(result => !result.match)
+    .map(result => ({
+      name: result.input.name,
+      grams: result.input.grams,
+      estimatedMacrosPer100g: result.input.estimatedMacrosPer100g,
+    }));
 
   const mappedIngredients = matchedIngredients.map(ingredient => {
     const foodMeta = foodMetaById.get(ingredient.id);
@@ -1074,14 +795,31 @@ OUTPUT RULES:
 Return this exact JSON shape:
 {
   "mealName": "string",
-  "cuisineStyle": "Syrian|Middle Eastern|Western|Greek|Mediterranean|Italian|Mexican|Asian|Indian",
+  "cuisineStyle": "Syrian|Middle Eastern|Western|Greek|Mediterranean|Italian|Mexican|Asian|Indian|Japanese|Korean|Thai|Turkish",
   "coreDishReference": "${input.dishLock.name}",
   "complexity": "simple|advanced",
   "servings": 1,
-  "ingredients": [{ "name": "string", "grams": 100 }],
+  "ingredients": [
+    {
+      "name": "string",
+      "grams": 100,
+      "estimatedMacrosPer100g": {
+        "caloriesKcal": 0,
+        "proteinG": 0,
+        "carbsG": 0,
+        "fatG": 0,
+        "fiberG": 0
+      }
+    }
+  ],
   "spices": ["string"],
   "instructions": ["step 1", "step 2"]
-}`;
+}
+
+MACRO ESTIMATION RULE:
+- For EVERY ingredient, provide estimatedMacrosPer100g with your best estimate per 100g.
+- These estimates are especially important for ingredients that may not be in the pantry list.
+- Values must be realistic food nutrition values, not zeros.`;
 }
 
 export async function POST(request: Request) {
@@ -1098,6 +836,8 @@ export async function POST(request: Request) {
     const foodOrigin = parsed.data.foodOrigin as FoodOrigin | undefined;
     const avoidCoreDishReferences = parsed.data.avoidCoreDishReferences ?? [];
     const avoidMealNames = parsed.data.avoidMealNames ?? [];
+    const avoidCuisines = parsed.data.avoidCuisines ?? [];
+    const avoidCookingMethods = parsed.data.avoidCookingMethods ?? [];
     const preferredProtein =
       mealType === 'BREAKFAST' || mealType === 'LUNCH' || mealType === 'DINNER'
         ? parsed.data.preferredProtein?.trim() || undefined
@@ -1113,6 +853,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Fetch ALL existing non-personalized meal names for this type to enable full dedup
     const persistedMealNames = await prisma.meal.findMany({
       where: {
         isPersonalized: false,
@@ -1120,13 +861,16 @@ export async function POST(request: Request) {
       },
       select: { name: true },
       orderBy: { updatedAt: 'desc' },
-      take: mealType === 'BREAKFAST' || mealType === 'SNACK' ? 20 : 40,
     });
 
+    // Merge caller-supplied names + DB names; cap to 100 for prompt injection
     const mergedAvoidMealNames = uniqueStrings([
       ...avoidMealNames,
       ...persistedMealNames.map(item => item.name.trim()).filter(Boolean),
-    ]).slice(0, mealType === 'BREAKFAST' || mealType === 'SNACK' ? 14 : 24);
+    ]).slice(0, 100);
+
+    // Full list (not capped) used for Levenshtein check
+    const allPersistedNamesCleaned = persistedMealNames.map(n => n.name.toLowerCase().trim());
 
     const foods = await (prisma as any).food.findMany({
       where: { isActive: true },
@@ -1205,11 +949,19 @@ export async function POST(request: Request) {
 
     let bestCandidate: CandidateMeal | null = null;
     let lastErrorMessage = 'Failed to generate a valid meal template';
-    const maxAttempts = isSyrianMode(foodOrigin) ? 7 : 6;
+    const maxAttempts = 4;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
-        const dishLock = buildDishLock(mealType, attempt, foodOrigin, mergedAvoidMealNames, preferredProtein);
+        const dishLock = buildDishLock(
+          mealType,
+          attempt,
+          foodOrigin,
+          mergedAvoidMealNames,
+          avoidCuisines,
+          avoidCookingMethods,
+          preferredProtein,
+        );
         const pantryShortlist = buildIngredientShortlist(foodsByPriority, dishLock, preferredProtein);
         const targetComplexity: 'simple' | 'advanced' = Math.random() < 0.82 ? 'simple' : 'advanced';
 
@@ -1246,6 +998,14 @@ export async function POST(request: Request) {
         }
 
         const aiMeal = parseAiPayload(content);
+
+        // Levenshtein fuzzy dedup: reject names too close to existing ones
+        const nameLower = aiMeal.mealName.toLowerCase().trim();
+        const isTooSimilar = allPersistedNamesCleaned.some(existing => levenshtein(nameLower, existing) < 4);
+        if (isTooSimilar) {
+          lastErrorMessage = `Meal name too similar to an existing entry: "${aiMeal.mealName}"`;
+          continue;
+        }
 
         const cuisineError = validateCuisine(aiMeal, foodOrigin);
         if (cuisineError) {
@@ -1379,6 +1139,7 @@ export async function POST(request: Request) {
           type: mealType,
           cuisineStyle: aiMeal.cuisineStyle as FoodOrigin,
           coreDishReference: dishLock.name,
+          cookingMethod: dishLock.cookingMethod,
           complexity: aiMeal.complexity,
           servings: aiMeal.servings,
           ingredients: mappedIngredients,

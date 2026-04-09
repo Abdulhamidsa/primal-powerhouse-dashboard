@@ -22,6 +22,8 @@ export async function generateMealTemplateApi(
     preferredProtein: options?.preferredProtein,
     avoidCoreDishReferences: options?.avoidCoreDishReferences,
     avoidMealNames: options?.avoidMealNames,
+    avoidCuisines: options?.avoidCuisines,
+    avoidCookingMethods: options?.avoidCookingMethods,
   });
 
   if (!res) {

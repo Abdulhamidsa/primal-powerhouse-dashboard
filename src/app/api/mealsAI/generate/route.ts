@@ -1,3 +1,4 @@
+// @deprecated — use /api/mealsAI/generate-meal-template instead
 import { NextResponse } from 'next/server';
 import { generateMeals } from '@/lib/meal-generator';
 import type { GenerateMealsInput } from '@/types/meal';

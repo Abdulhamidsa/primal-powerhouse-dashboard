@@ -10,6 +10,10 @@ const cuisineOriginSchema = z.enum([
   'Asian',
   'Indian',
   'Syrian',
+  'Japanese',
+  'Korean',
+  'Thai',
+  'Turkish',
 ]);
 
 export const generateMealTemplateRequestSchema = z.object({
@@ -18,7 +22,17 @@ export const generateMealTemplateRequestSchema = z.object({
   foodOrigin: cuisineOriginSchema.optional(),
   preferredProtein: z.string().trim().min(2).max(80).optional(),
   avoidCoreDishReferences: z.array(z.string().trim().min(1).max(120)).max(12).optional(),
-  avoidMealNames: z.array(z.string().trim().min(1).max(140)).max(20).optional(),
+  avoidMealNames: z.array(z.string().trim().min(1).max(140)).max(30).optional(),
+  avoidCuisines: z.array(z.string().trim().min(1).max(60)).max(10).optional(),
+  avoidCookingMethods: z.array(z.string().trim().min(1).max(40)).max(8).optional(),
+});
+
+const estimatedMacrosPer100gSchema = z.object({
+  caloriesKcal: z.number().nonnegative().max(900),
+  proteinG: z.number().nonnegative().max(100),
+  carbsG: z.number().nonnegative().max(100),
+  fatG: z.number().nonnegative().max(100),
+  fiberG: z.number().nonnegative().max(100),
 });
 
 export const mealTemplateAiResponseSchema = z.object({
@@ -32,6 +46,7 @@ export const mealTemplateAiResponseSchema = z.object({
       z.object({
         name: z.string().trim().min(2).max(120),
         grams: z.number().positive().max(1000),
+        estimatedMacrosPer100g: estimatedMacrosPer100gSchema.optional(),
       }),
     )
     .min(2)
@@ -40,9 +55,18 @@ export const mealTemplateAiResponseSchema = z.object({
   instructions: z.array(z.string().trim().min(3).max(220)).min(4).max(6),
 });
 
+export const estimatedMacrosSchema = z.object({
+  caloriesKcal: z.number().nonnegative().max(900),
+  proteinG: z.number().nonnegative().max(100),
+  carbsG: z.number().nonnegative().max(100),
+  fatG: z.number().nonnegative().max(100),
+  fiberG: z.number().nonnegative().max(100),
+});
+
 export const unmatchedIngredientSchema = z.object({
   name: z.string().trim().min(1).max(120),
   grams: z.number().positive().max(1000),
+  estimatedMacrosPer100g: estimatedMacrosSchema.optional(),
 });
 
 export const generatedMealTemplateIngredientSchema = z.object({

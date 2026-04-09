@@ -16,6 +16,8 @@ export function useGenerateMealTemplate() {
   const [regenerationCount, setRegenerationCount] = useState(0);
   const [recentCoreDishReferences, setRecentCoreDishReferences] = useState<string[]>([]);
   const [recentMealNames, setRecentMealNames] = useState<string[]>([]);
+  const [recentCuisines, setRecentCuisines] = useState<string[]>([]);
+  const [recentCookingMethods, setRecentCookingMethods] = useState<string[]>([]);
 
   const generateTemplate = async (
     mealType: BuilderMealType,
@@ -30,8 +32,10 @@ export function useGenerateMealTemplate() {
         strictMatchMode: 'strict',
         foodOrigin,
         preferredProtein,
-        avoidCoreDishReferences: recentCoreDishReferences.slice(0, 3),
-        avoidMealNames: recentMealNames.slice(0, 6),
+        avoidCoreDishReferences: recentCoreDishReferences.slice(0, 8),
+        avoidMealNames: recentMealNames.slice(0, 30),
+        avoidCuisines: recentCuisines.slice(0, 6),
+        avoidCookingMethods: recentCookingMethods.slice(0, 4),
       } satisfies GenerateMealTemplateOptions);
       setData(result);
       setRegenerationCount(prev => prev + 1);
@@ -41,8 +45,20 @@ export function useGenerateMealTemplate() {
       });
       setRecentMealNames(prev => {
         const next = [result.mealName, ...prev.filter(item => item !== result.mealName)];
-        return next.slice(0, 12);
+        return next.slice(0, 30);
       });
+      if (result.cuisineStyle) {
+        setRecentCuisines(prev => {
+          const next = [result.cuisineStyle, ...prev.filter(item => item !== result.cuisineStyle)];
+          return next.slice(0, 8);
+        });
+      }
+      if (result.cookingMethod) {
+        setRecentCookingMethods(prev => {
+          const next = [result.cookingMethod!, ...prev.filter(item => item !== result.cookingMethod)];
+          return next.slice(0, 6);
+        });
+      }
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to generate meal template';
@@ -60,6 +76,8 @@ export function useGenerateMealTemplate() {
     setRegenerationCount(0);
     setRecentCoreDishReferences([]);
     setRecentMealNames([]);
+    setRecentCuisines([]);
+    setRecentCookingMethods([]);
   }, []);
 
   return {
@@ -69,6 +87,8 @@ export function useGenerateMealTemplate() {
     regenerationCount,
     recentCoreDishReferences,
     recentMealNames,
+    recentCuisines,
+    recentCookingMethods,
     generateTemplate,
     reset,
   } as const;

@@ -18,6 +18,23 @@ datasource db {
    MODELS
 ========================= */
 
+model ClientLead {
+  id                          String     @id @default(cuid())
+  name                        String
+  email                       String
+  phone                       String?
+  status                      LeadStatus @default(CONTACTED)
+  subscriptionType            String?
+  notes                       String?
+  convertedClientId           String?
+  credentialEmail             String?
+  credentialPasswordEncrypted String?
+  createdAt                   DateTime   @default(now())
+  updatedAt                   DateTime   @updatedAt
+
+  @@map("client_leads")
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -733,6 +750,13 @@ model MealPlanRecalculationAudit {
 /* =========================
    ENUMS
 ========================= */
+
+enum LeadStatus {
+  CONTACTED
+  HAD_MEETING
+  MADE_DEAL
+  CONVERTED
+}
 
 enum Gender {
   MALE

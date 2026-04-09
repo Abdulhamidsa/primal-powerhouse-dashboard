@@ -4,6 +4,7 @@ import type { UnmatchedIngredientInput } from '@/types/meal';
 export type BuilderMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 export type ProteinSelectableMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER';
 export type FoodOrigin =
+  | 'Syrian'
   | 'Middle Eastern'
   | 'Western'
   | 'Greek'
@@ -11,7 +12,11 @@ export type FoodOrigin =
   | 'Mexican'
   | 'Italian'
   | 'Asian'
-  | 'Indian';
+  | 'Indian'
+  | 'Japanese'
+  | 'Korean'
+  | 'Thai'
+  | 'Turkish';
 
 export type GeneratedTemplateIngredient = {
   id: string;
@@ -32,6 +37,7 @@ export type GeneratedMealTemplate = {
   type: BuilderMealType;
   cuisineStyle: FoodOrigin;
   coreDishReference: string;
+  cookingMethod?: string;
   complexity: 'simple' | 'advanced';
   servings: number;
   ingredients: GeneratedTemplateIngredient[];
@@ -57,6 +63,8 @@ export type GenerateMealTemplateApiResponse = {
 export type GenerateMealTemplateOptions = {
   avoidCoreDishReferences?: string[];
   avoidMealNames?: string[];
+  avoidCuisines?: string[];
+  avoidCookingMethods?: string[];
   strictMatchMode?: 'strict' | 'lenient';
   foodOrigin?: FoodOrigin;
   preferredProtein?: string;

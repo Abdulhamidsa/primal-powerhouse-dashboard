@@ -134,6 +134,13 @@ export interface MacroTotals {
 export interface UnmatchedIngredientInput {
   name: string;
   grams: number;
+  estimatedMacrosPer100g?: {
+    caloriesKcal: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    fiberG: number;
+  };
 }
 
 export interface MatchedIngredient {

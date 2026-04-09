@@ -1,3 +1,4 @@
+// @deprecated — use the generate-meal-template route and associated helpers instead
 import { Prisma } from '@prisma/client';
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
 import { buildMealPrompt } from '@/lib/prompts';

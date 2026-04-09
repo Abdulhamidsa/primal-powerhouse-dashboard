@@ -25,6 +25,8 @@ interface AddClientModalProps {
   isOpen: boolean;
   onCloseAction: () => void;
   onClientAddedAction: () => void;
+  prefillData?: { name?: string; email?: string; phone?: string };
+  onCredentialsCreated?: (credentials: { email: string; password: string }) => void;
 }
 
 interface Credentials {
@@ -33,14 +35,20 @@ interface Credentials {
   clientName: string;
 }
 
-export default function NewAddClientModal({ isOpen, onCloseAction, onClientAddedAction }: AddClientModalProps) {
+export default function NewAddClientModal({
+  isOpen,
+  onCloseAction,
+  onClientAddedAction,
+  prefillData,
+  onCredentialsCreated,
+}: AddClientModalProps) {
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name: prefillData?.name ?? '',
+    email: prefillData?.email ?? '',
+    phone: prefillData?.phone ?? '',
     avatar: '',
     currentWeight: '',
     targetWeight: '',
@@ -122,6 +130,7 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
           password: createdCredentials.password,
           clientName: clientData.name,
         });
+        onCredentialsCreated?.({ email: createdCredentials.email, password: createdCredentials.password });
       }
 
       onClientAddedAction();
@@ -149,9 +158,9 @@ export default function NewAddClientModal({ isOpen, onCloseAction, onClientAdded
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      email: '',
-      phone: '',
+      name: prefillData?.name ?? '',
+      email: prefillData?.email ?? '',
+      phone: prefillData?.phone ?? '',
       avatar: '',
       currentWeight: '',
       targetWeight: '',

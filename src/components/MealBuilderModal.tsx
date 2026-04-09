@@ -408,6 +408,13 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       source: 'custom',
       baseUnit: '100g',
       isActive: true,
+      ...(item.estimatedMacrosPer100g && {
+        caloriesKcal: String(item.estimatedMacrosPer100g.caloriesKcal),
+        proteinG: String(item.estimatedMacrosPer100g.proteinG),
+        carbsG: String(item.estimatedMacrosPer100g.carbsG),
+        fatG: String(item.estimatedMacrosPer100g.fatG),
+        fiberG: String(item.estimatedMacrosPer100g.fiberG),
+      }),
     });
     setShowFoodFormModal(true);
   };
