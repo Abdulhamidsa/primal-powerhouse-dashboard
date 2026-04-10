@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { PageHeader } from '@/components/PageHeader';
 
 interface Video {
   id: string;
@@ -63,13 +64,8 @@ export default function UserVideosPage() {
   const totalCount = videoAssignments.length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Training Videos 🎥</h1>
-          <p className="text-muted-foreground">Your personalized workout video assignments</p>
-        </div>
-      </div>
+    <div className="px-4 pb-8 space-y-6">
+      <PageHeader title="Training Videos" description="Your personalized workout video assignments" />
 
       {/* Progress Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

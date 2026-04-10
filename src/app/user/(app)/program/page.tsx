@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Dumbbell, Utensils } from 'lucide-react';
 import { useState } from 'react';
+import { PageHeader } from '@/components/PageHeader';
 
 const PROGRAM_MEAL_CARDS = [
   {
@@ -72,25 +73,16 @@ export default function UserProgramPage() {
   const cards = activeTab === 'meals' ? PROGRAM_MEAL_CARDS : TRAINING_CARDS;
 
   return (
-    <div className="px-4 pb-8 pt-4 md:px-5">
+    <div className="px-4 pb-8 md:px-5">
       <div className="mx-auto w-full max-w-4xl space-y-4">
-        {/* Hero */}
-        <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5 sm:py-5">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-              {activeTab === 'meals' ? <Utensils size={18} /> : <Dumbbell size={18} />}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">Program</h1>
-              <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
-                {activeTab === 'meals'
-                  ? 'Pick a meal type to view options and assign your meals.'
-                  : 'Browse your training sections and video-based workouts.'}
-              </p>
-            </div>
-          </div>
-        </section>
+        <PageHeader
+          title="Program"
+          description={
+            activeTab === 'meals'
+              ? 'Pick a meal type to view options and assign your meals.'
+              : 'Browse your training sections and video-based workouts.'
+          }
+        />
 
         {/* Tabs */}
         <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-1">

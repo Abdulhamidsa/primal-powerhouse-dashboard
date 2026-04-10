@@ -106,7 +106,11 @@ function NotificationStatusPill({ label, tone = 'neutral' }: { label: string; to
         ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
         : 'bg-muted/50 text-muted-foreground border-border';
 
-  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${toneClassName}`}>{label}</span>;
+  return (
+    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${toneClassName}`}>
+      {label}
+    </span>
+  );
 }
 
 export default function UserProfilePage() {
@@ -204,7 +208,9 @@ export default function UserProfilePage() {
     }
 
     if (result.result.status === 'sent' || result.result.status === 'partial') {
-      setTestFeedback('Test notification sent. If nothing appears, check your phone notification settings and Home Screen install.');
+      setTestFeedback(
+        'Test notification sent. If nothing appears, check your phone notification settings and Home Screen install.',
+      );
       return;
     }
 
@@ -237,37 +243,44 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md px-4 pb-10 pt-8">
-        {/* iOS-ish header */}
-        <div className="flex items-center gap-4 px-1 pb-6">
-          <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border bg-muted/30 flex-shrink-0">
-            {userData?.avatar ? (
-              <Image src={userData.avatar} alt={userData.name} fill className="object-cover" />
-            ) : (
-              <div className="grid h-full w-full place-items-center">
-                <User className="h-7 w-7 text-muted-foreground" />
-              </div>
-            )}
+      <div className="mx-auto w-full max-w-md px-4 pb-10">
+        {/* Full-bleed gradient header zone */}
+        <div
+          className="-mx-4 mb-6 px-4 pt-5 pb-6"
+          style={{
+            background: 'radial-gradient(ellipse 150% 110% at 50% 0%, var(--color-accent-muted) 0%, transparent 72%)',
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-border bg-muted/30 flex-shrink-0">
+              {userData?.avatar ? (
+                <Image src={userData.avatar} alt={userData.name} fill className="object-cover" />
+              ) : (
+                <div className="grid h-full w-full place-items-center">
+                  <User className="h-7 w-7 text-muted-foreground" />
+                </div>
+              )}
 
-            <button
-              type="button"
-              onClick={() => setIsAvatarModalOpen(true)}
-              className="absolute bottom-1 right-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm"
-              aria-label="Edit profile picture"
-            >
-              <Camera className="h-3.5 w-3.5" />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setIsAvatarModalOpen(true)}
+                className="absolute bottom-1 right-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm"
+                aria-label="Edit profile picture"
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+            </div>
 
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-semibold text-foreground">{userData?.name ?? 'Profile'}</h1>
-            <p className="text-sm text-muted-foreground">
-              {userData?.email
-                ? userData.email.length > 25
-                  ? `${userData.email.substring(0, 22)}…`
-                  : userData.email
-                : 'Loading…'}
-            </p>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-xl font-semibold text-foreground">{userData?.name ?? 'Profile'}</h1>
+              <p className="text-sm text-muted-foreground">
+                {userData?.email
+                  ? userData.email.length > 25
+                    ? `${userData.email.substring(0, 22)}…`
+                    : userData.email
+                  : 'Loading…'}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -330,7 +343,15 @@ export default function UserProfilePage() {
                   <div className="ml-12 rounded-2xl bg-muted/25 p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <NotificationStatusPill
-                        label={pushStatus === 'subscribed' ? 'Subscribed' : pushStatus === 'denied' ? 'Blocked' : pushStatus === 'unsupported' ? 'Unsupported' : 'Not enabled'}
+                        label={
+                          pushStatus === 'subscribed'
+                            ? 'Subscribed'
+                            : pushStatus === 'denied'
+                              ? 'Blocked'
+                              : pushStatus === 'unsupported'
+                                ? 'Unsupported'
+                                : 'Not enabled'
+                        }
                         tone={pushStatus === 'subscribed' ? 'good' : pushStatus === 'denied' ? 'warn' : 'neutral'}
                       />
                       <NotificationStatusPill

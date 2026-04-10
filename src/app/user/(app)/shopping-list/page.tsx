@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { CheckCheck, Clipboard, RefreshCcw, ShoppingBasket } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 import { getUserMealSelection, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
 import { useGenerateShoppingList } from '@/features/meals/hooks/useGenerateShoppingList';
 import { loadShoppingListDraft } from '@/features/meals/utils/shoppingListStorage';
@@ -100,50 +101,38 @@ export default function ShoppingListPage() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-5 md:px-6 md:py-6">
+    <div className="min-h-screen px-4 pb-5 md:px-6 md:pb-6">
       <div className="mx-auto max-w-5xl space-y-5">
-        <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5 sm:py-5">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-              <ShoppingBasket size={18} />
-            </div>
+        <PageHeader
+          title="Shopping List"
+          description="Check off what you already have. This list is generated from your selected meals and spices."
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+              {checkedCount}/{totalCount} checked
+            </span>
 
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)] sm:text-2xl">
-                Shopping List
-              </h1>
-              <p className="mt-1 text-sm leading-5 text-[var(--color-text-muted)] sm:text-[15px]">
-                Check off what you already have. This list is generated from your selected meals and spices.
-              </p>
+            <button
+              type="button"
+              onClick={copyAsText}
+              disabled={!data?.sections.length}
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-semibold text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Clipboard size={12} />
+              Copy Text
+            </button>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
-                  {checkedCount}/{totalCount} checked
-                </span>
-
-                <button
-                  type="button"
-                  onClick={copyAsText}
-                  disabled={!data?.sections.length}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1 text-xs font-semibold text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Clipboard size={12} />
-                  Copy Text
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleGenerate}
-                  disabled={isLoading || selectionSWR.isLoading}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-translucent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <RefreshCcw size={12} />
-                  Generate Shopping List
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={isLoading || selectionSWR.isLoading}
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-translucent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RefreshCcw size={12} />
+              Generate Shopping List
+            </button>
           </div>
-        </section>
+        </PageHeader>
 
         {isLoading ? (
           <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">

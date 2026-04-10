@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Trash2, UserCheck, KeyRound, ChevronDown, Pencil, Eye } from 'lucide-react';
+import { Search, Trash2, UserCheck, KeyRound, ChevronDown, Pencil } from 'lucide-react';
 import { LeadStatusBadge } from '@/features/client-leads/components/LeadStatusBadge';
 import { useClientLeads } from '@/features/client-leads/hooks/useClientLeads';
 import { useUpdateClientLead } from '@/features/client-leads/hooks/useUpdateClientLead';

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Save, Undo2 } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { MealSelectionSummaryCard } from '@/features/meals/components/MealSelectionSummaryCard';
@@ -52,21 +53,16 @@ export default function UserMealsPage() {
   }, [optionsByType, activeFilter]);
 
   return (
-    <div className="px-4 py-6 md:px-6">
+    <div className="px-4 md:px-6">
       <div className="mx-auto max-w-6xl space-y-5 pb-24">
-        <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-text)]">My Meals</h1>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            Assign your current meal set and save when ready.
-          </p>
+        <PageHeader title="My Meals" description="Assign your current meal set and save when ready." />
 
-          <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-4">
-            <SlotState label="Breakfast" count={selectedByType.BREAKFAST.length} max={1} required />
-            <SlotState label="Lunch" count={selectedByType.LUNCH.length} max={1} required />
-            <SlotState label="Dinner" count={selectedByType.DINNER.length} max={1} required />
-            <SlotState label="Snacks" count={snackCount} max={snackMax} />
-          </div>
-        </section>
+        <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <SlotState label="Breakfast" count={selectedByType.BREAKFAST.length} max={1} required />
+          <SlotState label="Lunch" count={selectedByType.LUNCH.length} max={1} required />
+          <SlotState label="Dinner" count={selectedByType.DINNER.length} max={1} required />
+          <SlotState label="Snacks" count={snackCount} max={snackMax} />
+        </div>
 
         <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} />
 
