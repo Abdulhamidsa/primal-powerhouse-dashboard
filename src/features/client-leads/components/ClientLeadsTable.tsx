@@ -277,14 +277,10 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
       )}
 
       {/* Lead Detail Drawer */}
-      {drawerLead && (
-        <LeadDetailDrawer lead={drawerLead} onCloseAction={() => setDrawerLead(null)} />
-      )}
+      {drawerLead && <LeadDetailDrawer lead={drawerLead} onCloseAction={() => setDrawerLead(null)} />}
 
       {/* Lead Detail Drawer */}
-      {drawerLead && (
-        <LeadDetailDrawer lead={drawerLead} onCloseAction={() => setDrawerLead(null)} />
-      )}
+      {drawerLead && <LeadDetailDrawer lead={drawerLead} onCloseAction={() => setDrawerLead(null)} />}
 
       {/* Confirm Delete */}
       {confirmDeleteId && (
