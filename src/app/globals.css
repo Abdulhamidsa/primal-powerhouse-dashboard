@@ -43,6 +43,10 @@
     --theme-ocean-accent: #3b82f6;
     --theme-forest-accent: #22c55e;
     --theme-ruby-accent: #ef4444;
+    --theme-aura-accent: #a78bfa;
+    --theme-arctic-accent: #67e8f9;
+    --theme-dusk-accent: #f472b6;
+    --theme-onyx-accent: #d4d4d4;
   }
 
   :root[data-theme='ember'] {
@@ -75,6 +79,54 @@
     --color-accent-muted: rgba(239, 68, 68, 0.2);
     --color-accent-translucent: rgba(239, 68, 68, 0.1);
     --color-text-on-accent: #ffffff;
+  }
+
+  /* Aura — deep cosmic purple on near-black */
+  :root[data-theme='aura'] {
+    --color-bg: #0b0a12;
+    --color-surface: #110f1c;
+    --color-bg-alt: #18162a;
+    --color-border: #252136;
+    --color-accent: #a78bfa;
+    --color-accent-muted: rgba(167, 139, 250, 0.18);
+    --color-accent-translucent: rgba(167, 139, 250, 0.09);
+    --color-text-on-accent: #1a0f3a;
+  }
+
+  /* Arctic — icy cyan-blue on a deep navy */
+  :root[data-theme='arctic'] {
+    --color-bg: #08101a;
+    --color-surface: #0d1824;
+    --color-bg-alt: #13212f;
+    --color-border: #1c2f40;
+    --color-accent: #67e8f9;
+    --color-accent-muted: rgba(103, 232, 249, 0.15);
+    --color-accent-translucent: rgba(103, 232, 249, 0.07);
+    --color-text-on-accent: #012a32;
+  }
+
+  /* Dusk — warm rose-pink on deep charcoal */
+  :root[data-theme='dusk'] {
+    --color-bg: #120d0f;
+    --color-surface: #1a1114;
+    --color-bg-alt: #22161b;
+    --color-border: #2e1d22;
+    --color-accent: #f472b6;
+    --color-accent-muted: rgba(244, 114, 182, 0.18);
+    --color-accent-translucent: rgba(244, 114, 182, 0.09);
+    --color-text-on-accent: #3a0020;
+  }
+
+  /* Onyx — warm silver on absolute black */
+  :root[data-theme='onyx'] {
+    --color-bg: #080808;
+    --color-surface: #111111;
+    --color-bg-alt: #1a1a1a;
+    --color-border: #242424;
+    --color-accent: #d4d4d4;
+    --color-accent-muted: rgba(212, 212, 212, 0.14);
+    --color-accent-translucent: rgba(212, 212, 212, 0.07);
+    --color-text-on-accent: #080808;
   }
 
   html[data-theme],
