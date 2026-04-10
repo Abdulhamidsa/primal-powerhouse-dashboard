@@ -25,7 +25,7 @@ export const dailyCheckInPayloadSchema = z
       value.hunger !== undefined ||
       value.sleep !== undefined ||
       value.note !== undefined,
-    'Provide at least one daily check-in field'
+    'Provide at least one daily check-in field',
   );
 
 export const dailyCheckInUpsertSchema = z.object({

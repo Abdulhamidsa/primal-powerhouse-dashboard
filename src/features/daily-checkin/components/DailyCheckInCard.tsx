@@ -7,7 +7,11 @@ import { calculateCompletionPercentage, getCompletionCount } from '@/features/da
 import { useDailyCheckInToday, useUpsertDailyCheckIn } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { useDailyNutritionToday, useUpsertDailyNutrition } from '@/features/daily-nutrition/hooks/useDailyNutrition';
 import { useDailyTrainingToday, useUpsertDailyTraining } from '@/features/daily-training/hooks/useDailyTraining';
-import type { DailyCheckInEnergy, DailyCheckInHunger, DailyCheckInSleep } from '@/features/daily-checkin/types/dailyCheckIn.types';
+import type {
+  DailyCheckInEnergy,
+  DailyCheckInHunger,
+  DailyCheckInSleep,
+} from '@/features/daily-checkin/types/dailyCheckIn.types';
 import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
@@ -344,8 +348,7 @@ export function DailyCheckInCard() {
                   >
                     <PenLine size={13} />
                     <span>
-                      {entry?.note ? 'Edit note' : 'Add note'}{' '}
-                      <span className="opacity-60">(optional)</span>
+                      {entry?.note ? 'Edit note' : 'Add note'} <span className="opacity-60">(optional)</span>
                     </span>
                   </button>
                 ) : (

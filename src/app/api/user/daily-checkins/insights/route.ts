@@ -121,10 +121,10 @@ export async function GET(request: NextRequest) {
 
     const weightToday = recordsByDateKey.get(recentDateKeys[0])?.weightKg ?? null;
     const currentSevenDayAverage = averageWeight(
-      currentWeekKeys.map(dateKey => recordsByDateKey.get(dateKey)?.weightKg)
+      currentWeekKeys.map(dateKey => recordsByDateKey.get(dateKey)?.weightKg),
     );
     const previousSevenDayAverage = averageWeight(
-      previousWeekKeys.map(dateKey => recordsByDateKey.get(dateKey)?.weightKg)
+      previousWeekKeys.map(dateKey => recordsByDateKey.get(dateKey)?.weightKg),
     );
     const trendDirection = getWeightTrendDirection(currentSevenDayAverage, previousSevenDayAverage);
     const trendDeltaKg =

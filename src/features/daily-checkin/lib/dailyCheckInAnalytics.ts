@@ -58,7 +58,7 @@ export function averageWeight(values: Array<number | null | undefined>): number 
 
 export function getWeightTrendDirection(
   currentAverage: number | null,
-  previousAverage: number | null
+  previousAverage: number | null,
 ): DailyCheckInWeightTrendDirection {
   if (currentAverage == null || previousAverage == null) {
     return 'stable';
@@ -75,7 +75,7 @@ export function getWeightTrendDirection(
 export function buildSupportiveInsight(
   currentAverage: number | null,
   previousAverage: number | null,
-  direction: DailyCheckInWeightTrendDirection
+  direction: DailyCheckInWeightTrendDirection,
 ): string {
   if (currentAverage == null && previousAverage == null) {
     return 'Log your weight a few times this week to unlock a clearer trend.';
