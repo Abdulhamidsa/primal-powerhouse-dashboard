@@ -77,25 +77,56 @@ export async function POST(request: NextRequest) {
 }
 
 function dedupeTextItems(values: string[], source: 'ingredient' | 'spice'): ShoppingListEntry[] {
-  const seen = new Set<string>();
-  const deduped: ShoppingListEntry[] = [];
+  // Map from normalized base-ingredient key → best display label (shortest / most generic)
+  const seen = new Map<string, string>();
 
-  values.forEach((value, index) => {
+  values.forEach(value => {
     const label = value.trim();
     if (!label) return;
 
-    const normalizedKey = label.toLowerCase();
-    if (seen.has(normalizedKey)) return;
+    const key = normalizeIngredientKey(label);
+    if (!key) return;
 
-    seen.add(normalizedKey);
-    deduped.push({
-      id: `${source}-${index}-${slugify(label)}`,
-      label,
-      source,
-    });
+    // Keep the shorter / more generic display label (strip leading quantity for display)
+    const displayLabel = stripLeadingQuantity(label) || label;
+
+    if (!seen.has(key)) {
+      seen.set(key, displayLabel);
+    } else {
+      // Prefer the shorter label as the canonical display (more generic)
+      const existing = seen.get(key)!;
+      if (displayLabel.length < existing.length) {
+        seen.set(key, displayLabel);
+      }
+    }
   });
 
-  return deduped;
+  return Array.from(seen.entries()).map(([key, label], index) => ({
+    id: `${source}-${index}-${slugify(key)}`,
+    label,
+    source,
+  }));
+}
+
+/** Strip leading quantity patterns like "2", "150g", "1/2 cup", "3 tbsp" */
+function stripLeadingQuantity(label: string): string {
+  return (
+    label
+      .trim()
+      // Strip leading unicode fractions or digit sequences (e.g. "1½", "2/3", "150")
+      .replace(/^[\d½¼¾⅓⅔⅛⅜⅝⅞][\d./ ½¼¾⅓⅔⅛⅜⅝⅞-]*\s*/, '')
+      // Strip unit immediately following (e.g. "g olive oil" → "olive oil")
+      .replace(
+        /^(grams?|g|kg|lbs?|oz|ml|l|cups?|tbsp\.?|tsp\.?|tablespoons?|teaspoons?|cloves?|pieces?|slices?|pinch|dash|handful|bunches?|heads?|cans?|tins?|packets?)\s+(of\s+)?/gi,
+        '',
+      )
+      .trim()
+  );
+}
+
+/** Derive a stable comparison key that ignores quantities and is case-insensitive */
+function normalizeIngredientKey(label: string): string {
+  return stripLeadingQuantity(label).toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 function slugify(value: string): string {
