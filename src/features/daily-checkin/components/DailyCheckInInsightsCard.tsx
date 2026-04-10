@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Scale } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutList, Scale } from 'lucide-react';
 import {
   CartesianGrid,
   Line,
@@ -65,13 +65,41 @@ export function DailyCheckInInsightsCard() {
   const [weightValue, setWeightValue] = useState('');
   const [isSavingWeight, setIsSavingWeight] = useState(false);
   const [weightError, setWeightError] = useState<string | null>(null);
+  const [viewEnd, setViewEnd] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  // Reset window to newest when history loads
+  useEffect(() => {
+    if (history.length > 0) setViewEnd(history.length);
+  }, [history.length]);
 
   useEffect(() => {
     setWeightValue(todayEntry?.weightKg != null ? todayEntry.weightKg.toString() : '');
   }, [todayEntry?.weightKg]);
 
-  const chartData = buildChartData(history);
-  const hasWeightData = history.some(item => item.weightKg != null);
+  const CHART_WINDOW = 21;
+  const effectiveEnd = viewEnd ?? history.length;
+  const windowStart = Math.max(0, effectiveEnd - CHART_WINDOW);
+
+  // In overview mode use all history; otherwise use the 21-day window
+  const visibleHistory = showAll ? history : history.slice(windowStart, effectiveEnd);
+  // Thin out X-axis labels in overview so they don't overlap
+  const allChartData = buildChartData(visibleHistory).map((d, i, arr) => ({
+    ...d,
+    label: showAll && arr.length > 30 && i % 7 !== 0 ? '' : d.label,
+  }));
+  const chartData = allChartData;
+  const hasWeightData = visibleHistory.some(item => item.weightKg != null);
+
+  const canGoBack = !showAll && windowStart > 0;
+  const canGoForward = !showAll && effectiveEnd < history.length;
+
+  function goBack() {
+    setViewEnd(prev => Math.max(CHART_WINDOW, (prev ?? history.length) - 7));
+  }
+  function goForward() {
+    setViewEnd(prev => Math.min(history.length, (prev ?? history.length) + 7));
+  }
 
   async function saveWeight() {
     const parsedWeight = parseWeightInput(weightValue);
@@ -164,13 +192,46 @@ export function DailyCheckInInsightsCard() {
       <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-sm font-medium text-foreground">Progress graph</p>
-          <p className="text-xs text-muted-foreground">Recent history</p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={!canGoBack}
+              aria-label="View earlier period"
+              className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] transition-opacity disabled:opacity-30"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={goForward}
+              disabled={!canGoForward}
+              aria-label="View more recent period"
+              className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] transition-opacity disabled:opacity-30"
+            >
+              <ChevronRight size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAll(prev => !prev)}
+              aria-label={showAll ? 'Switch to windowed view' : 'Show full history'}
+              title={showAll ? 'Windowed view' : 'Full overview'}
+              className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--color-border)] transition-colors"
+              style={{
+                background: showAll ? 'var(--color-accent-muted)' : 'transparent',
+                color: showAll ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                borderColor: showAll ? 'var(--color-accent)' : 'var(--color-border)',
+              }}
+            >
+              <LayoutList size={13} />
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
           <div className="h-52 w-full animate-pulse rounded-2xl border border-border/60 bg-background/50" />
         ) : hasWeightData ? (
-          <div className="h-52 w-full">
+          <div className="h-52 w-full select-none" style={{ touchAction: 'pan-y' }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
                 <defs>
@@ -205,10 +266,10 @@ export function DailyCheckInInsightsCard() {
 
                 <Tooltip
                   content={<TrendTooltip />}
+                  isAnimationActive={false}
                   cursor={{
-                    stroke: 'rgba(148, 163, 184, 0.24)',
-                    strokeWidth: 1,
-                    strokeDasharray: '4 4',
+                    stroke: 'rgba(148, 163, 184, 0.45)',
+                    strokeWidth: 1.5,
                   }}
                 />
 
@@ -221,9 +282,9 @@ export function DailyCheckInInsightsCard() {
                   strokeWidth={3}
                   dot={false}
                   activeDot={{
-                    r: 5,
+                    r: 7,
                     stroke: 'var(--color-surface)',
-                    strokeWidth: 2,
+                    strokeWidth: 2.5,
                     fill: 'var(--color-accent)',
                   }}
                   connectNulls

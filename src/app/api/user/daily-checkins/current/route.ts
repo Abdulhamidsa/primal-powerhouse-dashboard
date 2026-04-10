@@ -108,16 +108,20 @@ export async function PUT(request: NextRequest) {
       },
       update: {
         weightKg: payload.weightKg !== undefined ? payload.weightKg : undefined,
-        compliance: payload.compliance !== undefined ? payload.compliance : undefined,
         energy: payload.energy !== undefined ? payload.energy : undefined,
+        hunger: payload.hunger !== undefined ? payload.hunger : undefined,
+        sleep: payload.sleep !== undefined ? payload.sleep : undefined,
+        note: payload.note !== undefined ? payload.note : undefined,
         submittedAt: new Date(),
       },
       create: {
         clientId: user.userId,
         dayDate: dayDateUtc,
         weightKg: payload.weightKg ?? null,
-        compliance: payload.compliance ?? null,
         energy: payload.energy ?? null,
+        hunger: payload.hunger ?? null,
+        sleep: payload.sleep ?? null,
+        note: payload.note ?? null,
         submittedAt: new Date(),
       },
     });

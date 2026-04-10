@@ -7,14 +7,13 @@ import {
   buildSupportiveInsight,
   calculateCompletionPercentage,
   calculateStreak,
-  getComplianceScore,
   getWeightTrendDirection,
   isDailyCheckInComplete,
 } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { dailyCheckInInsightsResponseSchema } from '@/features/daily-checkin/schemas/dailyCheckIn.schema';
 import { addDays, getRecentDateKeys, parseDateKeyLocal, toDateKeyLocal } from '@/features/daily-checkin/utils/date';
 
-const HISTORY_DAYS = 21;
+const HISTORY_DAYS = 90;
 const WEEK_DAYS = 7;
 
 function roundPercentage(value: number): number {
@@ -47,8 +46,9 @@ export async function GET(request: NextRequest) {
         select: {
           dayDate: true,
           weightKg: true,
-          compliance: true,
           energy: true,
+          hunger: true,
+          sleep: true,
         },
       }),
       (prisma as any).dailyNutritionLog.findMany({
@@ -89,8 +89,9 @@ export async function GET(request: NextRequest) {
       string,
       {
         weightKg: number | null;
-        compliance: any;
         energy: any;
+        hunger: any;
+        sleep: any;
         nutritionStatus?: any;
         trainingStatus?: any;
       }
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
     }
     for (const row of nutritionRows) {
       const dateKey = toDateKeyLocal(row.dayDate);
-      const existing = recordsByDateKey.get(dateKey) ?? { weightKg: null, compliance: null, energy: null };
+      const existing = recordsByDateKey.get(dateKey) ?? { weightKg: null, energy: null, hunger: null, sleep: null };
       recordsByDateKey.set(dateKey, {
         ...existing,
         nutritionStatus: row.status,
@@ -108,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
     for (const row of trainingRows) {
       const dateKey = toDateKeyLocal(row.dayDate);
-      const existing = recordsByDateKey.get(dateKey) ?? { weightKg: null, compliance: null, energy: null };
+      const existing = recordsByDateKey.get(dateKey) ?? { weightKg: null, energy: null, hunger: null, sleep: null };
       recordsByDateKey.set(dateKey, {
         ...existing,
         trainingStatus: row.status,
@@ -131,12 +132,7 @@ export async function GET(request: NextRequest) {
         ? Math.round((currentSevenDayAverage - previousSevenDayAverage) * 10) / 10
         : null;
 
-    const weeklyCompliancePercentage = roundPercentage(
-      currentWeekKeys.reduce(
-        (sum, dateKey) => sum + getComplianceScore(recordsByDateKey.get(dateKey)?.compliance ?? null),
-        0
-      ) / WEEK_DAYS
-    );
+    const weeklyCompliancePercentage = 0;
 
     const streakCount = calculateStreak(recordsByDateKey, recentDateKeys);
 
@@ -147,7 +143,6 @@ export async function GET(request: NextRequest) {
         dayDate: dateKey,
         weightKg: row?.weightKg ?? null,
         completionPercentage,
-        complianceScore: getComplianceScore(row?.compliance ?? null),
         isComplete: isDailyCheckInComplete(row ?? {}),
       };
     });

@@ -1,6 +1,7 @@
 import type {
-  DailyCheckInCompliance,
   DailyCheckInEnergy,
+  DailyCheckInHunger,
+  DailyCheckInSleep,
   DailyCheckInRecord,
   DailyCheckInWeightTrendDirection,
 } from '@/features/daily-checkin/types/dailyCheckIn.types';
@@ -8,9 +9,9 @@ import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dail
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
 type CompletionInput = {
-  weightKg?: number | null;
-  compliance?: DailyCheckInCompliance | null;
   energy?: DailyCheckInEnergy | null;
+  hunger?: DailyCheckInHunger | null;
+  sleep?: DailyCheckInSleep | null;
   nutritionStatus?: DailyNutritionStatus | null;
   trainingStatus?: DailyTrainingStatus | null;
 };
@@ -23,9 +24,9 @@ function roundToOneDecimal(value: number): number {
 
 export function getCompletionCount(input: CompletionInput): number {
   let count = 0;
-  if (typeof input.weightKg === 'number' && Number.isFinite(input.weightKg)) count += 1;
-  if (input.compliance != null) count += 1;
   if (input.energy != null) count += 1;
+  if (input.hunger != null) count += 1;
+  if (input.sleep != null) count += 1;
   if (input.nutritionStatus != null) count += 1;
   if (input.trainingStatus != null) count += 1;
   return count;
@@ -39,7 +40,7 @@ export function isDailyCheckInComplete(input: CompletionInput): boolean {
   return getCompletionCount(input) === DAILY_CHECK_IN_REQUIRED_FIELDS;
 }
 
-export function getComplianceScore(compliance: DailyCheckInCompliance | null | undefined): number {
+export function getComplianceScore(compliance: unknown): number {
   if (compliance === 'ON_PLAN') return 100;
   if (compliance === 'PARTIAL') return 60;
   return 0;
@@ -119,8 +120,10 @@ export function serializeDailyCheckIn(record: {
   id: string;
   dayDate: Date;
   weightKg: number | null;
-  compliance: DailyCheckInCompliance | null;
   energy: DailyCheckInEnergy | null;
+  hunger?: DailyCheckInHunger | null;
+  sleep?: DailyCheckInSleep | null;
+  note?: string | null;
   nutritionStatus?: DailyNutritionStatus | null;
   trainingStatus?: DailyTrainingStatus | null;
   submittedAt: Date;
@@ -131,8 +134,10 @@ export function serializeDailyCheckIn(record: {
     id: record.id,
     dayDate: record.dayDate.toISOString().slice(0, 10),
     weightKg: record.weightKg,
-    compliance: record.compliance,
     energy: record.energy,
+    hunger: record.hunger ?? null,
+    sleep: record.sleep ?? null,
+    note: record.note ?? null,
     nutritionStatus: record.nutritionStatus ?? null,
     trainingStatus: record.trainingStatus ?? null,
     submittedAt: record.submittedAt.toISOString(),

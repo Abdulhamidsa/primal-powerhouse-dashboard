@@ -626,16 +626,18 @@ model DailyTrainingLog {
 }
 
 model DailyCheckIn {
-  id          String   @id @default(cuid())
+  id          String                @id @default(cuid())
   clientId    String
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
   dayDate     DateTime
   weightKg    Float?
-  compliance  DailyCheckInCompliance?
   energy      DailyCheckInEnergy?
-  submittedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  hunger      DailyCheckInHunger?
+  sleep       DailyCheckInSleep?
+  note        String?
+  submittedAt DateTime              @default(now())
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
 
   @@unique([clientId, dayDate])
   @@index([clientId])
@@ -860,16 +862,23 @@ enum DailyTrainingStatus {
   MISSED
 }
 
-enum DailyCheckInCompliance {
-  ON_PLAN
-  PARTIAL
-  OFF_PLAN
-}
-
 enum DailyCheckInEnergy {
   LOW
   NORMAL
   HIGH
+}
+
+enum DailyCheckInHunger {
+  SATISFIED
+  MODERATE
+  HUNGRY
+}
+
+enum DailyCheckInSleep {
+  POOR
+  OKAY
+  GOOD
+  GREAT
 }
 
 enum FoodState {

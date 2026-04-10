@@ -1,8 +1,9 @@
 import type { z } from 'zod';
 import type {
-  dailyCheckInComplianceSchema,
   dailyCheckInCurrentResponseSchema,
   dailyCheckInEnergySchema,
+  dailyCheckInHungerSchema,
+  dailyCheckInSleepSchema,
   dailyCheckInHistoryItemSchema,
   dailyCheckInInsightsResponseSchema,
   dailyCheckInPayloadSchema,
@@ -11,8 +12,9 @@ import type {
   dailyCheckInWeightTrendDirectionSchema,
 } from '@/features/daily-checkin/schemas/dailyCheckIn.schema';
 
-export type DailyCheckInCompliance = z.infer<typeof dailyCheckInComplianceSchema>;
 export type DailyCheckInEnergy = z.infer<typeof dailyCheckInEnergySchema>;
+export type DailyCheckInHunger = z.infer<typeof dailyCheckInHungerSchema>;
+export type DailyCheckInSleep = z.infer<typeof dailyCheckInSleepSchema>;
 export type DailyCheckInPayload = z.infer<typeof dailyCheckInPayloadSchema>;
 export type DailyCheckInRecord = z.infer<typeof dailyCheckInRecordSchema>;
 export type DailyCheckInCurrentResponse = z.infer<typeof dailyCheckInCurrentResponseSchema>;

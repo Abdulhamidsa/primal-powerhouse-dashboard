@@ -4,18 +4,27 @@ import { dailyTrainingStatusSchema } from '@/features/daily-training/schemas/dai
 
 export const dayDateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid day date key');
 
-export const dailyCheckInComplianceSchema = z.enum(['OFF_PLAN', 'PARTIAL', 'ON_PLAN']);
-
 export const dailyCheckInEnergySchema = z.enum(['LOW', 'NORMAL', 'HIGH']);
+
+export const dailyCheckInHungerSchema = z.enum(['SATISFIED', 'MODERATE', 'HUNGRY']);
+
+export const dailyCheckInSleepSchema = z.enum(['POOR', 'OKAY', 'GOOD', 'GREAT']);
 
 export const dailyCheckInPayloadSchema = z
   .object({
     weightKg: z.number().positive().max(500).nullable().optional(),
-    compliance: dailyCheckInComplianceSchema.nullable().optional(),
     energy: dailyCheckInEnergySchema.nullable().optional(),
+    hunger: dailyCheckInHungerSchema.nullable().optional(),
+    sleep: dailyCheckInSleepSchema.nullable().optional(),
+    note: z.string().max(500).optional(),
   })
   .refine(
-    value => value.weightKg !== undefined || value.compliance !== undefined || value.energy !== undefined,
+    value =>
+      value.weightKg !== undefined ||
+      value.energy !== undefined ||
+      value.hunger !== undefined ||
+      value.sleep !== undefined ||
+      value.note !== undefined,
     'Provide at least one daily check-in field'
   );
 
@@ -28,8 +37,10 @@ export const dailyCheckInRecordSchema = z.object({
   id: z.string(),
   dayDate: dayDateKeySchema,
   weightKg: z.number().nullable(),
-  compliance: dailyCheckInComplianceSchema.nullable(),
   energy: dailyCheckInEnergySchema.nullable(),
+  hunger: dailyCheckInHungerSchema.nullable(),
+  sleep: dailyCheckInSleepSchema.nullable(),
+  note: z.string().nullable(),
   nutritionStatus: dailyNutritionStatusSchema.nullable(),
   trainingStatus: dailyTrainingStatusSchema.nullable(),
   submittedAt: z.string(),
@@ -54,7 +65,6 @@ export const dailyCheckInHistoryItemSchema = z.object({
   dayDate: dayDateKeySchema,
   weightKg: z.number().nullable(),
   completionPercentage: z.number().int().min(0).max(100),
-  complianceScore: z.number().int().min(0).max(100),
   isComplete: z.boolean(),
 });
 
