@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { requireApiAuth } from '@/lib/api-auth';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
@@ -39,7 +40,11 @@ export async function GET(request: NextRequest) {
       userId = defaultCoach.id;
     }
 
+    const showArchived = searchParams.get('archived') === 'true';
     const clients = await prisma.client.findMany({
+      where: showArchived
+        ? { status: 'ARCHIVED' }
+        : { status: { not: 'ARCHIVED' } },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -59,39 +64,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = requireApiAuth(request, 'admin');
+  if (!auth.ok) return auth.res;
+
   try {
     const body = await request.json();
     const { coachId, ...clientData } = body;
 
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      // First try to get the real coach (not the placeholder)
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }, // Skip the placeholder coach
-          ],
-        },
-      });
-
-      // If no real coach found, create/get the default one
-      if (!defaultCoach) {
-        defaultCoach = await prisma.user.upsert({
-          where: { email: 'coach@fitness.com' },
-          update: {},
-          create: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-    }
+    // Default to the authenticated user as the coach
+    const userId = coachId || auth.user.userId;
 
     // Validate required fields
     if (!clientData.name) {

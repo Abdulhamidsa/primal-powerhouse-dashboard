@@ -21,7 +21,7 @@ datasource db {
 model ClientLead {
   id                          String     @id @default(cuid())
   name                        String
-  email                       String
+  email                       String?
   phone                       String?
   status                      LeadStatus @default(CONTACTED)
   subscriptionType            String?
@@ -772,6 +772,7 @@ enum ClientStatus {
   ACTIVE
   INACTIVE
   PAUSED
+  ARCHIVED
 }
 
 enum ActivityLevel {

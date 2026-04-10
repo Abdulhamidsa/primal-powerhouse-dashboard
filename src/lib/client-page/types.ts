@@ -73,4 +73,4 @@ export interface ActiveMealPlanSummary {
   updatedAt: string;
 }
 
-export type TabKey = 'overview' | 'videos' | 'meals' | 'progress' | 'client-health';
+export type TabKey = 'overview' | 'videos' | 'meals' | 'progress' | 'client-health' | 'personal';

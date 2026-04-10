@@ -12,7 +12,7 @@ import {
   useAdminClientWeeklyCheckIns,
   useAdminWeeklyCheckInActions,
 } from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
-import { deleteMealAssignment } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
+import { archiveClient, deleteMealAssignment, unarchiveClient } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
 import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
 import {
@@ -68,6 +68,8 @@ export default function ClientsPage() {
     filteredClients,
     search,
     setSearch,
+    viewMode,
+    setViewMode,
     isLoading: isClientsLoading,
     error: clientsError,
     refresh: refreshClients,
@@ -206,6 +208,29 @@ export default function ClientsPage() {
     await refreshMeals();
   };
 
+  const handleArchiveClient = async () => {
+    if (!selectedClientId || !client) return;
+    const isArchived = client.status === 'ARCHIVED';
+    const confirmed = window.confirm(
+      isArchived
+        ? 'Restore this client? They will be able to log in again.'
+        : 'Archive this client? They will be blocked from logging in.',
+    );
+    if (!confirmed) return;
+
+    try {
+      if (isArchived) {
+        await unarchiveClient(selectedClientId);
+      } else {
+        await archiveClient(selectedClientId);
+      }
+      await refreshClient();
+      await refreshClients();
+    } catch {
+      window.alert('Failed to update client status.');
+    }
+  };
+
   const handleDeleteCheckIn = async (checkInId: string) => {
     await deleteCheckIn(checkInId);
   };
@@ -313,9 +338,11 @@ export default function ClientsPage() {
               clients={filteredClients}
               selectedClientId={selectedClientId}
               search={search}
+              viewMode={viewMode}
               onAddClientAction={() => setShowAddClientModal(true)}
               onSearchChangeAction={setSearch}
               onSelectClientAction={handleSelectClient}
+              onViewModeChangeAction={setViewMode}
             />
           ) : leftPaneMode === 'chat' ? (
             <ClientChatPane
@@ -457,6 +484,7 @@ export default function ClientsPage() {
                     onHealthMetricsNotesSavedAction={() => {
                       void refreshClient();
                     }}
+                    onArchiveClientAction={handleArchiveClient}
                   />
                 ) : null}
 

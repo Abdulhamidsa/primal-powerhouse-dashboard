@@ -44,6 +44,7 @@ const adminClientUpdateSchema = z
     currentWeight: z.number().finite().min(20).max(350).nullable().optional(),
     targetWeight: z.number().finite().min(20).max(350).nullable().optional(),
     notes: z.string().max(10000).nullable().optional(),
+    status: z.enum(['ACTIVE', 'INACTIVE', 'PAUSED', 'ARCHIVED']).optional(),
   })
   .strict()
   .refine(value => Object.keys(value).length > 0, {
@@ -201,6 +202,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       targetWeight: parsed.data.targetWeight,
       notes: parsed.data.notes,
       notesEncrypted: parsed.data.notes !== undefined ? null : undefined,
+      status: parsed.data.status,
     };
 
     const client = await (prisma as any).client.update({

@@ -5,8 +5,8 @@ import type {
 } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import type { VideoAssignment } from '@/types/video';
 
-export function buildClientsListUrl(): string {
-  return '/api/clients';
+export function buildClientsListUrl(archived = false): string {
+  return archived ? '/api/clients?archived=true' : '/api/clients';
 }
 
 export function buildClientDetailUrl(clientId: string): string {
@@ -52,4 +52,12 @@ export async function deleteVideoAssignment(assignmentId: string): Promise<{ mes
 
 export async function deleteMealAssignment(assignmentId: string): Promise<{ message: string }> {
   return httpClient.delete<{ message: string }>(buildMealAssignmentUrl(assignmentId));
+}
+
+export async function archiveClient(clientId: string): Promise<AdminClientDetail> {
+  return httpClient.put<AdminClientDetail>(buildClientDetailUrl(clientId), { status: 'ARCHIVED' });
+}
+
+export async function unarchiveClient(clientId: string): Promise<AdminClientDetail> {
+  return httpClient.put<AdminClientDetail>(buildClientDetailUrl(clientId), { status: 'ACTIVE' });
 }

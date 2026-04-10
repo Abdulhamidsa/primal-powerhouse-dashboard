@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Mail, Phone, CreditCard, FileText } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, FileText, Wand2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAddClientLead } from '@/features/client-leads/hooks/useAddClientLead';
 import { addClientLeadSchema } from '@/features/client-leads/schemas/clientLead.schemas';
@@ -14,6 +14,18 @@ type Props = {
 
 const EMPTY_FORM = { name: '', email: '', phone: '', subscriptionType: '', notes: '' };
 
+function generateEmailPreview(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .join('.');
+  const suffix = String(Math.floor(1000 + Math.random() * 9000));
+  return `${slug}.${suffix}@primalpowerhouse.com`;
+}
+
 export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }: Props) {
   const { addLead, isLoading } = useAddClientLead();
   const [formData, setFormData] = useState(EMPTY_FORM);
@@ -22,6 +34,13 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
   function handleChange(field: keyof typeof EMPTY_FORM, value: string) {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
+  }
+
+  function handleGenerateEmail() {
+    if (formData.name.trim().length < 2) return;
+    const generated = generateEmailPreview(formData.name.trim());
+    setFormData(prev => ({ ...prev, email: generated }));
+    if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -38,7 +57,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
 
     const ok = await addLead({
       name: result.data.name,
-      email: result.data.email,
+      email: result.data.email || undefined,
       phone: result.data.phone || undefined,
       subscriptionType: result.data.subscriptionType || undefined,
       notes: result.data.notes || undefined,
@@ -108,24 +127,43 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
               <span className="flex items-center gap-1.5">
                 <Mail size={14} />
-                Email Address *
+                Email Address
+                <span className="text-xs font-normal opacity-60">(optional)</span>
               </span>
             </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={e => handleChange('email', e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm"
-              style={{
-                background: 'var(--color-bg-alt)',
-                color: 'var(--color-text)',
-                borderColor: errors.email ? 'var(--color-accent)' : 'var(--color-border)',
-              }}
-              placeholder="john@example.com"
-            />
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={formData.email}
+                onChange={e => handleChange('email', e.target.value)}
+                className="flex-1 px-3 py-2.5 rounded-lg border text-sm"
+                style={{
+                  background: 'var(--color-bg-alt)',
+                  color: 'var(--color-text)',
+                  borderColor: errors.email ? 'var(--color-accent)' : 'var(--color-border)',
+                }}
+                placeholder="john@example.com"
+              />
+              <button
+                type="button"
+                onClick={handleGenerateEmail}
+                disabled={formData.name.trim().length < 2}
+                title="Generate @primalpowerhouse.com email from name"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 whitespace-nowrap"
+                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
+              >
+                <Wand2 size={13} />
+                Generate
+              </button>
+            </div>
             {errors.email && (
               <p className="text-xs mt-1" style={{ color: 'var(--color-accent)' }}>
                 {errors.email}
+              </p>
+            )}
+            {formData.email.includes('@primalpowerhouse.com') && (
+              <p className="text-xs mt-1 opacity-60" style={{ color: 'var(--color-text-muted)' }}>
+                Server will verify uniqueness and adjust if needed.
               </p>
             )}
           </div>
@@ -136,6 +174,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               <span className="flex items-center gap-1.5">
                 <Phone size={14} />
                 Phone
+                <span className="text-xs font-normal opacity-60">(optional)</span>
               </span>
             </label>
             <input

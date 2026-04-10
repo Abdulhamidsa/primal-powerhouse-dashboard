@@ -35,7 +35,7 @@ export function ConvertLeadModal({ lead, onCloseAction, onConvertedAction }: Pro
       isOpen
       onCloseAction={onCloseAction}
       onClientAddedAction={handleClientAdded}
-      prefillData={{ name: lead.name, email: lead.email, phone: lead.phone ?? undefined }}
+      prefillData={{ name: lead.name, email: lead.email ?? undefined, phone: lead.phone ?? undefined }}
       onCredentialsCreated={handleCredentialsCreated}
     />
   );

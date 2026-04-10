@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
-import { Users, ChevronLeft, Film, Utensils, BarChart, Info, Activity } from 'lucide-react';
+import { Users, ChevronLeft, Film, Utensils, BarChart, Info, Activity, User } from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, TabKey } from '@/lib/client-page/types';
 import { calculateBMI } from '@/lib/health/calculators';
@@ -21,6 +21,7 @@ import HealthMetricsModal from '@/components/HealthMetricsModal';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { useClientMeals } from '@/hooks/useClientMeals';
 import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
+import { PersonalInfoTab } from '@/components/client-profile/PersonalInfoTab';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import {
   useAdminClientWeeklyCheckIns,
@@ -151,6 +152,7 @@ export default function ClientProfilePage() {
 
   const tabs: Array<{ key: TabKey; label: string; icon: JSX.Element }> = [
     { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
+    { key: 'personal', label: 'Personal Info', icon: <User size={16} /> },
     { key: 'videos', label: 'Videos', icon: <Film size={16} /> },
     { key: 'meals', label: 'Meals', icon: <Utensils size={16} /> },
     { key: 'client-health', label: 'Health', icon: <Activity size={16} /> },
@@ -707,6 +709,10 @@ export default function ClientProfilePage() {
         )}
 
         {activeTab === 'client-health' && <ClientHealthTab clientId={clientId} />}
+
+        {activeTab === 'personal' && client && (
+          <PersonalInfoTab clientId={clientId} client={client} />
+        )}
       </main>
 
       {selectedClient && (

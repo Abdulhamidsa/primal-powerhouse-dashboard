@@ -22,7 +22,7 @@ export function useClientLeads() {
     return leads.filter(
       l =>
         l.name.toLowerCase().includes(normalized) ||
-        l.email.toLowerCase().includes(normalized) ||
+        (l.email ?? '').toLowerCase().includes(normalized) ||
         (l.phone ?? '').toLowerCase().includes(normalized),
     );
   }, [leads, search]);

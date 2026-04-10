@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Trash2, UserCheck, KeyRound, ChevronDown, Pencil } from 'lucide-react';
+import { Search, Trash2, UserCheck, KeyRound, ChevronDown, Pencil, Eye } from 'lucide-react';
 import { LeadStatusBadge } from '@/features/client-leads/components/LeadStatusBadge';
 import { useClientLeads } from '@/features/client-leads/hooks/useClientLeads';
 import { useUpdateClientLead } from '@/features/client-leads/hooks/useUpdateClientLead';
@@ -9,6 +9,7 @@ import { useDeleteClientLead } from '@/features/client-leads/hooks/useDeleteClie
 import type { ClientLead, LeadStatus } from '@/features/client-leads/types/clientLead.types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { getClientLead } from '@/features/client-leads/api/clientLead.api';
+import { LeadDetailDrawer } from '@/features/client-leads/components/LeadDetailDrawer';
 
 const ALL_STATUSES: LeadStatus[] = ['CONTACTED', 'HAD_MEETING', 'MADE_DEAL', 'CONVERTED'];
 
@@ -28,6 +29,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
   );
   const [loadingCredentialsId, setLoadingCredentialsId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [drawerLead, setDrawerLead] = useState<ClientLead | null>(null);
 
   async function handleStatusChange(id: string, status: LeadStatus) {
     setStatusDropdownId(null);
@@ -120,8 +122,10 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
                   style={{
                     borderTop: i > 0 ? '1px solid var(--color-border)' : undefined,
                     background: 'var(--color-surface)',
+                    cursor: 'pointer',
                   }}
                   className="hover:bg-[var(--color-bg-alt)] transition-colors"
+                  onClick={() => setDrawerLead(lead)}
                 >
                   {/* Name */}
                   <td className="px-4 py-3 font-medium" style={{ color: 'var(--color-text)' }}>
@@ -130,7 +134,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
 
                   {/* Email */}
                   <td className="px-4 py-3" style={{ color: 'var(--color-text-muted)' }}>
-                    {lead.email}
+                    {lead.email ?? <span className="opacity-40">—</span>}
                   </td>
 
                   {/* Phone */}
@@ -139,7 +143,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
                   </td>
 
                   {/* Status — inline dropdown toggle */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                     <div className="relative inline-block">
                       <button
                         type="button"
@@ -197,7 +201,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
                   </td>
 
                   {/* Actions */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       {/* Edit */}
                       <button
@@ -272,6 +276,16 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
         <CredentialsModal credentials={credentialsLead} onCloseAction={() => setCredentialsLead(null)} />
       )}
 
+      {/* Lead Detail Drawer */}
+      {drawerLead && (
+        <LeadDetailDrawer lead={drawerLead} onCloseAction={() => setDrawerLead(null)} />
+      )}
+
+      {/* Lead Detail Drawer */}
+      {drawerLead && (
+        <LeadDetailDrawer lead={drawerLead} onCloseAction={() => setDrawerLead(null)} />
+      )}
+
       {/* Confirm Delete */}
       {confirmDeleteId && (
         <Dialog open onOpenChange={() => setConfirmDeleteId(null)}>
@@ -331,7 +345,7 @@ function EditLeadModal({ lead, onCloseAction, onSavedAction }: EditLeadModalProp
   const { updateLead, isLoading } = useUpdateClientLead();
   const [formData, setFormData] = useState({
     name: lead.name,
-    email: lead.email,
+    email: lead.email ?? '',
     phone: lead.phone ?? '',
     subscriptionType: lead.subscriptionType ?? '',
     notes: lead.notes ?? '',

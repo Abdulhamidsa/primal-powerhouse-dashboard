@@ -1,4 +1,4 @@
-import { Mail, Phone, Ruler, Scale, Timer } from 'lucide-react';
+import { Archive, Mail, Phone, Ruler, Scale, Timer, Undo2 } from 'lucide-react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
@@ -17,6 +17,7 @@ export function SummaryTabContent({
   onOpenHealthMetricsAction,
   onCloseHealthMetricsResultsAction,
   onHealthMetricsNotesSavedAction,
+  onArchiveClientAction,
 }: {
   client: AdminClientDetail;
   summaryWeightKg: number | null;
@@ -26,6 +27,7 @@ export function SummaryTabContent({
   onOpenHealthMetricsAction: () => void;
   onCloseHealthMetricsResultsAction: () => void;
   onHealthMetricsNotesSavedAction: () => void;
+  onArchiveClientAction: () => void;
 }) {
   const bmi =
     typeof summaryWeightKg === 'number' && typeof client.height === 'number'
@@ -67,14 +69,29 @@ export function SummaryTabContent({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onEditProfileAction}
-            className="rounded-lg border px-3 py-2 text-sm font-medium"
-            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
-          >
-            Edit Profile
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onEditProfileAction}
+              className="rounded-lg border px-3 py-2 text-sm font-medium"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+            >
+              Edit Profile
+            </button>
+
+            <button
+              type="button"
+              onClick={onArchiveClientAction}
+              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+            >
+              {client.status === 'ARCHIVED' ? (
+                <><Undo2 size={14} /> Restore</>
+              ) : (
+                <><Archive size={14} /> Archive</>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">

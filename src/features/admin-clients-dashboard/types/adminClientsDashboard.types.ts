@@ -11,7 +11,7 @@ export type AdminClientListItem = {
   name: string;
   email: string;
   avatar: string | null;
-  status: 'ACTIVE' | 'INACTIVE' | string;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | string;
   notes: string | null;
   currentWeight: number | null;
   targetWeight: number | null;
@@ -24,7 +24,7 @@ export type AdminClientDetail = {
   email: string;
   phone: string | null;
   avatar: string | null;
-  status: 'ACTIVE' | 'INACTIVE' | string;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | string;
   age: number | null;
   gender: 'MALE' | 'FEMALE' | null;
   activityLevel: string | null;

@@ -6,16 +6,20 @@ export function ClientListPane({
   clients,
   selectedClientId,
   search,
+  viewMode,
   onAddClientAction,
   onSearchChangeAction,
   onSelectClientAction,
+  onViewModeChangeAction,
 }: {
   clients: AdminClientListItem[];
   selectedClientId: string | null;
   search: string;
+  viewMode: 'active' | 'archived';
   onAddClientAction: () => void;
   onSearchChangeAction: (value: string) => void;
   onSelectClientAction: (clientId: string) => void;
+  onViewModeChangeAction: (mode: 'active' | 'archived') => void;
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -28,18 +32,37 @@ export function ClientListPane({
             </h2>
           </div>
 
-          <button
-            type="button"
-            onClick={onAddClientAction}
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-            style={{
-              background: 'var(--color-accent)',
-              color: 'var(--color-text)',
-            }}
-          >
-            <Plus size={16} />
-            Add Client
-          </button>
+          {viewMode === 'active' && (
+            <button
+              type="button"
+              onClick={onAddClientAction}
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+              style={{
+                background: 'var(--color-accent)',
+                color: 'var(--color-text)',
+              }}
+            >
+              <Plus size={16} />
+              Add Client
+            </button>
+          )}
+        </div>
+
+        <div className="flex rounded-lg overflow-hidden border mb-3" style={{ borderColor: 'var(--color-border)' }}>
+          {(['active', 'archived'] as const).map(mode => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => onViewModeChangeAction(mode)}
+              className="flex-1 py-1.5 text-xs font-medium transition-colors capitalize"
+              style={{
+                background: viewMode === mode ? 'var(--color-accent)' : 'var(--color-bg-alt)',
+                color: viewMode === mode ? 'var(--color-text)' : 'var(--color-text-muted)',
+              }}
+            >
+              {mode}
+            </button>
+          ))}
         </div>
 
         <div className="relative">

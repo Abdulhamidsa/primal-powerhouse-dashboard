@@ -3,7 +3,7 @@ export type LeadStatus = 'CONTACTED' | 'HAD_MEETING' | 'MADE_DEAL' | 'CONVERTED'
 export type ClientLead = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   status: LeadStatus;
   subscriptionType: string | null;
@@ -17,7 +17,7 @@ export type ClientLead = {
 
 export type CreateClientLeadPayload = {
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   status?: LeadStatus;
   subscriptionType?: string;

@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
+    if (client.status === 'ARCHIVED') {
+      return NextResponse.json({ error: 'Account is inactive. Contact your coach.' }, { status: 401 });
+    }
+
     let isValidPassword = false;
 
     if (client.password) {
