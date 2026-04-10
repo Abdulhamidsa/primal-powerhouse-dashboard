@@ -4,9 +4,8 @@ import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { useUserData } from '@/hooks/useUserData';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
-import { Button } from '@/components/ui/button';
 import { useDailyCheckInInsights, useDailyCheckInToday } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
@@ -65,6 +64,7 @@ export default function UserDashboardPage() {
   const isDailyDone = dailyEntry?.isComplete === true;
   const completedMeals = adherenceSummary?.completion.completedCount ?? 0;
   const totalMeals = adherenceSummary?.completion.totalSelectedCount ?? 0;
+  const isMealsDone = totalMeals > 0 && completedMeals === totalMeals;
 
   const todayActions = [
     {
@@ -72,11 +72,14 @@ export default function UserDashboardPage() {
       title: 'Daily Check-In',
       description: isDailyDone ? 'Completed for today.' : 'Log your daily update.',
       href: '/user/check-ins',
-      icon: ClipboardCheck,
+      icon: isDailyDone ? CheckCircle2 : ClipboardCheck,
+      iconBg: isDailyDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
+      iconColor: isDailyDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
       badge: isDailyDone ? 'Done' : 'Due',
       badgeClass: isDailyDone
         ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
         : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+      done: isDailyDone,
     },
     {
       key: 'weekly',
@@ -88,7 +91,19 @@ export default function UserDashboardPage() {
             ? 'Overdue — fill it in now.'
             : 'Due this week.',
       href: '/user/check-ins',
-      icon: ClipboardCheck,
+      icon: weeklyStatus === 'completed' ? CheckCircle2 : ClipboardCheck,
+      iconBg:
+        weeklyStatus === 'completed'
+          ? 'bg-[var(--color-success-muted)]'
+          : weeklyStatus === 'overdue'
+            ? 'bg-[var(--color-danger-muted)]'
+            : 'bg-[var(--color-warning-muted)]',
+      iconColor:
+        weeklyStatus === 'completed'
+          ? 'text-[var(--color-success)]'
+          : weeklyStatus === 'overdue'
+            ? 'text-[var(--color-danger)]'
+            : 'text-[var(--color-warning)]',
       badge: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
       badgeClass:
         weeklyStatus === 'completed'
@@ -96,18 +111,21 @@ export default function UserDashboardPage() {
           : weeklyStatus === 'overdue'
             ? 'text-[var(--color-danger)] bg-[var(--color-danger-muted)]'
             : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+      done: weeklyStatus === 'completed',
     },
     {
       key: 'meals',
       title: "Today's Meals",
       description: totalMeals > 0 ? `${completedMeals} of ${totalMeals} meals marked done.` : 'No meals selected yet.',
       href: '/user/my-plan',
-      icon: Utensils,
+      icon: isMealsDone ? CheckCircle2 : Utensils,
+      iconBg: isMealsDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
+      iconColor: isMealsDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
       badge: totalMeals > 0 ? `${completedMeals}/${totalMeals}` : '—',
-      badgeClass:
-        totalMeals > 0 && completedMeals === totalMeals
-          ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
-          : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+      badgeClass: isMealsDone
+        ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
+        : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+      done: isMealsDone,
     },
     {
       key: 'chat',
@@ -118,11 +136,11 @@ export default function UserDashboardPage() {
           : 'Share progress or ask a question.',
       href: '/user/chat',
       icon: MessageSquare,
-      badge: unreadTotal > 0 ? `${unreadTotal} new` : 'Chat',
-      badgeClass:
-        unreadTotal > 0
-          ? 'text-[var(--color-accent)] bg-[var(--color-accent-translucent)]'
-          : 'text-muted-foreground bg-muted/40',
+      iconBg: unreadTotal > 0 ? 'bg-[var(--color-accent-translucent)]' : 'bg-[var(--color-bg-alt)]',
+      iconColor: unreadTotal > 0 ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]',
+      badge: unreadTotal > 0 ? `${unreadTotal} new` : null,
+      badgeClass: 'text-[var(--color-accent)] bg-[var(--color-accent-translucent)]',
+      done: false,
     },
   ];
 
@@ -182,49 +200,38 @@ export default function UserDashboardPage() {
         </section>
 
         {/* Data-driven action cards */}
-        <section className="space-y-2.5">
-          <div className="px-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today</p>
-            <h2 className="mt-1 text-[17px] font-semibold tracking-tight text-foreground">Your status</h2>
-          </div>
+        <section className="flex flex-col gap-2">
+          {todayActions.map(action => {
+            const Icon = action.icon;
 
-          <div className="grid grid-cols-1 gap-2.5">
-            {todayActions.map(action => {
-              const Icon = action.icon;
-
-              return (
+            return (
+              <Link key={action.key} href={action.href}>
                 <article
-                  key={action.key}
-                  className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 transition-transform duration-150 active:scale-[0.99]"
+                  className={`flex items-center gap-3.5 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-transform duration-150 active:scale-[0.99]${action.done ? ' opacity-70' : ''}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-bg-alt)] text-[var(--color-text-muted)]">
-                      <Icon size={15} />
-                    </div>
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${action.iconBg}`}>
+                    <Icon size={18} className={action.iconColor} />
+                  </div>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="text-sm font-semibold text-foreground">{action.title}</h3>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-foreground">{action.title}</h3>
+                      {action.badge && (
                         <span
                           className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${action.badgeClass}`}
                         >
                           {action.badge}
                         </span>
-                      </div>
-                      <p className="mt-0.5 text-[12px] text-muted-foreground">{action.description}</p>
+                      )}
                     </div>
-
-                    <Button asChild size="sm" variant="outline" className="h-7 shrink-0 rounded-lg px-2.5 text-[11px]">
-                      <Link href={action.href} className="inline-flex items-center gap-1">
-                        <span>Open</span>
-                        <ArrowRight size={11} />
-                      </Link>
-                    </Button>
+                    <p className="mt-0.5 text-[12px] leading-4 text-[var(--color-text-muted)]">{action.description}</p>
                   </div>
+
+                  <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)] opacity-40" />
                 </article>
-              );
-            })}
-          </div>
+              </Link>
+            );
+          })}
         </section>
       </div>
     </div>
