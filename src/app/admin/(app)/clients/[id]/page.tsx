@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
-import { Users, ChevronLeft, Film, Utensils, BarChart, Info, Activity, User } from 'lucide-react';
+import { Users, ChevronLeft, Film, Utensils, BarChart, Info, Activity, User, MessageSquare } from 'lucide-react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, TabKey } from '@/lib/client-page/types';
 import { calculateBMI } from '@/lib/health/calculators';
@@ -22,6 +22,7 @@ import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { useClientMeals } from '@/hooks/useClientMeals';
 import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
 import { PersonalInfoTab } from '@/components/client-profile/PersonalInfoTab';
+import { MotivationalMessageTab } from '@/features/admin-clients-dashboard/components/MotivationalMessageTab';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import {
   useAdminClientWeeklyCheckIns,
@@ -157,6 +158,7 @@ export default function ClientProfilePage() {
     { key: 'meals', label: 'Meals', icon: <Utensils size={16} /> },
     { key: 'client-health', label: 'Health', icon: <Activity size={16} /> },
     { key: 'progress', label: 'Progress', icon: <BarChart size={16} /> },
+    { key: 'message', label: 'Message', icon: <MessageSquare size={16} /> },
   ];
 
   const getWeeklyStatusStyles = (status: 'completed' | 'due' | 'overdue') => {
@@ -710,8 +712,15 @@ export default function ClientProfilePage() {
 
         {activeTab === 'client-health' && <ClientHealthTab clientId={clientId} />}
 
-        {activeTab === 'personal' && client && (
-          <PersonalInfoTab clientId={clientId} client={client} />
+        {activeTab === 'personal' && client && <PersonalInfoTab clientId={clientId} client={client} />}
+
+        {activeTab === 'message' && client && (
+          <MotivationalMessageTab
+            clientId={clientId}
+            clientName={client.name}
+            currentMessage={client.motivationalMessage}
+            onRefreshAction={fetchClientData}
+          />
         )}
       </main>
 

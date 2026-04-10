@@ -61,3 +61,10 @@ export async function archiveClient(clientId: string): Promise<AdminClientDetail
 export async function unarchiveClient(clientId: string): Promise<AdminClientDetail> {
   return httpClient.put<AdminClientDetail>(buildClientDetailUrl(clientId), { status: 'ACTIVE' });
 }
+
+export async function setClientMotivationalMessage(
+  clientId: string,
+  motivationalMessage: string,
+): Promise<{ success: boolean; client: { id: string; name: string; motivationalMessage: string } }> {
+  return httpClient.post('/api/admin/clients/motivational-message', { clientId, motivationalMessage });
+}

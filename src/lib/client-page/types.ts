@@ -22,6 +22,7 @@ export interface Client {
   sessionsCompleted?: number;
   goalCalories?: number;
   goalMacros?: string; // JSON string: {protein, carbs, fat}
+  motivationalMessage?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,4 +74,4 @@ export interface ActiveMealPlanSummary {
   updatedAt: string;
 }
 
-export type TabKey = 'overview' | 'videos' | 'meals' | 'progress' | 'client-health' | 'personal';
+export type TabKey = 'overview' | 'videos' | 'meals' | 'progress' | 'client-health' | 'personal' | 'message';
