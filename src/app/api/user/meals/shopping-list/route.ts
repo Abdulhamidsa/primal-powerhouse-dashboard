@@ -9,6 +9,18 @@ import {
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 import type { ShoppingListEntry } from '@/features/meals/types/shoppingList.types';
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type ParsedIngredient = {
+  name: string;
+  grams: number | null;
+  amount: number | null;
+  unit: string | null;
+  displayUnitLabel: string | null;
+};
+
+// ─── Route ───────────────────────────────────────────────────────────────────
+
 export async function POST(request: NextRequest) {
   try {
     const { error, user } = requireAuth(request, 'client');
@@ -19,10 +31,7 @@ export async function POST(request: NextRequest) {
     const parsed = generateShoppingListSchema.safeParse(await request.json());
     if (!parsed.success) {
       return jsonWithCache(
-        {
-          error: 'Invalid shopping list payload',
-          details: parsed.error.flatten(),
-        },
+        { error: 'Invalid shopping list payload', details: parsed.error.flatten() },
         { status: 400 },
       );
     }
@@ -38,95 +47,197 @@ export async function POST(request: NextRequest) {
       })),
     );
 
-    const ingredientLines: string[] = [];
+    const structuredIngredients: ParsedIngredient[] = [];
     const spiceLines: string[] = [];
 
     hydratedItems.forEach(item => {
-      ingredientLines.push(...normalizeMealTextList(item.meal.ingredients));
+      // meal.ingredients = raw JSON string from DB
+      structuredIngredients.push(...parseMealIngredients(item.meal.ingredients));
       spiceLines.push(...normalizeMealTextList(item.meal.spices));
 
       if (item.side) {
-        ingredientLines.push(...normalizeMealTextList(item.side.ingredients));
+        // side.ingredients may be string[] or raw string — normalize then wrap
+        const sideTexts = normalizeMealTextList(item.side.ingredients as unknown);
+        for (const text of sideTexts) {
+          structuredIngredients.push({ name: text, grams: null, amount: null, unit: null, displayUnitLabel: null });
+        }
         spiceLines.push(...normalizeMealTextList(item.side.spices));
       }
     });
 
-    const ingredients = dedupeTextItems(ingredientLines, 'ingredient');
-    const spices = dedupeTextItems(spiceLines, 'spice');
+    const ingredients = aggregateIngredients(structuredIngredients, 'ingredient');
+    const spices = dedupeSpices(spiceLines);
 
     return jsonWithCache({
       generatedAt: new Date().toISOString(),
       selectionFingerprint: buildSelectionFingerprint(parsed.data.items),
       sections: [
-        {
-          key: 'ingredients',
-          title: 'Ingredients',
-          items: ingredients,
-        },
-        {
-          key: 'spices',
-          title: 'Spices',
-          items: spices,
-        },
+        { key: 'ingredients', title: 'Ingredients', items: ingredients },
+        { key: 'spices', title: 'Spices & Seasonings', items: spices },
       ],
     });
-  } catch (error) {
-    console.error('[USER_SHOPPING_LIST_POST] Failed:', error);
+  } catch (err) {
+    console.error('[USER_SHOPPING_LIST_POST] Failed:', err);
     return jsonWithCache({ error: 'Failed to generate shopping list' }, { status: 500 });
   }
 }
 
-function dedupeTextItems(values: string[], source: 'ingredient' | 'spice'): ShoppingListEntry[] {
-  // Map from normalized base-ingredient key → best display label (shortest / most generic)
-  const seen = new Map<string, string>();
+// ─── Ingredient parsing ───────────────────────────────────────────────────────
 
-  values.forEach(value => {
-    const label = value.trim();
-    if (!label) return;
+/** Parse `meal.ingredients` (a DB JSON string) into structured ingredient objects. */
+function parseMealIngredients(raw: string | null | undefined): ParsedIngredient[] {
+  if (!raw) return [];
 
-    const key = normalizeIngredientKey(label);
-    if (!key) return;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    // Fallback: treat as raw text list
+    return normalizeMealTextList(raw).map(text => toTextIngredient(text));
+  }
 
-    // Keep the shorter / more generic display label (strip leading quantity for display)
-    const displayLabel = stripLeadingQuantity(label) || label;
+  if (!Array.isArray(parsed)) {
+    return normalizeMealTextList(raw).map(text => toTextIngredient(text));
+  }
 
-    if (!seen.has(key)) {
-      seen.set(key, displayLabel);
+  const result: ParsedIngredient[] = [];
+
+  for (const item of parsed) {
+    if (!item) continue;
+
+    if (typeof item === 'string') {
+      const t = item.trim();
+      if (t) result.push(toTextIngredient(t));
+      continue;
+    }
+
+    if (typeof item !== 'object') continue;
+
+    const record = item as Record<string, unknown>;
+    // Support nested { ingredient: { name, grams, ... } }
+    const nested = record.ingredient as Record<string, unknown> | undefined;
+    const src = nested && typeof nested === 'object' ? nested : record;
+
+    const name = toStr(src.name) ?? toStr(record.name);
+    if (!name) continue;
+
+    result.push({
+      name,
+      grams: toNum(src.grams) ?? toNum(record.grams),
+      amount: toNum(src.amount) ?? toNum(record.amount),
+      unit: toStr(src.unit) ?? toStr(record.unit),
+      displayUnitLabel: toStr(src.displayUnitLabel) ?? toStr(record.displayUnitLabel),
+    });
+  }
+
+  return result;
+}
+
+function toTextIngredient(text: string): ParsedIngredient {
+  return { name: text, grams: null, amount: null, unit: null, displayUnitLabel: null };
+}
+
+// ─── Aggregation ─────────────────────────────────────────────────────────────
+
+/**
+ * Group ingredients by canonical name, sum grams/amounts where possible,
+ * and return display labels like "300g Chicken Breast" or "2 tbsp Olive Oil".
+ */
+function aggregateIngredients(items: ParsedIngredient[], source: 'ingredient' | 'spice'): ShoppingListEntry[] {
+  // Group by lowercase name
+  const groups = new Map<string, ParsedIngredient[]>();
+
+  for (const item of items) {
+    const key = canonicalize(item.name);
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(item);
+  }
+
+  const result: ShoppingListEntry[] = [];
+  let index = 0;
+
+  for (const [key, entries] of groups) {
+    const canonicalName = capitalizeWords(entries[0].name);
+
+    // Determine display quantity
+    const allHaveGrams = entries.every(e => e.grams != null && e.grams > 0);
+
+    let label: string;
+
+    let quantity: string | undefined;
+
+    if (allHaveGrams) {
+      const totalGrams = entries.reduce((sum, e) => sum + (e.grams ?? 0), 0);
+      quantity = formatGrams(totalGrams);
     } else {
-      // Prefer the shorter label as the canonical display (more generic)
-      const existing = seen.get(key)!;
-      if (displayLabel.length < existing.length) {
-        seen.set(key, displayLabel);
+      // Try to aggregate amounts with the same unit
+      const unit = entries[0].displayUnitLabel ?? entries[0].unit ?? null;
+      const sameUnit = unit && entries.every(e => (e.displayUnitLabel ?? e.unit) === unit);
+
+      if (sameUnit && entries[0].amount != null) {
+        const totalAmount = entries.reduce((sum, e) => sum + (e.amount ?? 0), 0);
+        const rounded = Math.round(totalAmount * 10) / 10;
+        quantity = `${rounded} ${unit}`;
       }
     }
-  });
 
-  return Array.from(seen.entries()).map(([key, label], index) => ({
-    id: `${source}-${index}-${slugify(key)}`,
-    label,
-    source,
-  }));
+    label = canonicalName;
+    result.push({ id: `${source}-${index}-${slugify(key)}`, label, quantity, source });
+    index++;
+  }
+
+  return result;
 }
 
-/** Strip leading quantity patterns like "2", "150g", "1/2 cup", "3 tbsp" */
-function stripLeadingQuantity(label: string): string {
-  return (
-    label
-      .trim()
-      // Strip leading unicode fractions or digit sequences (e.g. "1½", "2/3", "150")
-      .replace(/^[\d½¼¾⅓⅔⅛⅜⅝⅞][\d./ ½¼¾⅓⅔⅛⅜⅝⅞-]*\s*/, '')
-      // Strip unit immediately following (e.g. "g olive oil" → "olive oil")
-      .replace(
-        /^(grams?|g|kg|lbs?|oz|ml|l|cups?|tbsp\.?|tsp\.?|tablespoons?|teaspoons?|cloves?|pieces?|slices?|pinch|dash|handful|bunches?|heads?|cans?|tins?|packets?)\s+(of\s+)?/gi,
-        '',
-      )
-      .trim()
-  );
+/** Dedupe spices — no quantities, just unique names */
+function dedupeSpices(values: string[]): ShoppingListEntry[] {
+  const seen = new Set<string>();
+  const result: ShoppingListEntry[] = [];
+  let index = 0;
+
+  for (const value of values) {
+    const label = value.trim();
+    if (!label) continue;
+    const key = canonicalize(label);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    result.push({ id: `spice-${index}-${slugify(key)}`, label: capitalizeWords(label), source: 'spice' });
+    index++;
+  }
+
+  return result;
 }
 
-/** Derive a stable comparison key that ignores quantities and is case-insensitive */
-function normalizeIngredientKey(label: string): string {
-  return stripLeadingQuantity(label).toLowerCase().replace(/\s+/g, ' ').trim();
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function toStr(v: unknown): string | null {
+  return typeof v === 'string' && v.trim() ? v.trim() : null;
+}
+
+function toNum(v: unknown): number | null {
+  if (typeof v === 'number' && Number.isFinite(v) && v > 0) return v;
+  if (typeof v === 'string') {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
+function canonicalize(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function capitalizeWords(str: string): string {
+  return str.toLowerCase().replace(/(?:^|\s)\S/g, c => c.toUpperCase());
+}
+
+function formatGrams(grams: number): string {
+  if (grams >= 1000) {
+    const kg = grams / 1000;
+    return `${Number.isInteger(kg) ? kg : kg.toFixed(1)}kg`;
+  }
+  return `${Math.round(grams)}g`;
 }
 
 function slugify(value: string): string {

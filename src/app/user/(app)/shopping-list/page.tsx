@@ -339,7 +339,7 @@ export default function ShoppingListPage() {
                           {isChecked && <Check size={12} color="white" strokeWidth={3.5} />}
                         </span>
 
-                        {/* Label */}
+                        {/* Name */}
                         <span
                           className="flex-1 text-[15px] leading-snug transition-all duration-150"
                           style={{
@@ -350,6 +350,20 @@ export default function ShoppingListPage() {
                         >
                           {item.label}
                         </span>
+
+                        {/* Quantity — right side */}
+                        {item.quantity ? (
+                          <span
+                            className="ml-3 shrink-0 rounded-lg px-2 py-0.5 text-[12px] font-semibold tabular-nums transition-opacity"
+                            style={{
+                              background: isChecked ? 'var(--color-bg)' : 'var(--color-bg-alt)',
+                              color: isChecked ? 'var(--color-text-muted)' : 'var(--color-accent)',
+                              opacity: isChecked ? 0.4 : 1,
+                            }}
+                          >
+                            {item.quantity}
+                          </span>
+                        ) : null}
                       </button>
                     );
                   })}
