@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
-import { jsonWithCache } from '@/lib/cacheHeaders';
 import { invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { z } from 'zod';
 

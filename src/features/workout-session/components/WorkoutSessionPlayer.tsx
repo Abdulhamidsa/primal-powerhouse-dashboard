@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Plus, Minus, Timer, MessageSquare } from 'lucide-react';
-import type {
-  WorkoutPlanAssignmentWithPlan,
-  WorkoutPlanExercise,
-} from '@/features/workout-plans/types/workoutPlan.types';
+import type { WorkoutPlanAssignmentWithPlan } from '@/features/workout-plans/types/workoutPlan.types';
 import type { LocalExerciseState, LocalSetEntry, ExerciseFeedbackType } from '../types/workoutSession.types';
 import { buildInitialExerciseState } from '../lib/progression';
 import { startWorkoutSession, completeWorkoutSession } from '../api/workoutSession.api';

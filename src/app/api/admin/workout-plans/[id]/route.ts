@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import { invalidateWorkoutCaches, workoutPlanTag } from '@/lib/cache-tags';
+import { invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { updateWorkoutPlanSchema } from '@/features/workout-plans/schemas/workoutPlan.schemas';
 
 type RouteContext = { params: Promise<{ id: string }> };
