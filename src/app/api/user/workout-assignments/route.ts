@@ -1,9 +1,6 @@
-import { NextRequest } from 'next/server';
-import { unstable_cache } from 'next/cache';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
-import { jsonWithCache } from '@/lib/cacheHeaders';
-import { CACHE_TAGS, clientWorkoutPlansTag } from '@/lib/cache-tags';
 
 /**
  * GET /api/user/workout-assignments
@@ -15,36 +12,33 @@ export async function GET(request: NextRequest) {
 
   const clientId = auth.user.userId;
 
-  const assignments = await unstable_cache(
-    async () =>
-      (prisma as any).workoutPlanAssignment.findMany({
-        where: { clientId, isActive: true },
+  const assignments = await (prisma as any).workoutPlanAssignment.findMany({
+    where: { clientId, isActive: true },
+    include: {
+      workoutPlan: {
         include: {
-          workoutPlan: {
+          exercises: {
+            orderBy: { order: 'asc' },
             include: {
-              exercises: {
-                orderBy: { order: 'asc' },
-                include: {
-                  video: {
-                    select: {
-                      id: true,
-                      title: true,
-                      thumbnailUrl: true,
-                      duration: true,
-                      videoUrl: true,
-                      muscleGroups: true,
-                    },
-                  },
+              video: {
+                select: {
+                  id: true,
+                  title: true,
+                  thumbnailUrl: true,
+                  duration: true,
+                  videoUrl: true,
+                  muscleGroups: true,
                 },
               },
             },
           },
         },
-        orderBy: { assignedAt: 'desc' },
-      }),
-    [`workout-assignments:client:${clientId}`],
-    { tags: [CACHE_TAGS.workoutPlanAssignments, clientWorkoutPlansTag(clientId)], revalidate: false },
-  )();
+      },
+    },
+    orderBy: { assignedAt: 'desc' },
+  });
 
-  return jsonWithCache(assignments);
+  return NextResponse.json(assignments, {
+    headers: { 'Cache-Control': 'private, no-store' },
+  });
 }
