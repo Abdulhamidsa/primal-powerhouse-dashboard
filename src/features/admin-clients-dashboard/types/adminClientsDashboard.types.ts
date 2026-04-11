@@ -4,7 +4,7 @@ import type { AdminClientWeeklyCheckInsResponse } from '@/features/weekly-checki
 
 export type LeftPaneMode = 'list' | 'chat' | 'notes';
 
-export type DashboardTabKey = 'summary' | 'nutrition' | 'assignments' | 'check-ins';
+export type DashboardTabKey = 'summary' | 'nutrition' | 'assignments' | 'check-ins' | 'training';
 
 export type AdminClientListItem = {
   id: string;
@@ -37,6 +37,7 @@ export type AdminClientDetail = {
   sessionsCompleted: number | null;
   goalCalories: number | null;
   goalMacros: string | null;
+  motivationalMessage: string | null;
 };
 
 export type ClientNoteEntry = {

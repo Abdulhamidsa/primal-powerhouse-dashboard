@@ -52,6 +52,7 @@ model User {
   sessions  Session[]
   foodsCreated Food[]
   coachConversations Conversation[] @relation("ConversationCoach")
+  workoutPlans WorkoutPlan[]
 
   @@map("users")
 }
@@ -121,6 +122,8 @@ model Client {
   conversations     Conversation[]
   pushSubscriptions PushSubscription[]
   notificationDeliveryLogs NotificationDeliveryLog[]
+  workoutPlanAssignments WorkoutPlanAssignment[]
+  workoutSessions        WorkoutSession[]
 
   @@map("clients")
 }
@@ -327,7 +330,8 @@ model Video {
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
 
-  videoAssignments VideoAssignment[]
+  videoAssignments     VideoAssignment[]
+  workoutPlanExercises WorkoutPlanExercise[]
 
   @@map("videos")
 }
@@ -915,4 +919,110 @@ enum MessageSenderRole {
   COACH
   ADMIN
   SYSTEM
+}
+
+enum WorkoutSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum ExerciseFeedbackType {
+  TOO_EASY
+  FELT_GOOD
+  TOO_HEAVY
+  FORM_ISSUE
+  PAIN_DISCOMFORT
+}
+
+model WorkoutPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  coachId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  coach       User                    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  exercises   WorkoutPlanExercise[]
+  assignments WorkoutPlanAssignment[]
+
+  @@map("workout_plans")
+}
+
+model WorkoutPlanExercise {
+  id                String  @id @default(cuid())
+  workoutPlanId     String
+  videoId           String
+  order             Int
+  targetSets        Int     @default(3)
+  minReps           Int     @default(8)
+  maxReps           Int     @default(12)
+  suggestedWeightKg Float?
+  restSeconds       Int     @default(120)
+  notes             String?
+
+  workoutPlan  WorkoutPlan  @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  video        Video        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  exerciseLogs ExerciseLog[]
+
+  @@map("workout_plan_exercises")
+}
+
+model WorkoutPlanAssignment {
+  id            String   @id @default(cuid())
+  workoutPlanId String
+  clientId      String
+  assignedAt    DateTime @default(now())
+  isActive      Boolean  @default(true)
+
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sessions    WorkoutSession[]
+
+  @@map("workout_plan_assignments")
+}
+
+model WorkoutSession {
+  id               String               @id @default(cuid())
+  clientId         String
+  planAssignmentId String
+  status           WorkoutSessionStatus @default(IN_PROGRESS)
+  startedAt        DateTime             @default(now())
+  completedAt      DateTime?
+
+  client         Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  planAssignment WorkoutPlanAssignment @relation(fields: [planAssignmentId], references: [id], onDelete: Cascade)
+  exerciseLogs   ExerciseLog[]
+
+  @@map("workout_sessions")
+}
+
+model ExerciseLog {
+  id             String                @id @default(cuid())
+  sessionId      String
+  planExerciseId String
+  completedAt    DateTime?
+  feedback       ExerciseFeedbackType?
+  feedbackNote   String?
+
+  session      WorkoutSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  planExercise WorkoutPlanExercise @relation(fields: [planExerciseId], references: [id], onDelete: Cascade)
+  sets         SetLog[]
+
+  @@map("exercise_logs")
+}
+
+model SetLog {
+  id            String      @id @default(cuid())
+  exerciseLogId String
+  setNumber     Int
+  reps          Int
+  weightKg      Float
+  completed     Boolean     @default(true)
+  loggedAt      DateTime    @default(now())
+
+  exerciseLog ExerciseLog @relation(fields: [exerciseLogId], references: [id], onDelete: Cascade)
+
+  @@map("set_logs")
 }

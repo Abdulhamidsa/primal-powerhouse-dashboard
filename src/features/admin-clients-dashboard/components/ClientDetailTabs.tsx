@@ -1,4 +1,4 @@
-import { Activity, ClipboardList, Salad, UserSquare2 } from 'lucide-react';
+import { Activity, ClipboardList, Dumbbell, Salad, UserSquare2 } from 'lucide-react';
 import { cx } from '@/lib/ui';
 import type { DashboardTabKey } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
@@ -7,6 +7,7 @@ const tabs: Array<{ key: DashboardTabKey; label: string; icon: React.ComponentTy
   { key: 'nutrition', label: 'Nutrition', icon: Salad },
   { key: 'assignments', label: 'Assignments', icon: ClipboardList },
   { key: 'check-ins', label: 'Check-Ins', icon: Activity },
+  { key: 'training', label: 'Training', icon: Dumbbell },
 ];
 
 export function ClientDetailTabs({

@@ -17,6 +17,7 @@ import {
   CalendarCheck2,
   ShoppingBag,
   Handshake,
+  Dumbbell,
 } from 'lucide-react';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
@@ -73,6 +74,12 @@ const adminNavItems: NavItem[] = [
     href: '/admin/deals',
     icon: Handshake,
     description: 'Client pipeline',
+  },
+  {
+    name: 'Workouts',
+    href: '/admin/workout-plans',
+    icon: Dumbbell,
+    description: 'Workout plan library',
   },
 ];
 

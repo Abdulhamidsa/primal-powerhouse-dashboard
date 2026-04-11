@@ -5,6 +5,7 @@ import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWi
 import { calculateBMI } from '@/lib/health/calculators';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { WeightTargetProgressCard } from '@/features/admin-clients-dashboard/components/WeightTargetProgressCard';
+import { MotivationalMessageTab } from '@/features/admin-clients-dashboard/components/MotivationalMessageTab';
 import type { AdminClientDetail } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
 
@@ -18,6 +19,7 @@ export function SummaryTabContent({
   onCloseHealthMetricsResultsAction,
   onHealthMetricsNotesSavedAction,
   onArchiveClientAction,
+  onRefreshClientAction,
 }: {
   client: AdminClientDetail;
   summaryWeightKg: number | null;
@@ -28,6 +30,7 @@ export function SummaryTabContent({
   onCloseHealthMetricsResultsAction: () => void;
   onHealthMetricsNotesSavedAction: () => void;
   onArchiveClientAction: () => void;
+  onRefreshClientAction?: () => void;
 }) {
   const bmi =
     typeof summaryWeightKg === 'number' && typeof client.height === 'number'
@@ -86,9 +89,13 @@ export function SummaryTabContent({
               style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
             >
               {client.status === 'ARCHIVED' ? (
-                <><Undo2 size={14} /> Restore</>
+                <>
+                  <Undo2 size={14} /> Restore
+                </>
               ) : (
-                <><Archive size={14} /> Archive</>
+                <>
+                  <Archive size={14} /> Archive
+                </>
               )}
             </button>
           </div>
@@ -218,6 +225,13 @@ export function SummaryTabContent({
           }}
         />
       ) : null}
+
+      <MotivationalMessageTab
+        clientId={client.id}
+        clientName={client.name}
+        currentMessage={client.motivationalMessage}
+        onRefreshAction={onRefreshClientAction ?? (() => {})}
+      />
     </div>
   );
 }

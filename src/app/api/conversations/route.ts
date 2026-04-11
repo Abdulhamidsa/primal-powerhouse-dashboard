@@ -20,7 +20,7 @@ type UnreadCountRow = {
 
 async function getUnreadCountsByConversation(
   conversationIds: string[],
-  actor: { type: 'client'; clientId: string } | { type: 'coach'; coachId: string } | { type: 'admin' }
+  actor: { type: 'client'; clientId: string } | { type: 'coach'; coachId: string } | { type: 'admin' },
 ): Promise<Map<string, number>> {
   if (!conversationIds.length) {
     return new Map();
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       ? { type: 'client', clientId: actor.clientId }
       : actor.type === 'coach'
         ? { type: 'coach', coachId: actor.coachId }
-        : { type: 'admin' }
+        : { type: 'admin' },
   );
 
   const items = rows.map((row: any) => ({
@@ -159,8 +159,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Client not found' }, { status: 404 });
   }
 
-  if (actor.type === 'coach' && client.coachId !== actor.coachId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!client.coachId) {
+    return NextResponse.json({ error: 'Client has no assigned coach' }, { status: 422 });
   }
 
   const conversation = await (prisma as any).conversation.upsert({

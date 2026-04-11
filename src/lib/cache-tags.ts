@@ -7,6 +7,9 @@ export const CACHE_TAGS = {
   videos: 'videos',
   videoAssignments: 'video-assignments',
   userVideos: 'user-videos',
+  workoutPlans: 'workout-plans',
+  workoutPlanAssignments: 'workout-plan-assignments',
+  workoutSessions: 'workout-sessions',
 } as const;
 
 export function mealTag(mealId: string): string {
@@ -92,5 +95,40 @@ export function invalidateVideoCaches(options?: {
 
   if (options?.userId) {
     revalidateTag(userVideosTag(options.userId));
+  }
+}
+
+export function workoutPlanTag(planId: string): string {
+  return `workout-plan:${planId}`;
+}
+
+export function clientWorkoutPlansTag(clientId: string): string {
+  return `client:${clientId}:workout-plans`;
+}
+
+export function clientWorkoutSessionsTag(clientId: string): string {
+  return `client:${clientId}:workout-sessions`;
+}
+
+export function coachWorkoutPlansTag(coachId: string): string {
+  return `coach:${coachId}:workout-plans`;
+}
+
+export function invalidateWorkoutCaches(options?: { planId?: string; clientId?: string; coachId?: string }): void {
+  revalidateTag(CACHE_TAGS.workoutPlans);
+  revalidateTag(CACHE_TAGS.workoutPlanAssignments);
+  revalidateTag(CACHE_TAGS.workoutSessions);
+
+  if (options?.planId) {
+    revalidateTag(workoutPlanTag(options.planId));
+  }
+
+  if (options?.clientId) {
+    revalidateTag(clientWorkoutPlansTag(options.clientId));
+    revalidateTag(clientWorkoutSessionsTag(options.clientId));
+  }
+
+  if (options?.coachId) {
+    revalidateTag(coachWorkoutPlansTag(options.coachId));
   }
 }

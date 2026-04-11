@@ -12,7 +12,11 @@ import {
   useAdminClientWeeklyCheckIns,
   useAdminWeeklyCheckInActions,
 } from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
-import { archiveClient, deleteMealAssignment, unarchiveClient } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
+import {
+  archiveClient,
+  deleteMealAssignment,
+  unarchiveClient,
+} from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
 import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
 import {
@@ -28,6 +32,7 @@ import { SummaryTabContent } from '@/features/admin-clients-dashboard/components
 import { NutritionTabContent } from '@/features/admin-clients-dashboard/components/NutritionTabContent';
 import { AssignmentsTabContent } from '@/features/admin-clients-dashboard/components/AssignmentsTabContent';
 import { CheckInsTabContent } from '@/features/admin-clients-dashboard/components/CheckInsTabContent';
+import TrainingTabContent from '@/features/admin-clients-dashboard/components/TrainingTabContent';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import type {
   DashboardTabKey,
@@ -485,6 +490,9 @@ export default function ClientsPage() {
                       void refreshClient();
                     }}
                     onArchiveClientAction={handleArchiveClient}
+                    onRefreshClientAction={() => {
+                      void refreshClient();
+                    }}
                   />
                 ) : null}
 
@@ -524,6 +532,8 @@ export default function ClientsPage() {
                     onResetAction={handleResetCheckIns}
                   />
                 ) : null}
+
+                {activeTab === 'training' && client ? <TrainingTabContent clientId={client.id} /> : null}
               </div>
             </>
           ) : (
