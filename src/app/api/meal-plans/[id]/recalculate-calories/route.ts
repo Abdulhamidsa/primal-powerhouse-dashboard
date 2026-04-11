@@ -183,17 +183,17 @@ function scaleTargets(targets: RecalculationMacroTargets, factor: number): Recal
   };
 }
 
-function sumTargets(values: RecalculationMacroTargets[]): RecalculationMacroTargets {
-  return values.reduce(
-    (acc, value) => ({
-      calories: acc.calories + value.calories,
-      protein: acc.protein + value.protein,
-      carbs: acc.carbs + value.carbs,
-      fat: acc.fat + value.fat,
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 },
-  );
-}
+// function sumTargets(values: RecalculationMacroTargets[]): RecalculationMacroTargets {
+//   return values.reduce(
+//     (acc, value) => ({
+//       calories: acc.calories + value.calories,
+//       protein: acc.protein + value.protein,
+//       carbs: acc.carbs + value.carbs,
+//       fat: acc.fat + value.fat,
+//     }),
+//     { calories: 0, protein: 0, carbs: 0, fat: 0 },
+//   );
+// }
 
 function divideTargets(targets: RecalculationMacroTargets, divisor: number): RecalculationMacroTargets {
   const safeDivisor = Math.max(1, divisor);

@@ -313,7 +313,6 @@ export default function ShoppingListPage() {
                 >
                   {section.items.map((item, index) => {
                     const isChecked = Boolean(checkedById[item.id]);
-                    const isLast = index === section.items.length - 1;
 
                     return (
                       <button

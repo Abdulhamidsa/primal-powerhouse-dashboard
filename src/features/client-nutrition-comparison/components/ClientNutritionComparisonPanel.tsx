@@ -65,12 +65,7 @@ function formatDateForUi(dateKey: string): string {
   });
 }
 
-function maxTarget(today: DailyNutritionComparison | undefined): number {
-  if (!today?.target) return 1;
-  return Math.max(today.target.calories, today.target.protein, today.target.carbs, today.target.fat, 1);
-}
-
-function nutrientRows(today: DailyNutritionComparison): Array<{
+function nutrientRows(today: DailyNutritionComparison | undefined): Array<{
   key: 'calories' | 'protein' | 'carbs' | 'fat';
   label: string;
   icon: ReactNode;
@@ -139,7 +134,6 @@ export function ClientNutritionComparisonPanel({ clientId }: { clientId: string 
   }
 
   const selectedRow = weekRows.find(row => row.dateKey === selectedDateKey) ?? data.today;
-  const scaleBase = maxTarget(selectedRow);
 
   return (
     <section className="space-y-4">

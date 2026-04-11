@@ -15,6 +15,134 @@ interface MealPersonalizationProps {
   onSaveAction: (personalizedMeal: Meal, clientId?: string) => Promise<void>;
 }
 
+const normalizeIngredient = (ingredient: unknown, index: number): MealIngredient => {
+  if (ingredient && typeof ingredient === 'object') {
+    const value = ingredient as Record<string, unknown>;
+
+    const normalized: MealIngredient & {
+      foodId?: string;
+      gramsPerUnit?: number | null;
+      displayUnitLabel?: string | null;
+      nutritionPer100g?: {
+        caloriesKcal?: number;
+        proteinG?: number;
+        carbsG?: number;
+        fatG?: number;
+        fiberG?: number;
+      };
+    } = {
+      id: typeof value.id === 'string' && value.id ? value.id : `ingredient-${Date.now()}-${index}`,
+      name: typeof value.name === 'string' ? value.name : '',
+      amount:
+        typeof value.amount === 'number'
+          ? value.amount
+          : typeof value.grams === 'number' && value.unit === 'piece' && typeof value.gramsPerUnit === 'number'
+            ? Math.round((value.grams / value.gramsPerUnit) * 100) / 100
+            : typeof value.grams === 'number'
+              ? value.grams
+              : 0,
+      unit: typeof value.unit === 'string' ? value.unit : 'g',
+      notes: typeof value.notes === 'string' ? value.notes : undefined,
+    };
+
+    if (typeof value.foodId === 'string') normalized.foodId = value.foodId;
+    if (typeof value.gramsPerUnit === 'number' || value.gramsPerUnit === null) {
+      normalized.gramsPerUnit = value.gramsPerUnit as number | null;
+    }
+    if (typeof value.displayUnitLabel === 'string' || value.displayUnitLabel === null) {
+      normalized.displayUnitLabel = value.displayUnitLabel as string | null;
+    }
+    if (value.nutritionPer100g && typeof value.nutritionPer100g === 'object') {
+      const nutrition = value.nutritionPer100g as Record<string, unknown>;
+      normalized.nutritionPer100g = {
+        caloriesKcal: typeof nutrition.caloriesKcal === 'number' ? nutrition.caloriesKcal : 0,
+        proteinG: typeof nutrition.proteinG === 'number' ? nutrition.proteinG : 0,
+        carbsG: typeof nutrition.carbsG === 'number' ? nutrition.carbsG : 0,
+        fatG: typeof nutrition.fatG === 'number' ? nutrition.fatG : 0,
+        fiberG: typeof nutrition.fiberG === 'number' ? nutrition.fiberG : 0,
+      };
+    }
+
+    return normalized;
+  }
+
+  if (typeof ingredient === 'string') {
+    return {
+      id: `ingredient-${Date.now()}-${index}`,
+      name: ingredient,
+      amount: 0,
+      unit: 'g',
+    };
+  }
+
+  return {
+    id: `ingredient-${Date.now()}-${index}`,
+    name: '',
+    amount: 0,
+    unit: 'g',
+  };
+};
+
+const normalizeInstruction = (instruction: unknown, index: number): MealInstruction => {
+  if (instruction && typeof instruction === 'object') {
+    const value = instruction as Record<string, unknown>;
+    return {
+      id: typeof value.id === 'string' && value.id ? value.id : `instruction-${Date.now()}-${index}`,
+      step: typeof value.step === 'number' ? value.step : index + 1,
+      instruction: typeof value.instruction === 'string' ? value.instruction : '',
+    };
+  }
+
+  if (typeof instruction === 'string') {
+    return {
+      id: `instruction-${Date.now()}-${index}`,
+      step: index + 1,
+      instruction,
+    };
+  }
+
+  return {
+    id: `instruction-${Date.now()}-${index}`,
+    step: index + 1,
+    instruction: '',
+  };
+};
+
+const normalizeMeal = (sourceMeal: Meal): Meal => {
+  const copy = JSON.parse(JSON.stringify(sourceMeal)) as Meal;
+
+  return {
+    ...copy,
+    name: copy.name ?? '',
+    description: copy.description ?? '',
+    type: copy.type ?? 'breakfast',
+    calories: Number(copy.calories ?? 0),
+    protein: Number(copy.protein ?? 0),
+    carbs: Number(copy.carbs ?? 0),
+    fat: Number(copy.fat ?? 0),
+    fiber: Number(copy.fiber ?? 0),
+    sodium: Number(copy.sodium ?? 0),
+    sugar: Number(copy.sugar ?? 0),
+    cholesterol: Number(copy.cholesterol ?? 0),
+    prepTime: Number(copy.prepTime ?? 0),
+    cookTime: Number(copy.cookTime ?? 0),
+    servings: Number(copy.servings ?? 1),
+    ingredients: Array.isArray(copy.ingredients)
+      ? copy.ingredients.map((ingredient, index) => normalizeIngredient(ingredient, index))
+      : [],
+    instructions: Array.isArray(copy.instructions)
+      ? copy.instructions.map((instruction, index) => normalizeInstruction(instruction, index))
+      : [],
+    tags: Array.isArray(copy.tags) ? copy.tags.filter(tag => typeof tag === 'string') : [],
+    images: Array.isArray(copy.images) ? copy.images.filter(image => typeof image === 'string') : [],
+    equipment: Array.isArray(copy.equipment) ? copy.equipment.filter(item => typeof item === 'string') : [],
+    tips: Array.isArray(copy.tips) ? copy.tips.filter(item => typeof item === 'string') : [],
+    allergens: Array.isArray(copy.allergens) ? copy.allergens.filter(item => typeof item === 'string') : [],
+    createdAt: copy.createdAt ? new Date(copy.createdAt) : new Date(),
+    updatedAt: copy.updatedAt ? new Date(copy.updatedAt) : new Date(),
+  };
+};
+
 export default function MealPersonalization({
   meal,
   isOpen,
@@ -78,74 +206,6 @@ export default function MealPersonalization({
     };
   };
 
-  const normalizeIngredient = (ingredient: unknown, index: number): MealIngredient => {
-    if (ingredient && typeof ingredient === 'object') {
-      const value = ingredient as Record<string, unknown>;
-
-      const normalized: MealIngredient & {
-        foodId?: string;
-        gramsPerUnit?: number | null;
-        displayUnitLabel?: string | null;
-        nutritionPer100g?: {
-          caloriesKcal?: number;
-          proteinG?: number;
-          carbsG?: number;
-          fatG?: number;
-          fiberG?: number;
-        };
-      } = {
-        id: typeof value.id === 'string' && value.id ? value.id : `ingredient-${Date.now()}-${index}`,
-        name: typeof value.name === 'string' ? value.name : '',
-        amount:
-          typeof value.amount === 'number'
-            ? value.amount
-            : typeof value.grams === 'number' && value.unit === 'piece' && typeof value.gramsPerUnit === 'number'
-              ? Math.round((value.grams / value.gramsPerUnit) * 100) / 100
-              : typeof value.grams === 'number'
-                ? value.grams
-                : 0,
-        unit: typeof value.unit === 'string' ? value.unit : 'g',
-        notes: typeof value.notes === 'string' ? value.notes : undefined,
-      };
-
-      if (typeof value.foodId === 'string') normalized.foodId = value.foodId;
-      if (typeof value.gramsPerUnit === 'number' || value.gramsPerUnit === null) {
-        normalized.gramsPerUnit = value.gramsPerUnit as number | null;
-      }
-      if (typeof value.displayUnitLabel === 'string' || value.displayUnitLabel === null) {
-        normalized.displayUnitLabel = value.displayUnitLabel as string | null;
-      }
-      if (value.nutritionPer100g && typeof value.nutritionPer100g === 'object') {
-        const nutrition = value.nutritionPer100g as Record<string, unknown>;
-        normalized.nutritionPer100g = {
-          caloriesKcal: typeof nutrition.caloriesKcal === 'number' ? nutrition.caloriesKcal : 0,
-          proteinG: typeof nutrition.proteinG === 'number' ? nutrition.proteinG : 0,
-          carbsG: typeof nutrition.carbsG === 'number' ? nutrition.carbsG : 0,
-          fatG: typeof nutrition.fatG === 'number' ? nutrition.fatG : 0,
-          fiberG: typeof nutrition.fiberG === 'number' ? nutrition.fiberG : 0,
-        };
-      }
-
-      return normalized;
-    }
-
-    if (typeof ingredient === 'string') {
-      return {
-        id: `ingredient-${Date.now()}-${index}`,
-        name: ingredient,
-        amount: 0,
-        unit: 'g',
-      };
-    }
-
-    return {
-      id: `ingredient-${Date.now()}-${index}`,
-      name: '',
-      amount: 0,
-      unit: 'g',
-    };
-  };
-
   const addIngredientFromCatalog = (ingredient: SelectedIngredient) => {
     if (!personalizedMeal) return;
 
@@ -180,66 +240,6 @@ export default function MealPersonalization({
     const nextIngredients = [...personalizedMeal.ingredients, ingredientWithNutrition];
     updateMealProperty('ingredients', nextIngredients);
     updateMealMacros(nextIngredients);
-  };
-
-  const normalizeInstruction = (instruction: unknown, index: number): MealInstruction => {
-    if (instruction && typeof instruction === 'object') {
-      const value = instruction as Record<string, unknown>;
-      return {
-        id: typeof value.id === 'string' && value.id ? value.id : `instruction-${Date.now()}-${index}`,
-        step: typeof value.step === 'number' ? value.step : index + 1,
-        instruction: typeof value.instruction === 'string' ? value.instruction : '',
-      };
-    }
-
-    if (typeof instruction === 'string') {
-      return {
-        id: `instruction-${Date.now()}-${index}`,
-        step: index + 1,
-        instruction,
-      };
-    }
-
-    return {
-      id: `instruction-${Date.now()}-${index}`,
-      step: index + 1,
-      instruction: '',
-    };
-  };
-
-  const normalizeMeal = (sourceMeal: Meal): Meal => {
-    const copy = JSON.parse(JSON.stringify(sourceMeal)) as Meal;
-
-    return {
-      ...copy,
-      name: copy.name ?? '',
-      description: copy.description ?? '',
-      type: copy.type ?? 'breakfast',
-      calories: Number(copy.calories ?? 0),
-      protein: Number(copy.protein ?? 0),
-      carbs: Number(copy.carbs ?? 0),
-      fat: Number(copy.fat ?? 0),
-      fiber: Number(copy.fiber ?? 0),
-      sodium: Number(copy.sodium ?? 0),
-      sugar: Number(copy.sugar ?? 0),
-      cholesterol: Number(copy.cholesterol ?? 0),
-      prepTime: Number(copy.prepTime ?? 0),
-      cookTime: Number(copy.cookTime ?? 0),
-      servings: Number(copy.servings ?? 1),
-      ingredients: Array.isArray(copy.ingredients)
-        ? copy.ingredients.map((ingredient, index) => normalizeIngredient(ingredient, index))
-        : [],
-      instructions: Array.isArray(copy.instructions)
-        ? copy.instructions.map((instruction, index) => normalizeInstruction(instruction, index))
-        : [],
-      tags: Array.isArray(copy.tags) ? copy.tags.filter(tag => typeof tag === 'string') : [],
-      images: Array.isArray(copy.images) ? copy.images.filter(image => typeof image === 'string') : [],
-      equipment: Array.isArray(copy.equipment) ? copy.equipment.filter(item => typeof item === 'string') : [],
-      tips: Array.isArray(copy.tips) ? copy.tips.filter(item => typeof item === 'string') : [],
-      allergens: Array.isArray(copy.allergens) ? copy.allergens.filter(item => typeof item === 'string') : [],
-      createdAt: copy.createdAt ? new Date(copy.createdAt) : new Date(),
-      updatedAt: copy.updatedAt ? new Date(copy.updatedAt) : new Date(),
-    };
   };
 
   // Initialize the personalized meal when the original meal changes
@@ -792,7 +792,7 @@ export default function MealPersonalization({
                         const typed = ingredient as MealIngredient & { foodId?: string };
                         return typed.foodId;
                       })
-                      .filter((foodId): foodId is string => Boolean(foodId))
+                      .filter((foodId): foodId is string => Boolean(foodId)),
                   )
                 }
               />

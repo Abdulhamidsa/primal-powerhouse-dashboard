@@ -13,4 +13,6 @@ export async function generateMealsApi(input: GenerateMealsInput): Promise<Gener
   return res.data ?? [];
 }
 
-export default { generate: generateMealsApi };
+const mealGeneratorApi = { generate: generateMealsApi };
+
+export default mealGeneratorApi;

@@ -32,7 +32,6 @@ export default function UserMealsPage() {
     snackCount,
     snackMax,
     isSnackFull,
-    hasRequiredSlots,
     hasChanges,
     isSaving,
     selectOption,

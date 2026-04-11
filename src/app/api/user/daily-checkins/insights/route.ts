@@ -16,9 +16,9 @@ import { addDays, getRecentDateKeys, parseDateKeyLocal, toDateKeyLocal } from '@
 const HISTORY_DAYS = 90;
 const WEEK_DAYS = 7;
 
-function roundPercentage(value: number): number {
-  return Math.round(value);
-}
+// function roundPercentage(value: number): number {
+//   return Math.round(value);
+// }
 
 export async function GET(request: NextRequest) {
   try {

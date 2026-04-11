@@ -31,6 +31,8 @@ export async function saveGeneratedMealTemplateApi(input: {
   return res;
 }
 
-export default {
+const mealTemplateApi = {
   saveGeneratedMealTemplate: saveGeneratedMealTemplateApi,
 };
+
+export default mealTemplateApi;
