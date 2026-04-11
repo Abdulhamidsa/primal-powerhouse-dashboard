@@ -731,7 +731,11 @@ export default function ClientProfilePage() {
             setShowMessageModal(false);
             setSelectedClient(null);
           }}
-          client={selectedClient}
+          client={{
+            id: selectedClient.id,
+            name: selectedClient.name,
+            motivationalMessage: selectedClient.motivationalMessage ?? undefined,
+          }}
         />
       )}
 
