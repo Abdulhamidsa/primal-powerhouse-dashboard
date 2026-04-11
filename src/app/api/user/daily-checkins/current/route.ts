@@ -66,7 +66,6 @@ export async function GET(request: NextRequest) {
             id: `${user.userId}-${dayDate}`,
             dayDate: dayDateUtc,
             weightKg: null,
-            compliance: null,
             energy: null,
             nutritionStatus: nutritionEntry?.status ?? null,
             trainingStatus: trainingEntry?.status ?? null,

@@ -14,11 +14,11 @@ export function useUserTraining() {
   const videosSWR = useSWR(USER_TRAINING_VIDEOS_URL, getUserTrainingVideos);
   const coachSWR = useSWR(USER_TRAINING_COACH_URL, getUserTrainingCoach);
 
-  const assignments = videosSWR.data ?? [];
+  const assignments = useMemo(() => videosSWR.data ?? [], [videosSWR.data]);
 
   const allTags = useMemo(
     () => Array.from(new Set(assignments.flatMap(a => (Array.isArray(a.video.tags) ? a.video.tags : [])))),
-    [assignments]
+    [assignments],
   );
 
   const filteredAssignments = useMemo(() => {
