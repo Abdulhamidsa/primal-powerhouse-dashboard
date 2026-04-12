@@ -313,15 +313,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     };
 
     try {
+      const presenceModel = (prisma as any).conversationPresence;
       const [recipientClient, recipientPresence, cooldownActive] = await Promise.all([
         (prisma as any).client.findUnique({
           where: { id: conversation.clientId },
           select: { consentMessageNotifications: true },
         }),
-        (prisma as any).conversationPresence.findUnique({
-          where: { clientId: conversation.clientId },
-          select: { conversationId: true, lastSeenAt: true },
-        }),
+        presenceModel
+          ? presenceModel.findUnique({
+              where: { clientId: conversation.clientId },
+              select: { conversationId: true, lastSeenAt: true },
+            })
+          : null,
         isCoachMessagePushCooldownActive(conversation.clientId, conversationId),
       ]);
 

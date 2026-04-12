@@ -22,10 +22,16 @@ export async function POST(request: NextRequest) {
     const parsed = conversationPresenceSchema.safeParse(await request.json());
     if (!parsed.success) return jsonWithCache({ error: 'Invalid presence payload' }, { status: 400 });
 
+    const presenceModel = (prisma as any).conversationPresence;
+    if (!presenceModel) {
+      // Degrade gracefully when the model has not been generated/migrated yet.
+      return jsonWithCache({ success: true });
+    }
+
     const { conversationId } = parsed.data;
 
     if (!conversationId) {
-      await (prisma as any).conversationPresence.deleteMany({ where: { clientId: auth.user.userId } });
+      await presenceModel.deleteMany({ where: { clientId: auth.user.userId } });
       return jsonWithCache({ success: true });
     }
 
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
       return jsonWithCache({ error: 'Conversation not found' }, { status: 404 });
     }
 
-    await (prisma as any).conversationPresence.upsert({
+    await presenceModel.upsert({
       where: { clientId: auth.user.userId },
       update: {
         conversationId,
