@@ -20,6 +20,7 @@ import {
   Dumbbell,
 } from 'lucide-react';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
+import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDrawer';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/hooks/useUserData';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
@@ -222,6 +223,7 @@ export default function Navigation({
   const { user } = useUserData();
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
@@ -229,6 +231,7 @@ export default function Navigation({
 
   useEffect(() => {
     setAccountMenuOpen(false);
+    setChatDrawerOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -287,8 +290,9 @@ export default function Navigation({
           <div className="flex items-center gap-3">
             {userType === 'user' ? (
               <>
-                <Link
-                  href="/user/chat"
+                <button
+                  type="button"
+                  onClick={() => setChatDrawerOpen(true)}
                   aria-label="Open chat"
                   className="relative inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
                 >
@@ -298,7 +302,7 @@ export default function Navigation({
                       {unreadTotal}
                     </span>
                   ) : null}
-                </Link>
+                </button>
 
                 <div ref={accountMenuRef} className="relative">
                   <button
@@ -422,6 +426,7 @@ export default function Navigation({
           </div>
         </nav>
       ) : null}{' '}
+      {userType === 'user' ? <ChatDrawer open={chatDrawerOpen} onClose={() => setChatDrawerOpen(false)} /> : null}
     </div>
   );
 }

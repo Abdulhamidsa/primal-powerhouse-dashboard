@@ -20,7 +20,14 @@ function clampSidebarWidth(nextWidth: number): number {
   return Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(nextWidth)));
 }
 
-export function ChatPanel({ hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
+export function ChatPanel({
+  hideConversationList = false,
+  disableUrlSync = false,
+}: {
+  title?: string;
+  hideConversationList?: boolean;
+  disableUrlSync?: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,7 +41,7 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
   const [isDragging, setIsDragging] = useState(false);
 
   const { conversations, isLoading: isConversationsLoading } = useConversations();
-  const requestedConversationId = searchParams.get('conversationId');
+  const requestedConversationId = disableUrlSync ? null : searchParams.get('conversationId');
   const { selectedConversationId, setSelectedConversationId, sortedConversations } = useMessagingSelection(
     conversations,
     requestedConversationId,
@@ -73,7 +80,7 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
   }, [hideConversationList, sidebarWidth]);
 
   useEffect(() => {
-    if (!selectedConversationId) return;
+    if (disableUrlSync || !selectedConversationId) return;
 
     const next = new URLSearchParams(searchParams.toString());
     if (next.get('conversationId') === selectedConversationId) {
@@ -82,7 +89,7 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
 
     next.set('conversationId', selectedConversationId);
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-  }, [pathname, router, searchParams, selectedConversationId]);
+  }, [disableUrlSync, pathname, router, searchParams, selectedConversationId]);
 
   // Track whether the user is near the bottom so we know whether to auto-scroll on new messages.
   useEffect(() => {

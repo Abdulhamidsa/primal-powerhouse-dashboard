@@ -7,6 +7,7 @@ import { rateLimit } from '@/lib/security/rate-limit';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { conversationPresenceSchema } from '@/features/client-coach-messaging/schemas/presence.schema';
 import { getRequestIpAddress } from '@/lib/chat/conversation';
+import { hasFreshConversationPresence } from '@/lib/chat/conversation-presence';
 
 function isPresenceTableUnavailable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? '');
@@ -83,5 +84,44 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[CHAT_PRESENCE] Failed:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to update chat presence' }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const csrf = assertSameOrigin(request);
+    if (!csrf.ok) return jsonWithCache({ error: csrf.message }, { status: 403 });
+
+    const auth = requireApiAuth(request, 'admin');
+    if (!auth.ok) return auth.res;
+
+    const clientId = request.nextUrl.searchParams.get('clientId');
+    if (!clientId) return jsonWithCache({ error: 'clientId required' }, { status: 400 });
+
+    const presenceModel = (prisma as any).conversationPresence;
+    if (!presenceModel) {
+      return jsonWithCache({ isActive: false });
+    }
+
+    let snapshot: { conversationId: string | null; lastSeenAt: Date | null } | null = null;
+    try {
+      snapshot = await presenceModel.findUnique({
+        where: { clientId },
+        select: { conversationId: true, lastSeenAt: true },
+      });
+    } catch (error) {
+      if (isPresenceTableUnavailable(error)) {
+        return jsonWithCache({ isActive: false });
+      }
+      throw error;
+    }
+
+    const isActive =
+      snapshot?.conversationId != null ? hasFreshConversationPresence(snapshot, snapshot.conversationId) : false;
+
+    return jsonWithCache({ isActive });
+  } catch (error) {
+    console.error('[CHAT_PRESENCE_GET] Failed:', safeErrorMessage(error));
+    return jsonWithCache({ error: 'Failed to read presence' }, { status: 500 });
   }
 }
