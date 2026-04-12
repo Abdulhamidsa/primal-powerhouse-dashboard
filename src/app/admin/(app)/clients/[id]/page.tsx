@@ -630,8 +630,15 @@ export default function ClientProfilePage() {
                           Week of {new Date(checkIn.weekStartDate).toLocaleDateString()}
                         </p>
                         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          Submitted {new Date(checkIn.submittedAt).toLocaleDateString()} • Energy {checkIn.energyRating}
-                          /5 • Training {checkIn.trainingAdherence}%
+                          Submitted {new Date(checkIn.submittedAt).toLocaleDateString()} • Weight{' '}
+                          {checkIn.weightKg != null ? `${checkIn.weightKg.toFixed(1)} kg` : 'N/A'} • Photos{' '}
+                          {
+                            [
+                              checkIn.progressPhotoFrontUrl,
+                              checkIn.progressPhotoSideUrl,
+                              checkIn.progressPhotoBackUrl,
+                            ].filter(Boolean).length
+                          }
                         </p>
                       </div>
                       <button

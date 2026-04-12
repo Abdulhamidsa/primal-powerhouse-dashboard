@@ -1,22 +1,24 @@
-import { useState } from 'react';
-import { Scale, Ruler, Zap, Dumbbell, Utensils, Eye, Trash2, RotateCcw } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Camera, Eye, Scale, Trash2, RotateCcw, FileText } from 'lucide-react';
 import type {
   AdminClientWeeklyCheckInsResponse,
   AdminWeeklyCheckInListItem,
 } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
 import { WeeklyCheckInDetailDrawer } from '@/features/admin-clients-dashboard/components/WeeklyCheckInDetailDrawer';
 
-const SCALE_LABEL: Record<number, string> = { 1: 'Very low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very high' };
-
 function getCurrentWeekStyles(status: 'completed' | 'due' | 'overdue') {
-  if (status === 'completed')
+  if (status === 'completed') {
     return { bg: 'var(--color-accent-muted)', color: 'var(--color-accent)', label: 'This week: Done' };
-  if (status === 'overdue')
+  }
+
+  if (status === 'overdue') {
     return {
       bg: 'var(--color-danger-muted, var(--color-bg-alt))',
       color: 'var(--color-danger)',
       label: 'This week: Overdue',
     };
+  }
+
   return { bg: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', label: 'This week: Pending' };
 }
 
@@ -56,23 +58,34 @@ function CheckInCard({
     day: 'numeric',
   });
 
+  const photoCount = useMemo(
+    () =>
+      [checkIn.progressPhotoFrontUrl, checkIn.progressPhotoSideUrl, checkIn.progressPhotoBackUrl].filter(Boolean)
+        .length,
+    [checkIn.progressPhotoBackUrl, checkIn.progressPhotoFrontUrl, checkIn.progressPhotoSideUrl],
+  );
+
+  const reflectionCount = useMemo(
+    () => [checkIn.strengthUpdate, checkIn.blockerText, checkIn.notes].filter(value => value && value.trim()).length,
+    [checkIn.blockerText, checkIn.notes, checkIn.strengthUpdate],
+  );
+
   return (
     <div
-      className="rounded-xl border p-4 space-y-3"
+      className="space-y-3 rounded-xl border p-4"
       style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
     >
-      {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
             Week of {weekLabel}
           </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="mt-0.5 text-xs" style={{ color: 'var(--color-text-muted)' }}>
             Submitted {submitLabel}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={onView}
@@ -99,15 +112,12 @@ function CheckInCard({
         </div>
       </div>
 
-      {/* Stat chips */}
       <div className="flex flex-wrap gap-2">
-        <StatChip icon={Zap} label="Energy" value={`${SCALE_LABEL[checkIn.energyRating] ?? checkIn.energyRating}`} />
-        <StatChip icon={Dumbbell} label="Training" value={`${checkIn.trainingAdherence}%`} />
-        <StatChip icon={Utensils} label="Nutrition" value={`${checkIn.nutritionAdherence}%`} />
         {checkIn.weightKg != null && (
           <StatChip icon={Scale} label="Weight" value={`${checkIn.weightKg.toFixed(1)} kg`} />
         )}
-        {checkIn.waistCm != null && <StatChip icon={Ruler} label="Waist" value={`${checkIn.waistCm.toFixed(1)} cm`} />}
+        <StatChip icon={Camera} label="Photos" value={`${photoCount}/3`} />
+        <StatChip icon={FileText} label="Reflections" value={`${reflectionCount}`} />
       </div>
     </div>
   );
@@ -136,6 +146,7 @@ export function CheckInsTabContent({
   const handleDelete = async (checkInId: string) => {
     const confirmed = window.confirm('Delete this weekly check-in entry?');
     if (!confirmed) return;
+
     try {
       setDeletingId(checkInId);
       await onDeleteAction(checkInId);
@@ -147,6 +158,7 @@ export function CheckInsTabContent({
   const handleReset = async () => {
     const confirmed = window.confirm('Reset all weekly check-ins for this client?');
     if (!confirmed) return;
+
     try {
       setIsResetting(true);
       await onResetAction();
@@ -161,7 +173,7 @@ export function CheckInsTabContent({
         className="rounded-2xl border p-5"
         style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
       >
-        <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
             Weekly Check-Ins
           </h3>

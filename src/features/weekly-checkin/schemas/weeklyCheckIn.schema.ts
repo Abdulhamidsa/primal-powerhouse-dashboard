@@ -7,14 +7,9 @@ export const weekStartDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Inva
 export const weeklyCheckInPayloadSchema = z
   .object({
     weightKg: nullableNumber,
-    waistCm: nullableNumber,
-    trainingAdherence: z.number().int().min(0).max(100),
-    nutritionAdherence: z.number().int().min(0).max(100),
-    energyRating: z.number().int().min(1).max(5),
-    stressRating: z.number().int().min(1).max(5),
-    hungerRating: z.number().int().min(1).max(5),
-    digestionRating: z.number().int().min(1).max(5),
-    sleepHours: nullableNumber,
+    progressPhotoFrontUrl: z.string().trim().url().max(1500).nullable().optional(),
+    progressPhotoSideUrl: z.string().trim().url().max(1500).nullable().optional(),
+    progressPhotoBackUrl: z.string().trim().url().max(1500).nullable().optional(),
     strengthUpdate: z.string().trim().max(300).nullable().optional(),
     blockerText: z.string().trim().max(300).nullable().optional(),
     notes: z.string().trim().max(1000).nullable().optional(),
@@ -22,12 +17,14 @@ export const weeklyCheckInPayloadSchema = z
   .refine(
     value =>
       value.weightKg != null ||
-      value.waistCm != null ||
+      value.progressPhotoFrontUrl != null ||
+      value.progressPhotoSideUrl != null ||
+      value.progressPhotoBackUrl != null ||
       (value.strengthUpdate != null && value.strengthUpdate.trim().length > 0),
     {
-      message: 'Provide at least one of weight, waist, or strength update',
+      message: 'Provide at least one of weight, progress photo, or strength update',
       path: ['strengthUpdate'],
-    }
+    },
   );
 
 export const weeklyCheckInUpsertSchema = z.object({

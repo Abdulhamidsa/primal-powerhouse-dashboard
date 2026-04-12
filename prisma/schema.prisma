@@ -597,6 +597,9 @@ model WeeklyCheckIn {
   hungerRating        Int?
   digestionRating     Int?
   sleepHours          Float?
+  progressPhotoFrontUrl String?
+  progressPhotoSideUrl  String?
+  progressPhotoBackUrl  String?
   strengthUpdate      String?
   blockerText         String?
   notes               String?

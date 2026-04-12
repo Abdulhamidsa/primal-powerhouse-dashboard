@@ -10,14 +10,9 @@ export type WeeklyCheckInRecord = {
   weekStartDate: string;
   submittedAt: string;
   weightKg: number | null;
-  waistCm: number | null;
-  trainingAdherence: number;
-  nutritionAdherence: number;
-  energyRating: number;
-  stressRating: number | null;
-  hungerRating: number | null;
-  digestionRating: number | null;
-  sleepHours: number | null;
+  progressPhotoFrontUrl: string | null;
+  progressPhotoSideUrl: string | null;
+  progressPhotoBackUrl: string | null;
   strengthUpdate: string | null;
   blockerText: string | null;
   notes: string | null;
@@ -37,14 +32,9 @@ export type WeeklyCheckInUpsertResponse = {
 export type WeeklyCheckInFormValues = {
   includeWeight: boolean;
   weightKg: string;
-  waistCm: string;
-  trainingAdherence: string;
-  nutritionAdherence: string;
-  energyRating: number | null;
-  stressRating: number | null;
-  hungerRating: number | null;
-  digestionRating: number | null;
-  sleepHours: string;
+  progressPhotoFrontUrl: string;
+  progressPhotoSideUrl: string;
+  progressPhotoBackUrl: string;
   strengthUpdate: string;
   blockerText: string;
   notes: string;

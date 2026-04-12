@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Upload, X } from 'lucide-react';
 import { useDailyCheckInInsights } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { WeeklyWeightLivePreview } from '@/features/weekly-checkin/components/WeeklyWeightLivePreview';
+import { useWeeklyCheckInPhotoUpload } from '@/features/weekly-checkin/hooks/useWeeklyCheckInPhotoUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -17,57 +19,9 @@ import type {
 import { useUpsertWeeklyCheckIn, useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
 import { formatDateLabel } from '@/features/weekly-checkin/utils/week';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
-const SCALE_TEXT: Record<number, string> = {
-  1: 'Very low',
-  2: 'Low',
-  3: 'Medium',
-  4: 'High',
-  5: 'Very high',
-};
-
-function clampToFive(value: number | null): number | null {
-  if (value == null) return null;
-
-  if (value <= 5) return Math.max(1, Math.min(5, value));
-
-  const mapped = Math.round(value / 2);
-  return Math.max(1, Math.min(5, mapped));
-}
-
-function SliderScaleField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (next: number) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3">
-        <label className="text-sm font-medium text-foreground">{label}</label>
-        <span className="rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs font-medium text-foreground">
-          {SCALE_TEXT[value]}
-        </span>
-      </div>
-      <input
-        className="ios-range"
-        max={5}
-        min={1}
-        onChange={event => onChange(Number(event.target.value))}
-        type="range"
-        value={value}
-      />
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Low</span>
-        <span>High</span>
-      </div>
-    </div>
-  );
-}
+type PhotoFieldKey = 'progressPhotoFrontUrl' | 'progressPhotoSideUrl' | 'progressPhotoBackUrl';
 
 function numberOrNull(value: string): number | null {
   if (value.trim().length === 0) return null;
@@ -80,14 +34,9 @@ function toFormValues(record: ReturnType<typeof useWeeklyCheckInCurrentWeek>['ch
     return {
       includeWeight: false,
       weightKg: '',
-      waistCm: '',
-      trainingAdherence: '',
-      nutritionAdherence: '',
-      energyRating: 3,
-      stressRating: 3,
-      hungerRating: 3,
-      digestionRating: 3,
-      sleepHours: '',
+      progressPhotoFrontUrl: '',
+      progressPhotoSideUrl: '',
+      progressPhotoBackUrl: '',
       strengthUpdate: '',
       blockerText: '',
       notes: '',
@@ -97,24 +46,98 @@ function toFormValues(record: ReturnType<typeof useWeeklyCheckInCurrentWeek>['ch
   return {
     includeWeight: record.weightKg != null,
     weightKg: record.weightKg != null ? String(record.weightKg) : '',
-    waistCm: record.waistCm != null ? String(record.waistCm) : '',
-    trainingAdherence: String(record.trainingAdherence),
-    nutritionAdherence: String(record.nutritionAdherence),
-    energyRating: clampToFive(record.energyRating) ?? 3,
-    stressRating: clampToFive(record.stressRating) ?? 3,
-    hungerRating: clampToFive(record.hungerRating) ?? 3,
-    digestionRating: clampToFive(record.digestionRating) ?? 3,
-    sleepHours: record.sleepHours != null ? String(record.sleepHours) : '',
+    progressPhotoFrontUrl: record.progressPhotoFrontUrl ?? '',
+    progressPhotoSideUrl: record.progressPhotoSideUrl ?? '',
+    progressPhotoBackUrl: record.progressPhotoBackUrl ?? '',
     strengthUpdate: record.strengthUpdate ?? '',
     blockerText: record.blockerText ?? '',
     notes: record.notes ?? '',
   };
 }
 
+function PhotoUploadTile({
+  label,
+  value,
+  isUploading,
+  onUpload,
+  onClear,
+}: {
+  label: string;
+  value: string;
+  isUploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+  onClear: () => void;
+}) {
+  return (
+    <div
+      className="space-y-2 rounded-xl border p-3"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        {value ? (
+          <button
+            type="button"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md"
+            style={{ background: 'var(--color-surface)', color: 'var(--color-text-muted)' }}
+            onClick={onClear}
+            aria-label={`Remove ${label} photo`}
+          >
+            <X size={14} />
+          </button>
+        ) : null}
+      </div>
+
+      {value ? (
+        <div
+          className="relative h-36 w-full overflow-hidden rounded-lg border"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          <Image src={value} alt={`${label} progress`} fill className="object-cover" />
+        </div>
+      ) : (
+        <div
+          className="flex h-36 items-center justify-center rounded-lg border border-dashed"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            No photo uploaded
+          </p>
+        </div>
+      )}
+
+      <label
+        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          color: 'var(--color-text)',
+        }}
+      >
+        {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+        {isUploading ? 'Uploading...' : value ? 'Replace photo' : 'Upload photo'}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={isUploading}
+          onChange={async event => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            await onUpload(file);
+            event.currentTarget.value = '';
+          }}
+        />
+      </label>
+    </div>
+  );
+}
+
 export function WeeklyCheckInFlow() {
   const router = useRouter();
   const { checkIn, weekStartDate, isLoading } = useWeeklyCheckInCurrentWeek();
   const { submit } = useUpsertWeeklyCheckIn();
+  const { upload, isUploading } = useWeeklyCheckInPhotoUpload();
   const { history } = useDailyCheckInInsights();
 
   const lastWeekBaseline = useMemo(() => {
@@ -141,36 +164,21 @@ export function WeeklyCheckInFlow() {
     }
   }, [initialValues, isLoading]);
 
-  const canContinueStep1 = true;
-  const canContinueStep2 =
-    formValues.trainingAdherence.trim().length > 0 &&
-    formValues.nutritionAdherence.trim().length > 0 &&
-    Number(formValues.trainingAdherence) >= 0 &&
-    Number(formValues.trainingAdherence) <= 100 &&
-    Number(formValues.nutritionAdherence) >= 0 &&
-    Number(formValues.nutritionAdherence) <= 100;
-  const canContinueStep3 = true;
-
   const parsedPayload = useMemo(() => {
     const payload: WeeklyCheckInPayload = {
       weightKg: formValues.includeWeight ? numberOrNull(formValues.weightKg) : null,
-      waistCm: numberOrNull(formValues.waistCm),
-      trainingAdherence: Number(formValues.trainingAdherence),
-      nutritionAdherence: Number(formValues.nutritionAdherence),
-      energyRating: formValues.energyRating ?? 0,
-      stressRating: formValues.stressRating ?? 0,
-      hungerRating: formValues.hungerRating ?? 0,
-      digestionRating: formValues.digestionRating ?? 0,
-      sleepHours: numberOrNull(formValues.sleepHours),
-      strengthUpdate: formValues.strengthUpdate.trim().length > 0 ? formValues.strengthUpdate.trim() : null,
-      blockerText: formValues.blockerText.trim().length > 0 ? formValues.blockerText.trim() : null,
-      notes: formValues.notes.trim().length > 0 ? formValues.notes.trim() : null,
+      progressPhotoFrontUrl: formValues.progressPhotoFrontUrl.trim() || null,
+      progressPhotoSideUrl: formValues.progressPhotoSideUrl.trim() || null,
+      progressPhotoBackUrl: formValues.progressPhotoBackUrl.trim() || null,
+      strengthUpdate: formValues.strengthUpdate.trim() ? formValues.strengthUpdate.trim() : null,
+      blockerText: formValues.blockerText.trim() ? formValues.blockerText.trim() : null,
+      notes: formValues.notes.trim() ? formValues.notes.trim() : null,
     };
 
     return weeklyCheckInPayloadSchema.safeParse(payload);
   }, [formValues]);
 
-  const submitDisabled = !parsedPayload.success || isSubmitting;
+  const submitDisabled = !parsedPayload.success || isSubmitting || isUploading;
 
   useEffect(() => {
     if (!successDialogOpen) return;
@@ -183,15 +191,10 @@ export function WeeklyCheckInFlow() {
     return () => window.clearTimeout(timeout);
   }, [router, successDialogOpen]);
 
-  const nextStep = () => {
-    if (step === 1 && !canContinueStep1) return;
-    if (step === 2 && !canContinueStep2) return;
-    if (step === 3 && !canContinueStep3) return;
-    setStep(current => Math.min(TOTAL_STEPS, current + 1));
-  };
-
-  const prevStep = () => {
-    setStep(current => Math.max(1, current - 1));
+  const uploadPhoto = async (field: PhotoFieldKey, file: File) => {
+    setErrorMessage(null);
+    const imageUrl = await upload(file);
+    setFormValues(current => ({ ...current, [field]: imageUrl }));
   };
 
   const handleSubmit = async () => {
@@ -231,7 +234,9 @@ export function WeeklyCheckInFlow() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <CardTitle className="text-2xl">Weekly Check-In</CardTitle>
-              <CardDescription>Step {step} of 4 • ~60 sec</CardDescription>
+              <CardDescription>
+                Step {step} of {TOTAL_STEPS} • ~60 sec
+              </CardDescription>
             </div>
             <div className="rounded-full border border-border bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
               Week of {formatDateLabel(new Date(`${weekStartDate}T00:00:00`))}
@@ -243,8 +248,8 @@ export function WeeklyCheckInFlow() {
           {step === 1 && (
             <section className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Body Metrics</h2>
-                <p className="text-sm text-muted-foreground">Track body feedback in kg/cm.</p>
+                <h2 className="text-lg font-semibold text-foreground">Weight Update</h2>
+                <p className="text-sm text-muted-foreground">Optional weekly scale check-in.</p>
               </div>
 
               <label className="inline-flex items-center gap-2 text-sm text-foreground">
@@ -269,58 +274,46 @@ export function WeeklyCheckInFlow() {
                   <WeeklyWeightLivePreview
                     lastWeekWeight={lastWeekBaseline}
                     currentWeight={
-                      formValues.weightKg.trim()
-                        ? Number.isFinite(Number(formValues.weightKg))
-                          ? Number(formValues.weightKg)
-                          : null
+                      formValues.weightKg.trim() && Number.isFinite(Number(formValues.weightKg))
+                        ? Number(formValues.weightKg)
                         : null
                     }
                   />
                 </div>
               )}
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Waist (cm)</label>
-                <Input
-                  inputMode="decimal"
-                  placeholder="e.g. 90"
-                  value={formValues.waistCm}
-                  onChange={event => setFormValues(current => ({ ...current, waistCm: event.target.value }))}
-                />
-              </div>
             </section>
           )}
 
           {step === 2 && (
             <section className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Training & Nutrition</h2>
-                <p className="text-sm text-muted-foreground">Percent adherence for this week.</p>
+                <h2 className="text-lg font-semibold text-foreground">Progress Photos</h2>
+                <p className="text-sm text-muted-foreground">
+                  Upload up to 3 photos so your coach can review visual changes.
+                </p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Training adherence %</label>
-                <Input
-                  inputMode="numeric"
-                  max="100"
-                  min="0"
-                  placeholder="0 - 100"
-                  type="number"
-                  value={formValues.trainingAdherence}
-                  onChange={event => setFormValues(current => ({ ...current, trainingAdherence: event.target.value }))}
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <PhotoUploadTile
+                  label="Front"
+                  value={formValues.progressPhotoFrontUrl}
+                  isUploading={isUploading}
+                  onUpload={file => uploadPhoto('progressPhotoFrontUrl', file)}
+                  onClear={() => setFormValues(current => ({ ...current, progressPhotoFrontUrl: '' }))}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Nutrition adherence %</label>
-                <Input
-                  inputMode="numeric"
-                  max="100"
-                  min="0"
-                  placeholder="0 - 100"
-                  type="number"
-                  value={formValues.nutritionAdherence}
-                  onChange={event => setFormValues(current => ({ ...current, nutritionAdherence: event.target.value }))}
+                <PhotoUploadTile
+                  label="Side"
+                  value={formValues.progressPhotoSideUrl}
+                  isUploading={isUploading}
+                  onUpload={file => uploadPhoto('progressPhotoSideUrl', file)}
+                  onClear={() => setFormValues(current => ({ ...current, progressPhotoSideUrl: '' }))}
+                />
+                <PhotoUploadTile
+                  label="Back"
+                  value={formValues.progressPhotoBackUrl}
+                  isUploading={isUploading}
+                  onUpload={file => uploadPhoto('progressPhotoBackUrl', file)}
+                  onClear={() => setFormValues(current => ({ ...current, progressPhotoBackUrl: '' }))}
                 />
               </div>
             </section>
@@ -329,77 +322,17 @@ export function WeeklyCheckInFlow() {
           {step === 3 && (
             <section className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Recovery</h2>
-                <p className="text-sm text-muted-foreground">Quick readiness and biofeedback scores (1–5).</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Energy rating</label>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                  {([1, 2, 3, 4, 5] as const).map(option => {
-                    const active = formValues.energyRating === option;
-
-                    return (
-                      <button
-                        key={option}
-                        className={`h-11 rounded-xl border px-3 text-xs font-semibold transition-colors sm:text-[11px] ${
-                          active
-                            ? 'border-accent bg-accent text-accent-foreground'
-                            : 'border-border bg-card text-foreground hover:bg-muted/40'
-                        }`}
-                        onClick={() => setFormValues(current => ({ ...current, energyRating: option }))}
-                        type="button"
-                      >
-                        {SCALE_TEXT[option]}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">1 = low energy, 5 = high energy</p>
-              </div>
-
-              <SliderScaleField
-                label="Stress"
-                value={formValues.stressRating ?? 3}
-                onChange={value => setFormValues(current => ({ ...current, stressRating: value }))}
-              />
-
-              <SliderScaleField
-                label="Hunger / Appetite"
-                value={formValues.hungerRating ?? 3}
-                onChange={value => setFormValues(current => ({ ...current, hungerRating: value }))}
-              />
-
-              <SliderScaleField
-                label="Digestion quality"
-                value={formValues.digestionRating ?? 3}
-                onChange={value => setFormValues(current => ({ ...current, digestionRating: value }))}
-              />
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Average sleep (hours)</label>
-                <Input
-                  inputMode="decimal"
-                  placeholder="e.g. 7.5"
-                  value={formValues.sleepHours}
-                  onChange={event => setFormValues(current => ({ ...current, sleepHours: event.target.value }))}
-                />
-              </div>
-            </section>
-          )}
-
-          {step === 4 && (
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Strength & Notes</h2>
-                <p className="text-sm text-muted-foreground">Share one strength highlight and optional reflection.</p>
+                <h2 className="text-lg font-semibold text-foreground">Weekly Reflection</h2>
+                <p className="text-sm text-muted-foreground">
+                  Share wins, blockers, and any context your coach should know.
+                </p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Strength update</label>
                 <textarea
                   className="min-h-[96px] w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  placeholder="e.g. Squat felt stronger this week"
+                  placeholder="What felt stronger this week?"
                   value={formValues.strengthUpdate}
                   onChange={event => setFormValues(current => ({ ...current, strengthUpdate: event.target.value }))}
                 />
@@ -419,70 +352,60 @@ export function WeeklyCheckInFlow() {
                 <label className="text-sm font-medium text-foreground">Notes (optional)</label>
                 <textarea
                   className="min-h-[120px] w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  placeholder="Anything your coach should know this week"
+                  placeholder="Any extra context for your coach"
                   value={formValues.notes}
                   onChange={event => setFormValues(current => ({ ...current, notes: event.target.value }))}
                 />
               </div>
-
-              {!parsedPayload.success && (
-                <p className="text-sm text-destructive">
-                  {parsedPayload.error.issues[0]?.message ?? 'Please complete required fields.'}
-                </p>
-              )}
             </section>
           )}
 
-          {errorMessage && <p className="text-sm font-medium text-destructive">{errorMessage}</p>}
+          {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
 
-          {successMessage && (
-            <div className="rounded-xl border border-accent/40 bg-accent/10 p-3">
-              <p className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-                <Check className="h-4 w-4 text-accent" />
-                {successMessage}
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button variant="ghost" onClick={step === 1 ? () => router.push('/user/dashboard') : prevStep}>
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setStep(current => Math.max(1, current - 1))}
+              disabled={step === 1 || isSubmitting || isUploading}
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {step === 1 ? 'Back to Dashboard' : 'Previous'}
+              Back
             </Button>
 
-            <div className="flex items-center gap-2">
-              {step < TOTAL_STEPS ? (
-                <Button onClick={nextStep}>
-                  Next
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button disabled={submitDisabled} onClick={handleSubmit}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Check-In'
-                  )}
-                </Button>
-              )}
-            </div>
+            {step < TOTAL_STEPS ? (
+              <Button
+                type="button"
+                onClick={() => setStep(current => Math.min(TOTAL_STEPS, current + 1))}
+                disabled={isSubmitting || isUploading}
+              >
+                Next
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="button" onClick={handleSubmit} disabled={submitDisabled}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Submit check-in
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
       <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
-        <DialogContent className="rounded-2xl border-border bg-card p-6">
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="inline-flex items-center gap-2 text-foreground">
-              <Check className="h-5 w-5 text-accent" />
-              Check-In Submitted
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {successMessage ?? 'Your weekly check-in has been saved.'}
-            </DialogDescription>
+            <DialogTitle>Weekly check-in saved</DialogTitle>
+            <DialogDescription>{successMessage ?? 'Your coach can now review this update.'}</DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>

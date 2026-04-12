@@ -10,14 +10,9 @@ export type AdminWeeklyCheckInListItem = {
   weekStartDate: string;
   submittedAt: string;
   weightKg: number | null;
-  waistCm: number | null;
-  trainingAdherence: number;
-  nutritionAdherence: number;
-  energyRating: number;
-  stressRating: number | null;
-  hungerRating: number | null;
-  digestionRating: number | null;
-  sleepHours: number | null;
+  progressPhotoFrontUrl: string | null;
+  progressPhotoSideUrl: string | null;
+  progressPhotoBackUrl: string | null;
   strengthUpdate: string | null;
   blockerText: string | null;
   notes: string | null;
