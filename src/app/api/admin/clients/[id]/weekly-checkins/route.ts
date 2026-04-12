@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { decryptOrFallback } from '@/lib/security/field-crypto';
 import { getCurrentWeekStartDateKey } from '@/features/weekly-checkin/utils/week';
 
 function dateKeyToUtcMidnight(dateKey: string): Date {
@@ -72,16 +73,38 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             weekStartDate: toDateKeyUtc(checkIns[0].weekStartDate),
           }
         : null,
-      checkIns: checkIns.map(checkIn => ({
-        id: checkIn.id,
-        weekStartDate: toDateKeyUtc(checkIn.weekStartDate),
-        submittedAt: checkIn.submittedAt.toISOString(),
-        weightKg: checkIn.weightKg,
-        waistCm: checkIn.waistCm,
-        trainingAdherence: checkIn.trainingAdherence,
-        nutritionAdherence: checkIn.nutritionAdherence,
-        energyRating: checkIn.energyRating,
-      })),
+      checkIns: checkIns.map(checkIn => {
+        const weekKey = toDateKeyUtc(checkIn.weekStartDate);
+        const strengthUpdate =
+          decryptOrFallback(checkIn.strengthUpdateEncrypted, `weeklyCheckIn:${checkIn.id}:strengthUpdate`) ??
+          decryptOrFallback(checkIn.strengthUpdateEncrypted, `weeklyCheckIn:${clientId}:${weekKey}:strengthUpdate`) ??
+          checkIn.strengthUpdate ?? null;
+        const blockerText =
+          decryptOrFallback(checkIn.blockerTextEncrypted, `weeklyCheckIn:${checkIn.id}:blockerText`) ??
+          decryptOrFallback(checkIn.blockerTextEncrypted, `weeklyCheckIn:${clientId}:${weekKey}:blockerText`) ??
+          checkIn.blockerText ?? null;
+        const notes =
+          decryptOrFallback(checkIn.notesEncrypted, `weeklyCheckIn:${checkIn.id}:notes`) ??
+          decryptOrFallback(checkIn.notesEncrypted, `weeklyCheckIn:${clientId}:${weekKey}:notes`) ??
+          checkIn.notes ?? null;
+        return {
+          id: checkIn.id,
+          weekStartDate: weekKey,
+          submittedAt: checkIn.submittedAt.toISOString(),
+          weightKg: checkIn.weightKg,
+          waistCm: checkIn.waistCm,
+          trainingAdherence: checkIn.trainingAdherence,
+          nutritionAdherence: checkIn.nutritionAdherence,
+          energyRating: checkIn.energyRating,
+          stressRating: checkIn.stressRating ?? null,
+          hungerRating: checkIn.hungerRating ?? null,
+          digestionRating: checkIn.digestionRating ?? null,
+          sleepHours: checkIn.sleepHours ?? null,
+          strengthUpdate,
+          blockerText,
+          notes,
+        };
+      }),
     });
   } catch (error) {
     console.error('[ADMIN_WEEKLY_CHECKINS_GET] Failed:', error);

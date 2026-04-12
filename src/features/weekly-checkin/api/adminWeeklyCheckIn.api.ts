@@ -41,3 +41,13 @@ export async function getAdminClientWeeklyCheckInStatuses(
     `/api/admin/clients/weekly-checkins/statuses?${searchParams.toString()}`
   );
 }
+
+export async function markAdminWeeklyCheckInReviewed(
+  clientId: string,
+  checkInId: string
+): Promise<{ success: boolean }> {
+  return httpClient.post<{ success: boolean }>(
+    `/api/admin/clients/${encodeURIComponent(clientId)}/weekly-checkins/${encodeURIComponent(checkInId)}/review`,
+    {}
+  );
+}

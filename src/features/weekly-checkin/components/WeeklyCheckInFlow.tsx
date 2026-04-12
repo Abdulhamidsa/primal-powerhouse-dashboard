@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { useDailyCheckInInsights } from '@/features/daily-checkin/hooks/useDailyCheckIn';
+import { WeeklyWeightLivePreview } from '@/features/weekly-checkin/components/WeeklyWeightLivePreview';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -113,6 +115,16 @@ export function WeeklyCheckInFlow() {
   const router = useRouter();
   const { checkIn, weekStartDate, isLoading } = useWeeklyCheckInCurrentWeek();
   const { submit } = useUpsertWeeklyCheckIn();
+  const { history } = useDailyCheckInInsights();
+
+  const lastWeekBaseline = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    for (let i = history.length - 1; i >= 0; i--) {
+      const item = history[i];
+      if (item.dayDate < today && item.weightKg != null) return item.weightKg;
+    }
+    return null;
+  }, [history]);
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -253,6 +265,10 @@ export function WeeklyCheckInFlow() {
                     placeholder="e.g. 82.4"
                     value={formValues.weightKg}
                     onChange={event => setFormValues(current => ({ ...current, weightKg: event.target.value }))}
+                  />
+                  <WeeklyWeightLivePreview
+                    lastWeekWeight={lastWeekBaseline}
+                    currentWeight={formValues.weightKg.trim() ? (Number.isFinite(Number(formValues.weightKg)) ? Number(formValues.weightKg) : null) : null}
                   />
                 </div>
               )}

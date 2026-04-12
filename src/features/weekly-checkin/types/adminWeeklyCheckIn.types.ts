@@ -14,6 +14,13 @@ export type AdminWeeklyCheckInListItem = {
   trainingAdherence: number;
   nutritionAdherence: number;
   energyRating: number;
+  stressRating: number | null;
+  hungerRating: number | null;
+  digestionRating: number | null;
+  sleepHours: number | null;
+  strengthUpdate: string | null;
+  blockerText: string | null;
+  notes: string | null;
 };
 
 export type AdminClientWeeklyCheckInsResponse = {
