@@ -26,6 +26,7 @@ export const sendMessageSchema = z
   .object({
     body: z.string().trim().max(5000).optional(),
     attachments: z.array(messageAttachmentSchema).max(5).optional(),
+    clientTempId: z.string().max(64).optional(),
   })
   .refine(value => Boolean(value.body?.trim()) || Boolean(value.attachments?.length), {
     message: 'Message body or at least one attachment is required',

@@ -52,6 +52,7 @@ export type ConversationMessagesResponse = {
 export type SendMessagePayload = {
   body?: string;
   attachments?: MessageAttachment[];
+  clientTempId?: string;
 };
 
 export type CreateConversationPayload = {

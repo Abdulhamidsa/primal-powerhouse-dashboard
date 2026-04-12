@@ -285,10 +285,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   });
 
   const responseMessage = toApiMessage(created);
+  // Echo the client-side temp ID back in the Pusher payload so the sender
+  // can replace their optimistic message in-place without a visible duplicate.
+  const pusherMessage = parsed.data.clientTempId
+    ? { ...responseMessage, clientTempId: parsed.data.clientTempId }
+    : responseMessage;
 
   if (hasPusherServerConfig()) {
     try {
-      await getPusherServer().trigger(toConversationChannel(conversationId), 'message.created', responseMessage);
+      await getPusherServer().trigger(toConversationChannel(conversationId), 'message.created', pusherMessage);
 
       // Notify the recipient on their personal user channel
       const recipientUserId = actor.type === 'client' ? conversation.coachId : conversation.clientId;

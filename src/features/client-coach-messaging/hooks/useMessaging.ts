@@ -141,6 +141,24 @@ export function useConversationMessages(conversationId: string | null) {
       mutate(previous => {
         if (!previous) return previous;
 
+        // If the server echoed back our clientTempId, this is our own sent message.
+        // Replace the optimistic placeholder in-place to avoid showing a duplicate.
+        if (message.clientTempId) {
+          const optimisticExists = previous.items.some(item => item.id === message.clientTempId);
+          if (optimisticExists) {
+            return {
+              ...previous,
+              items: previous.items.map(item =>
+                item.id === message.clientTempId
+                  ? { ...withSentStatus(message), clientTempId: message.clientTempId }
+                  : item,
+              ),
+              conversation: { ...previous.conversation, lastMessageAt: message.createdAt },
+            };
+          }
+          // API mutate already ran — the real message is already in the list, skip to dedupe only.
+        }
+
         return {
           ...previous,
           items: dedupeMessagesById([...previous.items, withSentStatus(message)]),
@@ -235,6 +253,7 @@ export function useConversationMessages(conversationId: string | null) {
       const created = await sendConversationMessage(conversationId, {
         body: payloadBody || undefined,
         attachments: normalizedAttachments.length ? normalizedAttachments : undefined,
+        clientTempId: optimisticId,
       });
 
       mutate(previous => {
