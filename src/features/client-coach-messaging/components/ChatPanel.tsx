@@ -11,6 +11,24 @@ import {
   useMessagingSelection,
 } from '@/features/client-coach-messaging/hooks/useMessaging';
 import { useConversationPresence } from '@/features/client-coach-messaging/hooks/useConversationPresence';
+import { useConversationClientPresence } from '@/features/client-coach-messaging/hooks/useConversationClientPresence';
+
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return (words[0][0] ?? '?').toUpperCase();
+  return `${words[0][0]}${words[1][0]}`.toUpperCase();
+}
+
+function formatRelativeTime(iso: string | null): string {
+  if (!iso) return '';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(hrs / 24)}d`;
+}
 
 const SIDEBAR_WIDTH_STORAGE_KEY = 'chat-panel-sidebar-width';
 const SIDEBAR_MIN = 320;
@@ -46,6 +64,8 @@ export function ChatPanel({
     conversations,
     requestedConversationId,
   );
+  const selectedConversation = sortedConversations.find(c => c.id === selectedConversationId) ?? null;
+  const { isActive } = useConversationClientPresence(selectedConversation?.clientId ?? null);
   const {
     conversation,
     messages,
@@ -185,30 +205,60 @@ export function ChatPanel({
                 Loading conversations...
               </p>
             ) : (
-              <div className="space-y-1">
-                {sortedConversations.map(conversation => (
-                  <button
-                    key={conversation.id}
-                    type="button"
-                    onClick={() => setSelectedConversationId(conversation.id)}
-                    className="w-full rounded-2xl border px-3 py-3 text-left transition-all"
-                    style={{
-                      borderColor:
-                        selectedConversationId === conversation.id ? 'var(--color-accent)' : 'var(--color-border)',
-                      background:
-                        selectedConversationId === conversation.id
-                          ? 'var(--color-accent-muted)'
-                          : 'var(--color-surface)',
-                    }}
-                  >
-                    <p className="truncate text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-                      {conversation.clientName}
-                    </p>
-                    <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-                      {conversation.unreadCount > 0 ? `${conversation.unreadCount} unread` : 'No unread'}
-                    </p>
-                  </button>
-                ))}
+              <div className="space-y-0.5 p-1">
+                {sortedConversations.map(conv => {
+                  const isSelected = selectedConversationId === conv.id;
+                  return (
+                    <button
+                      key={conv.id}
+                      type="button"
+                      onClick={() => setSelectedConversationId(conv.id)}
+                      className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--color-bg-alt)]"
+                      style={{
+                        background: isSelected ? 'var(--color-accent-muted)' : 'transparent',
+                        borderLeft: isSelected ? '3px solid var(--color-accent)' : '3px solid transparent',
+                      }}
+                    >
+                      <div
+                        className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full text-xs font-bold"
+                        style={{
+                          background: 'var(--color-bg-alt)',
+                          color: 'var(--color-accent)',
+                          border: '1px solid var(--color-border)',
+                        }}
+                      >
+                        {getInitials(conv.clientName)}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {conv.clientName}
+                          </p>
+                          {conv.lastMessageAt ? (
+                            <span className="flex-shrink-0 text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                              {formatRelativeTime(conv.lastMessageAt)}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {conv.unreadCount > 0 ? (
+                          <div className="mt-0.5 flex items-center gap-1.5">
+                            <span
+                              className="inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold"
+                              style={{ background: 'var(--color-accent)', color: '#fff' }}
+                            >
+                              {conv.unreadCount}
+                            </span>
+                            <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                              new
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </aside>
@@ -240,12 +290,38 @@ export function ChatPanel({
                 <ArrowLeft size={16} />
               </button>
             ) : null}
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.12em]"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              Coach chat
-            </p>
+
+            {!hideConversationList ? (
+              selectedConversation ? (
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="truncate text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                    {selectedConversation.clientName}
+                  </p>
+                  {isActive ? (
+                    <span className="inline-flex flex-shrink-0 items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                        Active
+                      </span>
+                    </span>
+                  ) : null}
+                </div>
+              ) : (
+                <p
+                  className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  Select a conversation
+                </p>
+              )
+            ) : (
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Coach chat
+              </p>
+            )}
           </div>
 
           <div
