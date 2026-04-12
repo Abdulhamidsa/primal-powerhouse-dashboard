@@ -8,6 +8,11 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { conversationPresenceSchema } from '@/features/client-coach-messaging/schemas/presence.schema';
 import { getRequestIpAddress } from '@/lib/chat/conversation';
 
+function isPresenceTableUnavailable(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return message.includes('conversation_presences') || message.includes('P2021');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const csrf = assertSameOrigin(request);
@@ -31,7 +36,14 @@ export async function POST(request: NextRequest) {
     const { conversationId } = parsed.data;
 
     if (!conversationId) {
-      await presenceModel.deleteMany({ where: { clientId: auth.user.userId } });
+      try {
+        await presenceModel.deleteMany({ where: { clientId: auth.user.userId } });
+      } catch (error) {
+        if (isPresenceTableUnavailable(error)) {
+          return jsonWithCache({ success: true });
+        }
+        throw error;
+      }
       return jsonWithCache({ success: true });
     }
 
@@ -47,18 +59,25 @@ export async function POST(request: NextRequest) {
       return jsonWithCache({ error: 'Conversation not found' }, { status: 404 });
     }
 
-    await presenceModel.upsert({
-      where: { clientId: auth.user.userId },
-      update: {
-        conversationId,
-        lastSeenAt: new Date(),
-      },
-      create: {
-        clientId: auth.user.userId,
-        conversationId,
-        lastSeenAt: new Date(),
-      },
-    });
+    try {
+      await presenceModel.upsert({
+        where: { clientId: auth.user.userId },
+        update: {
+          conversationId,
+          lastSeenAt: new Date(),
+        },
+        create: {
+          clientId: auth.user.userId,
+          conversationId,
+          lastSeenAt: new Date(),
+        },
+      });
+    } catch (error) {
+      if (isPresenceTableUnavailable(error)) {
+        return jsonWithCache({ success: true });
+      }
+      throw error;
+    }
 
     return jsonWithCache({ success: true });
   } catch (error) {

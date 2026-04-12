@@ -25,6 +25,11 @@ import {
   sendPushToClient,
 } from '@/lib/push/push-notifications';
 
+function isPresenceTableUnavailable(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return message.includes('conversation_presences') || message.includes('P2021');
+}
+
 type AttachmentRecord = {
   type: 'image' | 'video' | 'audio';
   publicId: string;
@@ -320,10 +325,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           select: { consentMessageNotifications: true },
         }),
         presenceModel
-          ? presenceModel.findUnique({
-              where: { clientId: conversation.clientId },
-              select: { conversationId: true, lastSeenAt: true },
-            })
+          ? presenceModel
+              .findUnique({
+                where: { clientId: conversation.clientId },
+                select: { conversationId: true, lastSeenAt: true },
+              })
+              .catch((error: unknown) => {
+                if (isPresenceTableUnavailable(error)) {
+                  console.warn('[PUSH] Presence table unavailable; skipping active-conversation suppression.');
+                  return null;
+                }
+                throw error;
+              })
           : null,
         isCoachMessagePushCooldownActive(conversation.clientId, conversationId),
       ]);
