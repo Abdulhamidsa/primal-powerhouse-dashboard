@@ -22,6 +22,9 @@ export type PushPayload = {
   title: string;
   body: string;
   url: string;
+  tag?: string;
+  conversationId?: string;
+  senderId?: string;
 };
 
 export type PushDeliveryStatus = 'sent' | 'partial' | 'failed' | 'skipped';

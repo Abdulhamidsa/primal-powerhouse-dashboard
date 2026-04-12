@@ -280,6 +280,8 @@ self.addEventListener('push', event => {
   const body = typeof data.body === 'string' ? data.body.slice(0, 150) : 'New update from your coach!';
   const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/user/dashboard';
   const tag = typeof data.tag === 'string' && data.tag.trim() ? data.tag : 'primal-powerhouse-notification';
+  const conversationId = typeof data.conversationId === 'string' ? data.conversationId : null;
+  const senderId = typeof data.senderId === 'string' ? data.senderId : null;
 
   event.waitUntil(
     self.registration
@@ -289,7 +291,7 @@ self.addEventListener('push', event => {
         badge: '/icon-192.png',
         tag,
         requireInteraction: Boolean(data.requireInteraction),
-        data: { url },
+        data: { url, conversationId, senderId },
       })
       .catch(error => console.error('[SW] Notification failed:', error)),
   );

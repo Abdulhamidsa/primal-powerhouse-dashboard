@@ -11,6 +11,11 @@ import {
   getRequestIpAddress,
   resolveActor,
 } from '@/lib/chat/conversation';
+import {
+  buildConversationDeepLink,
+  buildMessagePreview,
+  hasFreshConversationPresence,
+} from '@/lib/chat/conversation-presence';
 import { sendMessageSchema } from '@/features/client-coach-messaging/schemas/message.schema';
 import {
   getPusherServer,
@@ -298,29 +303,30 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // Send browser push notification when coach sends to client
   if (actor.type === 'coach' || actor.type === 'admin') {
+    const hasAttachment = (parsed.data.attachments?.length ?? 0) > 0;
+    const rawBody = parsed.data.body?.trim() ?? null;
     const pushPayload = {
-      title: 'New message from your coach',
-      body: 'You have a new message. Tap to view.',
-      url: '/user/messages',
+      title: actor.displayName,
+      body: buildMessagePreview(rawBody, hasAttachment),
+      url: buildConversationDeepLink(conversationId),
+      tag: `conversation:${conversationId}`,
+      conversationId,
+      senderId: actor.userId,
     };
 
     try {
-      const recipientClient = await (prisma as any).client.findUnique({
+      const [recipientClient, recipientPresence] = await Promise.all([
+        (prisma as any).client.findUnique({
         where: { id: conversation.clientId },
         select: { consentMessageNotifications: true },
-      });
+        }),
+        (prisma as any).conversationPresence.findUnique({
+          where: { clientId: conversation.clientId },
+          select: { conversationId: true, lastSeenAt: true },
+        }),
+      ]);
 
-      if (recipientClient?.consentMessageNotifications) {
-        await sendPushToClient(conversation.clientId, pushPayload, {
-          source: 'coach-message',
-          metadata: {
-            actorId: actor.userId,
-            actorType: actor.type,
-            conversationId,
-            messageId: created.id,
-          },
-        });
-      } else {
+      if (!recipientClient?.consentMessageNotifications) {
         await logPushDeliveryResult({
           clientId: conversation.clientId,
           source: 'coach-message',
@@ -333,6 +339,36 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             staleCount: 0,
             reason: 'consent_disabled',
           },
+          metadata: {
+            actorId: actor.userId,
+            actorType: actor.type,
+            conversationId,
+            messageId: created.id,
+          },
+        });
+      } else if (hasFreshConversationPresence(recipientPresence, conversationId)) {
+        await logPushDeliveryResult({
+          clientId: conversation.clientId,
+          source: 'coach-message',
+          payload: pushPayload,
+          result: {
+            status: 'skipped',
+            subscriptionCount: 0,
+            successCount: 0,
+            failureCount: 0,
+            staleCount: 0,
+            reason: 'recipient_active_in_conversation',
+          },
+          metadata: {
+            actorId: actor.userId,
+            actorType: actor.type,
+            conversationId,
+            messageId: created.id,
+          },
+        });
+      } else {
+        await sendPushToClient(conversation.clientId, pushPayload, {
+          source: 'coach-message',
           metadata: {
             actorId: actor.userId,
             actorType: actor.type,

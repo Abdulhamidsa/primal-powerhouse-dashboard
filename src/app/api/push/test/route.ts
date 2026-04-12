@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
       {
         title: 'Primal Powerhouse',
         body: 'Test notification delivered. Coach message alerts are set up on this device.',
-        url: '/user/messages',
+        url: '/user/chat',
+        tag: 'push-test',
       },
       {
         source: 'test',

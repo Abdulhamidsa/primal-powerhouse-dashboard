@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { MessageList } from '@/features/client-coach-messaging/components/MessageList';
 import { MessageComposer } from '@/features/client-coach-messaging/components/MessageComposer';
@@ -10,6 +10,7 @@ import {
   useConversations,
   useMessagingSelection,
 } from '@/features/client-coach-messaging/hooks/useMessaging';
+import { useConversationPresence } from '@/features/client-coach-messaging/hooks/useConversationPresence';
 
 const SIDEBAR_WIDTH_STORAGE_KEY = 'chat-panel-sidebar-width';
 const SIDEBAR_MIN = 320;
@@ -20,7 +21,9 @@ function clampSidebarWidth(nextWidth: number): number {
 }
 
 export function ChatPanel({ hideConversationList = false }: { title?: string; hideConversationList?: boolean }) {
+  const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
   const previousConversationIdRef = useRef<string | null>(null);
@@ -31,8 +34,9 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
   const [isDragging, setIsDragging] = useState(false);
 
   const { conversations, isLoading: isConversationsLoading } = useConversations();
+  const requestedConversationId = searchParams.get('conversationId');
   const { selectedConversationId, setSelectedConversationId, sortedConversations } =
-    useMessagingSelection(conversations);
+    useMessagingSelection(conversations, requestedConversationId);
   const {
     conversation,
     messages,
@@ -40,6 +44,8 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
     sendMessage,
     retryMessage,
   } = useConversationMessages(selectedConversationId);
+
+  useConversationPresence(selectedConversationId, pathname.startsWith('/user'));
 
   useEffect(() => {
     if (hideConversationList || typeof window === 'undefined') return;
@@ -63,6 +69,18 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
     if (hideConversationList || !sidebarWidth || typeof window === 'undefined') return;
     window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
   }, [hideConversationList, sidebarWidth]);
+
+  useEffect(() => {
+    if (!selectedConversationId) return;
+
+    const next = new URLSearchParams(searchParams.toString());
+    if (next.get('conversationId') === selectedConversationId) {
+      return;
+    }
+
+    next.set('conversationId', selectedConversationId);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams, selectedConversationId]);
 
   // Track whether the user is near the bottom so we know whether to auto-scroll on new messages.
   useEffect(() => {

@@ -120,6 +120,7 @@ model Client {
   privacyExportJobs PrivacyExportJob[]
   deletionRequests  DeletionRequest[]
   conversations     Conversation[]
+  conversationPresence ConversationPresence?
   pushSubscriptions PushSubscription[]
   notificationDeliveryLogs NotificationDeliveryLog[]
   workoutPlanAssignments WorkoutPlanAssignment[]
@@ -142,12 +143,29 @@ model Conversation {
   coach  User   @relation("ConversationCoach", fields: [coachId], references: [id], onDelete: Cascade)
 
   messages Message[]
+  presenceRecords ConversationPresence[]
 
   @@unique([clientId, coachId])
   @@index([clientId])
   @@index([coachId])
   @@index([lastMessageAt])
   @@map("conversations")
+}
+
+model ConversationPresence {
+  id             String   @id @default(cuid())
+  clientId       String   @unique
+  conversationId String?
+  lastSeenAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, lastSeenAt])
+  @@index([lastSeenAt])
+  @@map("conversation_presences")
 }
 
 model PushSubscription {

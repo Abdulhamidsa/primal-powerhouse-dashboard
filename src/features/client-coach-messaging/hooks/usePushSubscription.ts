@@ -2,11 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { sendTestPush, subscribePush, unsubscribePush } from '@/features/client-coach-messaging/api/push.api';
+import type { ApiError } from '@/lib/request';
 
 export type PushSubscriptionStatus = 'unsupported' | 'denied' | 'subscribed' | 'unsubscribed';
 export type PushInstallState = 'installed' | 'browser';
 export type PushPlatform = 'ios' | 'android' | 'other';
 export type PushPermissionState = NotificationPermission | 'unsupported';
+
+type PushFailureContext = {
+  stage: 'service-worker' | 'subscription-read' | 'subscription-create' | 'subscription-save' | 'unknown';
+  error: unknown;
+};
 
 export function usePushSubscription() {
   const [status, setStatus] = useState<PushSubscriptionStatus>('unsubscribed');
@@ -44,17 +50,27 @@ export function usePushSubscription() {
         return false;
       }
 
-      const reg = await getOrCreateServiceWorkerRegistration();
+      const reg = await getReadyServiceWorkerRegistration();
       if (!reg) {
         setStatus('unsupported');
-        setErrorMessage('The app could not prepare background notifications on this device.');
+        setErrorMessage('Background notifications are not ready yet on this device. Reopen the app and try again.');
         return false;
       }
       setIsServiceWorkerReady(true);
 
-      const existing = await reg.pushManager.getSubscription();
+      const existing = await reg.pushManager.getSubscription().catch(error => {
+        throw {
+          stage: 'subscription-read',
+          error,
+        } satisfies PushFailureContext;
+      });
       if (existing) {
-        await subscribePush(existing.toJSON() as PushSubscriptionJSON);
+        await subscribePush(existing.toJSON() as PushSubscriptionJSON).catch(error => {
+          throw {
+            stage: 'subscription-save',
+            error,
+          } satisfies PushFailureContext;
+        });
         setStatus('subscribed');
         return true;
       }
@@ -65,14 +81,26 @@ export function usePushSubscription() {
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      }).catch(error => {
+        throw {
+          stage: 'subscription-create',
+          error,
+        } satisfies PushFailureContext;
       });
 
-      await subscribePush(subscription.toJSON() as PushSubscriptionJSON);
+      await subscribePush(subscription.toJSON() as PushSubscriptionJSON).catch(error => {
+        throw {
+          stage: 'subscription-save',
+          error,
+        } satisfies PushFailureContext;
+      });
       setStatus('subscribed');
+      setErrorMessage(null);
       return true;
     } catch (err) {
       console.error('[PUSH] Failed to subscribe:', err);
-      setErrorMessage('Subscription failed. Try again after reopening the app from the Home Screen.');
+      setStatus('unsubscribed');
+      setErrorMessage(getPushFailureMessage(err));
       return false;
     } finally {
       setIsLoading(false);
@@ -90,7 +118,7 @@ export function usePushSubscription() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      const reg = await getOrCreateServiceWorkerRegistration();
+      const reg = await getReadyServiceWorkerRegistration();
       if (!reg) {
         setStatus('unsupported');
         setErrorMessage('The app could not access background notification settings.');
@@ -165,7 +193,7 @@ export function usePushSubscription() {
     }
 
     try {
-      const reg = await getOrCreateServiceWorkerRegistration();
+      const reg = await getReadyServiceWorkerRegistration();
       if (!reg) {
         setStatus('unsupported');
         setIsServiceWorkerReady(false);
@@ -205,6 +233,21 @@ async function getOrCreateServiceWorkerRegistration(): Promise<ServiceWorkerRegi
   }
 }
 
+async function getReadyServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+  const registration = await getOrCreateServiceWorkerRegistration();
+  if (!registration) {
+    return null;
+  }
+
+  try {
+    const readyRegistration = await navigator.serviceWorker.ready;
+    return readyRegistration ?? registration;
+  } catch (error) {
+    console.error('[PUSH] Service worker readiness failed:', error);
+    return registration.active ? registration : null;
+  }
+}
+
 function getInstallState(): PushInstallState {
   if (typeof window === 'undefined') return 'browser';
 
@@ -236,4 +279,60 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
     output[i] = raw.charCodeAt(i);
   }
   return output;
+}
+
+function getPushFailureMessage(input: unknown): string {
+  const failure = normalizePushFailure(input);
+  const message = getErrorMessage(failure.error);
+
+  if (failure.stage === 'subscription-save') {
+    return 'Notifications were allowed, but this device subscription could not be saved. Please try again.';
+  }
+
+  if (failure.stage === 'subscription-read') {
+    return 'The app could not read your current notification subscription. Reopen the installed app and try again.';
+  }
+
+  if (failure.stage === 'service-worker') {
+    return 'Background notifications are not ready yet on this device. Reopen the installed app and try again.';
+  }
+
+  if (message.includes('NEXT_PUBLIC_VAPID_PUBLIC_KEY')) {
+    return 'Push notifications are not configured correctly for this app version.';
+  }
+
+  if (message.includes('permission') || message.includes('denied')) {
+    return 'Notifications are blocked in your browser or system settings.';
+  }
+
+  if (message.includes('AbortError')) {
+    return 'Notification setup was interrupted. Reopen the app and try again.';
+  }
+
+  return 'Subscription failed on this device. Reopen the installed app and try again.';
+}
+
+function normalizePushFailure(input: unknown): PushFailureContext {
+  if (input && typeof input === 'object' && 'stage' in input && 'error' in input) {
+    const candidate = input as PushFailureContext;
+    return {
+      stage: candidate.stage,
+      error: candidate.error,
+    };
+  }
+
+  return {
+    stage: 'unknown',
+    error: input,
+  };
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+  const apiError = error as ApiError | undefined;
+  return apiError?.message ?? 'Unknown error';
 }

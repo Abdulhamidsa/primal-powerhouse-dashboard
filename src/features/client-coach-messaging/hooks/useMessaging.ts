@@ -338,7 +338,7 @@ export function useConversationMessages(conversationId: string | null) {
   };
 }
 
-export function useMessagingSelection(conversations: ConversationSummary[]) {
+export function useMessagingSelection(conversations: ConversationSummary[], preferredConversationId?: string | null) {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
 
   const sorted = useMemo(
@@ -357,10 +357,17 @@ export function useMessagingSelection(conversations: ConversationSummary[]) {
       return;
     }
 
+    if (preferredConversationId && sorted.some(item => item.id === preferredConversationId)) {
+      if (selectedConversationId !== preferredConversationId) {
+        setSelectedConversationId(preferredConversationId);
+      }
+      return;
+    }
+
     if (!selectedConversationId || !sorted.some(item => item.id === selectedConversationId)) {
       setSelectedConversationId(sorted[0].id);
     }
-  }, [sorted, selectedConversationId]);
+  }, [preferredConversationId, selectedConversationId, sorted]);
 
   return {
     selectedConversationId,
