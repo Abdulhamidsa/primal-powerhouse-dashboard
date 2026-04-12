@@ -414,6 +414,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     } catch (error) {
       console.error('[PUSH] Failed to send push notification:', error);
+
+      // Fail open: if suppression/cooldown checks error out, still attempt a direct push send.
+      try {
+        await sendPushToClient(conversation.clientId, pushPayload, {
+          source: 'coach-message',
+          reason: 'push_flow_exception_fallback',
+          metadata: {
+            actorId: actor.userId,
+            actorType: actor.type,
+            conversationId,
+            messageId: created.id,
+            pushError: error instanceof Error ? error.message : String(error),
+          },
+        });
+      } catch (fallbackError) {
+        console.error('[PUSH] Fallback push send failed:', fallbackError);
+      }
     }
   }
 
