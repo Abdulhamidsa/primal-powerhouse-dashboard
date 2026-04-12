@@ -35,8 +35,10 @@ export function ChatPanel({ hideConversationList = false }: { title?: string; hi
 
   const { conversations, isLoading: isConversationsLoading } = useConversations();
   const requestedConversationId = searchParams.get('conversationId');
-  const { selectedConversationId, setSelectedConversationId, sortedConversations } =
-    useMessagingSelection(conversations, requestedConversationId);
+  const { selectedConversationId, setSelectedConversationId, sortedConversations } = useMessagingSelection(
+    conversations,
+    requestedConversationId,
+  );
   const {
     conversation,
     messages,

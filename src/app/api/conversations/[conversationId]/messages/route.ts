@@ -317,8 +317,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     try {
       const [recipientClient, recipientPresence] = await Promise.all([
         (prisma as any).client.findUnique({
-        where: { id: conversation.clientId },
-        select: { consentMessageNotifications: true },
+          where: { id: conversation.clientId },
+          select: { consentMessageNotifications: true },
         }),
         (prisma as any).conversationPresence.findUnique({
           where: { clientId: conversation.clientId },

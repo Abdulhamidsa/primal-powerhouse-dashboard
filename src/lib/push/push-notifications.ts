@@ -145,12 +145,7 @@ export async function sendPushToClient(
   const failureCount = attempts.filter(item => item.outcome === 'failed').length;
 
   const result: PushSendResult = {
-    status:
-      successCount === subscriptions.length
-        ? 'sent'
-        : successCount > 0 || staleCount > 0
-          ? 'partial'
-          : 'failed',
+    status: successCount === subscriptions.length ? 'sent' : successCount > 0 || staleCount > 0 ? 'partial' : 'failed',
     subscriptionCount: subscriptions.length,
     successCount,
     failureCount,

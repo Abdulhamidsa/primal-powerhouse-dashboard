@@ -27,7 +27,8 @@ export function hasFreshConversationPresence(
     return false;
   }
 
-  const lastSeenAtMs = snapshot.lastSeenAt instanceof Date ? snapshot.lastSeenAt.getTime() : Date.parse(snapshot.lastSeenAt);
+  const lastSeenAtMs =
+    snapshot.lastSeenAt instanceof Date ? snapshot.lastSeenAt.getTime() : Date.parse(snapshot.lastSeenAt);
   if (!Number.isFinite(lastSeenAtMs)) {
     return false;
   }

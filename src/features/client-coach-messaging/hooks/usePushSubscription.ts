@@ -78,15 +78,17 @@ export function usePushSubscription() {
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidKey) throw new Error('NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set');
 
-      const subscription = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
-      }).catch(error => {
-        throw {
-          stage: 'subscription-create',
-          error,
-        } satisfies PushFailureContext;
-      });
+      const subscription = await reg.pushManager
+        .subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        })
+        .catch(error => {
+          throw {
+            stage: 'subscription-create',
+            error,
+          } satisfies PushFailureContext;
+        });
 
       await subscribePush(subscription.toJSON() as PushSubscriptionJSON).catch(error => {
         throw {
