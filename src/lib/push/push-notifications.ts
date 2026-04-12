@@ -51,6 +51,8 @@ type StoredSubscription = {
   auth: string;
 };
 
+const COACH_MESSAGE_PUSH_COOLDOWN_MS = 5 * 60_000;
+
 async function removeStaleSubscription(subscriptionId: string) {
   try {
     await (prisma as any).pushSubscription.delete({ where: { id: subscriptionId } });
@@ -155,4 +157,31 @@ export async function sendPushToClient(
 
   await logPushDeliveryResult({ clientId, source: options.source, payload, result, metadata: options.metadata });
   return result;
+}
+
+export async function isCoachMessagePushCooldownActive(clientId: string, conversationId: string): Promise<boolean> {
+  try {
+    const model = (prisma as any).notificationDeliveryLog;
+    if (!model) return false;
+
+    const cutoff = new Date(Date.now() - COACH_MESSAGE_PUSH_COOLDOWN_MS);
+    const marker = `"conversationId":"${conversationId}"`;
+
+    const recent = await model.findFirst({
+      where: {
+        clientId,
+        source: 'coach-message',
+        status: { in: ['sent', 'partial'] },
+        createdAt: { gte: cutoff },
+        payloadJson: { contains: marker },
+      },
+      select: { id: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return Boolean(recent);
+  } catch (error) {
+    console.error('[PUSH] Failed to evaluate coach message push cooldown:', error);
+    return false;
+  }
 }
