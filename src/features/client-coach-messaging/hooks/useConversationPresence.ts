@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { updateConversationPresence } from '@/features/client-coach-messaging/api/presence.api';
 
-const HEARTBEAT_INTERVAL_MS = 30_000;
+const HEARTBEAT_INTERVAL_MS = 10_000;
 
 export function useConversationPresence(conversationId: string | null, enabled: boolean) {
   useEffect(() => {

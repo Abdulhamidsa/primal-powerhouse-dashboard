@@ -51,7 +51,7 @@ type StoredSubscription = {
   auth: string;
 };
 
-const COACH_MESSAGE_PUSH_COOLDOWN_MS = 5 * 60_000;
+const COACH_MESSAGE_PUSH_COOLDOWN_MS = 2 * 60_000;
 
 async function removeStaleSubscription(subscriptionId: string) {
   try {

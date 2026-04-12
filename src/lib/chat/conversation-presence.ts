@@ -1,4 +1,6 @@
-export const CONVERSATION_PRESENCE_TTL_MS = 60_000;
+// Keep this short so backgrounded mobile PWAs do not suppress push for too long
+// when the visibility event is delayed by the OS.
+export const CONVERSATION_PRESENCE_TTL_MS = 20_000;
 
 export type ConversationPresenceSnapshot = {
   conversationId: string | null;
