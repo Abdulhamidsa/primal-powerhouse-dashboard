@@ -60,6 +60,59 @@ function normalizeAttachments(attachments: MessageAttachment[]): MessageAttachme
   });
 }
 
+function isSameAttachmentSet(left: MessageAttachment[], right: MessageAttachment[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const leftSignature = [...left]
+    .map(attachment => `${attachment.type}:${attachment.publicId}:${attachment.bytes}`)
+    .sort()
+    .join('|');
+  const rightSignature = [...right]
+    .map(attachment => `${attachment.type}:${attachment.publicId}:${attachment.bytes}`)
+    .sort()
+    .join('|');
+
+  return leftSignature === rightSignature;
+}
+
+function findMatchingOptimisticMessageId(
+  messages: ChatMessage[],
+  incoming: ChatMessage,
+  senderRole: ChatMessage['senderRole'],
+): string | null {
+  if (incoming.senderRole !== senderRole) {
+    return null;
+  }
+
+  const incomingTime = new Date(incoming.createdAt).getTime();
+
+  const match = messages.find(message => {
+    if (message.deliveryStatus !== 'pending') {
+      return false;
+    }
+    if (message.senderRole !== senderRole) {
+      return false;
+    }
+    if ((message.body ?? '').trim() !== (incoming.body ?? '').trim()) {
+      return false;
+    }
+    if (!isSameAttachmentSet(message.attachments, incoming.attachments)) {
+      return false;
+    }
+
+    const pendingTime = new Date(message.createdAt).getTime();
+    if (!Number.isFinite(pendingTime) || !Number.isFinite(incomingTime)) {
+      return true;
+    }
+
+    return Math.abs(incomingTime - pendingTime) <= 60_000;
+  });
+
+  return match?.id ?? null;
+}
+
 function updateConversationListPreview(
   previous: ConversationListResponse | undefined,
   conversationId: string,
@@ -134,6 +187,8 @@ export function useConversationMessages(conversationId: string | null) {
     const pusher = getPusherClient();
     if (!pusher) return;
 
+    const currentSenderRole: ChatMessage['senderRole'] = pathname.startsWith('/user') ? 'CLIENT' : 'COACH';
+
     const channelName = toConversationChannel(conversationId);
     const channel = pusher.subscribe(channelName);
 
@@ -141,9 +196,14 @@ export function useConversationMessages(conversationId: string | null) {
       mutate(previous => {
         if (!previous) return previous;
 
+        const matchedOptimisticId = findMatchingOptimisticMessageId(previous.items, message, currentSenderRole);
+        const baseItems = matchedOptimisticId
+          ? previous.items.filter(item => item.id !== matchedOptimisticId)
+          : previous.items;
+
         return {
           ...previous,
-          items: dedupeMessagesById([...previous.items, withSentStatus(message)]),
+          items: dedupeMessagesById([...baseItems, withSentStatus(message)]),
           conversation: {
             ...previous.conversation,
             lastMessageAt: message.createdAt,
@@ -165,7 +225,7 @@ export function useConversationMessages(conversationId: string | null) {
       channel.unbind('message.created', handleMessageCreated);
       pusher.unsubscribe(channelName);
     };
-  }, [conversationId, mutate, globalMutate]);
+  }, [conversationId, mutate, globalMutate, pathname]);
 
   // Optimistically clear unreadCount for this conversation as soon as messages are fetched.
   // The server already writes clientLastReadAt on every message GET, so this just makes
