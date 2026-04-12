@@ -268,7 +268,13 @@ export function WeeklyCheckInFlow() {
                   />
                   <WeeklyWeightLivePreview
                     lastWeekWeight={lastWeekBaseline}
-                    currentWeight={formValues.weightKg.trim() ? (Number.isFinite(Number(formValues.weightKg)) ? Number(formValues.weightKg) : null) : null}
+                    currentWeight={
+                      formValues.weightKg.trim()
+                        ? Number.isFinite(Number(formValues.weightKg))
+                          ? Number(formValues.weightKg)
+                          : null
+                        : null
+                    }
                   />
                 </div>
               )}

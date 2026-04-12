@@ -9,8 +9,14 @@ import { WeeklyCheckInDetailDrawer } from '@/features/admin-clients-dashboard/co
 const SCALE_LABEL: Record<number, string> = { 1: 'Very low', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Very high' };
 
 function getCurrentWeekStyles(status: 'completed' | 'due' | 'overdue') {
-  if (status === 'completed') return { bg: 'var(--color-accent-muted)', color: 'var(--color-accent)', label: 'This week: Done' };
-  if (status === 'overdue') return { bg: 'var(--color-danger-muted, var(--color-bg-alt))', color: 'var(--color-danger)', label: 'This week: Overdue' };
+  if (status === 'completed')
+    return { bg: 'var(--color-accent-muted)', color: 'var(--color-accent)', label: 'This week: Done' };
+  if (status === 'overdue')
+    return {
+      bg: 'var(--color-danger-muted, var(--color-bg-alt))',
+      color: 'var(--color-danger)',
+      label: 'This week: Overdue',
+    };
   return { bg: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', label: 'This week: Pending' };
 }
 
@@ -22,7 +28,9 @@ function StatChip({ icon: Icon, label, value }: { icon: React.ElementType; label
     >
       <Icon size={11} style={{ color: 'var(--color-text-muted)' }} />
       <span style={{ color: 'var(--color-text-muted)' }}>{label}</span>
-      <span className="font-semibold" style={{ color: 'var(--color-text)' }}>{value}</span>
+      <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -99,9 +107,7 @@ function CheckInCard({
         {checkIn.weightKg != null && (
           <StatChip icon={Scale} label="Weight" value={`${checkIn.weightKg.toFixed(1)} kg`} />
         )}
-        {checkIn.waistCm != null && (
-          <StatChip icon={Ruler} label="Waist" value={`${checkIn.waistCm.toFixed(1)} cm`} />
-        )}
+        {checkIn.waistCm != null && <StatChip icon={Ruler} label="Waist" value={`${checkIn.waistCm.toFixed(1)} cm`} />}
       </div>
     </div>
   );

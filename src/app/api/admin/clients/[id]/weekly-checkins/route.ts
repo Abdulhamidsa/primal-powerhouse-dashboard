@@ -53,7 +53,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const currentWeekCheckIn = checkIns.find(
-      checkIn => toDateKeyUtc(checkIn.weekStartDate) === toDateKeyUtc(currentWeekStartUtc)
+      checkIn => toDateKeyUtc(checkIn.weekStartDate) === toDateKeyUtc(currentWeekStartUtc),
     );
 
     return jsonWithCache({
@@ -78,15 +78,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         const strengthUpdate =
           decryptOrFallback(checkIn.strengthUpdateEncrypted, `weeklyCheckIn:${checkIn.id}:strengthUpdate`) ??
           decryptOrFallback(checkIn.strengthUpdateEncrypted, `weeklyCheckIn:${clientId}:${weekKey}:strengthUpdate`) ??
-          checkIn.strengthUpdate ?? null;
+          checkIn.strengthUpdate ??
+          null;
         const blockerText =
           decryptOrFallback(checkIn.blockerTextEncrypted, `weeklyCheckIn:${checkIn.id}:blockerText`) ??
           decryptOrFallback(checkIn.blockerTextEncrypted, `weeklyCheckIn:${clientId}:${weekKey}:blockerText`) ??
-          checkIn.blockerText ?? null;
+          checkIn.blockerText ??
+          null;
         const notes =
           decryptOrFallback(checkIn.notesEncrypted, `weeklyCheckIn:${checkIn.id}:notes`) ??
           decryptOrFallback(checkIn.notesEncrypted, `weeklyCheckIn:${clientId}:${weekKey}:notes`) ??
-          checkIn.notes ?? null;
+          checkIn.notes ??
+          null;
         return {
           id: checkIn.id,
           weekStartDate: weekKey,

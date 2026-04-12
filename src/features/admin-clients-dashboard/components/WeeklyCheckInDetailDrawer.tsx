@@ -17,10 +17,7 @@ function ScoreBar({ value, max = 5 }: { value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
   return (
     <div className="flex items-center gap-2 flex-1">
-      <div
-        className="flex-1 rounded-full overflow-hidden"
-        style={{ height: 6, background: 'var(--color-border)' }}
-      >
+      <div className="flex-1 rounded-full overflow-hidden" style={{ height: 6, background: 'var(--color-border)' }}>
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${pct}%`, background: 'var(--color-accent)' }}
@@ -37,40 +34,25 @@ function AdherenceBar({ value }: { value: number }) {
   const color = value >= 80 ? 'var(--color-accent)' : value >= 50 ? '#f59e0b' : 'var(--color-danger, #ef4444)';
   return (
     <div className="flex items-center gap-2 flex-1">
-      <div
-        className="flex-1 rounded-full overflow-hidden"
-        style={{ height: 6, background: 'var(--color-border)' }}
-      >
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${value}%`, background: color }}
-        />
+      <div className="flex-1 rounded-full overflow-hidden" style={{ height: 6, background: 'var(--color-border)' }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${value}%`, background: color }} />
       </div>
-      <span className="text-xs font-semibold w-10 text-right" style={{ color }}>{value}%</span>
+      <span className="text-xs font-semibold w-10 text-right" style={{ color }}>
+        {value}%
+      </span>
     </div>
   );
 }
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p
-      className="text-[11px] font-semibold uppercase tracking-wide mb-3"
-      style={{ color: 'var(--color-text-muted)' }}
-    >
+    <p className="text-[11px] font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--color-text-muted)' }}>
       {children}
     </p>
   );
 }
 
-function Row({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: React.ElementType;
-  label: string;
-  children: React.ReactNode;
-}) {
+function Row({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
       <div
@@ -80,7 +62,9 @@ function Row({
         <Icon size={14} style={{ color: 'var(--color-text-muted)' }} />
       </div>
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        <span className="text-xs w-28 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }}>{label}</span>
+        <span className="text-xs w-28 flex-shrink-0" style={{ color: 'var(--color-text-muted)' }}>
+          {label}
+        </span>
         {children}
       </div>
     </div>
@@ -91,7 +75,9 @@ function TextBlock({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
     <div className="space-y-1">
-      <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
+      <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+        {label}
+      </p>
       <p
         className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
         style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
@@ -135,7 +121,9 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [open]);
 
   // Unmount after close animation
@@ -178,11 +166,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
       style={{ pointerEvents: open ? 'auto' : 'none', opacity: open ? 1 : 0, transition: 'opacity 200ms' }}
     >
       {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        style={{ background: 'rgba(0,0,0,0.45)' }}
-        onClick={onClose}
-      />
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.45)' }} onClick={onClose} />
 
       {/* Drawer panel */}
       <div
@@ -240,7 +224,9 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
                 </Row>
               )}
               {checkIn.weightKg == null && checkIn.waistCm == null && (
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>No body metrics logged.</p>
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  No body metrics logged.
+                </p>
               )}
             </div>
           </div>
@@ -309,10 +295,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
           style={{ borderColor: 'var(--color-border)' }}
         >
           {isReviewed ? (
-            <div
-              className="flex items-center gap-1.5 text-xs font-medium"
-              style={{ color: 'var(--color-accent)' }}
-            >
+            <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
               <CheckCircle size={14} />
               Marked as reviewed
             </div>
