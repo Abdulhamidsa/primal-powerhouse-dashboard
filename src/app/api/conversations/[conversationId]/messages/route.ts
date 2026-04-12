@@ -11,10 +11,7 @@ import {
   getRequestIpAddress,
   resolveActor,
 } from '@/lib/chat/conversation';
-import {
-  buildConversationDeepLink,
-  hasFreshConversationPresence,
-} from '@/lib/chat/conversation-presence';
+import { buildConversationDeepLink, hasFreshConversationPresence } from '@/lib/chat/conversation-presence';
 import { sendMessageSchema } from '@/features/client-coach-messaging/schemas/message.schema';
 import {
   getPusherServer,
