@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MessageList } from '@/features/client-coach-messaging/components/MessageList';
 import { MessageComposer } from '@/features/client-coach-messaging/components/MessageComposer';
 import { useConversationMessages, useEnsureConversation } from '@/features/client-coach-messaging/hooks/useMessaging';
@@ -19,6 +19,8 @@ export function ClientScopedChatPanel({ clientId }: { clientId: string }) {
   const [conversation, setConversation] = useState<ConversationSummary | null>(null);
   const [setupError, setSetupError] = useState<string | null>(null);
   const { ensureConversation } = useEnsureConversation();
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const hasScrolledRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -47,6 +49,40 @@ export function ClientScopedChatPanel({ clientId }: { clientId: string }) {
 
   const { messages, isLoading, sendMessage, retryMessage } = useConversationMessages(conversation?.id ?? null);
 
+  // Reset scroll tracking when clientId changes so new conversations always jump to bottom.
+  useEffect(() => {
+    hasScrolledRef.current = false;
+  }, [clientId]);
+
+  // Jump to bottom once messages are loaded for the first time.
+  useEffect(() => {
+    if (hasScrolledRef.current || isLoading || messages.length === 0) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    hasScrolledRef.current = true;
+    const outer = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' });
+      });
+    });
+    return () => window.cancelAnimationFrame(outer);
+  }, [isLoading, messages.length]);
+
+  // Scroll to bottom on new messages if already near bottom.
+  const prevLengthRef = useRef(0);
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || messages.length <= prevLengthRef.current) {
+      prevLengthRef.current = messages.length;
+      return;
+    }
+    prevLengthRef.current = messages.length;
+    const nearBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <= 80;
+    if (nearBottom) {
+      window.requestAnimationFrame(() => viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' }));
+    }
+  }, [messages.length]);
+
   if (setupError) {
     return (
       <div className="p-3">
@@ -59,7 +95,7 @@ export function ClientScopedChatPanel({ clientId }: { clientId: string }) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 p-3" style={{ background: 'var(--color-bg-alt)' }}>
+      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3" style={{ background: 'var(--color-bg-alt)' }}>
         {isLoading ? (
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
             Loading chat...

@@ -143,10 +143,16 @@ export function ChatPanel({
     if (!hasInitialScrolledSet.current.has(convId)) {
       if (messages.length > 0) {
         hasInitialScrolledSet.current.add(convId);
-        const id = window.requestAnimationFrame(() =>
-          viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' }),
-        );
-        return () => window.cancelAnimationFrame(id);
+        // Double-rAF: first rAF lets React commit the new message nodes;
+        // second rAF fires after the browser has measured and painted them,
+        // so scrollHeight is the true full height.
+        const outer = window.requestAnimationFrame(() => {
+          const inner = window.requestAnimationFrame(() =>
+            viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' }),
+          );
+          return inner;
+        });
+        return () => window.cancelAnimationFrame(outer);
       }
       return;
     }
