@@ -22,6 +22,11 @@ function shouldKeepPlaintext(): boolean {
   return process.env.PRIVACY_ENCRYPTION_STRICT !== 'true';
 }
 
+function isMissingProgressPhotoColumnError(error: unknown): boolean {
+  const message = String(error);
+  return message.includes('P2022') && message.includes('weekly_check_ins.progressPhotoFrontUrl');
+}
+
 function serializeCheckIn(record: any) {
   const strengthUpdate =
     decryptOrFallback(record.strengthUpdateEncrypted, `weeklyCheckIn:${record.id}:strengthUpdate`) ??
@@ -62,14 +67,44 @@ export async function GET(request: NextRequest) {
     const weekStartDate = parsedQuery.data.weekStartDate;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
 
-    const checkIn = await (prisma as any).weeklyCheckIn.findUnique({
-      where: {
-        clientId_weekStartDate: {
-          clientId: user.userId,
-          weekStartDate: weekStartUtc,
+    let checkIn: any;
+
+    try {
+      checkIn = await (prisma as any).weeklyCheckIn.findUnique({
+        where: {
+          clientId_weekStartDate: {
+            clientId: user.userId,
+            weekStartDate: weekStartUtc,
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (!isMissingProgressPhotoColumnError(error)) {
+        throw error;
+      }
+
+      // Backward-compatible fallback for databases that have not applied progress photo columns yet.
+      checkIn = await (prisma as any).weeklyCheckIn.findUnique({
+        where: {
+          clientId_weekStartDate: {
+            clientId: user.userId,
+            weekStartDate: weekStartUtc,
+          },
+        },
+        select: {
+          id: true,
+          weekStartDate: true,
+          submittedAt: true,
+          weightKg: true,
+          strengthUpdate: true,
+          blockerText: true,
+          notes: true,
+          strengthUpdateEncrypted: true,
+          blockerTextEncrypted: true,
+          notesEncrypted: true,
+        },
+      });
+    }
 
     if (checkIn && (!checkIn.strengthUpdateEncrypted || !checkIn.blockerTextEncrypted || !checkIn.notesEncrypted)) {
       await (prisma as any).weeklyCheckIn.update({
@@ -113,61 +148,89 @@ export async function PUT(request: NextRequest) {
     const { weekStartDate, payload } = parsed.data;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
 
-    const record = await (prisma as any).weeklyCheckIn.upsert({
-      where: {
-        clientId_weekStartDate: {
-          clientId: user.userId,
-          weekStartDate: weekStartUtc,
+    const updateBase = {
+      submittedAt: new Date(),
+      weightKg: payload.weightKg ?? null,
+      strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
+      blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
+      notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
+      strengthUpdateEncrypted: payload.strengthUpdate
+        ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
+        : null,
+      blockerTextEncrypted: payload.blockerText
+        ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
+        : null,
+      notesEncrypted: payload.notes
+        ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
+        : null,
+    };
+
+    const createBase = {
+      clientId: user.userId,
+      weekStartDate: weekStartUtc,
+      submittedAt: new Date(),
+      weightKg: payload.weightKg ?? null,
+      trainingAdherence: 0,
+      nutritionAdherence: 0,
+      energyRating: 3,
+      stressRating: null,
+      hungerRating: null,
+      digestionRating: null,
+      sleepHours: null,
+      strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
+      blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
+      notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
+      strengthUpdateEncrypted: payload.strengthUpdate
+        ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
+        : null,
+      blockerTextEncrypted: payload.blockerText
+        ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
+        : null,
+      notesEncrypted: payload.notes
+        ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
+        : null,
+    };
+
+    let record: any;
+
+    try {
+      record = await (prisma as any).weeklyCheckIn.upsert({
+        where: {
+          clientId_weekStartDate: {
+            clientId: user.userId,
+            weekStartDate: weekStartUtc,
+          },
         },
-      },
-      update: {
-        submittedAt: new Date(),
-        weightKg: payload.weightKg ?? null,
-        progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
-        progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
-        progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
-        strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
-        blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
-        notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
-        strengthUpdateEncrypted: payload.strengthUpdate
-          ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
-          : null,
-        blockerTextEncrypted: payload.blockerText
-          ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
-          : null,
-        notesEncrypted: payload.notes
-          ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
-          : null,
-      },
-      create: {
-        clientId: user.userId,
-        weekStartDate: weekStartUtc,
-        submittedAt: new Date(),
-        weightKg: payload.weightKg ?? null,
-        trainingAdherence: 0,
-        nutritionAdherence: 0,
-        energyRating: 3,
-        stressRating: null,
-        hungerRating: null,
-        digestionRating: null,
-        sleepHours: null,
-        progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
-        progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
-        progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
-        strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
-        blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
-        notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
-        strengthUpdateEncrypted: payload.strengthUpdate
-          ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
-          : null,
-        blockerTextEncrypted: payload.blockerText
-          ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
-          : null,
-        notesEncrypted: payload.notes
-          ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
-          : null,
-      },
-    });
+        update: {
+          ...updateBase,
+          progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
+          progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
+          progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
+        },
+        create: {
+          ...createBase,
+          progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
+          progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
+          progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
+        },
+      });
+    } catch (error) {
+      if (!isMissingProgressPhotoColumnError(error)) {
+        throw error;
+      }
+
+      // Backward-compatible fallback for databases that have not applied progress photo columns yet.
+      record = await (prisma as any).weeklyCheckIn.upsert({
+        where: {
+          clientId_weekStartDate: {
+            clientId: user.userId,
+            weekStartDate: weekStartUtc,
+          },
+        },
+        update: updateBase,
+        create: createBase,
+      });
+    }
 
     return jsonWithCache({
       success: true,
