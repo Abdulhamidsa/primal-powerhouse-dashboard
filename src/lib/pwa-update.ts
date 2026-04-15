@@ -31,6 +31,23 @@ export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegis
   }
 }
 
+export async function registerServiceWorker(scriptUrl = '/sw.js'): Promise<ServiceWorkerRegistration | null> {
+  if (typeof window === 'undefined') return null;
+  if (!('serviceWorker' in navigator)) return null;
+
+  try {
+    const existingRegistration = await navigator.serviceWorker.getRegistration();
+    if (existingRegistration) {
+      return existingRegistration;
+    }
+
+    return await navigator.serviceWorker.register(scriptUrl);
+  } catch (error) {
+    console.error('Failed to register service worker:', error);
+    return null;
+  }
+}
+
 export async function checkIfUpdateIsAvailable(): Promise<boolean> {
   const registration = await getServiceWorkerRegistration();
   if (!registration) return false;

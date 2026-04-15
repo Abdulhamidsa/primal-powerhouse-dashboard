@@ -10,6 +10,7 @@ import { useDailyCheckInInsights, useDailyCheckInToday } from '@/features/daily-
 import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
+import { TodayMissionCard, useTodayMission } from '@/features/today-mission';
 
 export default function UserDashboardPage() {
   const { user, error, isLoading } = useUserData();
@@ -20,6 +21,7 @@ export default function UserDashboardPage() {
   const { status: weeklyStatus } = useWeeklyCheckInCurrentWeek();
   const { summary: adherenceSummary } = useMealAdherenceToday();
   const { unreadTotal } = useChatUnread();
+  const { summary: todayMission, isLoading: todayMissionLoading, error: todayMissionError } = useTodayMission();
 
   useMotivationNotification(user?.motivationalMessage);
 
@@ -144,6 +146,8 @@ export default function UserDashboardPage() {
     },
   ];
 
+  const primaryActions = todayActions.slice(0, 4);
+
   return (
     <div className="px-4 pb-6 md:px-5">
       <div className="mx-auto w-full max-w-xl space-y-5">
@@ -184,54 +188,62 @@ export default function UserDashboardPage() {
               </div>
             )}
           </div>
-
-          {/* Coach message — flat row, no card */}
-          <div className="mt-4 flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-              <MessageSquare size={15} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-                Coach
-              </p>
-              <p className="mt-1 text-[13px] leading-5 text-[var(--color-text-muted)]">{coachMessage}</p>
-            </div>
-          </div>
         </section>
 
-        {/* Data-driven action cards */}
-        <section className="flex flex-col gap-2">
-          {todayActions.map(action => {
-            const Icon = action.icon;
+        <section>
+          <TodayMissionCard
+            summary={todayMission}
+            isLoading={todayMissionLoading}
+            errorMessage={todayMissionError?.message ?? null}
+          />
+        </section>
 
-            return (
-              <Link key={action.key} href={action.href}>
-                <article
-                  className={`flex items-center gap-3.5 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-transform duration-150 active:scale-[0.99]${action.done ? ' opacity-70' : ''}`}
-                >
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${action.iconBg}`}>
-                    <Icon size={18} className={action.iconColor} />
-                  </div>
+        <section className="space-y-3">
+          <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-max gap-2">
+              {primaryActions.map(action => {
+                const Icon = action.icon;
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-foreground">{action.title}</h3>
-                      {action.badge && (
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${action.badgeClass}`}
-                        >
-                          {action.badge}
-                        </span>
-                      )}
+                return (
+                  <Link
+                    key={action.key}
+                    href={action.href}
+                    className="group min-w-[116px] rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-transform duration-150 active:scale-[0.98]"
+                  >
+                    <div className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${action.iconBg}`}>
+                      <Icon size={17} className={action.iconColor} />
                     </div>
-                    <p className="mt-0.5 text-[12px] leading-4 text-[var(--color-text-muted)]">{action.description}</p>
-                  </div>
 
-                  <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)] opacity-40" />
-                </article>
+                    <p className="mt-3 text-[12px] font-semibold leading-4 text-[var(--color-text)]">{action.title}</p>
+                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                      {action.badge ?? action.description}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          <section className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5">
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+                <MessageSquare size={14} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                  Coach
+                </p>
+                <p className="truncate text-[12px] text-[var(--color-text-muted)]">{coachMessage}</p>
+              </div>
+              <Link
+                href="/user/chat"
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-accent-translucent)] px-2.5 py-1 text-[10px] font-semibold text-[var(--color-text)]"
+              >
+                Reply
+                <ChevronRight size={11} />
               </Link>
-            );
-          })}
+            </div>
+          </section>
         </section>
       </div>
     </div>

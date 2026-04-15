@@ -1,19 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
+import { registerServiceWorker } from '@/lib/pwa-update';
 
 export default function PWAInstaller() {
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then(registration => {
+    void registerServiceWorker().then(registration => {
+      if (registration) {
         console.log('Service Worker registered:', registration.scope);
-      })
-      .catch(error => {
-        console.error('Service Worker registration failed:', error);
-      });
+      }
+    });
   }, []);
 
   return null;
