@@ -78,39 +78,39 @@ export function buildTodayMissionSummary(input: TodayMissionInput): TodayMission
 
   let badgeLabel = 'Set up today';
   let badgeTone: TodayMissionTone = 'neutral';
-  let headline = 'Build your meal plan';
-  let description = 'Choose meals in My Plan to unlock calories and macros for today.';
-  let nextActionLabel = 'Open My Plan';
+  let headline = 'Plan today';
+  let description = 'Choose meals to start.';
+  let nextActionLabel = 'Open plan';
   let nextActionHref = '/user/my-plan';
 
   if (hasPlan) {
     if (completionPercentage === 100 && input.dailyCheckInComplete) {
       badgeLabel = 'On track';
       badgeTone = 'good';
-      headline = 'You are on track today';
-      description = 'Your meal plan is complete and your daily check-in is done.';
-      nextActionLabel = input.unreadCount > 0 ? 'Read coach message' : 'Review My Plan';
+      headline = 'All set';
+      description = 'Plan done. Check-in done.';
+      nextActionLabel = input.unreadCount > 0 ? 'Read coach' : 'Review plan';
       nextActionHref = input.unreadCount > 0 ? '/user/chat' : '/user/my-plan';
     } else if (completionPercentage >= 70) {
       badgeLabel = 'Mostly on track';
       badgeTone = 'warn';
-      headline = 'You are building momentum';
-      description = `${completedMeals} of ${totalMeals} meals are done. Finish the rest to lock in today's targets.`;
-      nextActionLabel = 'Finish My Plan';
+      headline = 'Almost there';
+      description = `${completedMeals}/${totalMeals} meals done.`;
+      nextActionLabel = 'Finish plan';
       nextActionHref = '/user/my-plan';
     } else if (completedMeals > 0) {
       badgeLabel = 'Needs attention';
       badgeTone = 'warn';
-      headline = 'Keep the plan moving';
-      description = `${completedMeals} of ${totalMeals} meals are complete. Focus on the next meal to stay close to target.`;
-      nextActionLabel = 'Open My Plan';
+      headline = 'Keep going';
+      description = `${completedMeals}/${totalMeals} meals done.`;
+      nextActionLabel = 'Open plan';
       nextActionHref = '/user/my-plan';
     } else {
       badgeLabel = 'Needs attention';
       badgeTone = 'danger';
-      headline = 'Start with your first meal';
-      description = 'Nothing is marked complete yet. A single meal gets the plan moving again.';
-      nextActionLabel = 'Start My Plan';
+      headline = 'Start now';
+      description = 'No meals done yet.';
+      nextActionLabel = 'Start plan';
       nextActionHref = '/user/my-plan';
     }
   }
@@ -143,9 +143,9 @@ export function buildTodayMissionSummary(input: TodayMissionInput): TodayMission
   if (!hasPlan) {
     badgeLabel = 'No plan';
     badgeTone = 'neutral';
-    headline = 'Build your meal plan';
-    description = 'Choose meals in My Plan to unlock calories, macros, and progress.';
-    nextActionLabel = 'Open My Plan';
+    headline = 'Plan today';
+    description = 'Pick meals to begin.';
+    nextActionLabel = 'Open plan';
     nextActionHref = '/user/my-plan';
   }
 

@@ -22,9 +22,64 @@ function shouldKeepPlaintext(): boolean {
   return process.env.PRIVACY_ENCRYPTION_STRICT !== 'true';
 }
 
-function isMissingProgressPhotoColumnError(error: unknown): boolean {
-  const message = String(error);
-  return message.includes('P2022') && message.includes('weekly_check_ins.progressPhotoFrontUrl');
+let progressPhotoColumnsAvailablePromise: Promise<boolean> | null = null;
+
+async function hasProgressPhotoColumns(): Promise<boolean> {
+  if (progressPhotoColumnsAvailablePromise) {
+    return progressPhotoColumnsAvailablePromise;
+  }
+
+  progressPhotoColumnsAvailablePromise = (async () => {
+    try {
+      const rows = await prisma.$queryRawUnsafe<Array<{ column_name: string }>>(
+        `
+          SELECT column_name
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name = 'weekly_check_ins'
+            AND column_name IN ('progressPhotoFrontUrl', 'progressPhotoSideUrl', 'progressPhotoBackUrl')
+        `,
+      );
+
+      const columns = new Set(rows.map(row => row.column_name));
+      return (
+        columns.has('progressPhotoFrontUrl') &&
+        columns.has('progressPhotoSideUrl') &&
+        columns.has('progressPhotoBackUrl')
+      );
+    } catch (error) {
+      console.warn('[WEEKLY_CHECKIN] Could not verify progress photo columns, falling back to no-photo mode:', error);
+      return false;
+    }
+  })();
+
+  return progressPhotoColumnsAvailablePromise;
+}
+
+function buildCheckInSelect(includePhotos: boolean) {
+  const baseSelect = {
+    id: true,
+    weekStartDate: true,
+    submittedAt: true,
+    weightKg: true,
+    strengthUpdate: true,
+    blockerText: true,
+    notes: true,
+    strengthUpdateEncrypted: true,
+    blockerTextEncrypted: true,
+    notesEncrypted: true,
+  };
+
+  if (!includePhotos) {
+    return baseSelect;
+  }
+
+  return {
+    ...baseSelect,
+    progressPhotoFrontUrl: true,
+    progressPhotoSideUrl: true,
+    progressPhotoBackUrl: true,
+  };
 }
 
 function serializeCheckIn(record: any) {
@@ -66,45 +121,18 @@ export async function GET(request: NextRequest) {
 
     const weekStartDate = parsedQuery.data.weekStartDate;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
+    const includePhotos = await hasProgressPhotoColumns();
+    const select = buildCheckInSelect(includePhotos);
 
-    let checkIn: any;
-
-    try {
-      checkIn = await (prisma as any).weeklyCheckIn.findUnique({
-        where: {
-          clientId_weekStartDate: {
-            clientId: user.userId,
-            weekStartDate: weekStartUtc,
-          },
+    const checkIn = await (prisma as any).weeklyCheckIn.findUnique({
+      where: {
+        clientId_weekStartDate: {
+          clientId: user.userId,
+          weekStartDate: weekStartUtc,
         },
-      });
-    } catch (error) {
-      if (!isMissingProgressPhotoColumnError(error)) {
-        throw error;
-      }
-
-      // Backward-compatible fallback for databases that have not applied progress photo columns yet.
-      checkIn = await (prisma as any).weeklyCheckIn.findUnique({
-        where: {
-          clientId_weekStartDate: {
-            clientId: user.userId,
-            weekStartDate: weekStartUtc,
-          },
-        },
-        select: {
-          id: true,
-          weekStartDate: true,
-          submittedAt: true,
-          weightKg: true,
-          strengthUpdate: true,
-          blockerText: true,
-          notes: true,
-          strengthUpdateEncrypted: true,
-          blockerTextEncrypted: true,
-          notesEncrypted: true,
-        },
-      });
-    }
+      },
+      select,
+    });
 
     if (checkIn && (!checkIn.strengthUpdateEncrypted || !checkIn.blockerTextEncrypted || !checkIn.notesEncrypted)) {
       await (prisma as any).weeklyCheckIn.update({
@@ -118,6 +146,7 @@ export async function GET(request: NextRequest) {
             : null,
           notesEncrypted: checkIn.notes ? encryptField(checkIn.notes, `weeklyCheckIn:${checkIn.id}:notes`) : null,
         },
+        select,
       });
     }
 
@@ -147,6 +176,8 @@ export async function PUT(request: NextRequest) {
 
     const { weekStartDate, payload } = parsed.data;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
+    const includePhotos = await hasProgressPhotoColumns();
+    const select = buildCheckInSelect(includePhotos);
 
     const updateBase = {
       submittedAt: new Date(),
@@ -191,46 +222,35 @@ export async function PUT(request: NextRequest) {
         : null,
     };
 
-    let record: any;
-
-    try {
-      record = await (prisma as any).weeklyCheckIn.upsert({
-        where: {
-          clientId_weekStartDate: {
-            clientId: user.userId,
-            weekStartDate: weekStartUtc,
-          },
-        },
-        update: {
+    const updateData = includePhotos
+      ? {
           ...updateBase,
           progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
           progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
           progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
-        },
-        create: {
+        }
+      : updateBase;
+
+    const createData = includePhotos
+      ? {
           ...createBase,
           progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
           progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
           progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
-        },
-      });
-    } catch (error) {
-      if (!isMissingProgressPhotoColumnError(error)) {
-        throw error;
-      }
+        }
+      : createBase;
 
-      // Backward-compatible fallback for databases that have not applied progress photo columns yet.
-      record = await (prisma as any).weeklyCheckIn.upsert({
-        where: {
-          clientId_weekStartDate: {
-            clientId: user.userId,
-            weekStartDate: weekStartUtc,
-          },
+    const record = await (prisma as any).weeklyCheckIn.upsert({
+      where: {
+        clientId_weekStartDate: {
+          clientId: user.userId,
+          weekStartDate: weekStartUtc,
         },
-        update: updateBase,
-        create: createBase,
-      });
-    }
+      },
+      update: updateData,
+      create: createData,
+      select,
+    });
 
     return jsonWithCache({
       success: true,

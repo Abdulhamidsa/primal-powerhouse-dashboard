@@ -70,51 +70,76 @@ function MacroIcon({ label }: { label: string }) {
   return <Droplets size={14} />;
 }
 
+function InfoTip({ hint }: { hint: string }) {
+  return (
+    <button
+      type="button"
+      title={hint}
+      aria-label={hint}
+      className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-border)] text-[10px] font-semibold text-[var(--color-text-muted)]"
+    >
+      i
+    </button>
+  );
+}
+
 function MacroBar({
   label,
   actual,
   target,
-  remaining,
   unit,
   progress,
 }: {
   label: string;
   actual: number;
   target: number;
-  remaining: number;
   unit: string;
   progress: number;
 }) {
-  const width = Math.max(6, Math.min(100, progress));
+  const width = Math.max(0, Math.min(100, progress));
 
   return (
-    <div className="min-w-[168px] rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3.5">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-            <MacroIcon label={label} />
-          </span>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
-            {label}
-          </p>
-        </div>
-        <p className="text-[10px] font-medium text-[var(--color-text-muted)]">{formatMissionDelta(remaining, unit)}</p>
+    <div className="min-w-0 text-center">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">{label}</p>
+        <button type="button" title={`${label}: ${actual}${unit} of ${target}${unit}`} aria-label={`${label} details`}>
+          <MacroIcon label={label} />
+        </button>
       </div>
 
-      <p className="mt-3 text-base font-semibold tracking-tight text-[var(--color-text)]">
-        {actual}
-        {unit}
-        <span className="ml-1 text-[11px] font-normal text-[var(--color-text-muted)]">
-          / {target}
-          {unit}
-        </span>
-      </p>
-
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--color-border)]/50">
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[var(--color-border)]/55">
         <div
           className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-300"
           style={{ width: `${width}%` }}
         />
+      </div>
+
+      <p className="mt-1 text-[13px] font-semibold text-[var(--color-text)]">
+        {actual}
+      </p>
+
+      <p className="text-[10px] text-[var(--color-text-muted)]">/{target}{unit}</p>
+    </div>
+  );
+}
+
+function CaloriesOrbit({ actual, target, unit, progress }: { actual: number; target: number; unit: string; progress: number }) {
+  const safeProgress = Math.max(0, Math.min(100, progress));
+
+  return (
+    <div
+      className="relative grid h-[138px] w-[138px] place-items-center rounded-full"
+      style={{
+        background: `conic-gradient(var(--color-accent) ${safeProgress}%, color-mix(in srgb, var(--color-border) 82%, transparent) ${safeProgress}% 100%)`,
+      }}
+    >
+      <div className="grid h-[116px] w-[116px] place-items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Calories</p>
+        <p className="mt-0.5 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[var(--color-text)]">{actual}</p>
+        <p className="text-[11px] text-[var(--color-text-muted)]">
+          / {target}
+          {unit}
+        </p>
       </div>
     </div>
   );
@@ -137,12 +162,14 @@ export function TodayMissionCard({
     return (
       <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-5">
         <p className="text-sm font-semibold text-[var(--color-text)]">Today&apos;s Mission</p>
-        <p className="mt-2 text-sm text-[var(--color-text-muted)]">Could not load progress right now. {errorMessage}</p>
+        <p className="mt-2 text-sm text-[var(--color-text-muted)]">Could not load progress. {errorMessage}</p>
       </section>
     );
   }
 
   const badgeStyles = TONE_STYLES[summary.badgeTone];
+  const caloriesMetric = summary.macros.find(metric => metric.key === 'calories');
+  const macroMetrics = summary.macros.filter(metric => metric.key !== 'calories');
 
   return (
     <section className="relative overflow-hidden rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-5">
@@ -165,13 +192,13 @@ export function TodayMissionCard({
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
                 {summary.title}
               </p>
-              <h2 className="mt-1 text-[22px] font-semibold leading-[1.08] tracking-[-0.02em] text-[var(--color-text)]">
+              <h2 className="mt-1 text-[19px] font-semibold leading-[1.08] tracking-[-0.02em] text-[var(--color-text)]">
                 {summary.headline}
               </h2>
             </div>
           </div>
 
-          <p className="mt-3 max-w-[52ch] text-sm leading-5 text-[var(--color-text-muted)]">{summary.description}</p>
+          <p className="mt-2 max-w-[34ch] text-[12px] leading-4 text-[var(--color-text-muted)]">{summary.description}</p>
         </div>
 
         <span
@@ -214,18 +241,67 @@ export function TodayMissionCard({
         </div>
       </div>
 
-      <div className="relative mt-4 flex gap-2.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {summary.macros.map(metric => (
-          <MacroBar
-            key={metric.key}
-            label={metric.label}
-            actual={metric.actual}
-            target={metric.target}
-            remaining={metric.remaining}
-            unit={metric.unit}
-            progress={metric.progress}
-          />
-        ))}
+      <div className="relative mt-4 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Nutrition</p>
+          </div>
+          {caloriesMetric ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-surface)] px-2.5 py-1 text-[10px] font-medium text-[var(--color-text-muted)]">
+              <Flame size={11} className="text-[var(--color-accent)]" />
+              {formatMissionDelta(caloriesMetric.remaining, caloriesMetric.unit)}
+            </span>
+          ) : null}
+        </div>
+
+        {caloriesMetric ? (
+          <div className="mt-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+            <div className="flex items-center justify-between gap-3">
+              <CaloriesOrbit
+                actual={caloriesMetric.actual}
+                target={caloriesMetric.target}
+                unit={caloriesMetric.unit}
+                progress={caloriesMetric.progress}
+              />
+
+              <div className="min-w-0 flex-1 space-y-3">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Consumed</p>
+                    <InfoTip hint="Calories from meals marked complete today." />
+                  </div>
+                  <p className="mt-1 text-xl font-semibold leading-none tracking-tight text-[var(--color-text)]">
+                    {caloriesMetric.actual}
+                    <span className="ml-1 text-xs font-medium text-[var(--color-text-muted)]">kcal</span>
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Target</p>
+                    <InfoTip hint="Your meal plan target for today." />
+                  </div>
+                  <p className="mt-1 text-xl font-semibold leading-none tracking-tight text-[var(--color-text)]">
+                    {caloriesMetric.target}
+                    <span className="ml-1 text-xs font-medium text-[var(--color-text-muted)]">kcal</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          {macroMetrics.map(metric => (
+            <MacroBar
+              key={metric.key}
+              label={metric.label}
+              actual={metric.actual}
+              target={metric.target}
+              unit={metric.unit}
+              progress={metric.progress}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="relative mt-4 flex items-center justify-between gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2.5">
@@ -234,8 +310,9 @@ export function TodayMissionCard({
         <Link
           href={summary.nextActionHref}
           className="inline-flex items-center gap-1 rounded-full bg-[var(--color-accent-translucent)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-accent-muted)]"
+          title={summary.nextActionLabel}
         >
-          Open
+          Go
           <ArrowRight size={12} />
         </Link>
       </div>
@@ -244,6 +321,7 @@ export function TodayMissionCard({
         <Link
           href="/user/chat"
           className="relative mt-3 flex items-center justify-between gap-3 rounded-full border border-[var(--color-border)] px-3.5 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-alt)]"
+          title="Open coach chat"
         >
           <span className="inline-flex items-center gap-2">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">

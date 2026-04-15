@@ -72,7 +72,7 @@ export default function UserDashboardPage() {
     {
       key: 'daily',
       title: 'Daily Check-In',
-      description: isDailyDone ? 'Completed for today.' : 'Log your daily update.',
+      description: isDailyDone ? 'Done' : 'Due',
       href: '/user/check-ins',
       icon: isDailyDone ? CheckCircle2 : ClipboardCheck,
       iconBg: isDailyDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
@@ -88,10 +88,10 @@ export default function UserDashboardPage() {
       title: 'Weekly Check-In',
       description:
         weeklyStatus === 'completed'
-          ? 'Submitted this week.'
+          ? 'Done'
           : weeklyStatus === 'overdue'
-            ? 'Overdue — fill it in now.'
-            : 'Due this week.',
+            ? 'Overdue'
+            : 'Due',
       href: '/user/check-ins',
       icon: weeklyStatus === 'completed' ? CheckCircle2 : ClipboardCheck,
       iconBg:
@@ -118,7 +118,7 @@ export default function UserDashboardPage() {
     {
       key: 'meals',
       title: "Today's Meals",
-      description: totalMeals > 0 ? `${completedMeals} of ${totalMeals} meals marked done.` : 'No meals selected yet.',
+      description: totalMeals > 0 ? `${completedMeals}/${totalMeals}` : 'None',
       href: '/user/my-plan',
       icon: isMealsDone ? CheckCircle2 : Utensils,
       iconBg: isMealsDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
@@ -134,8 +134,8 @@ export default function UserDashboardPage() {
       title: 'Message Coach',
       description:
         unreadTotal > 0
-          ? `You have ${unreadTotal} unread message${unreadTotal > 1 ? 's' : ''}.`
-          : 'Share progress or ask a question.',
+          ? `${unreadTotal} new`
+          : 'Open',
       href: '/user/chat',
       icon: MessageSquare,
       iconBg: unreadTotal > 0 ? 'bg-[var(--color-accent-translucent)]' : 'bg-[var(--color-bg-alt)]',
@@ -209,15 +209,14 @@ export default function UserDashboardPage() {
                     key={action.key}
                     href={action.href}
                     className="group min-w-[116px] rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-transform duration-150 active:scale-[0.98]"
+                    title={`${action.title} ${action.description}`}
                   >
                     <div className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${action.iconBg}`}>
                       <Icon size={17} className={action.iconColor} />
                     </div>
 
                     <p className="mt-3 text-[12px] font-semibold leading-4 text-[var(--color-text)]">{action.title}</p>
-                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                      {action.badge ?? action.description}
-                    </p>
+                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">{action.badge ?? action.description}</p>
                   </Link>
                 );
               })}
