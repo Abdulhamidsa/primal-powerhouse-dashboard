@@ -114,16 +114,27 @@ function MacroBar({
         />
       </div>
 
-      <p className="mt-1 text-[13px] font-semibold text-[var(--color-text)]">
-        {actual}
-      </p>
+      <p className="mt-1 text-[13px] font-semibold text-[var(--color-text)]">{actual}</p>
 
-      <p className="text-[10px] text-[var(--color-text-muted)]">/{target}{unit}</p>
+      <p className="text-[10px] text-[var(--color-text-muted)]">
+        /{target}
+        {unit}
+      </p>
     </div>
   );
 }
 
-function CaloriesOrbit({ actual, target, unit, progress }: { actual: number; target: number; unit: string; progress: number }) {
+function CaloriesOrbit({
+  actual,
+  target,
+  unit,
+  progress,
+}: {
+  actual: number;
+  target: number;
+  unit: string;
+  progress: number;
+}) {
   const safeProgress = Math.max(0, Math.min(100, progress));
 
   return (
@@ -135,7 +146,9 @@ function CaloriesOrbit({ actual, target, unit, progress }: { actual: number; tar
     >
       <div className="grid h-[116px] w-[116px] place-items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Calories</p>
-        <p className="mt-0.5 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[var(--color-text)]">{actual}</p>
+        <p className="mt-0.5 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[var(--color-text)]">
+          {actual}
+        </p>
         <p className="text-[11px] text-[var(--color-text-muted)]">
           / {target}
           {unit}
@@ -198,7 +211,9 @@ export function TodayMissionCard({
             </div>
           </div>
 
-          <p className="mt-2 max-w-[34ch] text-[12px] leading-4 text-[var(--color-text-muted)]">{summary.description}</p>
+          <p className="mt-2 max-w-[34ch] text-[12px] leading-4 text-[var(--color-text-muted)]">
+            {summary.description}
+          </p>
         </div>
 
         <span
@@ -244,7 +259,9 @@ export function TodayMissionCard({
       <div className="relative mt-4 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3.5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Nutrition</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
+              Nutrition
+            </p>
           </div>
           {caloriesMetric ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-surface)] px-2.5 py-1 text-[10px] font-medium text-[var(--color-text-muted)]">
@@ -267,7 +284,9 @@ export function TodayMissionCard({
               <div className="min-w-0 flex-1 space-y-3">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Consumed</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                      Consumed
+                    </p>
                     <InfoTip hint="Calories from meals marked complete today." />
                   </div>
                   <p className="mt-1 text-xl font-semibold leading-none tracking-tight text-[var(--color-text)]">
@@ -277,7 +296,9 @@ export function TodayMissionCard({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Target</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                      Target
+                    </p>
                     <InfoTip hint="Your meal plan target for today." />
                   </div>
                   <p className="mt-1 text-xl font-semibold leading-none tracking-tight text-[var(--color-text)]">

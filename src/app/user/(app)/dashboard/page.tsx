@@ -86,12 +86,7 @@ export default function UserDashboardPage() {
     {
       key: 'weekly',
       title: 'Weekly Check-In',
-      description:
-        weeklyStatus === 'completed'
-          ? 'Done'
-          : weeklyStatus === 'overdue'
-            ? 'Overdue'
-            : 'Due',
+      description: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
       href: '/user/check-ins',
       icon: weeklyStatus === 'completed' ? CheckCircle2 : ClipboardCheck,
       iconBg:
@@ -132,10 +127,7 @@ export default function UserDashboardPage() {
     {
       key: 'chat',
       title: 'Message Coach',
-      description:
-        unreadTotal > 0
-          ? `${unreadTotal} new`
-          : 'Open',
+      description: unreadTotal > 0 ? `${unreadTotal} new` : 'Open',
       href: '/user/chat',
       icon: MessageSquare,
       iconBg: unreadTotal > 0 ? 'bg-[var(--color-accent-translucent)]' : 'bg-[var(--color-bg-alt)]',
@@ -216,7 +208,9 @@ export default function UserDashboardPage() {
                     </div>
 
                     <p className="mt-3 text-[12px] font-semibold leading-4 text-[var(--color-text)]">{action.title}</p>
-                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">{action.badge ?? action.description}</p>
+                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                      {action.badge ?? action.description}
+                    </p>
                   </Link>
                 );
               })}
