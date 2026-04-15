@@ -2,6 +2,7 @@ import type { MealMacroTotals } from '@/features/meals/types/mealSelection.types
 import type {
   TodayMissionInput,
   TodayMissionMacroProgress,
+  TodayMissionSignal,
   TodayMissionSummary,
   TodayMissionTone,
 } from '../types/todayMission.types';
@@ -114,7 +115,7 @@ export function buildTodayMissionSummary(input: TodayMissionInput): TodayMission
     }
   }
 
-  const signals = [
+  const signals: TodayMissionSignal[] = [
     {
       label: 'Meals',
       value: hasPlan ? `${completedMeals}/${totalMeals} done` : 'No plan yet',
