@@ -9,6 +9,8 @@ export type AdminWeeklyCheckInListItem = {
   id: string;
   weekStartDate: string;
   submittedAt: string;
+  reviewed: boolean;
+  reviewedAt: string | null;
   weightKg: number | null;
   progressPhotoFrontUrl: string | null;
   progressPhotoSideUrl: string | null;

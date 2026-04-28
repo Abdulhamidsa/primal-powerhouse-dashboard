@@ -9,6 +9,10 @@ import NewAddClientModal from '@/components/NewAddClientModal';
 import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
 import { useClientMeals } from '@/hooks/useClientMeals';
 import {
+  useAdminClientDailyCheckIns,
+  useAdminDailyCheckInActions,
+} from '@/features/daily-checkin/hooks/useAdminDailyCheckIns';
+import {
   useAdminClientWeeklyCheckIns,
   useAdminWeeklyCheckInActions,
 } from '@/features/weekly-checkin/hooks/useAdminWeeklyCheckIns';
@@ -120,8 +124,14 @@ export default function ClientsPage() {
     isLoading: isWeeklyCheckInsLoading,
     error: weeklyCheckInsError,
   } = useAdminClientWeeklyCheckIns(selectedClientId ?? '');
+  const {
+    data: dailyCheckIns,
+    isLoading: isDailyCheckInsLoading,
+    error: dailyCheckInsError,
+  } = useAdminClientDailyCheckIns(selectedClientId ?? '');
 
   const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(selectedClientId ?? '');
+  const { markReviewed: markDailyReviewed } = useAdminDailyCheckInActions(selectedClientId ?? '');
 
   const summaryWeightKg = useMemo(() => {
     if (!weeklyCheckIns?.checkIns?.length) return client?.currentWeight ?? null;
@@ -525,11 +535,15 @@ export default function ClientsPage() {
 
                 {activeTab === 'check-ins' ? (
                   <CheckInsTabContent
-                    data={weeklyCheckIns}
-                    isLoading={isWeeklyCheckInsLoading}
-                    isError={Boolean(weeklyCheckInsError)}
-                    onDeleteAction={handleDeleteCheckIn}
-                    onResetAction={handleResetCheckIns}
+                    weeklyData={weeklyCheckIns}
+                    dailyData={dailyCheckIns}
+                    isWeeklyLoading={isWeeklyCheckInsLoading}
+                    isDailyLoading={isDailyCheckInsLoading}
+                    isWeeklyError={Boolean(weeklyCheckInsError)}
+                    isDailyError={Boolean(dailyCheckInsError)}
+                    onDeleteWeeklyAction={handleDeleteCheckIn}
+                    onResetWeeklyAction={handleResetCheckIns}
+                    onMarkDailyReviewedAction={markDailyReviewed}
                   />
                 ) : null}
 

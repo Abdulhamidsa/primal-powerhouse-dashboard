@@ -4,7 +4,7 @@ import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { useUserData } from '@/hooks/useUserData';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, ChevronRight, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
+import { CheckCircle2, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
 import { SkeletonDashboard } from '@/components/Skeletons';
 import { useDailyCheckInInsights, useDailyCheckInToday } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
@@ -172,6 +172,11 @@ export default function UserDashboardPage() {
                   </div>
                 )}
               </div>
+
+              <div className="mt-3 max-w-[42ch] rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/75 px-3 py-2.5 backdrop-blur-[2px]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">Coach</p>
+                <p className="mt-1 text-[12px] leading-5 text-[var(--color-text)]">{coachMessage}</p>
+              </div>
             </div>
 
             {greeting.icon && (
@@ -216,27 +221,6 @@ export default function UserDashboardPage() {
               })}
             </div>
           </div>
-
-          <section className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-                <MessageSquare size={14} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-                  Coach
-                </p>
-                <p className="truncate text-[12px] text-[var(--color-text-muted)]">{coachMessage}</p>
-              </div>
-              <Link
-                href="/user/chat"
-                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-accent-translucent)] px-2.5 py-1 text-[10px] font-semibold text-[var(--color-text)]"
-              >
-                Reply
-                <ChevronRight size={11} />
-              </Link>
-            </div>
-          </section>
         </section>
       </div>
     </div>

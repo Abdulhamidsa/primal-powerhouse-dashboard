@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, Loader2, Upload, X } from 'lucide-react';
@@ -58,16 +58,17 @@ function toFormValues(record: ReturnType<typeof useWeeklyCheckInCurrentWeek>['ch
 function PhotoUploadTile({
   label,
   value,
-  isUploading,
   onUpload,
   onClear,
 }: {
   label: string;
   value: string;
-  isUploading: boolean;
   onUpload: (file: File) => Promise<void>;
   onClear: () => void;
 }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div
       className="space-y-2 rounded-xl border p-3"
@@ -117,6 +118,7 @@ function PhotoUploadTile({
         {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
         {isUploading ? 'Uploading...' : value ? 'Replace photo' : 'Upload photo'}
         <input
+          ref={fileInputRef}
           type="file"
           accept="image/*"
           className="hidden"
@@ -124,8 +126,16 @@ function PhotoUploadTile({
           onChange={async event => {
             const file = event.target.files?.[0];
             if (!file) return;
-            await onUpload(file);
-            event.currentTarget.value = '';
+
+            try {
+              setIsUploading(true);
+              await onUpload(file);
+            } finally {
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+              setIsUploading(false);
+            }
           }}
         />
       </label>
@@ -137,7 +147,7 @@ export function WeeklyCheckInFlow() {
   const router = useRouter();
   const { checkIn, weekStartDate, isLoading } = useWeeklyCheckInCurrentWeek();
   const { submit } = useUpsertWeeklyCheckIn();
-  const { upload, isUploading } = useWeeklyCheckInPhotoUpload();
+  const { upload } = useWeeklyCheckInPhotoUpload();
   const { history } = useDailyCheckInInsights();
 
   const lastWeekBaseline = useMemo(() => {
@@ -178,7 +188,7 @@ export function WeeklyCheckInFlow() {
     return weeklyCheckInPayloadSchema.safeParse(payload);
   }, [formValues]);
 
-  const submitDisabled = !parsedPayload.success || isSubmitting || isUploading;
+  const submitDisabled = !parsedPayload.success || isSubmitting;
 
   useEffect(() => {
     if (!successDialogOpen) return;
@@ -297,21 +307,18 @@ export function WeeklyCheckInFlow() {
                 <PhotoUploadTile
                   label="Front"
                   value={formValues.progressPhotoFrontUrl}
-                  isUploading={isUploading}
                   onUpload={file => uploadPhoto('progressPhotoFrontUrl', file)}
                   onClear={() => setFormValues(current => ({ ...current, progressPhotoFrontUrl: '' }))}
                 />
                 <PhotoUploadTile
                   label="Side"
                   value={formValues.progressPhotoSideUrl}
-                  isUploading={isUploading}
                   onUpload={file => uploadPhoto('progressPhotoSideUrl', file)}
                   onClear={() => setFormValues(current => ({ ...current, progressPhotoSideUrl: '' }))}
                 />
                 <PhotoUploadTile
                   label="Back"
                   value={formValues.progressPhotoBackUrl}
-                  isUploading={isUploading}
                   onUpload={file => uploadPhoto('progressPhotoBackUrl', file)}
                   onClear={() => setFormValues(current => ({ ...current, progressPhotoBackUrl: '' }))}
                 />
@@ -367,7 +374,7 @@ export function WeeklyCheckInFlow() {
               type="button"
               variant="outline"
               onClick={() => setStep(current => Math.max(1, current - 1))}
-              disabled={step === 1 || isSubmitting || isUploading}
+                disabled={step === 1 || isSubmitting}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
@@ -377,7 +384,7 @@ export function WeeklyCheckInFlow() {
               <Button
                 type="button"
                 onClick={() => setStep(current => Math.min(TOTAL_STEPS, current + 1))}
-                disabled={isSubmitting || isUploading}
+                disabled={isSubmitting}
               >
                 Next
                 <ArrowRight className="ml-2 h-4 w-4" />

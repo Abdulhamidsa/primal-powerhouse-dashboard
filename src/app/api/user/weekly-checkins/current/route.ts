@@ -22,9 +22,26 @@ function shouldKeepPlaintext(): boolean {
   return process.env.PRIVACY_ENCRYPTION_STRICT !== 'true';
 }
 
-let progressPhotoColumnsAvailablePromise: Promise<boolean> | null = null;
+function encryptOrKeepPlaintext(value: string | null | undefined, context: string): string | null {
+  if (!value) return null;
 
-async function hasProgressPhotoColumns(): Promise<boolean> {
+  try {
+    return encryptField(value, context);
+  } catch (error) {
+    console.warn('[WEEKLY_CHECKIN] Encryption unavailable, storing plaintext for now:', error);
+    return value;
+  }
+}
+
+type ProgressPhotoColumnMap = {
+  progressPhotoFrontUrl: boolean;
+  progressPhotoSideUrl: boolean;
+  progressPhotoBackUrl: boolean;
+};
+
+let progressPhotoColumnsAvailablePromise: Promise<ProgressPhotoColumnMap> | null = null;
+
+async function getAvailableProgressPhotoColumns(): Promise<ProgressPhotoColumnMap> {
   if (progressPhotoColumnsAvailablePromise) {
     return progressPhotoColumnsAvailablePromise;
   }
@@ -37,26 +54,31 @@ async function hasProgressPhotoColumns(): Promise<boolean> {
           FROM information_schema.columns
           WHERE table_schema = 'public'
             AND table_name = 'weekly_check_ins'
-            AND column_name IN ('progressPhotoFrontUrl', 'progressPhotoSideUrl', 'progressPhotoBackUrl')
+            AND lower(column_name) IN ('progressphotofronturl', 'progressphotosideurl', 'progressphotobackurl')
         `,
       );
 
-      const columns = new Set(rows.map(row => row.column_name));
-      return (
-        columns.has('progressPhotoFrontUrl') &&
-        columns.has('progressPhotoSideUrl') &&
-        columns.has('progressPhotoBackUrl')
-      );
+      const columns = new Set(rows.map(row => row.column_name.toLowerCase()));
+
+      return {
+        progressPhotoFrontUrl: columns.has('progressphotofronturl'),
+        progressPhotoSideUrl: columns.has('progressphotosideurl'),
+        progressPhotoBackUrl: columns.has('progressphotobackurl'),
+      };
     } catch (error) {
       console.warn('[WEEKLY_CHECKIN] Could not verify progress photo columns, falling back to no-photo mode:', error);
-      return false;
+      return {
+        progressPhotoFrontUrl: false,
+        progressPhotoSideUrl: false,
+        progressPhotoBackUrl: false,
+      };
     }
   })();
 
   return progressPhotoColumnsAvailablePromise;
 }
 
-function buildCheckInSelect(includePhotos: boolean) {
+function buildCheckInSelect(photoColumns: ProgressPhotoColumnMap) {
   const baseSelect = {
     id: true,
     weekStartDate: true,
@@ -70,15 +92,11 @@ function buildCheckInSelect(includePhotos: boolean) {
     notesEncrypted: true,
   };
 
-  if (!includePhotos) {
-    return baseSelect;
-  }
-
   return {
     ...baseSelect,
-    progressPhotoFrontUrl: true,
-    progressPhotoSideUrl: true,
-    progressPhotoBackUrl: true,
+    ...(photoColumns.progressPhotoFrontUrl ? { progressPhotoFrontUrl: true } : {}),
+    ...(photoColumns.progressPhotoSideUrl ? { progressPhotoSideUrl: true } : {}),
+    ...(photoColumns.progressPhotoBackUrl ? { progressPhotoBackUrl: true } : {}),
   };
 }
 
@@ -121,8 +139,8 @@ export async function GET(request: NextRequest) {
 
     const weekStartDate = parsedQuery.data.weekStartDate;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
-    const includePhotos = await hasProgressPhotoColumns();
-    const select = buildCheckInSelect(includePhotos);
+    const photoColumns = await getAvailableProgressPhotoColumns();
+    const select = buildCheckInSelect(photoColumns);
 
     const checkIn = await (prisma as any).weeklyCheckIn.findUnique({
       where: {
@@ -138,13 +156,12 @@ export async function GET(request: NextRequest) {
       await (prisma as any).weeklyCheckIn.update({
         where: { id: checkIn.id },
         data: {
-          strengthUpdateEncrypted: checkIn.strengthUpdate
-            ? encryptField(checkIn.strengthUpdate, `weeklyCheckIn:${checkIn.id}:strengthUpdate`)
-            : null,
-          blockerTextEncrypted: checkIn.blockerText
-            ? encryptField(checkIn.blockerText, `weeklyCheckIn:${checkIn.id}:blockerText`)
-            : null,
-          notesEncrypted: checkIn.notes ? encryptField(checkIn.notes, `weeklyCheckIn:${checkIn.id}:notes`) : null,
+          strengthUpdateEncrypted: encryptOrKeepPlaintext(
+            checkIn.strengthUpdate,
+            `weeklyCheckIn:${checkIn.id}:strengthUpdate`,
+          ),
+          blockerTextEncrypted: encryptOrKeepPlaintext(checkIn.blockerText, `weeklyCheckIn:${checkIn.id}:blockerText`),
+          notesEncrypted: encryptOrKeepPlaintext(checkIn.notes, `weeklyCheckIn:${checkIn.id}:notes`),
         },
         select,
       });
@@ -176,8 +193,8 @@ export async function PUT(request: NextRequest) {
 
     const { weekStartDate, payload } = parsed.data;
     const weekStartUtc = dateKeyToUtcMidnight(weekStartDate);
-    const includePhotos = await hasProgressPhotoColumns();
-    const select = buildCheckInSelect(includePhotos);
+    const photoColumns = await getAvailableProgressPhotoColumns();
+    const select = buildCheckInSelect(photoColumns);
 
     const updateBase = {
       submittedAt: new Date(),
@@ -185,15 +202,15 @@ export async function PUT(request: NextRequest) {
       strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
       blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
       notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
-      strengthUpdateEncrypted: payload.strengthUpdate
-        ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
-        : null,
-      blockerTextEncrypted: payload.blockerText
-        ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
-        : null,
-      notesEncrypted: payload.notes
-        ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
-        : null,
+      strengthUpdateEncrypted: encryptOrKeepPlaintext(
+        payload.strengthUpdate,
+        `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`,
+      ),
+      blockerTextEncrypted: encryptOrKeepPlaintext(
+        payload.blockerText,
+        `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`,
+      ),
+      notesEncrypted: encryptOrKeepPlaintext(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`),
     };
 
     const createBase = {
@@ -211,34 +228,30 @@ export async function PUT(request: NextRequest) {
       strengthUpdate: shouldKeepPlaintext() ? (payload.strengthUpdate ?? null) : null,
       blockerText: shouldKeepPlaintext() ? (payload.blockerText ?? null) : null,
       notes: shouldKeepPlaintext() ? (payload.notes ?? null) : null,
-      strengthUpdateEncrypted: payload.strengthUpdate
-        ? encryptField(payload.strengthUpdate, `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`)
-        : null,
-      blockerTextEncrypted: payload.blockerText
-        ? encryptField(payload.blockerText, `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`)
-        : null,
-      notesEncrypted: payload.notes
-        ? encryptField(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`)
-        : null,
+      strengthUpdateEncrypted: encryptOrKeepPlaintext(
+        payload.strengthUpdate,
+        `weeklyCheckIn:${user.userId}:${weekStartDate}:strengthUpdate`,
+      ),
+      blockerTextEncrypted: encryptOrKeepPlaintext(
+        payload.blockerText,
+        `weeklyCheckIn:${user.userId}:${weekStartDate}:blockerText`,
+      ),
+      notesEncrypted: encryptOrKeepPlaintext(payload.notes, `weeklyCheckIn:${user.userId}:${weekStartDate}:notes`),
     };
 
-    const updateData = includePhotos
-      ? {
-          ...updateBase,
-          progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
-          progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
-          progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
-        }
-      : updateBase;
+    const updateData = {
+      ...updateBase,
+      ...(photoColumns.progressPhotoFrontUrl ? { progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null } : {}),
+      ...(photoColumns.progressPhotoSideUrl ? { progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null } : {}),
+      ...(photoColumns.progressPhotoBackUrl ? { progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null } : {}),
+    };
 
-    const createData = includePhotos
-      ? {
-          ...createBase,
-          progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null,
-          progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null,
-          progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null,
-        }
-      : createBase;
+    const createData = {
+      ...createBase,
+      ...(photoColumns.progressPhotoFrontUrl ? { progressPhotoFrontUrl: payload.progressPhotoFrontUrl ?? null } : {}),
+      ...(photoColumns.progressPhotoSideUrl ? { progressPhotoSideUrl: payload.progressPhotoSideUrl ?? null } : {}),
+      ...(photoColumns.progressPhotoBackUrl ? { progressPhotoBackUrl: payload.progressPhotoBackUrl ?? null } : {}),
+    };
 
     const record = await (prisma as any).weeklyCheckIn.upsert({
       where: {

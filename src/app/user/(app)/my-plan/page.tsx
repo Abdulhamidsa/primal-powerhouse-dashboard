@@ -198,7 +198,7 @@ export default function UserMyPlanPage() {
 
         {!loading && !error
           ? orderedSections.map(section => (
-              <section key={section.type} className="space-y-3">
+              <section key={section.type} className="space-y-3 ">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-semibold text-[var(--color-text)]">{TYPE_LABEL[section.type]}</h2>
@@ -217,7 +217,7 @@ export default function UserMyPlanPage() {
                     No {TYPE_LABEL[section.type].toLowerCase()} selected yet.
                   </div>
                 ) : (
-                  <div className="grid w-full gap-4 ">
+                  <div className="grid grid-cols-2 gap-4 ">
                     {section.items.map(item => (
                       <PlanSelectedMealCard
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
