@@ -174,7 +174,9 @@ export default function UserDashboardPage() {
               </div>
 
               <div className="mt-3 max-w-[42ch] rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/75 px-3 py-2.5 backdrop-blur-[2px]">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">Coach</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                  Coach
+                </p>
                 <p className="mt-1 text-[12px] leading-5 text-[var(--color-text)]">{coachMessage}</p>
               </div>
             </div>

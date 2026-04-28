@@ -1,14 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  ArrowRight,
-  CalendarCheck2,
-  CheckCircle2,
-  Flame,
-  MessageSquare,
-  UtensilsCrossed,
-} from 'lucide-react';
+import { ArrowRight, CalendarCheck2, CheckCircle2, Flame, MessageSquare, UtensilsCrossed } from 'lucide-react';
 import type { TodayMissionSummary, TodayMissionTone } from '@/features/today-mission/types/todayMission.types';
 
 const TONE_STYLES: Record<TodayMissionTone, { bg: string; text: string }> = {
