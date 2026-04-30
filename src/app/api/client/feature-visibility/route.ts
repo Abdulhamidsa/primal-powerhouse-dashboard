@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         error: 'Internal server error',
         details: safeErrorMessage(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

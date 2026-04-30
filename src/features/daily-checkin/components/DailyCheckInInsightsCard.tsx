@@ -152,7 +152,7 @@ export function DailyCheckInInsightsCard() {
         </div>
       </div> */}
 
-      {visibility?.dailyWeightEnabled ?? true ? (
+      {(visibility?.dailyWeightEnabled ?? true) ? (
         <div className="mt-5 rounded-2xl border border-border/70 bg-background/70 p-4">
           <div className="mb-3 flex items-center gap-2">
             <Scale size={14} className="text-muted-foreground" />

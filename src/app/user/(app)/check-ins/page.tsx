@@ -52,9 +52,7 @@ export default function UserCheckInsPage() {
               className="grid gap-1"
               style={{
                 gridTemplateColumns:
-                  visibility?.dailyCheckinsEnabled && visibility?.weeklyCheckinsEnabled
-                    ? '1fr 1fr'
-                    : '1fr',
+                  visibility?.dailyCheckinsEnabled && visibility?.weeklyCheckinsEnabled ? '1fr 1fr' : '1fr',
               }}
             >
               {visibility?.dailyCheckinsEnabled ? (

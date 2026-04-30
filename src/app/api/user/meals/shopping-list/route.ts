@@ -235,10 +235,7 @@ function categorizeIngredients(items: ShoppingListEntry[]): Record<IngredientCat
   return buckets;
 }
 
-function buildSections(
-  categories: Record<IngredientCategory, ShoppingListEntry[]>,
-  spices: ShoppingListEntry[],
-) {
+function buildSections(categories: Record<IngredientCategory, ShoppingListEntry[]>, spices: ShoppingListEntry[]) {
   const sections = [
     { key: 'proteins', title: 'Protein', items: categories.proteins },
     { key: 'vegetables', title: 'Vegetables', items: categories.vegetables },

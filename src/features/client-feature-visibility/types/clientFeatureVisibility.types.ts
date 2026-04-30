@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { clientFeatureVisibilitySchema, clientFeatureVisibilityFormSchema } from '../schemas/clientFeatureVisibility.schema';
+import {
+  clientFeatureVisibilitySchema,
+  clientFeatureVisibilityFormSchema,
+} from '../schemas/clientFeatureVisibility.schema';
 
 export type ClientFeatureVisibilityData = z.infer<typeof clientFeatureVisibilitySchema>;
 export type ClientFeatureVisibilityFormValues = z.infer<typeof clientFeatureVisibilityFormSchema>;

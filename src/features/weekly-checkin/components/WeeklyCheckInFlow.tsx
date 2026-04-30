@@ -387,7 +387,7 @@ export function WeeklyCheckInFlow() {
               type="button"
               variant="outline"
               onClick={() => setStep(current => Math.max(1, current - 1))}
-                disabled={step === 1 || isSubmitting}
+              disabled={step === 1 || isSubmitting}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back

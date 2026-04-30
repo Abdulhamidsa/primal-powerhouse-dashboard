@@ -13,8 +13,5 @@ export async function updateClientFeatureVisibility(
   clientId: string,
   payload: ClientFeatureVisibilityData,
 ): Promise<ClientFeatureVisibilityResponse> {
-  return httpClient.put<ClientFeatureVisibilityResponse>(
-    buildClientFeatureVisibilityUrl(clientId),
-    payload,
-  );
+  return httpClient.put<ClientFeatureVisibilityResponse>(buildClientFeatureVisibilityUrl(clientId), payload);
 }

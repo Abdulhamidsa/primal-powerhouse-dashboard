@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         error: 'Internal server error',
         details: safeErrorMessage(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           error: 'Invalid request payload',
           details: parsed.error.flatten(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
