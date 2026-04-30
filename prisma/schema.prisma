@@ -125,8 +125,34 @@ model Client {
   notificationDeliveryLogs NotificationDeliveryLog[]
   workoutPlanAssignments WorkoutPlanAssignment[]
   workoutSessions        WorkoutSession[]
+  dailyCheckinsEnabled        Boolean  @default(true)
+  weeklyCheckinsEnabled       Boolean  @default(true)
+  dailyWeightEnabled          Boolean  @default(true)
+  weightChartEnabled          Boolean  @default(true)
+  progressPhotosEnabled       Boolean  @default(true)
+  nutritionTrackingEnabled    Boolean  @default(true)
+  workoutTrackingEnabled      Boolean  @default(true)
+  featureVisibility      ClientFeatureVisibility?
 
   @@map("clients")
+}
+
+model ClientFeatureVisibility {
+  id                          String   @id @default(cuid())
+  clientId                    String   @unique
+  dailyCheckinsEnabled        Boolean  @default(true)
+  weeklyCheckinsEnabled       Boolean  @default(true)
+  dailyWeightEnabled          Boolean  @default(true)
+  weightChartEnabled          Boolean  @default(true)
+  progressPhotosEnabled       Boolean  @default(true)
+  nutritionTrackingEnabled    Boolean  @default(true)
+  workoutTrackingEnabled      Boolean  @default(true)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("client_feature_visibility")
 }
 
 model Conversation {

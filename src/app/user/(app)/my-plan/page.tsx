@@ -136,7 +136,7 @@ export default function UserMyPlanPage() {
 
   return (
     <div className="px-4 md:px-6">
-      <div className={`mx-auto max-w-6xl space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
+      <div className={`mx-auto max-w-5xl 2xl:max-w-6xl space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
         <PageHeader
           title="Meal Plan"
           description="Select your meals for today. Your choices are saved and used to track adherence and build your shopping list."
@@ -217,7 +217,7 @@ export default function UserMyPlanPage() {
                     No {TYPE_LABEL[section.type].toLowerCase()} selected yet.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4 ">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {section.items.map(item => (
                       <PlanSelectedMealCard
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}

@@ -11,6 +11,7 @@ import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/use
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { TodayMissionCard, useTodayMission } from '@/features/today-mission';
+import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 
 export default function UserDashboardPage() {
   const { user, error, isLoading } = useUserData();
@@ -22,6 +23,7 @@ export default function UserDashboardPage() {
   const { summary: adherenceSummary } = useMealAdherenceToday();
   const { unreadTotal } = useChatUnread();
   const { summary: todayMission, isLoading: todayMissionLoading, error: todayMissionError } = useTodayMission();
+  const { visibility } = useClientSelfFeatureVisibility();
 
   useMotivationNotification(user?.motivationalMessage);
 
@@ -69,61 +71,73 @@ export default function UserDashboardPage() {
   const isMealsDone = totalMeals > 0 && completedMeals === totalMeals;
 
   const todayActions = [
-    {
-      key: 'daily',
-      title: 'Daily Check-In',
-      description: isDailyDone ? 'Done' : 'Due',
-      href: '/user/check-ins',
-      icon: isDailyDone ? CheckCircle2 : ClipboardCheck,
-      iconBg: isDailyDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
-      iconColor: isDailyDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
-      badge: isDailyDone ? 'Done' : 'Due',
-      badgeClass: isDailyDone
-        ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
-        : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
-      done: isDailyDone,
-    },
-    {
-      key: 'weekly',
-      title: 'Weekly Check-In',
-      description: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
-      href: '/user/check-ins',
-      icon: weeklyStatus === 'completed' ? CheckCircle2 : ClipboardCheck,
-      iconBg:
-        weeklyStatus === 'completed'
-          ? 'bg-[var(--color-success-muted)]'
-          : weeklyStatus === 'overdue'
-            ? 'bg-[var(--color-danger-muted)]'
-            : 'bg-[var(--color-warning-muted)]',
-      iconColor:
-        weeklyStatus === 'completed'
-          ? 'text-[var(--color-success)]'
-          : weeklyStatus === 'overdue'
-            ? 'text-[var(--color-danger)]'
-            : 'text-[var(--color-warning)]',
-      badge: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
-      badgeClass:
-        weeklyStatus === 'completed'
-          ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
-          : weeklyStatus === 'overdue'
-            ? 'text-[var(--color-danger)] bg-[var(--color-danger-muted)]'
-            : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
-      done: weeklyStatus === 'completed',
-    },
-    {
-      key: 'meals',
-      title: "Today's Meals",
-      description: totalMeals > 0 ? `${completedMeals}/${totalMeals}` : 'None',
-      href: '/user/my-plan',
-      icon: isMealsDone ? CheckCircle2 : Utensils,
-      iconBg: isMealsDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
-      iconColor: isMealsDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
-      badge: totalMeals > 0 ? `${completedMeals}/${totalMeals}` : '—',
-      badgeClass: isMealsDone
-        ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
-        : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
-      done: isMealsDone,
-    },
+    ...(visibility?.dailyCheckinsEnabled
+      ? [
+          {
+            key: 'daily',
+            title: 'Daily Check-In',
+            description: isDailyDone ? 'Done' : 'Due',
+            href: '/user/check-ins',
+            icon: isDailyDone ? CheckCircle2 : ClipboardCheck,
+            iconBg: isDailyDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
+            iconColor: isDailyDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
+            badge: isDailyDone ? 'Done' : 'Due',
+            badgeClass: isDailyDone
+              ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
+              : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+            done: isDailyDone,
+          },
+        ]
+      : []),
+    ...(visibility?.weeklyCheckinsEnabled
+      ? [
+          {
+            key: 'weekly',
+            title: 'Weekly Check-In',
+            description: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
+            href: '/user/check-ins',
+            icon: weeklyStatus === 'completed' ? CheckCircle2 : ClipboardCheck,
+            iconBg:
+              weeklyStatus === 'completed'
+                ? 'bg-[var(--color-success-muted)]'
+                : weeklyStatus === 'overdue'
+                  ? 'bg-[var(--color-danger-muted)]'
+                  : 'bg-[var(--color-warning-muted)]',
+            iconColor:
+              weeklyStatus === 'completed'
+                ? 'text-[var(--color-success)]'
+                : weeklyStatus === 'overdue'
+                  ? 'text-[var(--color-danger)]'
+                  : 'text-[var(--color-warning)]',
+            badge: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
+            badgeClass:
+              weeklyStatus === 'completed'
+                ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
+                : weeklyStatus === 'overdue'
+                  ? 'text-[var(--color-danger)] bg-[var(--color-danger-muted)]'
+                  : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+            done: weeklyStatus === 'completed',
+          },
+        ]
+      : []),
+    ...(visibility?.nutritionTrackingEnabled
+      ? [
+          {
+            key: 'meals',
+            title: "Today's Meals",
+            description: totalMeals > 0 ? `${completedMeals}/${totalMeals}` : 'None',
+            href: '/user/my-plan',
+            icon: isMealsDone ? CheckCircle2 : Utensils,
+            iconBg: isMealsDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
+            iconColor: isMealsDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
+            badge: totalMeals > 0 ? `${completedMeals}/${totalMeals}` : '—',
+            badgeClass: isMealsDone
+              ? 'text-[var(--color-success)] bg-[var(--color-success-muted)]'
+              : 'text-[var(--color-warning)] bg-[var(--color-warning-muted)]',
+            done: isMealsDone,
+          },
+        ]
+      : []),
     {
       key: 'chat',
       title: 'Message Coach',

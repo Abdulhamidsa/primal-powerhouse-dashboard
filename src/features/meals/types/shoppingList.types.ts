@@ -21,7 +21,7 @@ export type ShoppingListEntry = {
 };
 
 export type ShoppingListSection = {
-  key: 'ingredients' | 'spices';
+  key: 'proteins' | 'vegetables' | 'carbs' | 'spices' | 'other';
   title: string;
   items: ShoppingListEntry[];
 };

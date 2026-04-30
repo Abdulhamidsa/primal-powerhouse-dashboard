@@ -20,6 +20,7 @@ import {
   useDailyCheckInToday,
   useUpsertDailyCheckIn,
 } from '@/features/daily-checkin/hooks/useDailyCheckIn';
+import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
 import type { DailyCheckInHistoryItem } from '@/features/daily-checkin/types/dailyCheckIn.types';
 import { useUserData } from '@/hooks/useUserData';
@@ -76,6 +77,8 @@ export function DailyCheckInInsightsCard() {
   useEffect(() => {
     setWeightValue(todayEntry?.weightKg != null ? todayEntry.weightKg.toString() : '');
   }, [todayEntry?.weightKg]);
+
+  const { visibility } = useClientSelfFeatureVisibility();
 
   const CHART_WINDOW = 21;
   const effectiveEnd = viewEnd ?? history.length;
@@ -149,45 +152,47 @@ export function DailyCheckInInsightsCard() {
         </div>
       </div> */}
 
-      <div className="mt-5 rounded-2xl border border-border/70 bg-background/70 p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <Scale size={14} className="text-muted-foreground" />
-          <p className="text-sm font-medium text-foreground">Weight for today</p>
-          {todayEntry?.weightKg != null ? (
-            <span className="ml-auto text-xs font-semibold text-accent">{todayEntry.weightKg} kg</span>
-          ) : null}
-        </div>
+      {visibility?.dailyWeightEnabled ?? true ? (
+        <div className="mt-5 rounded-2xl border border-border/70 bg-background/70 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Scale size={14} className="text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">Weight for today</p>
+            {todayEntry?.weightKg != null ? (
+              <span className="ml-auto text-xs font-semibold text-accent">{todayEntry.weightKg} kg</span>
+            ) : null}
+          </div>
 
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            inputMode="decimal"
-            value={weightValue}
-            onChange={e => setWeightValue(e.target.value.replace(/[^0-9.,]/g, ''))}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                void saveWeight();
-              }
-            }}
-            placeholder="e.g. 80,2"
-            disabled={todayLoading || isSavingWeight}
-            className="flex-1"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void saveWeight()}
-            disabled={todayLoading || isSavingWeight}
-            className="shrink-0"
-          >
-            {isSavingWeight ? 'Saving…' : 'Save'}
-          </Button>
-        </div>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              inputMode="decimal"
+              value={weightValue}
+              onChange={e => setWeightValue(e.target.value.replace(/[^0-9.,]/g, ''))}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void saveWeight();
+                }
+              }}
+              placeholder="e.g. 80,2"
+              disabled={todayLoading || isSavingWeight}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void saveWeight()}
+              disabled={todayLoading || isSavingWeight}
+              className="shrink-0"
+            >
+              {isSavingWeight ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
 
-        {weightError ? <p className="mt-2 text-xs text-destructive">{weightError}</p> : null}
-      </div>
+          {weightError ? <p className="mt-2 text-xs text-destructive">{weightError}</p> : null}
+        </div>
+      ) : null}
 
       <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 p-4">
         <div className="mb-3 flex items-center justify-between gap-3">

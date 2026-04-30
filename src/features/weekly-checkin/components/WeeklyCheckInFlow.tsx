@@ -18,6 +18,7 @@ import type {
 } from '@/features/weekly-checkin/types/weeklyCheckIn.types';
 import { useUpsertWeeklyCheckIn, useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
 import { formatDateLabel } from '@/features/weekly-checkin/utils/week';
+import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 
 const TOTAL_STEPS = 3;
 
@@ -149,6 +150,18 @@ export function WeeklyCheckInFlow() {
   const { submit } = useUpsertWeeklyCheckIn();
   const { upload } = useWeeklyCheckInPhotoUpload();
   const { history } = useDailyCheckInInsights();
+  const { visibility } = useClientSelfFeatureVisibility();
+
+  // Calculate which steps are enabled based on feature visibility
+  const enabledSteps = useMemo(() => {
+    const steps: Array<'weight' | 'photos' | 'reflection'> = [];
+    if (visibility?.weightChartEnabled) steps.push('weight');
+    if (visibility?.progressPhotosEnabled) steps.push('photos');
+    steps.push('reflection'); // Reflection is always shown
+    return steps;
+  }, [visibility]);
+
+  const TOTAL_STEPS = enabledSteps.length;
 
   const lastWeekBaseline = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -255,7 +268,7 @@ export function WeeklyCheckInFlow() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {step === 1 && (
+          {enabledSteps[step - 1] === 'weight' && (
             <section className="space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Weight Update</h2>
@@ -294,7 +307,7 @@ export function WeeklyCheckInFlow() {
             </section>
           )}
 
-          {step === 2 && (
+          {enabledSteps[step - 1] === 'photos' && (
             <section className="space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Progress Photos</h2>
@@ -326,7 +339,7 @@ export function WeeklyCheckInFlow() {
             </section>
           )}
 
-          {step === 3 && (
+          {enabledSteps[step - 1] === 'reflection' && (
             <section className="space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Weekly Reflection</h2>

@@ -37,6 +37,7 @@ import { NutritionTabContent } from '@/features/admin-clients-dashboard/componen
 import { AssignmentsTabContent } from '@/features/admin-clients-dashboard/components/AssignmentsTabContent';
 import { CheckInsTabContent } from '@/features/admin-clients-dashboard/components/CheckInsTabContent';
 import TrainingTabContent from '@/features/admin-clients-dashboard/components/TrainingTabContent';
+import { ClientFeatureVisibilityTab } from '@/features/client-feature-visibility/components/ClientFeatureVisibilityTab';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import type {
   DashboardTabKey,
@@ -548,6 +549,10 @@ export default function ClientsPage() {
                 ) : null}
 
                 {activeTab === 'training' && client ? <TrainingTabContent clientId={client.id} /> : null}
+
+                {activeTab === 'feature-visibility' && client ? (
+                  <ClientFeatureVisibilityTab clientId={client.id} />
+                ) : null}
               </div>
             </>
           ) : (

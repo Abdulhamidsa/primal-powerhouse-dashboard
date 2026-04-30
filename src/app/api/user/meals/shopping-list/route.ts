@@ -52,14 +52,24 @@ export async function POST(request: NextRequest) {
 
     hydratedItems.forEach(item => {
       // meal.ingredients = raw JSON string from DB
-      structuredIngredients.push(...parseMealIngredients(item.meal.ingredients));
+      for (const ingredient of parseMealIngredients(item.meal.ingredients)) {
+        if (isSpiceName(ingredient.name)) {
+          spiceLines.push(ingredient.name);
+        } else {
+          structuredIngredients.push(ingredient);
+        }
+      }
       spiceLines.push(...normalizeMealTextList(item.meal.spices));
 
       if (item.side) {
         // side.ingredients may be string[] or raw string — normalize then wrap
         const sideTexts = normalizeMealTextList(item.side.ingredients as unknown);
         for (const text of sideTexts) {
-          structuredIngredients.push({ name: text, grams: null, amount: null, unit: null, displayUnitLabel: null });
+          if (isSpiceName(text)) {
+            spiceLines.push(text);
+          } else {
+            structuredIngredients.push({ name: text, grams: null, amount: null, unit: null, displayUnitLabel: null });
+          }
         }
         spiceLines.push(...normalizeMealTextList(item.side.spices));
       }
@@ -67,14 +77,12 @@ export async function POST(request: NextRequest) {
 
     const ingredients = aggregateIngredients(structuredIngredients, 'ingredient');
     const spices = dedupeSpices(spiceLines);
+    const categorized = categorizeIngredients(ingredients);
 
     return jsonWithCache({
       generatedAt: new Date().toISOString(),
       selectionFingerprint: buildSelectionFingerprint(parsed.data.items),
-      sections: [
-        { key: 'ingredients', title: 'Ingredients', items: ingredients },
-        { key: 'spices', title: 'Spices & Seasonings', items: spices },
-      ],
+      sections: buildSections(categorized, spices),
     });
   } catch (err) {
     console.error('[USER_SHOPPING_LIST_POST] Failed:', err);
@@ -208,6 +216,175 @@ function dedupeSpices(values: string[]): ShoppingListEntry[] {
 
   return result;
 }
+
+type IngredientCategory = 'proteins' | 'vegetables' | 'carbs' | 'other';
+
+function categorizeIngredients(items: ShoppingListEntry[]): Record<IngredientCategory, ShoppingListEntry[]> {
+  const buckets: Record<IngredientCategory, ShoppingListEntry[]> = {
+    proteins: [],
+    vegetables: [],
+    carbs: [],
+    other: [],
+  };
+
+  for (const item of items) {
+    const category = classifyIngredient(item.label);
+    buckets[category].push(item);
+  }
+
+  return buckets;
+}
+
+function buildSections(
+  categories: Record<IngredientCategory, ShoppingListEntry[]>,
+  spices: ShoppingListEntry[],
+) {
+  const sections = [
+    { key: 'proteins', title: 'Protein', items: categories.proteins },
+    { key: 'vegetables', title: 'Vegetables', items: categories.vegetables },
+    { key: 'carbs', title: 'Carbs', items: categories.carbs },
+    { key: 'spices', title: 'Spices & Seasonings', items: spices },
+  ];
+
+  if (categories.other.length) {
+    sections.push({ key: 'other', title: 'Other', items: categories.other });
+  }
+
+  return sections;
+}
+
+function classifyIngredient(label: string): IngredientCategory {
+  const value = canonicalize(label);
+  if (!value) return 'other';
+
+  if (matchesAny(value, PROTEIN_KEYWORDS)) return 'proteins';
+  if (matchesAny(value, VEGETABLE_KEYWORDS)) return 'vegetables';
+  if (matchesAny(value, CARB_KEYWORDS)) return 'carbs';
+
+  return 'other';
+}
+
+function isSpiceName(label: string): boolean {
+  const value = canonicalize(label);
+  if (!value) return false;
+  return matchesAny(value, SPICE_KEYWORDS);
+}
+
+function matchesAny(value: string, keywords: string[]): boolean {
+  return keywords.some(keyword => value.includes(keyword));
+}
+
+const SPICE_KEYWORDS = [
+  'salt',
+  'pepper',
+  'paprika',
+  'cumin',
+  'coriander',
+  'turmeric',
+  'curry',
+  'chili',
+  'chilli',
+  'oregano',
+  'basil',
+  'thyme',
+  'rosemary',
+  'parsley',
+  'cilantro',
+  'sage',
+  'dill',
+  'garlic powder',
+  'onion powder',
+  'ginger',
+  'cinnamon',
+  'nutmeg',
+  'clove',
+  'allspice',
+  'bay leaf',
+  'cardamom',
+  'mustard powder',
+  'seasoning',
+  'spice',
+  'herb',
+  'vanilla',
+  'taco',
+  'italian seasoning',
+  'cajun',
+  'chili powder',
+];
+
+const PROTEIN_KEYWORDS = [
+  'chicken',
+  'turkey',
+  'beef',
+  'steak',
+  'pork',
+  'ham',
+  'bacon',
+  'sausage',
+  'lamb',
+  'fish',
+  'salmon',
+  'tuna',
+  'cod',
+  'shrimp',
+  'prawn',
+  'egg',
+  'tofu',
+  'tempeh',
+  'lentil',
+  'beans',
+  'chickpea',
+  'yogurt',
+  'cheese',
+  'cottage',
+  'protein',
+  'whey',
+  'casein',
+];
+
+const VEGETABLE_KEYWORDS = [
+  'lettuce',
+  'spinach',
+  'kale',
+  'broccoli',
+  'cauliflower',
+  'carrot',
+  'pepper',
+  'tomato',
+  'cucumber',
+  'zucchini',
+  'onion',
+  'garlic',
+  'mushroom',
+  'asparagus',
+  'green bean',
+  'peas',
+  'cabbage',
+  'celery',
+  'eggplant',
+  'pumpkin',
+  'squash',
+];
+
+const CARB_KEYWORDS = [
+  'rice',
+  'pasta',
+  'bread',
+  'wrap',
+  'tortilla',
+  'potato',
+  'oats',
+  'quinoa',
+  'noodle',
+  'couscous',
+  'barley',
+  'corn',
+  'granola',
+  'flour',
+  'bun',
+  'bagel',
+  'cracker',
+];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

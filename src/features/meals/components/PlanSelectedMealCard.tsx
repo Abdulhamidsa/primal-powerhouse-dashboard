@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { CheckCircle2, Circle, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
+import { Check, CheckCircle2, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 
 const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
@@ -93,17 +93,22 @@ export function PlanSelectedMealCard({
             ) : null}
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-1">
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
             {onToggleCompletionAction !== undefined ? (
               <button
                 type="button"
                 onClick={onToggleCompletionAction}
                 disabled={isPending}
                 aria-label={isCompleted ? 'Mark as not done' : 'Mark as done'}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
-                style={{ color: isCompleted ? 'var(--color-accent)' : 'var(--color-text-muted)' }}
+                className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  borderColor: isCompleted ? 'var(--color-accent)' : 'var(--color-border)',
+                  color: isCompleted ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                  background: isCompleted ? 'var(--color-accent-muted)' : 'transparent',
+                }}
               >
-                {isCompleted ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                <Check size={14} />
+                {isCompleted ? 'Done' : 'Mark done'}
               </button>
             ) : null}
 
