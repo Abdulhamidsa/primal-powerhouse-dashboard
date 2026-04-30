@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import { httpClient } from '@/lib/http/client';
 import { ClientFeatureVisibilityResponse } from '../types/clientFeatureVisibility.types';
-import { ApiError } from '@/lib/http/types';
+import type { ApiError } from '@/lib/request';
 
 export function useClientSelfFeatureVisibility() {
   const { data, error, isLoading, isValidating } = useSWR<ClientFeatureVisibilityResponse, ApiError>(

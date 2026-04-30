@@ -6,7 +6,7 @@ import {
   buildClientFeatureVisibilityUrl,
 } from '../api/clientFeatureVisibility.api';
 import { ClientFeatureVisibilityResponse, ClientFeatureVisibilityData } from '../types/clientFeatureVisibility.types';
-import { ApiError } from '@/lib/http/types';
+import type { ApiError } from '@/lib/request';
 
 export function useClientFeatureVisibility(clientId: string) {
   const { data, error, isLoading, isValidating, mutate } = useSWR<ClientFeatureVisibilityResponse, ApiError>(
