@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { CheckCircle2, PlusCircle } from 'lucide-react';
+import { CheckCircle2, Clock3, PlusCircle } from 'lucide-react';
 import type { MealOption } from '@/features/meals/types/mealSelection.types';
 
 const fallbackImage =
@@ -19,6 +19,11 @@ export function MealOptionCard({
   onPreview?: () => void;
 }) {
   const totalTime = (option.meal.prepTime ?? 0) + (option.meal.cookTime ?? 0);
+  const metaItems = [
+    totalTime > 0 ? `${totalTime} min` : null,
+    option.meal.category?.trim() ? option.meal.category : null,
+    option.meal.difficulty?.trim() ? option.meal.difficulty : null,
+  ].filter((item): item is string => Boolean(item));
 
   return (
     <article
@@ -43,11 +48,25 @@ export function MealOptionCard({
       <div className="space-y-3 p-4">
         <button type="button" onClick={onPreview} disabled={!onPreview} className="block w-full text-left disabled:cursor-default">
           <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text)]">{option.meal.name}</p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            {option.meal.calories} kcal • P {option.meal.protein}g • C {option.meal.carbs}g • F {option.meal.fat}g
-          </p>
+          {option.meal.description ? (
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-text-muted)]">{option.meal.description}</p>
+          ) : null}
           {totalTime > 0 ? <p className="text-xs text-[var(--color-text-muted)]">{totalTime} min total</p> : null}
         </button>
+
+        {metaItems.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {metaItems.map(item => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-muted)]"
+              >
+                <Clock3 size={11} />
+                {item}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         <button
           type="button"

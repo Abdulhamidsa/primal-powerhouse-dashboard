@@ -201,9 +201,7 @@ export default function ProgramMealTypePage() {
               </button>
               <div className="absolute bottom-3 left-3 right-3">
                 <h2 className="text-lg font-semibold text-white">{previewMeal.name}</h2>
-                <p className="mt-1 text-xs text-white/85">
-                  {previewMeal.calories} kcal • P {previewMeal.protein}g • C {previewMeal.carbs}g • F {previewMeal.fat}g
-                </p>
+                {previewMeal.description ? <p className="mt-1 line-clamp-2 text-xs text-white/85">{previewMeal.description}</p> : null}
               </div>
             </div>
 
@@ -284,10 +282,7 @@ export default function ProgramMealTypePage() {
               </button>
               <div className="absolute bottom-3 left-3 right-3">
                 <h2 className="text-lg font-semibold text-white">{previewSide.name}</h2>
-                <p className="mt-1 text-xs text-white/85">
-                  {previewSide.type === 'SOUP' ? 'Soup' : 'Salad'} • {previewSide.calories} kcal • P{' '}
-                  {previewSide.protein}g • C {previewSide.carbs}g • F {previewSide.fat}g
-                </p>
+                <p className="mt-1 text-xs text-white/85">{previewSide.type === 'SOUP' ? 'Soup' : 'Salad'}</p>
               </div>
             </div>
 
@@ -387,9 +382,7 @@ function SideOptionCard({
           className="block w-full text-left disabled:cursor-default"
         >
           <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text)]">{option.side.name}</p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            {option.side.calories} kcal • P {option.side.protein}g • C {option.side.carbs}g • F {option.side.fat}g
-          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">{option.side.type === 'SOUP' ? 'Soup' : 'Salad'}</p>
           <p className="text-xs text-[var(--color-text-muted)]">
             Linked to {option.sourceMealType.toLowerCase()}: {option.meal.name}
           </p>

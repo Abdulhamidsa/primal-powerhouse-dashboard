@@ -1,0 +1,21 @@
+export type MealDetail = {
+  id: string;
+  name: string;
+  type: string;
+  description?: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number | null;
+  ingredients?: unknown;
+  spices?: unknown;
+  instructions?: unknown;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  servings: number;
+  imageUrl?: string | null;
+  category?: string | null;
+  difficulty?: string | null;
+  tags?: string | null;
+};

@@ -1,46 +1,51 @@
-import type { MealMacroTotals } from '@/features/meals/types/mealSelection.types';
-
-function deltaTone(value: number): 'match' | 'over' | 'under' {
-  if (value === 0) return 'match';
-  return value > 0 ? 'over' : 'under';
-}
-
-function toneClasses(tone: 'match' | 'over' | 'under') {
-  if (tone === 'match') return 'text-emerald-600';
-  if (tone === 'over') return 'text-amber-600';
-  return 'text-sky-600';
-}
-
-function formatDelta(value: number, suffix = '') {
-  if (value === 0) return `Match${suffix}`;
-  return `${value > 0 ? '+' : ''}${value}${suffix}`;
-}
-
 export function MealSelectionSummaryCard({
-  selected,
-  target,
-  delta,
-  subtle = false,
+  selectedCount,
+  requiredSelectedCount,
+  requiredCount,
+  snackCount,
+  snackMax,
+  hasChanges = false,
 }: {
-  selected: MealMacroTotals;
-  target: MealMacroTotals;
-  delta: MealMacroTotals;
-  subtle?: boolean;
+  selectedCount: number;
+  requiredSelectedCount: number;
+  requiredCount: number;
+  snackCount: number;
+  snackMax: number;
+  hasChanges?: boolean;
 }) {
+  const completion = requiredCount > 0 ? Math.round((requiredSelectedCount / requiredCount) * 100) : 0;
+  const isReady = requiredSelectedCount >= requiredCount && snackCount <= snackMax;
+
   return (
     <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-[var(--color-text)]">Nutrition</h2>
-          <p className="text-xs text-[var(--color-text-muted)]">Selected totals and coach targets</p>
+          <h2 className="text-base font-semibold text-[var(--color-text)]">Plan progress</h2>
+          <p className="text-xs text-[var(--color-text-muted)]">Current selections and readiness</p>
+        </div>
+        {hasChanges ? (
+          <span className="rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-400">Unsaved</span>
+        ) : null}
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4">
+        <div className="flex items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+          <span>{requiredSelectedCount}/{requiredCount} core meals selected</span>
+          <span>{completion}% complete</span>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
+          <div
+            className="h-full rounded-full bg-[var(--color-accent)] transition-all"
+            style={{ width: `${Math.min(100, completion)}%` }}
+          />
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Metric label="Calories" selected={selected.calories} target={target.calories} delta={delta.calories} subtle={subtle} />
-        <Metric label="Protein" selected={selected.protein} target={target.protein} delta={delta.protein} unit="g" subtle={subtle} />
-        <Metric label="Carbs" selected={selected.carbs} target={target.carbs} delta={delta.carbs} unit="g" subtle={subtle} />
-        <Metric label="Fat" selected={selected.fat} target={target.fat} delta={delta.fat} unit="g" subtle={subtle} />
+        <Metric label="Total selected" value={`${selectedCount}`} detail="Meals in your draft" />
+        <Metric label="Core meals" value={`${requiredSelectedCount}/${requiredCount}`} detail={isReady ? 'Ready' : 'Keep selecting'} />
+        <Metric label="Snacks" value={`${snackCount}/${snackMax}`} detail={snackCount > snackMax ? 'Too many' : 'Within limit'} />
+        <Metric label="Status" value={isReady ? 'Ready' : 'In progress'} detail={hasChanges ? 'Needs save' : 'Synced'} />
       </div>
     </section>
   );
@@ -48,28 +53,18 @@ export function MealSelectionSummaryCard({
 
 function Metric({
   label,
-  selected,
-  target,
-  delta,
-  unit = '',
-  subtle = false,
+  value,
+  detail,
 }: {
   label: string;
-  selected: number;
-  target: number;
-  delta: number;
-  unit?: string;
-  subtle?: boolean;
+  value: string;
+  detail: string;
 }) {
-  const tone = deltaTone(delta);
-  const deltaClass = subtle ? 'text-[var(--color-text-muted)]' : toneClasses(tone);
-
   return (
     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
       <p className="text-[11px] text-[var(--color-text-muted)]">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-[var(--color-text)]">{selected}{unit}</p>
-      <p className="text-[11px] text-[var(--color-text-muted)]">Target {target}{unit}</p>
-      <p className={`mt-1 text-[11px] font-medium ${deltaClass}`}>{formatDelta(delta, unit)}</p>
+      <p className="mt-1 text-lg font-semibold text-[var(--color-text)]">{value}</p>
+      <p className="text-[11px] text-[var(--color-text-muted)]">{detail}</p>
     </div>
   );
 }

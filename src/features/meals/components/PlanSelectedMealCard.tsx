@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Check, CheckCircle2, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
+import { Check, CheckCircle2, Clock3, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 
 const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
@@ -12,14 +12,12 @@ type PlanSelectedMealCardTabKey = 'ingredients' | 'instructions';
 export function PlanSelectedMealCard({
   badgeLabel,
   name,
-  calories,
-  protein,
-  carbs,
-  fat,
   imageUrl,
   ingredientsSource,
   instructionsSource,
   helperText,
+  description,
+  metaItems,
   isCompleted = false,
   completedAt,
   onToggleCompletionAction,
@@ -28,14 +26,12 @@ export function PlanSelectedMealCard({
 }: {
   badgeLabel: string;
   name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
   imageUrl?: string;
   ingredientsSource?: unknown;
   instructionsSource?: unknown;
   helperText?: string;
+  description?: string;
+  metaItems?: string[];
   isCompleted?: boolean;
   completedAt?: string;
   onToggleCompletionAction?: () => void;
@@ -46,6 +42,7 @@ export function PlanSelectedMealCard({
 
   const ingredients = useMemo(() => normalizeMealTextList(ingredientsSource), [ingredientsSource]);
   const instructions = useMemo(() => normalizeMealTextList(instructionsSource), [instructionsSource]);
+  const visibleMetaItems = useMemo(() => (metaItems ?? []).filter(Boolean), [metaItems]);
 
   const completionTimeLabel = useMemo(() => {
     if (!completedAt) return null;
@@ -79,10 +76,21 @@ export function PlanSelectedMealCard({
                 {badgeLabel}
               </span>
               <p className="mt-2 line-clamp-1 text-base font-semibold text-[var(--color-text)]">{name}</p>
-              <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
-                {calories} kcal • Protein {protein}g • Carbs {carbs}g • Fat {fat}g
-              </p>
+              {description ? <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">{description}</p> : null}
               {helperText ? <p className="mt-1 text-xs text-[var(--color-text-muted)]">{helperText}</p> : null}
+              {visibleMetaItems.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {visibleMetaItems.map(item => (
+                    <span
+                      key={item}
+                      className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-muted)]"
+                    >
+                      <Clock3 size={11} />
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {isCompleted ? (
@@ -138,13 +146,12 @@ export function PlanSelectedMealCard({
       {showDetails ? (
         <MealDetailModal
           name={name}
-          calories={calories}
-          protein={protein}
-          carbs={carbs}
-          fat={fat}
           imageUrl={imageUrl}
           ingredients={ingredients}
           instructions={instructions}
+          helperText={helperText}
+          description={description}
+          metaItems={visibleMetaItems}
           onClose={() => setShowDetails(false)}
         />
       ) : null}
@@ -154,23 +161,21 @@ export function PlanSelectedMealCard({
 
 function MealDetailModal({
   name,
-  calories,
-  protein,
-  carbs,
-  fat,
   imageUrl,
   ingredients,
   instructions,
+  helperText,
+  description,
+  metaItems,
   onClose,
 }: {
   name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
   imageUrl?: string;
   ingredients: string[];
   instructions: string[];
+  helperText?: string;
+  description?: string;
+  metaItems?: string[];
   onClose: () => void;
 }) {
   const availableTabs = useMemo(() => {
@@ -206,9 +211,18 @@ function MealDetailModal({
           {/* Name overlay at bottom of image */}
           <div className="absolute inset-x-0 bottom-0 p-4">
             <p className="line-clamp-2 text-base font-semibold text-white drop-shadow-sm">{name}</p>
-            <p className="mt-0.5 text-xs text-white/80">
-              {calories} kcal • P {protein}g • C {carbs}g • F {fat}g
-            </p>
+            {description ? <p className="mt-1 line-clamp-2 text-xs text-white/80">{description}</p> : null}
+            {helperText ? <p className="mt-1 line-clamp-1 text-xs text-white/75">{helperText}</p> : null}
+            {metaItems?.length ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {metaItems.map(item => (
+                  <span key={item} className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm">
+                    <Clock3 size={11} />
+                    {item}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
           <button
             type="button"

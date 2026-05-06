@@ -26,9 +26,6 @@ export default function UserMealsPage() {
     saveError,
     optionsByType,
     selectedByType,
-    selectedTotals,
-    coachTargetTotals,
-    delta,
     snackCount,
     snackMax,
     isSnackFull,
@@ -51,6 +48,16 @@ export default function UserMealsPage() {
     return optionsByType[activeFilter] ?? [];
   }, [optionsByType, activeFilter]);
 
+  const selectedCount = useMemo(
+    () => Object.values(selectedByType).reduce((total, items) => total + items.length, 0),
+    [selectedByType],
+  );
+
+  const requiredSelectedCount = useMemo(
+    () => ['BREAKFAST', 'LUNCH', 'DINNER'].reduce((total, type) => total + selectedByType[type].length, 0),
+    [selectedByType],
+  );
+
   return (
     <div className="px-4 md:px-6">
       <div className="mx-auto max-w-6xl space-y-5 pb-24">
@@ -63,7 +70,14 @@ export default function UserMealsPage() {
           <SlotState label="Snacks" count={snackCount} max={snackMax} />
         </div>
 
-        <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} />
+        <MealSelectionSummaryCard
+          selectedCount={selectedCount}
+          requiredSelectedCount={requiredSelectedCount}
+          requiredCount={3}
+          snackCount={snackCount}
+          snackMax={snackMax}
+          hasChanges={hasChanges}
+        />
 
         <section className="space-y-3">
           <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

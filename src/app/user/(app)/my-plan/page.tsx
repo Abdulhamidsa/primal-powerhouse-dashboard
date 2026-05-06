@@ -28,6 +28,7 @@ export default function UserMyPlanPage() {
     optionsByType,
     selectedByType,
     draftItems,
+    hasRequiredSlots,
     isSelected,
     isSnackFull,
     hasChanges,
@@ -51,8 +52,7 @@ export default function UserMyPlanPage() {
     currentMealName: string;
   } | null>(null);
 
-  const isPlanComplete =
-    selectedByType.BREAKFAST.length === 1 && selectedByType.LUNCH.length === 1 && selectedByType.DINNER.length === 1;
+  const isPlanComplete = hasRequiredSlots;
 
   const totalSelectedMeals = useMemo(() => {
     return TYPE_ORDER.reduce((acc, type) => acc + selectedByType[type].length, 0);
@@ -159,20 +159,7 @@ export default function UserMyPlanPage() {
           </div>
         </PageHeader>
 
-        {/* <section className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 md:p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-[var(--color-text)] md:text-base">Daily totals</h2>
-              <p className="text-xs text-[var(--color-text-muted)] md:text-sm">
-                Compact overview of your selected plan vs coach target
-              </p>
-            </div>
-          </div>
 
-          <div className="[&_.rounded-3xl]:rounded-2xl [&_.p-5]:p-3 md:[&_.p-5]:p-4">
-            <MealSelectionSummaryCard selected={selectedTotals} target={coachTargetTotals} delta={delta} subtle />
-          </div>
-        </section> */}
 
         {loading ? <SkeletonMealGrid /> : null}
 
@@ -223,13 +210,17 @@ export default function UserMyPlanPage() {
                         key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
                         badgeLabel={TYPE_LABEL[section.type]}
                         name={item.meal.name}
-                        calories={item.meal.calories}
-                        protein={item.meal.protein}
-                        carbs={item.meal.carbs}
-                        fat={item.meal.fat}
                         imageUrl={item.meal.imageUrl ?? undefined}
                         ingredientsSource={item.meal.ingredients}
                         instructionsSource={item.meal.instructions}
+                        description={item.meal.description ?? undefined}
+                        metaItems={[
+                          (item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0) > 0
+                            ? `${(item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0)} min total`
+                            : null,
+                          item.meal.category ?? null,
+                          item.meal.difficulty ?? null,
+                        ].filter((meta): meta is string => Boolean(meta))}
                         isCompleted={isCompleted(item)}
                         completedAt={completedAtByKey.get(`${item.mealType}:${item.slotIndex}:${item.mealId}`)}
                         isPending={isPending(item)}
@@ -265,14 +256,14 @@ export default function UserMyPlanPage() {
                     key={`${item.mealType}_${item.side.id}`}
                     badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
                     name={item.side.name}
-                    calories={item.side.calories}
-                    protein={item.side.protein}
-                    carbs={item.side.carbs}
-                    fat={item.side.fat}
-                    imageUrl={item.side.imageUrl ?? undefined}
-                    ingredientsSource={item.side.ingredients}
-                    instructionsSource={item.side.instructions}
-                    helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
+                      imageUrl={item.side.imageUrl ?? undefined}
+                      ingredientsSource={item.side.ingredients}
+                      instructionsSource={item.side.instructions}
+                      helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
+                      metaItems={[
+                        item.side.foodOrigin ?? null,
+                        item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
+                      ].filter((meta): meta is string => Boolean(meta))}
                   />
                 ))}
               </div>

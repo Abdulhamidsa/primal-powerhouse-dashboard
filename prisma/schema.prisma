@@ -2,7 +2,7 @@
 // PostgreSQL + Hetzner ready
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   // Keep both to be safe across local/dev/prod
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
@@ -14,9 +14,11 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-/* =========================
-   MODELS
-========================= */
+/**
+ * =========================
+ * MODELS
+ * =========================
+ */
 
 model ClientLead {
   id                          String     @id @default(cuid())
@@ -44,111 +46,121 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  meals     Meal[]
-  clients   Client[]
-  workouts  Workout[]
-  videos    Video[]
-  sideItems SideItem[]
-  sessions  Session[]
-  foodsCreated Food[]
+  meals              Meal[]
+  clients            Client[]
+  workouts           Workout[]
+  videos             Video[]
+  sideItems          SideItem[]
+  sessions           Session[]
+  foodsCreated       Food[]
   coachConversations Conversation[] @relation("ConversationCoach")
-  workoutPlans WorkoutPlan[]
+  workoutPlans       WorkoutPlan[]
+
+  // Training system relations
+  exercises        Exercise[]           @relation("ExerciseCoach")
+  workoutTemplates WorkoutTemplate[]    @relation("WorkoutTemplateCoach")
+  trainingPlans    ClientTrainingPlan[] @relation("TrainingPlansCoach")
+  trainingSessions TrainingSession[]    @relation("TrainingSessionsCoach")
 
   @@map("users")
 }
 
 model Client {
-  id                  String   @id @default(cuid())
-  name                String
-  email               String   @unique
-  password            String?
-  phone               String?
-  avatar              String?
-  status              ClientStatus @default(ACTIVE)
-  joinDate            DateTime @default(now())
-  currentWeight       Float?
-  targetWeight        Float?
-  height              Float?
-  age                 Int?
-  gender              Gender?
-  activityLevel       ActivityLevel?
-  dietaryRestrictions String?
-  goals               String?
-  notes               String?
-  motivationalMessage String?
-  phoneEncrypted               String?
-  dietaryRestrictionsEncrypted String?
-  goalsEncrypted               String?
-  notesEncrypted               String?
-  motivationalMessageEncrypted String?
-  lastSession         DateTime?
-  nextSession         DateTime?
-  sessionsCompleted   Int      @default(0)
-  progressPhotos      String?
-  goalCalories        Int?
-  goalMacros          String? // JSON: {protein, carbs, fat}
-  consentAnalytics              Boolean   @default(false)
-  consentMarketingNotifications Boolean   @default(false)
-  consentOptionalTracking       Boolean   @default(false)
-  consentMessageNotifications   Boolean   @default(false)
+  id                            String         @id @default(cuid())
+  name                          String
+  email                         String         @unique
+  password                      String?
+  phone                         String?
+  avatar                        String?
+  status                        ClientStatus   @default(ACTIVE)
+  joinDate                      DateTime       @default(now())
+  currentWeight                 Float?
+  targetWeight                  Float?
+  height                        Float?
+  age                           Int?
+  gender                        Gender?
+  activityLevel                 ActivityLevel?
+  dietaryRestrictions           String?
+  goals                         String?
+  notes                         String?
+  motivationalMessage           String?
+  phoneEncrypted                String?
+  dietaryRestrictionsEncrypted  String?
+  goalsEncrypted                String?
+  notesEncrypted                String?
+  motivationalMessageEncrypted  String?
+  lastSession                   DateTime?
+  nextSession                   DateTime?
+  sessionsCompleted             Int            @default(0)
+  progressPhotos                String?
+  goalCalories                  Int?
+  goalMacros                    String? // JSON: {protein, carbs, fat}
+  consentAnalytics              Boolean        @default(false)
+  consentMarketingNotifications Boolean        @default(false)
+  consentOptionalTracking       Boolean        @default(false)
+  consentMessageNotifications   Boolean        @default(false)
   privacyUpdatedAt              DateTime?
   deactivatedAt                 DateTime?
   anonymizedAt                  DateTime?
   deletionScheduledFor          DateTime?
   deletedAt                     DateTime?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt                     DateTime       @default(now())
+  updatedAt                     DateTime       @updatedAt
 
-  coachId  String
-  coach    User     @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId String
+  coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
 
-  workouts          Workout[]
-  mealPlans         MealPlan[]
-  videoAssignments  VideoAssignment[]
-  meals             Meal[]
-  feedback          Feedback[]
-  sessions          Session[]
-  sideItems         SideItem[]
-  healthMetrics     HealthMetric[]
-  weeklyCheckIns    WeeklyCheckIn[]
-  dailyNutritionLogs DailyNutritionLog[]
-  dailyTrainingLogs DailyTrainingLog[]
-  dailyCheckIns     DailyCheckIn[]
-  mealCompletions   MealCompletion[]
-  dailyIntakeOverrides DailyIntakeOverride[]
-  mealSelectionSet  UserMealSelectionSet?
-  privacyExportJobs PrivacyExportJob[]
-  deletionRequests  DeletionRequest[]
-  conversations     Conversation[]
-  conversationPresence ConversationPresence?
-  pushSubscriptions PushSubscription[]
+  workouts                 Workout[]
+  mealPlans                MealPlan[]
+  videoAssignments         VideoAssignment[]
+  meals                    Meal[]
+  feedback                 Feedback[]
+  sessions                 Session[]
+  sideItems                SideItem[]
+  healthMetrics            HealthMetric[]
+  weeklyCheckIns           WeeklyCheckIn[]
+  dailyNutritionLogs       DailyNutritionLog[]
+  dailyTrainingLogs        DailyTrainingLog[]
+  dailyCheckIns            DailyCheckIn[]
+  mealCompletions          MealCompletion[]
+  dailyIntakeOverrides     DailyIntakeOverride[]
+  mealSelectionSet         UserMealSelectionSet?
+  privacyExportJobs        PrivacyExportJob[]
+  deletionRequests         DeletionRequest[]
+  conversations            Conversation[]
+  conversationPresence     ConversationPresence?
+  pushSubscriptions        PushSubscription[]
   notificationDeliveryLogs NotificationDeliveryLog[]
-  workoutPlanAssignments WorkoutPlanAssignment[]
-  workoutSessions        WorkoutSession[]
-  dailyCheckinsEnabled        Boolean  @default(true)
-  weeklyCheckinsEnabled       Boolean  @default(true)
-  dailyWeightEnabled          Boolean  @default(true)
-  weightChartEnabled          Boolean  @default(true)
-  progressPhotosEnabled       Boolean  @default(true)
-  nutritionTrackingEnabled    Boolean  @default(true)
-  workoutTrackingEnabled      Boolean  @default(true)
-  featureVisibility      ClientFeatureVisibility?
+  workoutPlanAssignments   WorkoutPlanAssignment[]
+  workoutSessions          WorkoutSession[]
+  dailyCheckinsEnabled     Boolean                   @default(true)
+  weeklyCheckinsEnabled    Boolean                   @default(true)
+  dailyWeightEnabled       Boolean                   @default(true)
+  weightChartEnabled       Boolean                   @default(true)
+  progressPhotosEnabled    Boolean                   @default(true)
+  nutritionTrackingEnabled Boolean                   @default(true)
+  workoutTrackingEnabled   Boolean                   @default(true)
+  featureVisibility        ClientFeatureVisibility?
+
+  // Training system relations
+  trainingPlans    ClientTrainingPlan[] @relation("TrainingPlans")
+  trainingSessions TrainingSession[]    @relation("TrainingSessions")
 
   @@map("clients")
 }
 
 model ClientFeatureVisibility {
-  id                          String   @id @default(cuid())
-  clientId                    String   @unique
-  dailyCheckinsEnabled        Boolean  @default(true)
-  weeklyCheckinsEnabled       Boolean  @default(true)
-  dailyWeightEnabled          Boolean  @default(true)
-  weightChartEnabled          Boolean  @default(true)
-  progressPhotosEnabled       Boolean  @default(true)
-  nutritionTrackingEnabled    Boolean  @default(true)
-  workoutTrackingEnabled      Boolean  @default(true)
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
+  id                       String   @id @default(cuid())
+  clientId                 String   @unique
+  dailyCheckinsEnabled     Boolean  @default(true)
+  weeklyCheckinsEnabled    Boolean  @default(true)
+  dailyWeightEnabled       Boolean  @default(true)
+  weightChartEnabled       Boolean  @default(true)
+  progressPhotosEnabled    Boolean  @default(true)
+  nutritionTrackingEnabled Boolean  @default(true)
+  workoutTrackingEnabled   Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
@@ -156,19 +168,19 @@ model ClientFeatureVisibility {
 }
 
 model Conversation {
-  id              String   @id @default(cuid())
-  clientId        String
-  coachId         String
-  lastMessageAt   DateTime?
+  id               String    @id @default(cuid())
+  clientId         String
+  coachId          String
+  lastMessageAt    DateTime?
   clientLastReadAt DateTime?
-  coachLastReadAt DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  coachLastReadAt  DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   coach  User   @relation("ConversationCoach", fields: [coachId], references: [id], onDelete: Cascade)
 
-  messages Message[]
+  messages        Message[]
   presenceRecords ConversationPresence[]
 
   @@unique([clientId, coachId])
@@ -186,7 +198,7 @@ model ConversationPresence {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, lastSeenAt])
@@ -195,13 +207,13 @@ model ConversationPresence {
 }
 
 model PushSubscription {
-  id         String   @id @default(cuid())
-  clientId   String
-  endpoint   String
-  p256dh     String
-  auth       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  clientId  String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
@@ -248,10 +260,10 @@ model Message {
 }
 
 model HealthMetric {
-  id              String   @id @default(cuid())
-  clientId        String
-  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+  id       String @id @default(cuid())
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
   weight          Float
   bmi             Float
   bmr             Int
@@ -259,40 +271,40 @@ model HealthMetric {
   recommendedCals Int
   bmiCategory     String
   goal            String?
-  
-  macros          String // JSON: {protein, carbs, fat}
-  notes           String? // feedback/warnings
-  notesEncrypted  String?
-  
-  recordedAt      DateTime @default(now())
-  createdAt       DateTime @default(now())
-  
+
+  macros         String // JSON: {protein, carbs, fat}
+  notes          String? // feedback/warnings
+  notesEncrypted String?
+
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
   @@index([clientId])
   @@index([recordedAt])
   @@map("health_metrics")
 }
 
 model Meal {
-  id              String   @id @default(cuid())
-  name            String
-  type            MealType
-  calories        Float
-  protein         Float
-  carbs           Float
-  fat             Float
-  fiber           Float?
-  ingredients     String?
-  spices          String?
-  instructions    String?
-  prepTime        Int?
-  cookTime        Int?
-  servings        Int      @default(1)
-  tags            String?
-  imageUrl        String?
-  isPersonalized  Boolean  @default(false)
-  originalMealId  String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  type           MealType
+  calories       Float
+  protein        Float
+  carbs          Float
+  fat            Float
+  fiber          Float?
+  ingredients    String?
+  spices         String?
+  instructions   String?
+  prepTime       Int?
+  cookTime       Int?
+  servings       Int      @default(1)
+  tags           String?
+  imageUrl       String?
+  isPersonalized Boolean  @default(false)
+  originalMealId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
@@ -300,9 +312,9 @@ model Meal {
   clientId String?
   client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  mealAssignments MealAssignment[]
+  mealAssignments    MealAssignment[]
   mealSelectionItems UserMealSelectionItem[]
-  mealCompletions MealCompletion[]
+  mealCompletions    MealCompletion[]
 
   @@map("meals")
 }
@@ -353,23 +365,23 @@ model FoodAlias {
 }
 
 model Video {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?
-  category      VideoCategory
-  difficulty    DifficultyLevel
-  duration      Int
-  videoUrl      String
-  thumbnailUrl  String?
-  equipment     String?
-  muscleGroups  String?
-  tags          String?
-  instructions  String?
-  tips          String?
-  isPublic      Boolean  @default(true)
-  viewCount     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String          @id @default(cuid())
+  title        String
+  description  String?
+  category     VideoCategory
+  difficulty   DifficultyLevel
+  duration     Int
+  videoUrl     String
+  thumbnailUrl String?
+  equipment    String?
+  muscleGroups String?
+  tags         String?
+  instructions String?
+  tips         String?
+  isPublic     Boolean         @default(true)
+  viewCount    Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
@@ -381,7 +393,7 @@ model Video {
 }
 
 model Workout {
-  id             String   @id @default(cuid())
+  id             String      @id @default(cuid())
   date           DateTime
   type           WorkoutType
   duration       Int
@@ -389,8 +401,8 @@ model Workout {
   notes          String?
   caloriesBurned Float?
   rating         Int?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -402,14 +414,14 @@ model Workout {
 }
 
 model MealPlan {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
   startDate DateTime
   endDate   DateTime?
-  isActive  Boolean  @default(true)
+  isActive  Boolean   @default(true)
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -418,7 +430,6 @@ model MealPlan {
 
   @@map("meal_plans")
 }
-
 
 model MealAssignment {
   id            String   @id @default(cuid())
@@ -434,7 +445,7 @@ model MealAssignment {
   mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
 
   mealId String
-  meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  meal   Meal      @relation(fields: [mealId], references: [id], onDelete: Cascade)
   side   SideItem?
 
   selectionItems UserMealSelectionItem[]
@@ -443,21 +454,21 @@ model MealAssignment {
 }
 
 model SideItem {
-  id              String    @id @default(cuid())
-  name            String
-  type            SideType
-  imageUrl        String?
-  calories        Float
-  protein         Float     @default(0)
-  carbs           Float     @default(0)
-  fat             Float     @default(0)
-  fiber           Float?
-  ingredients     String?
-  spices          String?
-  instructions    String?
-  foodOrigin      String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id               String   @id @default(cuid())
+  name             String
+  type             SideType
+  imageUrl         String?
+  calories         Float
+  protein          Float    @default(0)
+  carbs            Float    @default(0)
+  fat              Float    @default(0)
+  fiber            Float?
+  ingredients      String?
+  spices           String?
+  instructions     String?
+  foodOrigin       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
   mealAssignmentId String?  @unique
 
   coachId String
@@ -481,7 +492,7 @@ model UserMealSelectionSet {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client                  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   items  UserMealSelectionItem[]
 
   @@index([clientId])
@@ -497,9 +508,9 @@ model UserMealSelectionItem {
   sourceMealAssignmentId String?
   createdAt              DateTime @default(now())
 
-  selectionSet UserMealSelectionSet @relation(fields: [selectionSetId], references: [id], onDelete: Cascade)
-  meal         Meal                 @relation(fields: [mealId], references: [id], onDelete: Cascade)
-  sourceMealAssignment MealAssignment? @relation(fields: [sourceMealAssignmentId], references: [id], onDelete: SetNull)
+  selectionSet         UserMealSelectionSet @relation(fields: [selectionSetId], references: [id], onDelete: Cascade)
+  meal                 Meal                 @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  sourceMealAssignment MealAssignment?      @relation(fields: [sourceMealAssignmentId], references: [id], onDelete: SetNull)
 
   @@unique([selectionSetId, mealType, slotIndex])
   @@index([selectionSetId])
@@ -555,16 +566,16 @@ model DailyIntakeOverride {
 }
 
 model VideoAssignment {
-  id            String   @id @default(cuid())
-  assignedDate  DateTime @default(now())
+  id            String    @id @default(cuid())
+  assignedDate  DateTime  @default(now())
   dueDate       DateTime?
   scheduledTime String?
-  isCompleted   Boolean  @default(false)
+  isCompleted   Boolean   @default(false)
   completedAt   DateTime?
   notes         String?
-  progress      Float    @default(0.0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  progress      Float     @default(0.0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -576,65 +587,65 @@ model VideoAssignment {
 }
 
 model Session {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  clientId  String
-  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  coachId   String
-  coach     User    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId String
+  coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
 
   date      DateTime
   type      WorkoutType
   duration  Int
   status    SessionStatus @default(SCHEDULED)
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@map("sessions")
 }
 
 model Feedback {
-  id        String   @id @default(cuid())
-  message   String
+  id               String   @id @default(cuid())
+  message          String
   messageEncrypted String?
-  clientId  String
-  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  clientId         String
+  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
 
   @@map("feedback")
 }
 
 model WeeklyCheckIn {
-  id                  String   @id @default(cuid())
-  clientId            String
-  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id       String @id @default(cuid())
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  weekStartDate       DateTime
-  submittedAt         DateTime @default(now())
+  weekStartDate DateTime
+  submittedAt   DateTime @default(now())
 
-  weightKg            Float?
-  waistCm             Float?
-  trainingAdherence   Int
-  nutritionAdherence  Int
-  energyRating        Int
-  stressRating        Int?
-  hungerRating        Int?
-  digestionRating     Int?
-  sleepHours          Float?
-  progressPhotoFrontUrl String?
-  progressPhotoSideUrl  String?
-  progressPhotoBackUrl  String?
-  strengthUpdate      String?
-  blockerText         String?
-  notes               String?
+  weightKg                Float?
+  waistCm                 Float?
+  trainingAdherence       Int
+  nutritionAdherence      Int
+  energyRating            Int
+  stressRating            Int?
+  hungerRating            Int?
+  digestionRating         Int?
+  sleepHours              Float?
+  progressPhotoFrontUrl   String?
+  progressPhotoSideUrl    String?
+  progressPhotoBackUrl    String?
+  strengthUpdate          String?
+  blockerText             String?
+  notes                   String?
   strengthUpdateEncrypted String?
   blockerTextEncrypted    String?
   notesEncrypted          String?
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([clientId, weekStartDate])
   @@index([clientId])
@@ -643,15 +654,15 @@ model WeeklyCheckIn {
 }
 
 model DailyNutritionLog {
-  id         String   @id @default(cuid())
-  clientId   String
-  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  dayDate    DateTime
-  status     DailyNutritionStatus
-  note       String?
-  submittedAt DateTime @default(now())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String               @id @default(cuid())
+  clientId    String
+  client      Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dayDate     DateTime
+  status      DailyNutritionStatus
+  note        String?
+  submittedAt DateTime             @default(now())
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
   @@unique([clientId, dayDate])
   @@index([clientId])
@@ -660,15 +671,15 @@ model DailyNutritionLog {
 }
 
 model DailyTrainingLog {
-  id          String   @id @default(cuid())
+  id          String              @id @default(cuid())
   clientId    String
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
   dayDate     DateTime
   status      DailyTrainingStatus
   note        String?
-  submittedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  submittedAt DateTime            @default(now())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@unique([clientId, dayDate])
   @@index([clientId])
@@ -677,18 +688,18 @@ model DailyTrainingLog {
 }
 
 model DailyCheckIn {
-  id          String                @id @default(cuid())
+  id          String              @id @default(cuid())
   clientId    String
-  client      Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
   dayDate     DateTime
   weightKg    Float?
   energy      DailyCheckInEnergy?
   hunger      DailyCheckInHunger?
   sleep       DailyCheckInSleep?
   note        String?
-  submittedAt DateTime              @default(now())
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  submittedAt DateTime            @default(now())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@unique([clientId, dayDate])
   @@index([clientId])
@@ -697,16 +708,16 @@ model DailyCheckIn {
 }
 
 model PrivacyExportJob {
-  id                String   @id @default(cuid())
+  id                String              @id @default(cuid())
   clientId          String
-  client            Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client            Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
   status            PrivacyExportStatus @default(PENDING)
   format            PrivacyExportFormat @default(JSON_AND_CSV)
-  requestedAt       DateTime @default(now())
+  requestedAt       DateTime            @default(now())
   completedAt       DateTime?
   expiresAt         DateTime
   downloadTokenHash String?
-  downloadCount     Int      @default(0)
+  downloadCount     Int                 @default(0)
   downloadedAt      DateTime?
   payloadJson       String?
   csvBundleJson     String?
@@ -719,18 +730,18 @@ model PrivacyExportJob {
 }
 
 model DeletionRequest {
-  id                   String   @id @default(cuid())
-  clientId             String
-  client               Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  status               DeletionRequestStatus @default(REQUESTED)
-  requestedAt          DateTime @default(now())
-  gracePeriodDays      Int      @default(30)
+  id                    String                @id @default(cuid())
+  clientId              String
+  client                Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status                DeletionRequestStatus @default(REQUESTED)
+  requestedAt           DateTime              @default(now())
+  gracePeriodDays       Int                   @default(30)
   scheduledHardDeleteAt DateTime
-  anonymizedAt         DateTime?
-  finalizedAt          DateTime?
-  cancelledAt          DateTime?
-  reason               String?
-  metadata             String?
+  anonymizedAt          DateTime?
+  finalizedAt           DateTime?
+  cancelledAt           DateTime?
+  reason                String?
+  metadata              String?
 
   @@index([clientId])
   @@index([scheduledHardDeleteAt])
@@ -756,21 +767,21 @@ model AuditLog {
 }
 
 model IngredientMacroRefreshJob {
-  id                   String @id @default(cuid())
+  id                   String                       @id @default(cuid())
   foodId               String
   requestedById        String
   status               IngredientMacroRefreshStatus @default(PENDING)
-  scope                IngredientMacroRefreshScope @default(ALL)
-  affectedMealsCount   Int @default(0)
-  processedMealsCount  Int @default(0)
-  failedMealsCount     Int @default(0)
-  nextOffset           Int @default(0)
+  scope                IngredientMacroRefreshScope  @default(ALL)
+  affectedMealsCount   Int                          @default(0)
+  processedMealsCount  Int                          @default(0)
+  failedMealsCount     Int                          @default(0)
+  nextOffset           Int                          @default(0)
   failedMealErrorsJson String?
   error                String?
-  requestedAt          DateTime @default(now())
+  requestedAt          DateTime                     @default(now())
   startedAt            DateTime?
   completedAt          DateTime?
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime                     @updatedAt
 
   @@index([foodId])
   @@index([status])
@@ -800,9 +811,11 @@ model MealPlanRecalculationAudit {
   @@map("meal_plan_recalculation_audits")
 }
 
-/* =========================
-   ENUMS
-========================= */
+/**
+ * =========================
+ * ENUMS
+ * =========================
+ */
 
 enum LeadStatus {
   CONTACTED
@@ -982,6 +995,78 @@ enum ExerciseFeedbackType {
   PAIN_DISCOMFORT
 }
 
+enum MuscleGroup {
+  CHEST
+  BACK
+  SHOULDERS
+  BICEPS
+  TRICEPS
+  FOREARMS
+  CORE
+  ABS
+  OBLIQUES
+  GLUTES
+  QUADRICEPS
+  HAMSTRINGS
+  CALVES
+  ADDUCTORS
+  ABDUCTORS
+  LEGS
+}
+
+enum Equipment {
+  DUMBBELL
+  BARBELL
+  KETTLEBELL
+  MACHINE
+  CABLE
+  BODYWEIGHT
+  BAND
+  TRX
+  MEDICINE_BALL
+  BOX
+  EZ_BAR
+  TRAP_BAR
+}
+
+enum SourceType {
+  MANUAL
+  AI_GENERATED
+  CLONED
+}
+
+enum PlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum TrainingDayType {
+  WORKOUT
+  REST
+}
+
+enum PlanDayStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+  MISSED
+}
+
+enum TrainingSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum PerceivedDifficulty {
+  EASY
+  GOOD
+  HARD
+  VERY_HARD
+}
+
 model WorkoutPlan {
   id          String   @id @default(cuid())
   name        String
@@ -1009,8 +1094,8 @@ model WorkoutPlanExercise {
   restSeconds       Int     @default(120)
   notes             String?
 
-  workoutPlan  WorkoutPlan  @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
-  video        Video        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  workoutPlan  WorkoutPlan   @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  video        Video         @relation(fields: [videoId], references: [id], onDelete: Cascade)
   exerciseLogs ExerciseLog[]
 
   @@map("workout_plan_exercises")
@@ -1023,8 +1108,8 @@ model WorkoutPlanAssignment {
   assignedAt    DateTime @default(now())
   isActive      Boolean  @default(true)
 
-  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
-  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  workoutPlan WorkoutPlan      @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  client      Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
   sessions    WorkoutSession[]
 
   @@map("workout_plan_assignments")
@@ -1053,7 +1138,7 @@ model ExerciseLog {
   feedback       ExerciseFeedbackType?
   feedbackNote   String?
 
-  session      WorkoutSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session      WorkoutSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   planExercise WorkoutPlanExercise @relation(fields: [planExerciseId], references: [id], onDelete: Cascade)
   sets         SetLog[]
 
@@ -1061,15 +1146,276 @@ model ExerciseLog {
 }
 
 model SetLog {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   exerciseLogId String
   setNumber     Int
   reps          Int
   weightKg      Float
-  completed     Boolean     @default(true)
-  loggedAt      DateTime    @default(now())
+  completed     Boolean  @default(true)
+  loggedAt      DateTime @default(now())
 
   exerciseLog ExerciseLog @relation(fields: [exerciseLogId], references: [id], onDelete: Cascade)
 
   @@map("set_logs")
+}
+
+/**
+ * =========================
+ * NEW TRAINING SYSTEM MODELS
+ * =========================
+ */
+
+model Exercise {
+  id                   String       @id @default(cuid())
+  name                 String
+  description          String?
+  muscleGroup          MuscleGroup
+  muscleGroupSecondary MuscleGroup?
+  equipment            Equipment?
+  videoUrl             String?
+  imageUrl             String?
+  instructions         String?
+
+  defaultSets        Int?
+  defaultReps        Int?
+  defaultRestSeconds Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coachId String
+  coach   User   @relation("ExerciseCoach", fields: [coachId], references: [id], onDelete: Cascade)
+
+  templates               WorkoutTemplateExercise[]
+  TrainingSessionExercise TrainingSessionExercise[]
+
+  @@index([coachId])
+  @@index([muscleGroup])
+  @@map("exercises")
+}
+
+model WorkoutTemplate {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  goal        String?
+  difficulty  DifficultyLevel?
+
+  sourceType       SourceType @default(MANUAL)
+  aiGenerated      Boolean    @default(false)
+  aiPromptSnapshot Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coachId String
+  coach   User   @relation("WorkoutTemplateCoach", fields: [coachId], references: [id], onDelete: Cascade)
+
+  exercises WorkoutTemplateExercise[]
+  planDays  TrainingPlanDay[]
+  sessions  TrainingSession[]
+
+  @@index([coachId])
+  @@index([difficulty])
+  @@map("workout_templates")
+}
+
+model WorkoutTemplateExercise {
+  id          String @id @default(cuid())
+  order       Int
+  sets        Int    @default(3)
+  reps        Int    @default(8)
+  restSeconds Int    @default(120)
+
+  targetRpe   Float?
+  targetTempo String?
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workoutTemplateId String
+  workoutTemplate   WorkoutTemplate @relation(fields: [workoutTemplateId], references: [id], onDelete: Cascade)
+
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+
+  @@unique([workoutTemplateId, order])
+  @@index([workoutTemplateId])
+  @@index([exerciseId])
+  @@map("workout_template_exercises")
+}
+
+model ClientTrainingPlan {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  status      PlanStatus @default(ACTIVE)
+
+  startDate DateTime
+  endDate   DateTime?
+
+  sourceType       SourceType @default(MANUAL)
+  aiGenerated      Boolean    @default(false)
+  aiPromptSnapshot Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientId String
+  client   Client @relation("TrainingPlans", fields: [clientId], references: [id], onDelete: Cascade)
+
+  coachId String
+  coach   User   @relation("TrainingPlansCoach", fields: [coachId], references: [id], onDelete: Cascade)
+
+  days TrainingPlanDay[]
+
+  @@index([clientId])
+  @@index([coachId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@map("client_training_plans")
+}
+
+model TrainingPlanDay {
+  id   String          @id @default(cuid())
+  date DateTime
+  type TrainingDayType @default(WORKOUT)
+
+  workoutTemplateId String?
+  workoutTemplate   WorkoutTemplate? @relation(fields: [workoutTemplateId], references: [id], onDelete: SetNull)
+
+  title String?
+  note  String?
+
+  status PlanDayStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  planId String
+  plan   ClientTrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  sessions TrainingSession[]
+
+  @@unique([planId, date])
+  @@index([planId, date])
+  @@index([date])
+  @@index([status])
+  @@map("training_plan_days")
+}
+
+model TrainingSession {
+  id     String                @id @default(cuid())
+  status TrainingSessionStatus @default(IN_PROGRESS)
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  planDayId String
+  planDay   TrainingPlanDay @relation(fields: [planDayId], references: [id], onDelete: Cascade)
+
+  clientId String
+  client   Client @relation("TrainingSessions", fields: [clientId], references: [id], onDelete: Cascade)
+
+  workoutTemplateId String?
+  workoutTemplate   WorkoutTemplate? @relation(fields: [workoutTemplateId], references: [id], onDelete: SetNull)
+
+  perceivedDifficulty PerceivedDifficulty?
+  overallFeedback     String?
+  caloriesBurned      Float?
+
+  sourceType String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coachId String
+  coach   User   @relation("TrainingSessionsCoach", fields: [coachId], references: [id], onDelete: Cascade)
+
+  exercises TrainingSessionExercise[]
+
+  @@index([clientId])
+  @@index([coachId])
+  @@index([planDayId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([completedAt])
+  @@map("training_sessions")
+}
+
+model TrainingSessionExercise {
+  id    String @id @default(cuid())
+  order Int
+
+  exerciseNameSnapshot String
+  muscleGroupSnapshot  MuscleGroup?
+  equipmentSnapshot    String?
+  notesSnapshot        String?
+
+  plannedSets         Int
+  plannedReps         Int
+  plannedRestSeconds  Int
+  targetRpeSnapshot   Float?
+  targetTempoSnapshot String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessionId String
+  session   TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  exerciseId String?
+  exercise   Exercise? @relation(fields: [exerciseId], references: [id], onDelete: SetNull)
+
+  sets TrainingSessionSet[]
+
+  @@unique([sessionId, order])
+  @@index([sessionId])
+  @@index([exerciseId])
+  @@map("training_session_exercises")
+}
+
+model TrainingSessionSet {
+  id        String @id @default(cuid())
+  setNumber Int
+
+  plannedReps        Int
+  plannedWeightKg    Float?
+  plannedRestSeconds Int
+
+  actualReps     Int?
+  actualWeightKg Float?
+
+  completed Boolean @default(false)
+  skipped   Boolean @default(false)
+  feedback  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessionExerciseId String
+  sessionExercise   TrainingSessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
+  RestTimer         RestTimer?
+
+  @@unique([sessionExerciseId, setNumber])
+  @@index([sessionExerciseId])
+  @@map("training_session_sets")
+}
+
+model RestTimer {
+  id String @id @default(cuid())
+
+  sessionSetId String             @unique
+  sessionSet   TrainingSessionSet @relation(fields: [sessionSetId], references: [id], onDelete: Cascade)
+
+  plannedSeconds Int
+  actualSeconds  Int?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@map("rest_timers")
 }

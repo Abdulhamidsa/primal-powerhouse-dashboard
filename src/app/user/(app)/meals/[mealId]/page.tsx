@@ -1,61 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Clock, Droplets, Flame, Sparkles, Users, Wheat } from 'lucide-react';
+import { ArrowLeft, Clock, Sparkles, Users, Wheat, Flame } from 'lucide-react';
+import { useMealDetail } from '@/features/meals/hooks/useMealDetail';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
-
-interface Meal {
-  id: string;
-  name: string;
-  type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber?: number;
-  ingredients?: unknown;
-  spices?: unknown;
-  instructions?: unknown;
-  prepTime?: number;
-  cookTime?: number;
-  servings: number;
-  imageUrl?: string;
-}
 
 export default function MealDetailPage() {
   const params = useParams();
   const router = useRouter();
-
-  const [meal, setMeal] = useState<Meal | null>(null);
-  const [loading, setLoading] = useState(true);
+  const mealId = typeof params?.mealId === 'string' ? params.mealId : undefined;
+  const { meal, error, isLoading } = useMealDetail(mealId);
   const [activeTab, setActiveTab] = useState<'ingredients' | 'spices' | 'instructions'>('ingredients');
 
-  useEffect(() => {
-    if (!params?.mealId) return;
-    fetchMealDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params?.mealId]);
-
-  const fetchMealDetails = async () => {
-    try {
-      const response = await fetch(`/api/meals/${params.mealId}?view=client`);
-      if (!response.ok) {
-        setMeal(null);
-        return;
-      }
-      const data = await response.json();
-      setMeal(data);
-    } catch (error) {
-      console.error('Error fetching meal details:', error);
-      setMeal(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDuration = (minutes?: number) => {
+  const formatDuration = (minutes?: number | null) => {
     if (!minutes || minutes <= 0) return 'N/A';
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
@@ -64,7 +23,6 @@ export default function MealDetailPage() {
   };
 
   const fallback = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=60';
-
   const imageSrc = meal?.imageUrl?.trim() ? meal.imageUrl : fallback;
 
   const totalTime = useMemo(() => {
@@ -76,7 +34,7 @@ export default function MealDetailPage() {
   const spicesList = useMemo(() => normalizeMealTextList(meal?.spices), [meal?.spices]);
   const instructionsList = useMemo(() => normalizeMealTextList(meal?.instructions), [meal?.instructions]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background px-4 py-10">
         <div className="mx-auto max-w-3xl">
@@ -99,7 +57,7 @@ export default function MealDetailPage() {
     );
   }
 
-  if (!meal) {
+  if (error || !meal) {
     return (
       <div className="min-h-screen bg-background px-4 py-10">
         <div className="mx-auto max-w-xl rounded-3xl border border-border bg-card p-8 text-center">
@@ -175,19 +133,19 @@ export default function MealDetailPage() {
               <MetaChip icon={<Users size={12} />} label={`${meal.servings} servings`} />
             </div>
 
-            {/* Stats */}
-            <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <StatCard label="Calories" value={`${meal.calories}`} />
-              <StatCard label="Protein" value={`${meal.protein}g`} />
-              <StatCard label="Carbs" value={`${meal.carbs}g`} />
-              <StatCard label="Fat" value={`${meal.fat}g`} />
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+              <StatCard label="Meal type" value={meal.type || 'Meal'} />
+              <StatCard label="Total time" value={`${totalTime > 0 ? `${totalTime}m` : 'N/A'}`} />
+              <StatCard label="Servings" value={`${meal.servings}`} />
             </div>
 
-            {meal.fiber !== undefined ? (
-              <div className="mt-3">
-                <StatRow icon={<Droplets size={14} />} label="Fiber" value={`${meal.fiber}g`} />
-              </div>
-            ) : null}
+            <div className="mt-3">
+              <StatRow
+                icon={<Clock size={14} />}
+                label="Prep / cook"
+                value={`${formatDuration(meal.prepTime)} / ${formatDuration(meal.cookTime)}`}
+              />
+            </div>
           </div>
         </div>
 
