@@ -20,8 +20,7 @@ export function ExerciseLibrary() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { exercises, isLoading, isError, createExercise, updateExercise, deleteExercise } =
-    useCoachExercises(filters);
+  const { exercises, isLoading, isError, createExercise, updateExercise, deleteExercise } = useCoachExercises(filters);
 
   const handleOpenForm = (exercise?: Exercise) => {
     if (exercise) {
@@ -107,16 +106,16 @@ export function ExerciseLibrary() {
           type="text"
           placeholder="Search exercises..."
           value={filters.search ?? ''}
-          onChange={(e) => setFilters({ ...filters, search: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, search: e.target.value || undefined })}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={filters.muscleGroup ?? ''}
-          onChange={(e) => setFilters({ ...filters, muscleGroup: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, muscleGroup: e.target.value || undefined })}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Muscle Groups</option>
-          {muscleGroups.map((group) => (
+          {muscleGroups.map(group => (
             <option key={group} value={group}>
               {group.replace(/_/g, ' ')}
             </option>
@@ -124,11 +123,11 @@ export function ExerciseLibrary() {
         </select>
         <select
           value={filters.equipment ?? ''}
-          onChange={(e) => setFilters({ ...filters, equipment: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, equipment: e.target.value || undefined })}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Equipment</option>
-          {equipmentOptions.map((equip) => (
+          {equipmentOptions.map(equip => (
             <option key={equip} value={equip}>
               {equip.replace(/_/g, ' ')}
             </option>
@@ -140,40 +139,28 @@ export function ExerciseLibrary() {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full p-6 space-y-4">
-            <h2 className="text-xl font-bold">
-              {editingId ? 'Edit Exercise' : 'Add Exercise'}
-            </h2>
+            <h2 className="text-xl font-bold">{editingId ? 'Edit Exercise' : 'Add Exercise'}</h2>
 
-            {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            {error && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Exercise Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exercise Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name ?? ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., Barbell Bench Press"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={formData.description ?? ''}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value || undefined })
-                  }
+                  onChange={e => setFormData({ ...formData, description: e.target.value || undefined })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Optional notes about the exercise"
                   rows={3}
@@ -182,17 +169,15 @@ export function ExerciseLibrary() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Muscle Group *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Muscle Group *</label>
                   <select
                     required
                     value={formData.muscleGroup ?? ''}
-                    onChange={(e) => setFormData({ ...formData, muscleGroup: e.target.value as any })}
+                    onChange={e => setFormData({ ...formData, muscleGroup: e.target.value as any })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select muscle group</option>
-                    {muscleGroups.map((group) => (
+                    {muscleGroups.map(group => (
                       <option key={group} value={group}>
                         {group.replace(/_/g, ' ')}
                       </option>
@@ -201,17 +186,15 @@ export function ExerciseLibrary() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Equipment *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Equipment *</label>
                   <select
                     required
                     value={formData.equipment ?? ''}
-                    onChange={(e) => setFormData({ ...formData, equipment: e.target.value as any })}
+                    onChange={e => setFormData({ ...formData, equipment: e.target.value as any })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select equipment</option>
-                    {equipmentOptions.map((equip) => (
+                    {equipmentOptions.map(equip => (
                       <option key={equip} value={equip}>
                         {equip.replace(/_/g, ' ')}
                       </option>
@@ -219,8 +202,6 @@ export function ExerciseLibrary() {
                   </select>
                 </div>
               </div>
-
-
 
               <div className="flex gap-3 pt-4">
                 <button
@@ -247,9 +228,7 @@ export function ExerciseLibrary() {
       <div className="space-y-3">
         {isLoading && <p className="text-gray-600">Loading exercises...</p>}
         {isError && (
-          <div className="p-4 bg-red-100 text-red-700 rounded-lg">
-            Error loading exercises. Please try again.
-          </div>
+          <div className="p-4 bg-red-100 text-red-700 rounded-lg">Error loading exercises. Please try again.</div>
         )}
         {exercises && exercises.length === 0 && (
           <div className="p-4 bg-gray-100 text-gray-600 rounded-lg text-center">
@@ -257,7 +236,7 @@ export function ExerciseLibrary() {
           </div>
         )}
 
-        {exercises?.map((exercise) => (
+        {exercises?.map(exercise => (
           <div
             key={exercise.id}
             className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
@@ -265,9 +244,7 @@ export function ExerciseLibrary() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{exercise.name}</h3>
-                {exercise.description && (
-                  <p className="text-gray-600 text-sm mt-1">{exercise.description}</p>
-                )}
+                {exercise.description && <p className="text-gray-600 text-sm mt-1">{exercise.description}</p>}
                 <div className="flex flex-wrap gap-2 mt-3">
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-medium">
                     {exercise.muscleGroup?.replace(/_/g, ' ')}
@@ -275,7 +252,6 @@ export function ExerciseLibrary() {
                   <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-medium">
                     {exercise.equipment?.replace(/_/g, ' ')}
                   </span>
-
                 </div>
               </div>
               <div className="flex gap-2 ml-4">

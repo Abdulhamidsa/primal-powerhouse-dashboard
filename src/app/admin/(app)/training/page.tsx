@@ -23,7 +23,7 @@ export default function AdminTrainingPage() {
 
         {/* Tab bar */}
         <div className="inline-flex rounded-2xl border border-border bg-card/60 p-1">
-          {TABS.map((t) => {
+          {TABS.map(t => {
             const active = t.key === tab;
             return (
               <button
@@ -32,9 +32,7 @@ export default function AdminTrainingPage() {
                 onClick={() => setTab(t.key)}
                 className={[
                   'px-4 py-1.5 text-sm font-medium rounded-xl transition-all whitespace-nowrap',
-                  active
-                    ? 'bg-background shadow-sm text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
+                  active ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground',
                 ].join(' ')}
               >
                 {t.label}

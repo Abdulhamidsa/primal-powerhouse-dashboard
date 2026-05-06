@@ -23,10 +23,7 @@ export const trainingSessionService = {
    * 3. Creates blank session sets for tracking
    * 4. Updates plan day status to PENDING (if not already started)
    */
-  async startSession(
-    clientId: string,
-    input: StartTrainingSessionInput
-  ): Promise<TrainingSessionWithExercises> {
+  async startSession(clientId: string, input: StartTrainingSessionInput): Promise<TrainingSessionWithExercises> {
     // Get plan day with template
     const planDay = await prisma.trainingPlanDay.findUnique({
       where: { id: input.planDayId },
@@ -206,11 +203,7 @@ export const trainingSessionService = {
    * Complete a session
    * Marks session as COMPLETED/ABANDONED and updates plan day status
    */
-  async completeSession(
-    sessionId: string,
-    clientId: string,
-    input: CompleteTrainingSessionInput
-  ) {
+  async completeSession(sessionId: string, clientId: string, input: CompleteTrainingSessionInput) {
     // Verify session belongs to client
     const session = await this.getSession(sessionId, clientId);
     if (!session) {
@@ -286,7 +279,7 @@ export const trainingSessionService = {
 
     return {
       exerciseName: lastSession.exerciseNameSnapshot,
-      sets: lastSession.sets.map((s) => ({
+      sets: lastSession.sets.map(s => ({
         setNumber: s.setNumber,
         reps: s.actualReps,
         weight: s.actualWeightKg,

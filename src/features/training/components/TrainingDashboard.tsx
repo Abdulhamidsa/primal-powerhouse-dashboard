@@ -24,7 +24,7 @@ export function TrainingDashboard() {
   const { startSession } = useTrainingSessionActions();
 
   const todayWorkout = planDay?.type === 'WORKOUT' ? planDay : null;
-  const activeTemplateName = todayWorkout?.workoutTemplate?.name ?? todayWorkout?.title ?? 'Today\'s workout';
+  const activeTemplateName = todayWorkout?.workoutTemplate?.name ?? todayWorkout?.title ?? "Today's workout";
 
   if (activeSessionId && session) {
     return (
@@ -79,7 +79,7 @@ export function TrainingDashboard() {
           </div>
           <h2 className="text-2xl font-semibold text-foreground">{plan.name}</h2>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            {plan.description ?? 'Follow your plan day by day. Start today\'s workout when you are ready.'}
+            {plan.description ?? "Follow your plan day by day. Start today's workout when you are ready."}
           </p>
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             <span className="rounded-full border border-border bg-background px-3 py-1">Status {plan.status}</span>
@@ -130,8 +130,12 @@ export function TrainingDashboard() {
         {plan.days.slice(0, 3).map(day => (
           <div key={day.id} className="rounded-2xl border border-border bg-background p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{day.date.slice(0, 10)}</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">{day.title ?? day.workoutTemplate?.name ?? day.type}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{day.status} · {day.type}</p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {day.title ?? day.workoutTemplate?.name ?? day.type}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {day.status} · {day.type}
+            </p>
           </div>
         ))}
       </div>

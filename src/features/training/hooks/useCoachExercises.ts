@@ -4,15 +4,16 @@ import { getCoachExercises, createExercise, updateExercise, deleteExercise } fro
 import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exercise.schemas';
 import type { Exercise } from '@prisma/client';
 
-export function useCoachExercises(filters?: {
-  muscleGroup?: string;
-  equipment?: string;
-  search?: string;
-}) {
+export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: string; search?: string }) {
   const { mutate } = useSWRConfig();
   const key = ['coach-exercises', filters];
 
-  const { data, error, isLoading, mutate: mutateLocal } = useSWR(key, () => getCoachExercises(filters), {
+  const {
+    data,
+    error,
+    isLoading,
+    mutate: mutateLocal,
+  } = useSWR(key, () => getCoachExercises(filters), {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 60000,

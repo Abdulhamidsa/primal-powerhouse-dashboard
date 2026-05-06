@@ -1,5 +1,9 @@
 import { httpClient } from '@/lib/http/client';
-import type { UpdateSetInput, StartTrainingSessionInput, CompleteTrainingSessionInput } from '@/features/training/schemas/session.schemas';
+import type {
+  UpdateSetInput,
+  StartTrainingSessionInput,
+  CompleteTrainingSessionInput,
+} from '@/features/training/schemas/session.schemas';
 import type {
   TrainingHistoryDTO,
   TrainingPreviousPerformanceDTO,

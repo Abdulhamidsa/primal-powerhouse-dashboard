@@ -5,10 +5,7 @@ import type {
   SessionStatus,
   PerceivedDifficulty,
 } from '../enums/training.enums';
-import type {
-  TrainingPreviousPerformance,
-  TrainingSessionExerciseWithSets,
-} from './index';
+import type { TrainingPreviousPerformance, TrainingSessionExerciseWithSets } from './index';
 
 export type TrainingTemplateExerciseDTO = {
   id: string;

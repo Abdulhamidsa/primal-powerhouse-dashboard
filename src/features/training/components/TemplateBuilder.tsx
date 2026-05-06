@@ -10,8 +10,14 @@ import type { WorkoutTemplate } from '@prisma/client';
 
 export function TemplateBuilder() {
   const { exercises } = useCoachExercises();
-  const { templates, isLoading: templatesLoading, isError: templatesError, createTemplate, updateTemplate, deleteTemplate } =
-    useCoachTemplates();
+  const {
+    templates,
+    isLoading: templatesLoading,
+    isError: templatesError,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+  } = useCoachTemplates();
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,7 +71,7 @@ export function TemplateBuilder() {
       return;
     }
 
-    const exercise = exercises?.find((e) => e.id === selectedExerciseId);
+    const exercise = exercises?.find(e => e.id === selectedExerciseId);
     if (!exercise) return;
 
     const newExercise: TemplateExerciseInput = {
@@ -91,10 +97,7 @@ export function TemplateBuilder() {
     });
   };
 
-  const handleUpdateExercise = (
-    index: number,
-    updates: Partial<TemplateExerciseInput>
-  ) => {
+  const handleUpdateExercise = (index: number, updates: Partial<TemplateExerciseInput>) => {
     const updated = [...formData.exercises];
     updated[index] = { ...updated[index], ...updates };
     setFormData({ ...formData, exercises: updated });
@@ -138,7 +141,7 @@ export function TemplateBuilder() {
     }
   };
 
-  const getExerciseName = (id: string) => exercises?.find((e) => e.id === id)?.name ?? 'Unknown';
+  const getExerciseName = (id: string) => exercises?.find(e => e.id === id)?.name ?? 'Unknown';
   const difficultyOptions = difficultyLevelEnum.options;
 
   return (
@@ -161,36 +164,26 @@ export function TemplateBuilder() {
               {editingId ? 'Edit Template' : 'Create Template'}
             </h2>
 
-            {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            {error && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Template Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Template Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., Upper Body Strength"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={formData.description ?? ''}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value || undefined })
-                  }
+                  onChange={e => setFormData({ ...formData, description: e.target.value || undefined })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Optional description"
                   rows={2}
@@ -203,25 +196,21 @@ export function TemplateBuilder() {
                   <input
                     type="text"
                     value={formData.goal ?? ''}
-                    onChange={(e) => setFormData({ ...formData, goal: e.target.value || undefined })}
+                    onChange={e => setFormData({ ...formData, goal: e.target.value || undefined })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Hypertrophy"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Difficulty
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
                   <select
                     value={formData.difficulty ?? ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, difficulty: e.target.value || undefined })
-                    }
+                    onChange={e => setFormData({ ...formData, difficulty: e.target.value || undefined })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select difficulty</option>
-                    {difficultyOptions.map((diff) => (
+                    {difficultyOptions.map(diff => (
                       <option key={diff} value={diff}>
                         {diff.replace(/_/g, ' ')}
                       </option>
@@ -238,11 +227,11 @@ export function TemplateBuilder() {
                 <div className="flex gap-2 mb-4">
                   <select
                     value={selectedExerciseId}
-                    onChange={(e) => setSelectedExerciseId(e.target.value)}
+                    onChange={e => setSelectedExerciseId(e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select an exercise to add</option>
-                    {exercises?.map((ex) => (
+                    {exercises?.map(ex => (
                       <option key={ex.id} value={ex.id}>
                         {ex.name}
                       </option>
@@ -263,10 +252,7 @@ export function TemplateBuilder() {
                     <p className="text-gray-500 text-sm">No exercises added yet</p>
                   ) : (
                     formData.exercises.map((ex, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2"
-                      >
+                      <div key={idx} className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-medium">{getExerciseName(ex.exerciseId)}</p>
@@ -278,9 +264,7 @@ export function TemplateBuilder() {
                                   min="1"
                                   max="20"
                                   value={ex.sets}
-                                  onChange={(e) =>
-                                    handleUpdateExercise(idx, { sets: parseInt(e.target.value) })
-                                  }
+                                  onChange={e => handleUpdateExercise(idx, { sets: parseInt(e.target.value) })}
                                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -291,9 +275,7 @@ export function TemplateBuilder() {
                                   min="1"
                                   max="100"
                                   value={ex.reps}
-                                  onChange={(e) =>
-                                    handleUpdateExercise(idx, { reps: parseInt(e.target.value) })
-                                  }
+                                  onChange={e => handleUpdateExercise(idx, { reps: parseInt(e.target.value) })}
                                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -304,9 +286,7 @@ export function TemplateBuilder() {
                                   min="0"
                                   max="600"
                                   value={ex.restSeconds}
-                                  onChange={(e) =>
-                                    handleUpdateExercise(idx, { restSeconds: parseInt(e.target.value) })
-                                  }
+                                  onChange={e => handleUpdateExercise(idx, { restSeconds: parseInt(e.target.value) })}
                                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                 />
                               </div>
@@ -351,9 +331,7 @@ export function TemplateBuilder() {
       <div className="space-y-3">
         {templatesLoading && <p className="text-gray-600">Loading templates...</p>}
         {templatesError && (
-          <div className="p-4 bg-red-100 text-red-700 rounded-lg">
-            Error loading templates. Please try again.
-          </div>
+          <div className="p-4 bg-red-100 text-red-700 rounded-lg">Error loading templates. Please try again.</div>
         )}
         {templates && templates.length === 0 && (
           <div className="p-4 bg-gray-100 text-gray-600 rounded-lg text-center">
@@ -361,7 +339,7 @@ export function TemplateBuilder() {
           </div>
         )}
 
-        {templates?.map((template) => (
+        {templates?.map(template => (
           <div
             key={template.id}
             className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
@@ -369,12 +347,8 @@ export function TemplateBuilder() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{template.name}</h3>
-                {template.description && (
-                  <p className="text-gray-600 text-sm mt-1">{template.description}</p>
-                )}
-                {template.goal && (
-                  <p className="text-gray-500 text-sm">Goal: {template.goal}</p>
-                )}
+                {template.description && <p className="text-gray-600 text-sm mt-1">{template.description}</p>}
+                {template.goal && <p className="text-gray-500 text-sm">Goal: {template.goal}</p>}
                 {template.difficulty && (
                   <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded font-medium mt-2">
                     {template.difficulty.replace(/_/g, ' ')}

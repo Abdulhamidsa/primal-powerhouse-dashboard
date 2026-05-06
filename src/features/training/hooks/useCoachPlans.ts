@@ -14,7 +14,12 @@ export function useCoachPlans() {
   const { mutate } = useSWRConfig();
   const key = 'coach-plans';
 
-  const { data, error, isLoading, mutate: mutateLocal } = useSWR(key, getCoachPlans, {
+  const {
+    data,
+    error,
+    isLoading,
+    mutate: mutateLocal,
+  } = useSWR(key, getCoachPlans, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 60000,
@@ -22,11 +27,7 @@ export function useCoachPlans() {
 
   const isError = !!error;
 
-  const createPlanAction = async (input: {
-    clientId: string;
-    startDate: string;
-    endDate: string;
-  }) => {
+  const createPlanAction = async (input: { clientId: string; startDate: string; endDate: string }) => {
     const newPlan = await createPlan(input);
     await mutateLocal();
     return newPlan;
@@ -37,7 +38,7 @@ export function useCoachPlans() {
     input: {
       status?: string;
       endDate?: string;
-    }
+    },
   ) => {
     const updated = await updatePlan(id, input);
     await mutateLocal();
@@ -62,11 +63,7 @@ export function usePlanDays(planId: string) {
   // But we expose mutations for days
   const { mutate } = useSWRConfig();
 
-  const createPlanDayAction = async (data: {
-    date: string;
-    dayType: string;
-    templateId?: string;
-  }) => {
+  const createPlanDayAction = async (data: { date: string; dayType: string; templateId?: string }) => {
     const result = await createPlanDay(planId, data);
     // Revalidate the plans to refresh
     await mutate('coach-plans');
@@ -78,7 +75,7 @@ export function usePlanDays(planId: string) {
     data: {
       dayType?: string;
       templateId?: string | null;
-    }
+    },
   ) => {
     const result = await updatePlanDay(planId, dayId, data);
     await mutate('coach-plans');

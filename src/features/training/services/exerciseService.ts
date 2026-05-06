@@ -29,7 +29,7 @@ export const exerciseService = {
       muscleGroup?: string;
       equipment?: string;
       search?: string;
-    }
+    },
   ) {
     const where: any = { coachId };
 
@@ -69,11 +69,7 @@ export const exerciseService = {
   /**
    * Update an exercise (coach can edit any of their exercises)
    */
-  async updateExercise(
-    exerciseId: string,
-    coachId: string,
-    input: UpdateExerciseInput
-  ): Promise<Exercise> {
+  async updateExercise(exerciseId: string, coachId: string, input: UpdateExerciseInput): Promise<Exercise> {
     // Verify ownership
     const exercise = await this.getExercise(exerciseId, coachId);
     if (!exercise) {

@@ -20,13 +20,15 @@ export const updateTrainingPlanDaySchema = z.object({
 
 export const bulkCreateTrainingPlanDaysSchema = z.object({
   planId: z.string().min(1),
-  days: z.array(
-    z.object({
-      date: z.coerce.date(),
-      type: trainingDayTypeEnum,
-      workoutTemplateId: z.string().nullable().optional(),
-    })
-  ).min(1),
+  days: z
+    .array(
+      z.object({
+        date: z.coerce.date(),
+        type: trainingDayTypeEnum,
+        workoutTemplateId: z.string().nullable().optional(),
+      }),
+    )
+    .min(1),
 });
 
 export type CreateTrainingPlanDayInput = z.infer<typeof createTrainingPlanDaySchema>;

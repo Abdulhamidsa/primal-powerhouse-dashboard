@@ -14,7 +14,12 @@ export function useCoachTemplates() {
   const { mutate } = useSWRConfig();
   const key = 'coach-templates';
 
-  const { data, error, isLoading, mutate: mutateLocal } = useSWR(key, getCoachTemplates, {
+  const {
+    data,
+    error,
+    isLoading,
+    mutate: mutateLocal,
+  } = useSWR(key, getCoachTemplates, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 60000,

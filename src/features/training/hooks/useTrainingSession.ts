@@ -19,13 +19,16 @@ import type {
   TrainingSessionDTO,
   TrainingSessionSetDTO,
 } from '@/features/training/types/clientTraining.types';
-import type { CompleteTrainingSessionInput, StartTrainingSessionInput, UpdateSetInput } from '@/features/training/schemas/session.schemas';
+import type {
+  CompleteTrainingSessionInput,
+  StartTrainingSessionInput,
+  UpdateSetInput,
+} from '@/features/training/schemas/session.schemas';
 
 export function useTrainingSession(sessionId?: string) {
   const key = sessionId ? `${TRAINING_SESSION_URL}/${encodeURIComponent(sessionId)}` : null;
-  const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingSessionDTO, ApiError>(
-    key,
-    () => getTrainingSession(sessionId ?? ''),
+  const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingSessionDTO, ApiError>(key, () =>
+    getTrainingSession(sessionId ?? ''),
   );
 
   return {
@@ -39,9 +42,8 @@ export function useTrainingSession(sessionId?: string) {
 
 export function useTrainingPreviousPerformance(exerciseId?: string) {
   const key = exerciseId ? `/api/user/training/performance/${encodeURIComponent(exerciseId)}` : null;
-  const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingPreviousPerformanceDTO, ApiError>(
-    key,
-    () => getTrainingPreviousPerformance(exerciseId ?? ''),
+  const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingPreviousPerformanceDTO, ApiError>(key, () =>
+    getTrainingPreviousPerformance(exerciseId ?? ''),
   );
 
   return {
@@ -55,7 +57,9 @@ export function useTrainingPreviousPerformance(exerciseId?: string) {
 
 export function useTrainingHistory(limit = 10) {
   const key = `${TRAINING_HISTORY_URL}?limit=${limit}`;
-  const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingHistoryDTO, ApiError>(key, () => getTrainingHistory(limit));
+  const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingHistoryDTO, ApiError>(key, () =>
+    getTrainingHistory(limit),
+  );
 
   return {
     history: data ?? [],

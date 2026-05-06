@@ -3,7 +3,10 @@
 import { useMemo, useState } from 'react';
 import { Dumbbell, Flag, Play, Save, Square } from 'lucide-react';
 import type { TrainingSessionDTO } from '@/features/training/types/clientTraining.types';
-import { useTrainingPreviousPerformance, useTrainingSessionActions } from '@/features/training/hooks/useTrainingSession';
+import {
+  useTrainingPreviousPerformance,
+  useTrainingSessionActions,
+} from '@/features/training/hooks/useTrainingSession';
 
 function formatDateTime(value: string | null) {
   if (!value) return null;
@@ -82,7 +85,12 @@ function TrainingExerciseCard({
             </div>
 
             <label className="flex items-center gap-2 text-sm text-foreground sm:justify-self-start">
-              <input name="completed" type="checkbox" defaultChecked={set.completed} className="h-4 w-4 rounded border-border" />
+              <input
+                name="completed"
+                type="checkbox"
+                defaultChecked={set.completed}
+                className="h-4 w-4 rounded border-border"
+              />
               Completed
             </label>
 
@@ -99,7 +107,9 @@ function TrainingExerciseCard({
       </div>
 
       {exercise.sets.some(set => set.completed) ? (
-        <p className="mt-3 text-xs text-emerald-600">Logged sets will be saved to history when you complete the workout.</p>
+        <p className="mt-3 text-xs text-emerald-600">
+          Logged sets will be saved to history when you complete the workout.
+        </p>
       ) : null}
     </article>
   );
@@ -207,13 +217,20 @@ export function WorkoutSessionPlayer({ session }: { session: TrainingSessionDTO 
 
       <div className="mt-4 space-y-4">
         {session.exercises.map(exercise => (
-          <TrainingExerciseCard key={exercise.id} exercise={exercise} savingSetId={savingSetId} onSaveSet={handleSaveSet} />
+          <TrainingExerciseCard
+            key={exercise.id}
+            exercise={exercise}
+            savingSetId={savingSetId}
+            onSaveSet={handleSaveSet}
+          />
         ))}
       </div>
 
       <div className="mt-5 grid gap-3 rounded-3xl border border-border bg-muted/30 p-4 md:grid-cols-3">
         <label className="space-y-2 md:col-span-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Perceived difficulty</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Perceived difficulty
+          </span>
           <select
             value={perceivedDifficulty}
             onChange={event => setPerceivedDifficulty(event.target.value as typeof perceivedDifficulty)}

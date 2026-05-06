@@ -15,10 +15,7 @@ export const workoutTemplateService = {
   /**
    * Create a new workout template with exercises
    */
-  async createTemplate(
-    coachId: string,
-    input: CreateWorkoutTemplateInput
-  ): Promise<WorkoutTemplateWithExercises> {
+  async createTemplate(coachId: string, input: CreateWorkoutTemplateInput): Promise<WorkoutTemplateWithExercises> {
     const { exercises, ...templateData } = input;
 
     return (prisma as any).$transaction(async (tx: any) => {
@@ -104,11 +101,7 @@ export const workoutTemplateService = {
    * Update a template (name, description, goal, difficulty)
    * Note: Use separate method to update exercises
    */
-  async updateTemplate(
-    templateId: string,
-    coachId: string,
-    input: UpdateWorkoutTemplateInput
-  ) {
+  async updateTemplate(templateId: string, coachId: string, input: UpdateWorkoutTemplateInput) {
     // Verify ownership
     const template = await this.getTemplate(templateId, coachId);
     if (!template) {

@@ -1,8 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import type {
-  CreateClientTrainingPlanInput,
-  UpdateClientTrainingPlanInput,
-} from '../schemas/plan.schemas';
+import type { CreateClientTrainingPlanInput, UpdateClientTrainingPlanInput } from '../schemas/plan.schemas';
 import type { ClientTrainingPlanWithDays } from '../types/index';
 
 /**
@@ -14,10 +11,7 @@ export const trainingPlanService = {
   /**
    * Create a new training plan for a client
    */
-  async createPlan(
-    coachId: string,
-    input: CreateClientTrainingPlanInput
-  ) {
+  async createPlan(coachId: string, input: CreateClientTrainingPlanInput) {
     // Verify the coach owns this client
     const client = await prisma.client.findFirst({
       where: {
@@ -97,10 +91,7 @@ export const trainingPlanService = {
   /**
    * Get a single plan (with authorization check)
    */
-  async getPlan(
-    planId: string,
-    coachId: string
-  ) {
+  async getPlan(planId: string, coachId: string) {
     return (prisma as any).clientTrainingPlan.findFirst({
       where: {
         id: planId,
@@ -157,11 +148,7 @@ export const trainingPlanService = {
   /**
    * Update plan metadata
    */
-  async updatePlan(
-    planId: string,
-    coachId: string,
-    input: UpdateClientTrainingPlanInput
-  ) {
+  async updatePlan(planId: string, coachId: string, input: UpdateClientTrainingPlanInput) {
     // Verify ownership
     const plan = await this.getPlan(planId, coachId);
     if (!plan) {

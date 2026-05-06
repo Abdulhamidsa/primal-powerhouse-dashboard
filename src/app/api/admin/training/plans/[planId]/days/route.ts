@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { trainingPlanDayService } from '@/features/training/services';
-import {
-  bulkCreateTrainingPlanDaysSchema,
-  createTrainingPlanDaySchema,
-} from '@/features/training/schemas/day.schemas';
+import { bulkCreateTrainingPlanDaysSchema, createTrainingPlanDaySchema } from '@/features/training/schemas/day.schemas';
 
 type RouteContext = { params: Promise<{ planId: string }> };
 

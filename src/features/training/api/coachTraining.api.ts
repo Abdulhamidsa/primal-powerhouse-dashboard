@@ -1,7 +1,10 @@
 import { httpClient } from '@/lib/http/client';
 import type { Exercise, WorkoutTemplate, ClientTrainingPlan, TrainingPlanDay } from '@prisma/client';
 import type { CreateExerciseInput, UpdateExerciseInput } from '@/features/training/schemas/exercise.schemas';
-import type { CreateWorkoutTemplateInput, UpdateWorkoutTemplateInput } from '@/features/training/schemas/template.schemas';
+import type {
+  CreateWorkoutTemplateInput,
+  UpdateWorkoutTemplateInput,
+} from '@/features/training/schemas/template.schemas';
 
 // Exercise endpoints
 export const COACH_EXERCISES_URL = '/api/admin/training/exercises';
@@ -10,11 +13,7 @@ export function buildCoachExerciseUrl(id: string) {
   return `${COACH_EXERCISES_URL}/${id}`;
 }
 
-export async function getCoachExercises(filters?: {
-  muscleGroup?: string;
-  equipment?: string;
-  search?: string;
-}) {
+export async function getCoachExercises(filters?: { muscleGroup?: string; equipment?: string; search?: string }) {
   const params = new URLSearchParams();
   if (filters?.muscleGroup) params.append('muscleGroup', filters.muscleGroup);
   if (filters?.equipment) params.append('equipment', filters.equipment);
@@ -86,11 +85,7 @@ export async function getCoachPlan(id: string) {
   return httpClient.get<ClientTrainingPlan>(buildCoachPlanUrl(id));
 }
 
-export async function createPlan(data: {
-  clientId: string;
-  startDate: string;
-  endDate: string;
-}) {
+export async function createPlan(data: { clientId: string; startDate: string; endDate: string }) {
   return httpClient.post<ClientTrainingPlan>(COACH_PLANS_URL, data);
 }
 
@@ -99,7 +94,7 @@ export async function updatePlan(
   data: {
     status?: string;
     endDate?: string;
-  }
+  },
 ) {
   return httpClient.patch<ClientTrainingPlan>(buildCoachPlanUrl(id), data);
 }
@@ -111,7 +106,7 @@ export async function createPlanDay(
     date: string;
     dayType: string;
     templateId?: string;
-  }
+  },
 ) {
   return httpClient.post<TrainingPlanDay>(buildCoachPlanDaysUrl(planId), data);
 }
@@ -122,7 +117,7 @@ export async function updatePlanDay(
   data: {
     dayType?: string;
     templateId?: string | null;
-  }
+  },
 ) {
   return httpClient.patch<TrainingPlanDay>(buildCoachPlanDayUrl(planId, dayId), data);
 }
