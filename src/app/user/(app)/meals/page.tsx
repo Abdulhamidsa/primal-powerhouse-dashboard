@@ -54,7 +54,7 @@ export default function UserMealsPage() {
   );
 
   const requiredSelectedCount = useMemo(
-    () => ['BREAKFAST', 'LUNCH', 'DINNER'].reduce((total, type) => total + selectedByType[type].length, 0),
+    () => (['BREAKFAST', 'LUNCH', 'DINNER'] as const).reduce((total, type) => total + selectedByType[type].length, 0),
     [selectedByType],
   );
 
