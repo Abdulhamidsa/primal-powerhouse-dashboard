@@ -37,12 +37,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         client: {
           select: {
             coachId: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            id: true,
+            name: true,
           },
         },
         exerciseLogs: {
@@ -101,10 +97,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       status: session.status,
       startedAt: session.startedAt?.toISOString?.() ?? null,
       completedAt: session.completedAt?.toISOString?.() ?? null,
-      performedBy: session.client?.user
+      performedBy: session.client
         ? {
-            id: session.client.user.id,
-            name: session.client.user.name,
+            id: session.client.id,
+            name: session.client.name,
           }
         : null,
       reviewed: Boolean(firstReview),
