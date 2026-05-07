@@ -26,7 +26,14 @@ type PhotoFieldKey = 'progressPhotoFrontUrl' | 'progressPhotoSideUrl' | 'progres
 
 function numberOrNull(value: string): number | null {
   if (value.trim().length === 0) return null;
-  const parsed = Number(value);
+  const parsed = Number(value.replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function currentWeightValue(value: string): number | null {
+  const normalized = value.trim().replace(',', '.');
+  if (!normalized) return null;
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -296,11 +303,7 @@ export function WeeklyCheckInFlow() {
                   />
                   <WeeklyWeightLivePreview
                     lastWeekWeight={lastWeekBaseline}
-                    currentWeight={
-                      formValues.weightKg.trim() && Number.isFinite(Number(formValues.weightKg))
-                        ? Number(formValues.weightKg)
-                        : null
-                    }
+                    currentWeight={currentWeightValue(formValues.weightKg)}
                   />
                 </div>
               )}
