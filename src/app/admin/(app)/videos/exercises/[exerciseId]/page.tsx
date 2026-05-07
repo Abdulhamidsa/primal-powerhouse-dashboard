@@ -57,15 +57,15 @@ export default function ExerciseDetailsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoBlock label="Target Muscles" values={exercise.targetMuscles} tone="blue" />
-              <InfoBlock label="Secondary Muscles" values={exercise.secondaryMuscles} tone="emerald" />
-              <InfoBlock label="Body Parts" values={exercise.bodyParts} tone="purple" />
-              <InfoBlock label="Equipment" values={exercise.equipments} tone="amber" />
+              <InfoBlock label="Target Muscles" values={exercise.targetMuscles ?? []} tone="blue" />
+              <InfoBlock label="Secondary Muscles" values={exercise.secondaryMuscles ?? []} tone="emerald" />
+              <InfoBlock label="Body Parts" values={exercise.bodyParts ?? []} tone="purple" />
+              <InfoBlock label="Equipment" values={exercise.equipments ?? []} tone="amber" />
             </div>
 
             <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
               <h2 className="text-lg font-semibold text-zinc-100 mb-3">How to perform</h2>
-              {exercise.instructions.length === 0 ? (
+              {!exercise.instructions || exercise.instructions.length === 0 ? (
                 <p className="text-zinc-400">No instructions provided.</p>
               ) : (
                 <ol className="list-decimal pl-5 space-y-2 text-zinc-200">
