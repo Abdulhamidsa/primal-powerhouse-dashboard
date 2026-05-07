@@ -2,11 +2,14 @@ export interface ExerciseDbExercise {
   exerciseId: string;
   name: string;
   gifUrl: string;
-  targetMuscles: string[];
-  bodyParts: string[];
-  equipments: string[];
-  secondaryMuscles: string[];
-  instructions: string[];
+  targetMuscles?: string[];
+  target?: string | string[];
+  bodyParts?: string[];
+  bodyPart?: string;
+  equipments?: string[];
+  equipment?: string;
+  secondaryMuscles?: string[];
+  instructions?: string[];
 }
 
 export interface ExerciseDbMetadata {

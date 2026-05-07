@@ -410,7 +410,8 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
 
       {/* Confirm finish modal */}
       {showConfirmFinish && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4">
+        <div className="absolute inset-0 z-50 flex h-screen w-screen items-center justify-center bg-black/60">
+          {' '}
           <div
             className="w-full max-w-sm rounded-2xl p-6 space-y-4"
             style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)' }}

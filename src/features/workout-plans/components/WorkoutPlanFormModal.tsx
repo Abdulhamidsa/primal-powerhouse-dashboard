@@ -11,6 +11,7 @@ import Image from 'next/image';
 interface ExerciseRow {
   videoId: string;
   videoTitle: string;
+  gifUrl?: string | null;
   targetSets: number;
   minReps: number;
   maxReps: number;
@@ -34,6 +35,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
     plan?.exercises.map(ex => ({
       videoId: ex.videoId,
       videoTitle: ex.video.title,
+      gifUrl: ex.video.thumbnailUrl ?? null,
       targetSets: ex.targetSets,
       minReps: ex.minReps,
       maxReps: ex.maxReps,
@@ -100,6 +102,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
       {
         videoId: exercise.exerciseId,
         videoTitle: exercise.name,
+        gifUrl: exercise.gifUrl ?? null,
         targetSets: 3,
         minReps: 8,
         maxReps: 12,
@@ -138,6 +141,8 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
         description: description.trim() || null,
         exercises: exercises.map(ex => ({
           videoId: ex.videoId,
+          videoTitle: ex.videoTitle,
+          gifUrl: ex.gifUrl ?? undefined,
           targetSets: ex.targetSets,
           minReps: ex.minReps,
           maxReps: ex.maxReps,
@@ -360,9 +365,9 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
               ) : exerciseDbResults.length === 0 ? (
                 <p className="p-4 text-sm text-[var(--color-text-secondary)] text-center">No exercises found.</p>
               ) : (
-                exerciseDbResults.map(ex => (
+                exerciseDbResults.map((ex, idx) => (
                   <button
-                    key={ex.exerciseId}
+                    key={`${ex.exerciseId}-${idx}`}
                     onClick={() => addExercise(ex)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)]"
                   >
@@ -379,9 +384,15 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-[var(--color-text-primary)] truncate font-medium">{ex.name}</p>
-                      {ex.targetMuscles.length > 0 && (
+                      {(ex.target || ex.targetMuscles?.length) && (
                         <p className="text-xs text-[var(--color-text-secondary)] truncate">
-                          {ex.targetMuscles.slice(0, 2).join(', ')}
+                          {ex.target
+                            ? typeof ex.target === 'string'
+                              ? ex.target
+                              : Array.isArray(ex.target)
+                                ? ex.target.slice(0, 2).join(', ')
+                                : ''
+                            : ex.targetMuscles?.slice(0, 2).join(', ')}
                         </p>
                       )}
                     </div>

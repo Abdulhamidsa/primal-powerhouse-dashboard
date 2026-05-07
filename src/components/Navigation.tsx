@@ -304,20 +304,15 @@ export default function Navigation({
               </div>
             </Link>
 
-            <nav
-              className="shrink-0 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
-              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-            >
-              <div className="mx-auto grid h-16 max-w-lg grid-cols-6 items-center px-2 pt-1">
-                {safeNavItems.map(item => (
-                  <MobileTabItem
-                    key={item.href}
-                    item={item}
-                    active={isActivePath(pathname, item.href)}
-                    unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
-                  />
-                ))}
-              </div>
+            <nav className="hidden items-center gap-2 lg:flex">
+              {safeNavItems.map(item => (
+                <DesktopTopNavItem
+                  key={item.href}
+                  item={item}
+                  active={isActivePath(pathname, item.href)}
+                  unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
+                />
+              ))}
             </nav>
           </div>
 
