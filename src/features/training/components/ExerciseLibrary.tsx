@@ -86,7 +86,6 @@ export function ExerciseLibrary() {
 
   const muscleGroups = muscleGroupEnum.options;
   const equipmentOptions = equipmentEnum.options;
-  const difficultyOptions = difficultyLevelEnum.options;
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-6">

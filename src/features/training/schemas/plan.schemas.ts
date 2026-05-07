@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { planStatusEnum, sourceTypeEnum } from '../enums/training.enums';
+import { planStatusEnum } from '../enums/training.enums';
 
 export const createClientTrainingPlanSchema = z.object({
   clientId: z.string().min(1, 'Client ID is required'),

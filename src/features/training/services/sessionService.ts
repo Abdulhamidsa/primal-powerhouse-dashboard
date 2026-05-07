@@ -212,16 +212,16 @@ export const trainingSessionService = {
 
     return (prisma as any).$transaction(async (tx: any) => {
       // Update session status
-      const updatedSession = await tx.trainingSession.update({
-        where: { id: sessionId },
-        data: {
-          status: input.status,
-          completedAt: input.status === 'COMPLETED' ? new Date() : null,
-          perceivedDifficulty: input.perceivedDifficulty ?? null,
-          overallFeedback: input.overallFeedback ?? null,
-          caloriesBurned: input.caloriesBurned ?? null,
-        },
-      });
+      // const updatedSession = await tx.trainingSession.update({
+      //   where: { id: sessionId },
+      //   data: {
+      //     status: input.status,
+      //     completedAt: input.status === 'COMPLETED' ? new Date() : null,
+      //     perceivedDifficulty: input.perceivedDifficulty ?? null,
+      //     overallFeedback: input.overallFeedback ?? null,
+      //     caloriesBurned: input.caloriesBurned ?? null,
+      //   },
+      // });
 
       // Update plan day status if session completed
       if (input.status === 'COMPLETED') {

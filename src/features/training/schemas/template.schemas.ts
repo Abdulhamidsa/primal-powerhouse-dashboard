@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { difficultyLevelEnum, sourceTypeEnum } from '../enums/training.enums';
+import { difficultyLevelEnum } from '../enums/training.enums';
 
 // Exercise in a template
 export const templateExerciseInputSchema = z.object({

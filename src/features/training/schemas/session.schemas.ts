@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { sessionStatusEnum, perceivedDifficultyEnum } from '../enums/training.enums';
+import { perceivedDifficultyEnum } from '../enums/training.enums';
 
 // Set update during workout
 export const updateSetSchema = z.object({

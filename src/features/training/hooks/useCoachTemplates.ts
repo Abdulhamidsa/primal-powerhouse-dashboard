@@ -1,5 +1,4 @@
 import useSWR from 'swr';
-import { useSWRConfig } from 'swr';
 import {
   getCoachTemplates,
   getCoachTemplate,
@@ -8,10 +7,8 @@ import {
   deleteTemplate,
 } from '../api/coachTraining.api';
 import type { CreateWorkoutTemplateInput, UpdateWorkoutTemplateInput } from '../schemas/template.schemas';
-import type { WorkoutTemplate } from '@prisma/client';
 
 export function useCoachTemplates() {
-  const { mutate } = useSWRConfig();
   const key = 'coach-templates';
 
   const {
