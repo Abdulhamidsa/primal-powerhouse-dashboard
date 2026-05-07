@@ -27,8 +27,9 @@ function toDateInputValue(value: string | Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function formatDisplayDate(value: string) {
-  return new Date(value).toLocaleDateString('en-US', {
+function formatDisplayDate(value: string | Date) {
+  const date = typeof value === 'string' ? new Date(value) : value;
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
