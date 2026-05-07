@@ -210,12 +210,12 @@ export default function ExerciseDbLibraryPanel({
                   <p className="text-xs text-zinc-400 mb-2">ID: {exercise.exerciseId}</p>
 
                   <div className="flex flex-wrap gap-2">
-                    {exercise.targetMuscles.slice(0, 2).map(muscleTag => (
+                    {(exercise.targetMuscles ?? []).slice(0, 2).map(muscleTag => (
                       <span key={muscleTag} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
                         {muscleTag}
                       </span>
                     ))}
-                    {exercise.equipments.slice(0, 1).map(equipmentTag => (
+                    {(exercise.equipments ?? []).slice(0, 1).map(equipmentTag => (
                       <span key={equipmentTag} className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
                         {equipmentTag}
                       </span>
@@ -223,7 +223,7 @@ export default function ExerciseDbLibraryPanel({
                   </div>
                   <div className="mt-3 pt-3 border-t border-zinc-700">
                     <p className="text-xs text-zinc-400 line-clamp-2">
-                      Body parts: {exercise.bodyParts.join(', ') || '—'}
+                      Body parts: {exercise.bodyParts?.join(', ') || '—'}
                     </p>
                     <p className="text-xs text-blue-300 mt-2">Open details →</p>
                   </div>
@@ -274,7 +274,11 @@ function matchesAudienceFilter(exercise: ExerciseDbExercise, audience: ExerciseA
     return true;
   }
 
-  const tokens = [...exercise.targetMuscles, ...exercise.secondaryMuscles, ...exercise.bodyParts]
+  const tokens = [
+    ...(exercise.targetMuscles ?? []),
+    ...(exercise.secondaryMuscles ?? []),
+    ...(exercise.bodyParts ?? []),
+  ]
     .join(' ')
     .toLowerCase();
 
