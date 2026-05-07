@@ -161,22 +161,24 @@ export function WorkoutSessionReviewDrawer({ clientId, sessionId, onClose }: Pro
                     ))}
                   </div>
 
-                  {ex.feedbackNote && (
+                  {(ex.feedback || ex.feedbackNote) && (
                     <div className="mt-3">
                       <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
                         Feedback
                       </p>
                       {ex.feedback && (
-                        <p className="mb-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <p className="mb-1 text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                           Type: {ex.feedback}
                         </p>
                       )}
-                      <div
-                        className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
-                        style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                      >
-                        {ex.feedbackNote}
-                      </div>
+                      {ex.feedbackNote && (
+                        <div
+                          className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
+                          style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                        >
+                          {ex.feedbackNote}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

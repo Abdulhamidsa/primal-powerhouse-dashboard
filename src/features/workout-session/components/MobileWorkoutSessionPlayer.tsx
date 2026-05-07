@@ -36,6 +36,8 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
   );
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
   const [started, setStarted] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockMessage, setLockMessage] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -54,8 +56,12 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         setSessionId(s.id);
         setStarted(true);
       })
-      .catch(() => {
-        setStarted(true); /* offline fallback */
+      .catch((error: any) => {
+        if (error?.status === 409 && /already trained/i.test(String(error?.message ?? ''))) {
+          setIsLocked(true);
+          setLockMessage(String(error.message));
+        }
+        setStarted(true); /* offline fallback or completed lock */
       });
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -201,6 +207,28 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full border-2 border-accent border-t-transparent w-12 h-12" />
           <p className="text-sm text-muted-foreground">Loading workout...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-5">
+        <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 space-y-4 text-center">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Workout completed</p>
+          <h1 className="text-2xl font-bold text-foreground">You already trained this</h1>
+          <p className="text-sm text-muted-foreground">
+            {lockMessage ?? 'This workout has already been completed and cannot be submitted again.'}
+          </p>
+          <button
+            type="button"
+            onClick={onDone}
+            className="mt-2 w-full rounded-2xl py-3 text-sm font-semibold text-white"
+            style={{ background: 'var(--color-accent)' }}
+          >
+            Back to training
+          </button>
         </div>
       </div>
     );

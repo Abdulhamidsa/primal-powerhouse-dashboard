@@ -29,6 +29,8 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
   );
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
   const [started, setStarted] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockMessage, setLockMessage] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -43,8 +45,12 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
         setSessionId(s.id);
         setStarted(true);
       })
-      .catch(() => {
-        setStarted(true); /* offline fallback */
+      .catch((error: any) => {
+        if (error?.status === 409 && /already trained/i.test(String(error?.message ?? ''))) {
+          setIsLocked(true);
+          setLockMessage(String(error.message));
+        }
+        setStarted(true); /* offline fallback or completed lock */
       });
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -140,6 +146,30 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent w-8 h-8" />
+      </div>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Workout completed</p>
+            <h1 className="mt-1 text-2xl font-bold text-foreground">You already trained this</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {lockMessage ?? 'This workout session has already been completed and cannot be submitted again.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onDone}
+            className="w-full rounded-2xl py-3 text-sm font-semibold text-white"
+            style={{ background: 'var(--color-accent)' }}
+          >
+            Back to training
+          </button>
+        </div>
       </div>
     );
   }

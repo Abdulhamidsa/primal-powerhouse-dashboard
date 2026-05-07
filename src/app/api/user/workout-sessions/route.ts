@@ -33,6 +33,27 @@ export async function POST(request: NextRequest) {
   if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
   if (assignment.clientId !== clientId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+  const completedSession = await (prisma as any).workoutSession.findFirst({
+    where: {
+      planAssignmentId,
+      clientId,
+      status: 'COMPLETED',
+    },
+    select: { id: true, completedAt: true },
+    orderBy: { completedAt: 'desc' },
+  });
+
+  if (completedSession) {
+    return NextResponse.json(
+      {
+        error: 'You already trained this workout.',
+        code: 'ALREADY_TRAINED_THIS',
+        sessionId: completedSession.id,
+      },
+      { status: 409 },
+    );
+  }
+
   // Abandon any open sessions for this assignment
   await (prisma as any).workoutSession.updateMany({
     where: { planAssignmentId, clientId, status: 'IN_PROGRESS' },
