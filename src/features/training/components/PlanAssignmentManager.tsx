@@ -64,7 +64,7 @@ export function PlanAssignmentManager() {
     setEditingDayId(null);
     setDayForm(emptyDayForm(toDateInputValue(selectedPlan.startDate)));
     setError(null);
-  }, [selectedPlan?.id]);
+  }, [selectedPlan]);
 
   const resetForm = () => {
     setEditingDayId(null);

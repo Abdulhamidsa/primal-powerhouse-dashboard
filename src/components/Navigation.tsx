@@ -203,12 +203,12 @@ const MobileTabItem = React.memo(function MobileTabItem({
     <Link
       href={item.href}
       className={cn(
-        'relative flex min-w-[60px] flex-col items-center justify-center rounded-xl px-2 py-2 transition-colors',
+        'relative flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-1.5 transition-colors',
         active ? 'bg-background/85 shadow-sm' : 'hover:bg-background/45',
       )}
     >
       <div className={active ? 'text-primary' : 'text-muted-foreground'}>
-        <Icon size={20} />
+        <Icon size={18} />{' '}
       </div>
 
       {unreadCount > 0 ? (
@@ -217,7 +217,9 @@ const MobileTabItem = React.memo(function MobileTabItem({
         </span>
       ) : null}
 
-      <span className={`mt-1 text-[10px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+      <span
+        className={`mt-0.5 max-w-full truncate text-[9px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}
+      >
         {item.mobileName ?? item.name}
       </span>
     </Link>
@@ -282,7 +284,13 @@ export default function Navigation({
   };
 
   return (
-    <div className={cn('bg-background', isChatRoute ? 'flex h-dvh flex-col overflow-hidden' : 'min-h-dvh')}>
+    <div
+      className={cn(
+        'bg-background',
+        isChatRoute ? 'flex h-dvh flex-col overflow-hidden' : 'flex h-dvh flex-col overflow-hidden',
+      )}
+    >
+      {' '}
       <header className="sticky top-0 z-30 hidden border-b border-border bg-card/80 backdrop-blur-xl lg:block">
         <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
@@ -296,15 +304,20 @@ export default function Navigation({
               </div>
             </Link>
 
-            <nav className="hidden items-center gap-2 lg:flex">
-              {safeNavItems.map(item => (
-                <DesktopTopNavItem
-                  key={item.href}
-                  item={item}
-                  active={isActivePath(pathname, item.href)}
-                  unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
-                />
-              ))}
+            <nav
+              className="shrink-0 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            >
+              <div className="mx-auto grid h-16 max-w-lg grid-cols-6 items-center px-2 pt-1">
+                {safeNavItems.map(item => (
+                  <MobileTabItem
+                    key={item.href}
+                    item={item}
+                    active={isActivePath(pathname, item.href)}
+                    unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
+                  />
+                ))}
+              </div>
             </nav>
           </div>
 
@@ -410,10 +423,8 @@ export default function Navigation({
       ) : null}
       <main
         className={cn(
-          'w-full',
-          isChatRoute
-            ? ['flex-1 min-h-0 overflow-hidden', 'lg:px-6', 'lg:py-6']
-            : ['min-h-[calc(100dvh-96px)]', 'overflow-y-auto', 'pb-0', 'lg:min-h-[calc(100dvh-96px)]'],
+          'w-full flex-1 min-h-0 overflow-y-auto',
+          isChatRoute ? 'overflow-hidden lg:px-6 lg:py-6' : 'pb-0',
         )}
       >
         {children ?? (
@@ -421,21 +432,13 @@ export default function Navigation({
             <p className="text-center text-sm text-muted-foreground">Select an option from the navigation</p>
           </div>
         )}
-
-        {!isChatRoute ? (
-          <div
-            className="lg:hidden"
-            style={{ height: 'calc(7rem + env(safe-area-inset-bottom))' }}
-            aria-hidden="true"
-          />
-        ) : null}
       </main>
       {!isChatRoute ? (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-40 h-24 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
-          style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
+          className="shrink-0 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
         >
-          <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
+          <div className="mx-auto grid h-20 max-w-lg grid-cols-6 items-center px-2 py-2">
             {safeNavItems.map(item => (
               <MobileTabItem
                 key={item.href}
@@ -446,7 +449,7 @@ export default function Navigation({
             ))}
           </div>
         </nav>
-      ) : null}{' '}
+      ) : null}
       {userType === 'user' ? <ChatDrawer open={chatDrawerOpen} onClose={() => setChatDrawerOpen(false)} /> : null}
     </div>
   );

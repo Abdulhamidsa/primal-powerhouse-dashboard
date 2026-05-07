@@ -20,7 +20,7 @@ export default function UserTrainingPage() {
       <div className="max-w-6xl mx-auto space-y-5">
         <h1 className="text-xl font-bold text-foreground">Training</h1>
 
-        <TrainingDashboard />
+        {/* <TrainingDashboard /> */}
 
         {/* Tab bar */}
         <div className="inline-flex rounded-2xl border border-border bg-card/60 p-1">

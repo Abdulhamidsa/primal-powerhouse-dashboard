@@ -36,7 +36,7 @@ export function TrainingDashboard() {
         >
           Back to plan
         </button>
-        <WorkoutSessionPlayer session={session} />
+        {/* <WorkoutSessionPlayer session={session} /> */}
       </div>
     );
   }
