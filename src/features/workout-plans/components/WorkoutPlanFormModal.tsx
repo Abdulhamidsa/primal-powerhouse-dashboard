@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Trash2, GripVertical, Search } from 'lucide-react';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
-import type { WorkoutPlan, WorkoutPlanVideo } from '../types/workoutPlan.types';
+import type { WorkoutPlan } from '../types/workoutPlan.types';
+import { getExerciseDbExercises } from '@/features/exercises/api/exerciseDb.api';
+import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
 import Image from 'next/image';
 
 interface ExerciseRow {
@@ -41,27 +43,63 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
     })) ?? [],
   );
 
-  const [videos, setVideos] = useState<WorkoutPlanVideo[]>([]);
   const [videoSearch, setVideoSearch] = useState('');
   const [showVideoPicker, setShowVideoPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [exerciseDbResults, setExerciseDbResults] = useState<ExerciseDbExercise[]>([]);
+  const [isLoadingExercises, setIsLoadingExercises] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    fetch('/api/videos')
-      .then(r => r.json())
-      .then(setVideos)
-      .catch(() => null);
+  const searchExercises = useCallback(async (query: string, page: number = 0) => {
+    setIsLoadingExercises(true);
+    try {
+      const response = await getExerciseDbExercises({
+        q: query || '',
+        offset: page * 25,
+        limit: 25,
+      });
+      if (response.success && response.data) {
+        if (page === 0) {
+          setExerciseDbResults(response.data);
+        } else {
+          setExerciseDbResults(prev => [...prev, ...response.data]);
+        }
+        setHasMore((response.metadata?.nextPage ?? null) !== null);
+        setCurrentPage(page);
+      }
+    } catch (err) {
+      console.error('Error searching exercises:', err);
+    } finally {
+      setIsLoadingExercises(false);
+    }
   }, []);
 
-  const filteredVideos = videos.filter(v => v.title.toLowerCase().includes(videoSearch.toLowerCase()));
+  // Initial load of exercises
+  useEffect(() => {
+    searchExercises('', 0);
+  }, [searchExercises]);
 
-  function addExercise(video: WorkoutPlanVideo) {
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (videoSearch.trim()) {
+        setCurrentPage(0);
+        searchExercises(videoSearch, 0);
+      } else {
+        searchExercises('', 0);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [videoSearch, searchExercises]);
+
+  function addExercise(exercise: ExerciseDbExercise) {
     setExercises(prev => [
       ...prev,
       {
-        videoId: video.id,
-        videoTitle: video.title,
+        videoId: exercise.exerciseId,
+        videoTitle: exercise.name,
         targetSets: 3,
         minReps: 8,
         maxReps: 12,
@@ -72,6 +110,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
     ]);
     setShowVideoPicker(false);
     setVideoSearch('');
+    setExerciseDbResults([]);
   }
 
   function removeExercise(idx: number) {
@@ -310,25 +349,27 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                   autoFocus
                   value={videoSearch}
                   onChange={e => setVideoSearch(e.target.value)}
-                  placeholder="Search exercises…"
+                  placeholder="Search exercises… (e.g., bench, squat)"
                   className="flex-1 bg-transparent text-sm text-[var(--color-text-primary)] outline-none"
                 />
               </div>
             </div>
             <div className="overflow-y-auto flex-1 divide-y" style={{ borderColor: 'var(--color-border)' }}>
-              {filteredVideos.length === 0 ? (
+              {isLoadingExercises && exerciseDbResults.length === 0 ? (
+                <p className="p-4 text-sm text-[var(--color-text-secondary)] text-center">Loading exercises…</p>
+              ) : exerciseDbResults.length === 0 ? (
                 <p className="p-4 text-sm text-[var(--color-text-secondary)] text-center">No exercises found.</p>
               ) : (
-                filteredVideos.map(v => (
+                exerciseDbResults.map(ex => (
                   <button
-                    key={v.id}
-                    onClick={() => addExercise(v)}
+                    key={ex.exerciseId}
+                    onClick={() => addExercise(ex)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)]"
                   >
-                    {v.thumbnailUrl ? (
+                    {ex.gifUrl ? (
                       <Image
-                        src={v.thumbnailUrl}
-                        alt={v.title}
+                        src={ex.gifUrl}
+                        alt={ex.name}
                         width={40}
                         height={40}
                         className="w-10 h-10 rounded object-cover shrink-0"
@@ -336,11 +377,30 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                     ) : (
                       <div className="w-10 h-10 rounded bg-[var(--color-surface)] shrink-0" />
                     )}
-                    <span className="text-sm text-[var(--color-text-primary)] truncate">{v.title}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[var(--color-text-primary)] truncate font-medium">{ex.name}</p>
+                      {ex.targetMuscles.length > 0 && (
+                        <p className="text-xs text-[var(--color-text-secondary)] truncate">
+                          {ex.targetMuscles.slice(0, 2).join(', ')}
+                        </p>
+                      )}
+                    </div>
                   </button>
                 ))
               )}
             </div>
+            {hasMore && exerciseDbResults.length > 0 && (
+              <div className="border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
+                <button
+                  onClick={() => searchExercises(videoSearch, currentPage + 1)}
+                  disabled={isLoadingExercises}
+                  className="w-full px-3 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60"
+                  style={{ background: 'var(--color-accent)' }}
+                >
+                  {isLoadingExercises ? 'Loading…' : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
