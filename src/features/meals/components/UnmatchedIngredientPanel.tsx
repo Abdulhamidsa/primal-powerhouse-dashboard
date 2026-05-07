@@ -134,6 +134,7 @@ export default function UnmatchedIngredientPanel({
                 <div>
                   <p className="text-sm font-semibold text-amber-50">{item.name}</p>
                   <p className="text-xs text-amber-100/70">Suggested amount: {formatIngredientAmount(item.grams, item.name)}</p>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
