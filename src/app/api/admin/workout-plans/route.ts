@@ -124,7 +124,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-
-  invalidateWorkoutCaches({ coachId: auth.user.userId });
-  return NextResponse.json(plan, { status: 201 });
 }
