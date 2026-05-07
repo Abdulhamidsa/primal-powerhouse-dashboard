@@ -27,7 +27,7 @@ export default function MobileExerciseFeedback({
 
   return (
     <div
-      className="px-5 pt-5 pb-4 transition-all duration-300"
+      className="px-5 pt-5 pb-[calc(7rem+env(safe-area-inset-bottom))] transition-all duration-300 lg:pb-4"
       style={{
         opacity: isTransitioning ? 0 : 1,
         transform: isTransitioning ? 'translateY(12px)' : 'translateY(0)',
@@ -37,7 +37,7 @@ export default function MobileExerciseFeedback({
 
       {/* Feedback chips */}
       <div className="flex flex-wrap gap-2">
-        {feedbackOptions.map((opt) => {
+        {feedbackOptions.map(opt => {
           const isActive = feedback === opt.value;
           return (
             <button
@@ -58,7 +58,7 @@ export default function MobileExerciseFeedback({
 
       {/* Notes (collapsible) */}
       <button
-        onClick={() => setNotesExpanded((v) => !v)}
+        onClick={() => setNotesExpanded(v => !v)}
         className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         Add a note
@@ -72,7 +72,7 @@ export default function MobileExerciseFeedback({
       {notesExpanded && (
         <textarea
           value={feedbackNote ?? ''}
-          onChange={(e) => onFeedbackNoteChange(currentIdx, e.target.value)}
+          onChange={e => onFeedbackNoteChange(currentIdx, e.target.value)}
           placeholder="Anything to mention?"
           rows={3}
           className="mt-2 w-full px-3 py-2.5 rounded-xl bg-muted/60 text-sm text-foreground placeholder-muted-foreground border border-transparent focus:border-accent focus:bg-background outline-none resize-none transition-colors"

@@ -208,7 +208,7 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
 
   return (
     <div
-      className="fixed inset-0 bg-background overflow-hidden flex flex-col"
+      className="h-full min-h-0 bg-background overflow-hidden flex flex-col"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
