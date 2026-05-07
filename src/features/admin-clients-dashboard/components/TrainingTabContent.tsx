@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Dumbbell, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAdminClientWorkoutSessions } from '@/features/workout-session/hooks/useAdminWorkoutSessions';
+import { WorkoutSessionReviewDrawer } from '@/features/workout-session/components/admin/WorkoutSessionReviewDrawer';
 import {
   useClientWorkoutAssignments,
   useWorkoutPlans,
@@ -20,6 +22,10 @@ export default function TrainingTabContent({ clientId }: Props) {
   const [showPicker, setShowPicker] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  const { data: sessionsResp } = useAdminClientWorkoutSessions(clientId);
+  const sessions = sessionsResp?.sessions ?? [];
 
   async function handleAssign(planId: string) {
     setBusy('assign');
@@ -179,6 +185,54 @@ export default function TrainingTabContent({ clientId }: Props) {
           })}
         </div>
       )}
+
+      <div>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Completed Sessions</h3>
+        </div>
+
+        {sessions.length === 0 ? (
+          <p className="text-sm text-[var(--color-text-secondary)] text-center py-4">No completed sessions yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {sessions.map(s => (
+              <div
+                key={s.id}
+                className="rounded-xl border px-3 py-2 flex items-center justify-between"
+                style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                    {s.summary ?? `Session ${s.id}`}
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    {s.completedAt
+                      ? new Date(s.completedAt).toLocaleString()
+                      : s.startedAt
+                        ? new Date(s.startedAt).toLocaleString()
+                        : ''}
+                  </p>
+                </div>
+                <div>
+                  <button
+                    onClick={() => setSelectedSessionId(s.id)}
+                    className="rounded-lg px-3 py-1 text-sm font-medium"
+                    style={{ color: 'var(--color-accent)' }}
+                  >
+                    Review
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <WorkoutSessionReviewDrawer
+        clientId={clientId}
+        sessionId={selectedSessionId}
+        onClose={() => setSelectedSessionId(null)}
+      />
     </div>
   );
 }
