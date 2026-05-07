@@ -61,7 +61,7 @@ export function TrainingDashboard() {
             <Dumbbell size={18} />
           </span>
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Training plan</h3>
+            <h3 className="text-lg font-semibold text-foreground">Training plandsds</h3>
             <p className="text-sm text-muted-foreground">Your coach has not assigned a training plan yet.</p>
           </div>
         </div>

@@ -7,8 +7,6 @@ import { useUserWorkoutAssignments } from '@/features/workout-session/hooks/useU
 export default function WorkoutPlansSection() {
   const { assignments, isLoading } = useUserWorkoutAssignments();
 
-  console.log('assignments', assignments, isLoading);
-
   if (isLoading) {
     return (
       <div className="space-y-3">

@@ -2,7 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useUserWorkoutAssignments } from '@/features/workout-session/hooks/useUserWorkoutAssignments';
-import WorkoutSessionPlayer from '@/features/workout-session/components/WorkoutSessionPlayer';
+
+import MobileWorkoutSessionPlayer from '@/features/workout-session/components/MobileWorkoutSessionPlayer';
 
 export default function WorkoutSessionPage() {
   const { planAssignmentId } = useParams<{ planAssignmentId: string }>();
@@ -36,5 +37,5 @@ export default function WorkoutSessionPage() {
     );
   }
 
-  return <WorkoutSessionPlayer assignment={assignment} onDone={() => router.push('/user/training')} />;
+  return <MobileWorkoutSessionPlayer assignment={assignment} onDone={() => router.push('/user/training')} />;
 }

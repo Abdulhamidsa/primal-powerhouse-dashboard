@@ -1,5 +1,6 @@
 import React from 'react';
 import type { GeneratedIngredientTotal } from '@/features/meals/types/generatedIngredientTotals.types';
+import { formatIngredientAmount } from '@/utils/ingredientUnitResolver';
 
 interface GeneratedIngredientsSummaryProps {
   totals: GeneratedIngredientTotal[];
@@ -17,11 +18,13 @@ export default function GeneratedIngredientsSummary({ totals }: GeneratedIngredi
         {totals.map(item => (
           <li key={item.key} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
             <div className="font-medium text-[var(--color-text)]">
-              {item.label} - {Math.round(item.totalGrams)} g
+              {item.label} - {formatIngredientAmount(item.totalGrams, item.label)}
             </div>
             <div className="text-xs text-[var(--color-text-muted)]">
               {item.contributors
-                .map(contributor => `${contributor.mealName} (${Math.round(contributor.grams)}g)`)
+                .map(
+                  contributor => `${contributor.mealName} (${formatIngredientAmount(contributor.grams, item.label)})`,
+                )
                 .join(', ')}
             </div>
           </li>

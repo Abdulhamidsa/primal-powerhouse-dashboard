@@ -8,6 +8,9 @@ const PERFORMANCE_SURPLUS_CAP_RATIO = 0.1;
 const KCAL_PER_KG_WEIGHT_CHANGE = 7700;
 const GENERAL_FAT_FLOOR_PER_KG = 0.6;
 const PERFORMANCE_FAT_FLOOR_PER_KG = 0.7;
+const HARD_CUT_FAT_CAP_PER_KG = 0.8;
+const GENERAL_FAT_LOSS_FAT_CAP_PER_KG = 0.9;
+const RECOMP_FAT_CAP_PER_KG = 1.0;
 const FEMALE_BASE_CALORIE_FLOOR = 1300;
 const MALE_BASE_CALORIE_FLOOR = 1500;
 const ACTIVITY_MULTIPLIER_MIN = 1.2;
@@ -333,8 +336,15 @@ function caloriesFromRate(weightKg: number, weeklyRatePercent: number): number {
 function getMacroSplit(mode: MacroMode): { carbShare: number; fatShare: number } {
   if (mode === 'HIGH_CARB_PERFORMANCE') return { carbShare: 0.7, fatShare: 0.3 };
   if (mode === 'HIGH_FAT_APPETITE_CONTROL') return { carbShare: 0.3, fatShare: 0.7 };
-  if (mode === 'PROTEIN_PRIORITY_CUT') return { carbShare: 0.5, fatShare: 0.5 };
+  if (mode === 'PROTEIN_PRIORITY_CUT') return { carbShare: 0.65, fatShare: 0.35 };
   return { carbShare: 0.55, fatShare: 0.45 };
+}
+
+function getFatCapPerKg(coachingPhase: CoachingPhase): number | null {
+  if (coachingPhase === 'HARD_CUT') return HARD_CUT_FAT_CAP_PER_KG;
+  if (coachingPhase === 'GENERAL_FAT_LOSS') return GENERAL_FAT_LOSS_FAT_CAP_PER_KG;
+  if (coachingPhase === 'RECOMP') return RECOMP_FAT_CAP_PER_KG;
+  return null;
 }
 
 function resolveMacroOptions(
@@ -677,8 +687,18 @@ export function calculateMacroRecommendations(
   const safeCalories = Math.max(caloriesPerDay, minimumCaloriesNeeded);
   const remainingCalories = Math.max(0, safeCalories - proteinCalories - fatFloorCalories);
   const split = getMacroSplit(options.macroMode);
-  const carbs = Math.round((remainingCalories * split.carbShare) / 4);
-  const fat = Math.max(fatFloorGrams, Math.round((fatFloorCalories + remainingCalories * split.fatShare) / 9));
+  let carbs = Math.round((remainingCalories * split.carbShare) / 4);
+  let fat = Math.max(fatFloorGrams, Math.round((fatFloorCalories + remainingCalories * split.fatShare) / 9));
+
+  const fatCapPerKg = getFatCapPerKg(options.coachingPhase);
+  if (fatCapPerKg !== null) {
+    const fatCapGrams = Math.max(fatFloorGrams, Math.round(weightKg * fatCapPerKg));
+    if (fat > fatCapGrams) {
+      fat = fatCapGrams;
+      const carbCalories = Math.max(0, safeCalories - proteinCalories - fat * 9);
+      carbs = Math.round(carbCalories / 4);
+    }
+  }
 
   return {
     protein: proteinTarget.protein,

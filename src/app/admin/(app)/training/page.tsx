@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { ExerciseLibrary } from '@/features/training/components/ExerciseLibrary';
 import { TemplateBuilder } from '@/features/training/components/TemplateBuilder';
 import { PlanManager } from '@/features/training/components/PlanManager';
+import { PlanAssignmentManager } from '@/features/training/components/PlanAssignmentManager';
 
 const TABS = [
   { key: 'exercises', label: 'Exercises' },
   { key: 'templates', label: 'Templates' },
   { key: 'plans', label: 'Training Plans' },
+  { key: 'assignments', label: 'Assignments' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -46,6 +48,7 @@ export default function AdminTrainingPage() {
           {tab === 'exercises' && <ExerciseLibrary />}
           {tab === 'templates' && <TemplateBuilder />}
           {tab === 'plans' && <PlanManager />}
+          {tab === 'assignments' && <PlanAssignmentManager />}
         </div>
       </div>
     </div>

@@ -85,13 +85,14 @@ export async function getCoachPlan(id: string) {
   return httpClient.get<ClientTrainingPlan>(buildCoachPlanUrl(id));
 }
 
-export async function createPlan(data: { clientId: string; startDate: string; endDate: string }) {
+export async function createPlan(data: { name: string; clientId: string; startDate: string; endDate: string }) {
   return httpClient.post<ClientTrainingPlan>(COACH_PLANS_URL, data);
 }
 
 export async function updatePlan(
   id: string,
   data: {
+    name?: string;
     status?: string;
     endDate?: string;
   },
@@ -104,8 +105,10 @@ export async function createPlanDay(
   planId: string,
   data: {
     date: string;
-    dayType: string;
-    templateId?: string;
+    type: string;
+    workoutTemplateId?: string | null;
+    title?: string | null;
+    note?: string | null;
   },
 ) {
   return httpClient.post<TrainingPlanDay>(buildCoachPlanDaysUrl(planId), data);
@@ -115,8 +118,11 @@ export async function updatePlanDay(
   planId: string,
   dayId: string,
   data: {
-    dayType?: string;
-    templateId?: string | null;
+    type?: string;
+    workoutTemplateId?: string | null;
+    title?: string | null;
+    note?: string | null;
+    status?: string;
   },
 ) {
   return httpClient.patch<TrainingPlanDay>(buildCoachPlanDayUrl(planId, dayId), data);

@@ -1,33 +1,27 @@
-import useSWR from 'swr';
-import { useSWRConfig } from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import {
   getCoachPlans,
+  getCoachPlan,
   createPlan,
   updatePlan,
   createPlanDay,
   updatePlanDay,
   deletePlanDay,
 } from '../api/coachTraining.api';
-import type { ClientTrainingPlan, TrainingPlanDay } from '@prisma/client';
 
 export function useCoachPlans() {
-  const { mutate } = useSWRConfig();
-  const key = 'coach-plans';
-
   const {
     data,
     error,
     isLoading,
     mutate: mutateLocal,
-  } = useSWR(key, getCoachPlans, {
+  } = useSWR('coach-plans', getCoachPlans, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 60000,
   });
 
-  const isError = !!error;
-
-  const createPlanAction = async (input: { clientId: string; startDate: string; endDate: string }) => {
+  const createPlanAction = async (input: { name: string; clientId: string; startDate: string; endDate: string }) => {
     const newPlan = await createPlan(input);
     await mutateLocal();
     return newPlan;
@@ -36,6 +30,7 @@ export function useCoachPlans() {
   const updatePlanAction = async (
     id: string,
     input: {
+      name?: string;
       status?: string;
       endDate?: string;
     },
@@ -48,7 +43,7 @@ export function useCoachPlans() {
   return {
     plans: data,
     isLoading,
-    isError,
+    isError: !!error,
     error,
     mutate: mutateLocal,
     createPlan: createPlanAction,
@@ -56,35 +51,76 @@ export function useCoachPlans() {
   };
 }
 
-export function usePlanDays(planId: string) {
-  const key = planId ? ['plan-days', planId] : null;
+export function useCoachPlan(planId?: string) {
+  const key = planId ? ['coach-plan', planId] : null;
 
-  // This hook doesn't directly fetch days; they come with the plan
-  // But we expose mutations for days
+  const {
+    data,
+    error,
+    isLoading,
+    mutate: mutateLocal,
+  } = useSWR(key, () => (planId ? getCoachPlan(planId) : null), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 60000,
+  });
+
+  return {
+    plan: data ?? null,
+    isLoading,
+    isError: !!error,
+    error,
+    refresh: () => mutateLocal(undefined, { revalidate: true }),
+  };
+}
+
+export function useCoachPlanDays(planId?: string) {
   const { mutate } = useSWRConfig();
 
-  const createPlanDayAction = async (data: { date: string; dayType: string; templateId?: string }) => {
+  const createPlanDayAction = async (data: {
+    date: string;
+    type: string;
+    workoutTemplateId?: string | null;
+    title?: string | null;
+    note?: string | null;
+  }) => {
+    if (!planId) throw new Error('Plan ID is required');
+
     const result = await createPlanDay(planId, data);
-    // Revalidate the plans to refresh
-    await mutate('coach-plans');
+    await mutate(
+      (key: string | unknown[]) =>
+        key === 'coach-plans' || (Array.isArray(key) && key[0] === 'coach-plan' && key[1] === planId),
+    );
     return result;
   };
 
   const updatePlanDayAction = async (
     dayId: string,
     data: {
-      dayType?: string;
-      templateId?: string | null;
+      type?: string;
+      workoutTemplateId?: string | null;
+      title?: string | null;
+      note?: string | null;
     },
   ) => {
+    if (!planId) throw new Error('Plan ID is required');
+
     const result = await updatePlanDay(planId, dayId, data);
-    await mutate('coach-plans');
+    await mutate(
+      (key: string | unknown[]) =>
+        key === 'coach-plans' || (Array.isArray(key) && key[0] === 'coach-plan' && key[1] === planId),
+    );
     return result;
   };
 
   const deletePlanDayAction = async (dayId: string) => {
+    if (!planId) throw new Error('Plan ID is required');
+
     await deletePlanDay(planId, dayId);
-    await mutate('coach-plans');
+    await mutate(
+      (key: string | unknown[]) =>
+        key === 'coach-plans' || (Array.isArray(key) && key[0] === 'coach-plan' && key[1] === planId),
+    );
   };
 
   return {

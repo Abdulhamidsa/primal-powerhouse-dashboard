@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useFoods } from '@/features/foods/hooks/useFoods';
 import type { FoodMacroUpdatePayload, FoodRecord } from '@/features/foods/types/food.types';
 import type { UnmatchedIngredientInput } from '@/types/meal';
+import { formatIngredientAmount } from '@/utils/ingredientUnitResolver';
 
 type UnmatchedIngredientPanelProps = {
   items: UnmatchedIngredientInput[];
@@ -132,9 +133,7 @@ export default function UnmatchedIngredientPanel({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-amber-50">{item.name}</p>
-                  <p className="text-xs text-amber-100/70">Suggested amount: {Math.round(item.grams)}g</p>
-                </div>
-
+                  <p className="text-xs text-amber-100/70">Suggested amount: {formatIngredientAmount(item.grams, item.name)}</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"

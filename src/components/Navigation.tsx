@@ -9,6 +9,7 @@ import {
   BarChart2,
   Utensils,
   Users,
+  Activity,
   Flame,
   User,
   Shield,
@@ -77,10 +78,16 @@ const adminNavItems: NavItem[] = [
     description: 'Client pipeline',
   },
   {
-    name: 'Workouts',
+    name: 'Workoutsddd',
     href: '/admin/workout-plans',
     icon: Dumbbell,
     description: 'Workout plan library',
+  },
+  {
+    name: 'Training',
+    href: '/admin/training',
+    icon: Activity,
+    description: 'New training system',
   },
 ];
 
@@ -109,6 +116,12 @@ const userNavItems: NavItem[] = [
     href: '/user/program',
     icon: Utensils,
     description: 'Meals & training',
+  },
+  {
+    name: 'Training',
+    href: '/user/training',
+    icon: Activity,
+    description: 'New training system',
   },
   {
     name: 'Shopping List',
@@ -224,15 +237,23 @@ export default function Navigation({
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
+  const safeNavItems = isMounted ? navItems : [];
+  const safeUnreadTotal = isMounted ? unreadTotal : 0;
+  const safeUser = isMounted ? user : null;
 
   useEffect(() => {
     setAccountMenuOpen(false);
     setChatDrawerOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -276,12 +297,12 @@ export default function Navigation({
             </Link>
 
             <nav className="hidden items-center gap-2 lg:flex">
-              {navItems.map(item => (
+              {safeNavItems.map(item => (
                 <DesktopTopNavItem
                   key={item.href}
                   item={item}
                   active={isActivePath(pathname, item.href)}
-                  unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
+                  unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
                 />
               ))}
             </nav>
@@ -297,9 +318,9 @@ export default function Navigation({
                   className="relative inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <MessageSquare size={18} />
-                  {unreadTotal > 0 ? (
+                  {safeUnreadTotal > 0 ? (
                     <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                      {unreadTotal}
+                      {safeUnreadTotal}
                     </span>
                   ) : null}
                 </button>
@@ -361,7 +382,7 @@ export default function Navigation({
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <MessageSquare size={18} />
-                {unreadTotal > 0 ? (
+                {safeUnreadTotal > 0 ? (
                   <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
                 ) : null}
               </Link>
@@ -371,10 +392,10 @@ export default function Navigation({
                 aria-label="Open profile"
                 className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
               >
-                {user?.avatar ? (
+                {safeUser?.avatar ? (
                   <Image
-                    src={user.avatar}
-                    alt={user.name ?? 'Profile'}
+                    src={safeUser.avatar}
+                    alt={safeUser.name ?? 'Profile'}
                     width={40}
                     height={40}
                     className="h-full w-full object-cover"
@@ -415,12 +436,12 @@ export default function Navigation({
           style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
         >
           <div className="mx-auto flex h-full max-w-lg items-center justify-around px-2 py-2">
-            {navItems.map(item => (
+            {safeNavItems.map(item => (
               <MobileTabItem
                 key={item.href}
                 item={item}
                 active={isActivePath(pathname, item.href)}
-                unreadCount={item.href.endsWith('/chat') ? unreadTotal : 0}
+                unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
               />
             ))}
           </div>

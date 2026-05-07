@@ -1,20 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { useCoachPlans, usePlanDays } from '../hooks/useCoachPlans';
-import { trainingDayTypeEnum, planStatusEnum } from '../enums/training.enums';
+import { useCoachPlans } from '../hooks/useCoachPlans';
+import { planStatusEnum } from '../enums/training.enums';
 import type { ClientTrainingPlan } from '@prisma/client';
+import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
 
 export function PlanManager() {
   const { plans, isLoading, isError, createPlan, updatePlan } = useCoachPlans();
+  const { clients, isLoading: isClientsLoading, error: clientsError } = useAdminClientsList();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
+    name: string;
     clientId: string;
     startDate: string;
     endDate: string;
     status?: string;
   }>({
+    name: '',
     clientId: '',
     startDate: '',
     endDate: '',
@@ -32,6 +36,7 @@ export function PlanManager() {
         return d.toISOString().split('T')[0];
       };
       setFormData({
+        name: plan.name,
         clientId: plan.clientId,
         startDate: formatDateForInput(plan.startDate),
         endDate: formatDateForInput(plan.endDate ?? new Date()),
@@ -40,6 +45,7 @@ export function PlanManager() {
     } else {
       setEditingId(null);
       setFormData({
+        name: '',
         clientId: '',
         startDate: '',
         endDate: '',
@@ -53,6 +59,7 @@ export function PlanManager() {
     setShowForm(false);
     setEditingId(null);
     setFormData({
+      name: '',
       clientId: '',
       startDate: '',
       endDate: '',
@@ -66,7 +73,7 @@ export function PlanManager() {
     setIsSubmitting(true);
 
     try {
-      if (!formData.clientId || !formData.startDate || !formData.endDate) {
+      if (!formData.name || !formData.clientId || !formData.startDate || !formData.endDate) {
         setError('All fields are required');
         setIsSubmitting(false);
         return;
@@ -80,11 +87,13 @@ export function PlanManager() {
 
       if (editingId) {
         await updatePlan(editingId, {
+          name: formData.name,
           endDate: formData.endDate,
           status: formData.status,
         });
       } else {
         await createPlan({
+          name: formData.name,
           clientId: formData.clientId,
           startDate: formData.startDate,
           endDate: formData.endDate,
@@ -106,7 +115,6 @@ export function PlanManager() {
   };
 
   const statusOptions = planStatusEnum.options;
-  const dayTypeOptions = trainingDayTypeEnum.options;
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
@@ -130,16 +138,38 @@ export function PlanManager() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client ID *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Plan name *</label>
                 <input
                   type="text"
-                  disabled={!!editingId}
+                  required
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Strength Block A"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Client *</label>
+                <select
+                  disabled={!!editingId || isClientsLoading}
                   required
                   value={formData.clientId}
                   onChange={e => setFormData({ ...formData, clientId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-                  placeholder="e.g., client-123"
-                />
+                >
+                  <option value="">{isClientsLoading ? 'Loading clients...' : 'Select a client'}</option>
+                  {clients.map(client => (
+                    <option key={client.id} value={client.id}>
+                      {client.name} {client.email ? `(${client.email})` : ''}
+                    </option>
+                  ))}
+                </select>
+                {clientsError ? (
+                  <p className="mt-1 text-xs text-red-600">Unable to load clients. Please refresh the page.</p>
+                ) : null}
+                {!isClientsLoading && clients.length === 0 ? (
+                  <p className="mt-1 text-xs text-gray-500">No clients found.</p>
+                ) : null}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -228,7 +258,8 @@ export function PlanManager() {
               onClick={() => setExpandedPlan(expandedPlan === plan.id ? null : plan.id)}
             >
               <div className="flex-1">
-                <h3 className="font-semibold text-lg">Client: {plan.clientId}</h3>
+                <h3 className="font-semibold text-lg">{plan.name}</h3>
+                <p className="text-gray-600 text-sm">Client: {plan.clientId}</p>
                 <p className="text-gray-600 text-sm">
                   {formatDate(plan.startDate)} - {formatDate(plan.endDate ?? undefined)}
                 </p>

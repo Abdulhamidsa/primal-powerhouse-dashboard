@@ -31,7 +31,7 @@ function pickBestMatch(name: string): IngredientUnitRegistryItem | null {
   }
 
   const matches = INGREDIENT_UNIT_REGISTRY.filter(item =>
-    item.aliases.some(alias => includesAlias(normalizedName, alias))
+    item.aliases.some(alias => includesAlias(normalizedName, alias)),
   );
   if (matches.length === 0) {
     return null;
@@ -62,4 +62,19 @@ export function resolveIngredientUnitByName(name: string): ResolvedIngredientUni
     gramsPerUnit: match.gramsPerUnit,
     source: 'registry',
   };
+}
+
+export function formatIngredientAmount(grams: number, name: string, showGramsInParens = true): string {
+  const resolved = resolveIngredientUnitByName(name);
+  if (!resolved || !resolved.gramsPerUnit || resolved.gramsPerUnit <= 0) {
+    return `${Math.round(grams)} g`;
+  }
+
+  const pieces = Math.round((grams / resolved.gramsPerUnit) * 100) / 100;
+  const roundedPieces = Number.isInteger(pieces) ? String(pieces) : pieces.toFixed(2).replace(/\.00$/, '');
+  const plural = pieces > 1 ? 's' : '';
+  if (showGramsInParens) {
+    return `${roundedPieces} ${resolved.displayUnitLabel}${plural} (≈${Math.round(grams)}g)`;
+  }
+  return `${roundedPieces} ${resolved.displayUnitLabel}${plural}`;
 }

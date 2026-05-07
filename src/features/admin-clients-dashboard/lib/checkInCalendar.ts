@@ -21,6 +21,17 @@ export type SelectedDayData = {
   weekly: AdminWeeklyCheckInListItem[];
 };
 
+function mergeDayReviewStatus(current: DayReviewStatus, next: DayReviewStatus): DayReviewStatus {
+  if (current === 'reviewed' || next === 'reviewed') return 'reviewed';
+  if (current === 'pending' || next === 'pending') return 'pending';
+  return 'none';
+}
+
+function getWeekStartDateKeyForLocalDate(dateKey: string): string {
+  const localDate = new Date(`${dateKey}T00:00:00`);
+  return toDateKeyLocal(getWeekStartMondayLocal(localDate));
+}
+
 export function startOfMonthLocal(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
 }
@@ -103,8 +114,16 @@ export function buildDayStatusMap(
   }
 
   for (const item of weeklyData?.checkIns ?? []) {
-    const target = ensure(item.weekStartDate);
-    target.weekly = item.reviewed ? 'reviewed' : 'pending';
+    const weeklyStatus: DayReviewStatus = item.reviewed ? 'reviewed' : 'pending';
+    const weekStartLocal = new Date(`${item.weekStartDate}T00:00:00`);
+
+    for (let index = 0; index < 7; index += 1) {
+      const day = new Date(weekStartLocal);
+      day.setDate(weekStartLocal.getDate() + index);
+      const dayKey = toDateKeyLocal(day);
+      const target = ensure(dayKey);
+      target.weekly = mergeDayReviewStatus(target.weekly, weeklyStatus);
+    }
   }
 
   return map;
@@ -115,9 +134,11 @@ export function getSelectedDayData(
   dailyData: AdminClientDailyCheckInsResponse | undefined,
   weeklyData: AdminClientWeeklyCheckInsResponse | undefined,
 ): SelectedDayData {
+  const selectedWeekStartKey = getWeekStartDateKeyForLocalDate(dateKey);
+
   return {
     daily: (dailyData?.checkIns ?? []).filter(item => item.dayDate === dateKey),
-    weekly: (weeklyData?.checkIns ?? []).filter(item => item.weekStartDate === dateKey),
+    weekly: (weeklyData?.checkIns ?? []).filter(item => item.weekStartDate === selectedWeekStartKey),
   };
 }
 

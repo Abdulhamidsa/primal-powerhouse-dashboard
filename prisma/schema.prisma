@@ -337,6 +337,11 @@ model Food {
   baseUnit         FoodBaseUnit @default(HUNDRED_G)
   gramsPerUnit     Float?
   displayUnitLabel String?
+  displayName      String?      @map("display_name")
+  canonicalName    String?      @map("canonical_name")
+  duplicateGroup   String?      @map("duplicate_group")
+  needsReview      Boolean      @default(false) @map("needs_review")
+  aliasesRaw       String[]     @default([]) @map("aliases")
   createdById      String?
   createdBy        User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt        DateTime     @default(now())
@@ -347,6 +352,86 @@ model Food {
   @@index([category])
   @@index([isActive])
   @@map("foods")
+}
+
+model FoodsBackupBeforeCleanup {
+  id               String?
+  name             String?
+  category         String?
+  state            FoodState?
+  caloriesKcal     Float?
+  proteinG         Float?
+  carbsG           Float?
+  fatG             Float?
+  fiberG           Float?
+  source           FoodSource?
+  isActive         Boolean?
+  sourceRef        String?
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  baseUnit         FoodBaseUnit?
+  gramsPerUnit     Float?
+  displayUnitLabel String?
+  createdById      String?
+  createdAt        DateTime?
+  updatedAt        DateTime?
+
+  @@ignore
+  @@map("foods_backup_before_cleanup")
+}
+
+model FoodsCopy1 {
+  id               String       @id
+  name             String
+  category         String
+  state            FoodState
+  caloriesKcal     Float
+  proteinG         Float
+  carbsG           Float
+  fatG             Float
+  fiberG           Float?
+  source           FoodSource   @default(SYSTEM)
+  isActive         Boolean      @default(true)
+  sourceRef        String?
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  baseUnit         FoodBaseUnit @default(HUNDRED_G)
+  gramsPerUnit     Float?
+  displayUnitLabel String?
+  createdById      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime
+
+  @@ignore
+  @@map("foods_copy1")
+}
+
+model MealsCopy1 {
+  id             String   @id
+  name           String
+  type           MealType
+  calories       Float
+  protein        Float
+  carbs          Float
+  fat            Float
+  fiber          Float?
+  ingredients    String?
+  instructions   String?
+  prepTime       Int?
+  cookTime       Int?
+  servings       Int      @default(1)
+  tags           String?
+  imageUrl       String?
+  isPersonalized Boolean  @default(false)
+  originalMealId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+  coachId        String
+  clientId       String?
+  spices         String?
+
+  @@ignore
+  @@map("meals_copy1")
 }
 
 model FoodAlias {

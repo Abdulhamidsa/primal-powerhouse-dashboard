@@ -161,16 +161,24 @@ function computeTargets(
   const initial = calculateMacroRecommendations(adjustedCalories, weightKg, goal ?? undefined);
   const proteinFloor = Math.round(weightKg * floors.proteinPerKgFloor);
   const protein = Math.max(initial.protein, proteinFloor);
-  const proteinCalories = protein * 4;
-  const remainingCalories = Math.max(0, adjustedCalories - proteinCalories);
-  const carbs = Math.round((remainingCalories * 0.5) / 4);
-  const fat = Math.round((remainingCalories * 0.5) / 9);
+
+  if (protein === initial.protein) {
+    return {
+      calories: adjustedCalories,
+      protein: initial.protein,
+      carbs: initial.carbs,
+      fat: initial.fat,
+    };
+  }
+
+  const preservedFat = initial.fat;
+  const carbs = Math.max(0, Math.round((adjustedCalories - protein * 4 - preservedFat * 9) / 4));
 
   return {
     calories: adjustedCalories,
     protein,
     carbs,
-    fat,
+    fat: preservedFat,
   };
 }
 
