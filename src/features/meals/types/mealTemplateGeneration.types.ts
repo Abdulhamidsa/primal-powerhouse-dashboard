@@ -68,6 +68,7 @@ export type GenerateMealTemplateOptions = {
   strictMatchMode?: 'strict' | 'lenient';
   foodOrigin?: FoodOrigin;
   preferredProtein?: string;
+  helperText?: string;
 };
 
 export type MainProteinOption = {

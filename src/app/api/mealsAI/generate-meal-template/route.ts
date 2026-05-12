@@ -172,6 +172,20 @@ function uniqueStrings(values: string[]): string[] {
   return Array.from(new Set(values.map(v => v.trim()).filter(Boolean)));
 }
 
+function sanitizeHelperTextForPrompt(value: string): string {
+  return value
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 220);
+}
+
+function isAzureContentFilterError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  const lowered = message.toLowerCase();
+  return lowered.includes('content management policy') || lowered.includes('content_filter');
+}
+
 function rotatePick<T>(items: readonly T[], attempt: number, seed = 0): T {
   return items[(attempt - 1 + seed) % items.length] as T;
 }
@@ -684,6 +698,7 @@ function buildPrompt(input: {
   avoidMealNames: string[];
   targetComplexity: 'simple' | 'advanced';
   preferredProtein?: string;
+  helperText?: string;
 }) {
   const isSnack = input.mealType === 'SNACK';
   const isBreakfast = input.mealType === 'BREAKFAST';
@@ -787,6 +802,9 @@ MATCH MODE:
 - match mode: ${input.strictMatchMode}
 - In strict mode, prefer pantry ingredients when realistic, but do not degrade the dish identity just to force matches
 
+OPTIONAL COACH GUIDANCE:
+${input.helperText ? `- Apply this preference when possible: ${input.helperText}` : '- No extra coach guidance provided for this run.'}
+
 OUTPUT RULES:
 - Return JSON only
 - No markdown
@@ -834,6 +852,8 @@ export async function POST(request: Request) {
     const mealType = parsed.data.mealType as BuilderMealType;
     const strictMatchMode = parsed.data.strictMatchMode as MatchMode;
     const foodOrigin = parsed.data.foodOrigin as FoodOrigin | undefined;
+    const helperText = parsed.data.helperText?.trim() || undefined;
+    const safeHelperText = helperText ? sanitizeHelperTextForPrompt(helperText) : undefined;
     const avoidCoreDishReferences = parsed.data.avoidCoreDishReferences ?? [];
     const avoidMealNames = parsed.data.avoidMealNames ?? [];
     const avoidCuisines = parsed.data.avoidCuisines ?? [];
@@ -965,32 +985,51 @@ export async function POST(request: Request) {
         const pantryShortlist = buildIngredientShortlist(foodsByPriority, dishLock, preferredProtein);
         const targetComplexity: 'simple' | 'advanced' = Math.random() < 0.82 ? 'simple' : 'advanced';
 
-        const response = await azureOpenAI.chat.completions.create({
-          model: AZURE_CHAT_DEPLOYMENT as string,
-          temperature: 0.45,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Return strict JSON only. No markdown. No explanation. Generate real famous dishes, not generic bodybuilding food.',
-            },
-            {
-              role: 'user',
-              content: buildPrompt({
-                mealType,
-                strictMatchMode,
-                foodOrigin,
-                dishLock,
-                pantryShortlist,
-                avoidCoreDishReferences,
-                avoidMealNames: mergedAvoidMealNames,
-                targetComplexity,
-                preferredProtein: enforcePreferredProtein ? preferredProtein : undefined,
-              }),
-            },
-          ],
-          response_format: { type: 'json_object' },
-        });
+        const messages: Array<{ role: string; content: string }> = [
+          {
+            role: 'system',
+            content:
+              'Return strict JSON only. No markdown. No explanation. Generate real famous dishes, not generic bodybuilding food.',
+          },
+          {
+            role: 'user',
+            content: buildPrompt({
+              mealType,
+              strictMatchMode,
+              foodOrigin,
+              dishLock,
+              pantryShortlist,
+              avoidCoreDishReferences,
+              avoidMealNames: mergedAvoidMealNames,
+              targetComplexity,
+              preferredProtein: enforcePreferredProtein ? preferredProtein : undefined,
+              helperText: safeHelperText,
+            }),
+          },
+        ];
+
+        let helperIgnoredByPolicy = false;
+
+        const createCompletion = async (requestMessages: Array<{ role: string; content: string }>) =>
+          azureOpenAI.chat.completions.create({
+            model: AZURE_CHAT_DEPLOYMENT as string,
+            temperature: 0.45,
+            messages: requestMessages as any,
+            response_format: { type: 'json_object' },
+          });
+
+        let response;
+        try {
+          response = await createCompletion(messages);
+        } catch (error) {
+          const baseMessages = messages.slice(0, 2);
+          if (helperText && isAzureContentFilterError(error)) {
+            response = await createCompletion(baseMessages);
+            helperIgnoredByPolicy = true;
+          } else {
+            throw error;
+          }
+        }
 
         const content = response.choices[0]?.message?.content;
         if (!content) {
@@ -1076,6 +1115,12 @@ export async function POST(request: Request) {
         );
 
         const warnings: string[] = [];
+
+        if (helperIgnoredByPolicy) {
+          warnings.push(
+            'AI helper text was skipped due to model content filtering. Meal was generated without helper guidance.',
+          );
+        }
 
         if (preferredProteinWarning) {
           warnings.push(preferredProteinWarning);

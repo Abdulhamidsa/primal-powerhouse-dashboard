@@ -23,6 +23,7 @@ export function useGenerateMealTemplate() {
     mealType: BuilderMealType,
     foodOrigin?: FoodOrigin,
     preferredProtein?: string,
+    helperText?: string,
   ): Promise<GeneratedMealTemplate> => {
     setLoading(true);
     setError(null);
@@ -32,6 +33,7 @@ export function useGenerateMealTemplate() {
         strictMatchMode: 'strict',
         foodOrigin,
         preferredProtein,
+        helperText,
         avoidCoreDishReferences: recentCoreDishReferences.slice(0, 8),
         avoidMealNames: recentMealNames.slice(0, 30),
         avoidCuisines: recentCuisines.slice(0, 6),

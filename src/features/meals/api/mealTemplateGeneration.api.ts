@@ -20,6 +20,7 @@ export async function generateMealTemplateApi(
     strictMatchMode: options?.strictMatchMode ?? 'strict',
     foodOrigin: options?.foodOrigin,
     preferredProtein: options?.preferredProtein,
+    helperText: options?.helperText,
     avoidCoreDishReferences: options?.avoidCoreDishReferences,
     avoidMealNames: options?.avoidMealNames,
     avoidCuisines: options?.avoidCuisines,

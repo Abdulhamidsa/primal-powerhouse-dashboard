@@ -1,3 +1,5 @@
+const IS_DEV = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+
 const APP_CACHE_PREFIX = 'primal-powerhouse';
 const RAW_APP_VERSION = '__BUILD_HASH__';
 const APP_VERSION = RAW_APP_VERSION !== '__BUILD_HASH__' ? RAW_APP_VERSION : 'v1';
@@ -14,11 +16,7 @@ const PRECACHE_URLS = [
   '/offline.html',
 ];
 
-const STATIC_PATH_PREFIXES = new Set(['/_next/static/']);
-
 const STATIC_FILE_EXTENSIONS = new Set([
-  '.js',
-  '.css',
   '.png',
   '.jpg',
   '.jpeg',
@@ -33,7 +31,7 @@ const STATIC_FILE_EXTENSIONS = new Set([
   '.json',
 ]);
 
-const BYPASS_PATH_PREFIXES = new Set(['/api/', '/login', '/signin', '/signup']);
+const BYPASS_PATH_PREFIXES = new Set(['/api/', '/login', '/signin', '/signup', '/_next/']);
 
 const FETCH_TIMEOUT = 5000;
 const MAX_PAGE_CACHE_ENTRIES = 30;
@@ -60,17 +58,11 @@ const hasStaticExtension = pathname => {
 
 const isStaticAssetRequest = request => {
   const url = new URL(request.url);
-
-  for (const prefix of STATIC_PATH_PREFIXES) {
-    if (url.pathname.startsWith(prefix)) {
-      return true;
-    }
-  }
-
   return hasStaticExtension(url.pathname);
 };
 
 const shouldBypassRequest = request => {
+  if (IS_DEV) return true;
   if (request.method !== 'GET') return true;
   if (!isSameOrigin(request)) return true;
 
@@ -127,6 +119,11 @@ self.addEventListener('message', event => {
 });
 
 self.addEventListener('install', event => {
+  if (IS_DEV) {
+    self.skipWaiting();
+    return;
+  }
+
   event.waitUntil(
     (async () => {
       try {
@@ -141,6 +138,8 @@ self.addEventListener('install', event => {
             }
           }),
         );
+
+        await self.skipWaiting();
       } catch (error) {
         console.error('[SW] Install failed:', error);
       }
@@ -156,7 +155,7 @@ self.addEventListener('activate', event => {
 
         await Promise.all(
           keys.map(key => {
-            if (key.startsWith(APP_CACHE_PREFIX) && key !== STATIC_CACHE_NAME && key !== PAGE_CACHE_NAME) {
+            if (IS_DEV || key.startsWith(APP_CACHE_PREFIX)) {
               return caches.delete(key);
             }
 
@@ -166,9 +165,15 @@ self.addEventListener('activate', event => {
 
         await self.clients.claim();
 
-        const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-        for (const client of clientList) {
-          client.postMessage({ type: 'SW_UPDATED', version: APP_VERSION });
+        if (!IS_DEV) {
+          const clientList = await self.clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true,
+          });
+
+          for (const client of clientList) {
+            client.postMessage({ type: 'SW_UPDATED', version: APP_VERSION });
+          }
         }
       } catch (error) {
         console.error('[SW] Activation failed:', error);

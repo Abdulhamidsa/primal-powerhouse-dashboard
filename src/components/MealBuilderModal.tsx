@@ -130,6 +130,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   const [sideType, setSideType] = useState<SideType>('SALAD');
   const [recentSideNames, setRecentSideNames] = useState<string[]>([]);
   const [unmatchedIngredients, setUnmatchedIngredients] = useState<UnmatchedIngredientInput[]>([]);
+  const [helperText, setHelperText] = useState<string>('');
   const { submit: createFoodAlias } = useCreateFoodAlias();
   const { loading: rematchLoading, error: rematchError, rematch } = useRematchMealIngredients();
 
@@ -185,6 +186,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
       setFoodFormPrefill(null);
       setPendingIngredientRecovery(null);
       setUnmatchedIngredients([]);
+      setHelperText('');
     }
   }, [isOpen, resetPromptState, resetTemplateGenerator]);
 
@@ -659,6 +661,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
           state.type as BuilderMealType,
           foodOrigin === 'ANY' ? undefined : foodOrigin,
           preferredProtein === 'ANY' ? undefined : preferredProtein,
+          helperText.trim() || undefined,
         );
 
         setState(prev => ({
@@ -858,6 +861,22 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       className={`input-base w-full ${errors.servings ? 'border-red-500 focus:ring-red-500/20' : ''}`}
                     />
                     {errors.servings && <p className="mt-2 text-xs text-red-400">{errors.servings}</p>}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">
+                      AI Helper (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={helperText}
+                      onChange={e => setHelperText(e.target.value)}
+                      placeholder="e.g., 'Mediterranean flavors' or 'high protein, low carb'"
+                      className="input-base w-full"
+                    />
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      Provide guidance for AI meal generation. Leave empty to generate freely.
+                    </p>
                   </div>
 
                   <div className="sm:col-span-2">
