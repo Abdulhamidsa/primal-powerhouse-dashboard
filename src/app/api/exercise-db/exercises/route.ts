@@ -104,7 +104,9 @@ export async function GET(request: NextRequest) {
         const localBodyPart = ex.muscleGroup.replace(/_/g, ' ').toUpperCase();
         const localMuscle = ex.muscleGroup.replace(/_/g, ' ').toUpperCase();
         const localEquipment = (ex.equipment ?? '').replace(/_/g, ' ').toUpperCase();
-        const searchable = [ex.name, ex.description ?? '', localBodyPart, localMuscle, localEquipment].join(' ').toUpperCase();
+        const searchable = [ex.name, ex.description ?? '', localBodyPart, localMuscle, localEquipment]
+          .join(' ')
+          .toUpperCase();
 
         if (qUpper && !searchable.includes(qUpper)) return false;
         if (musclesFilter.length > 0 && !musclesFilter.some(item => localMuscle.includes(item))) return false;
@@ -139,9 +141,15 @@ export async function GET(request: NextRequest) {
         let score = 0;
         const name = (ex.name || '').toUpperCase();
         if (name.includes(qUpper)) score += 100;
-        if (Array.isArray(ex.keywords) && ex.keywords.some((k: any) => String(k).toUpperCase().includes(qUpper))) score += 20;
-        if (Array.isArray(ex.targetMuscles) && ex.targetMuscles.some((m: any) => String(m).toUpperCase().includes(qUpper))) score += 10;
-        if (Array.isArray(ex.bodyParts) && ex.bodyParts.some((b: any) => String(b).toUpperCase().includes(qUpper))) score += 5;
+        if (Array.isArray(ex.keywords) && ex.keywords.some((k: any) => String(k).toUpperCase().includes(qUpper)))
+          score += 20;
+        if (
+          Array.isArray(ex.targetMuscles) &&
+          ex.targetMuscles.some((m: any) => String(m).toUpperCase().includes(qUpper))
+        )
+          score += 10;
+        if (Array.isArray(ex.bodyParts) && ex.bodyParts.some((b: any) => String(b).toUpperCase().includes(qUpper)))
+          score += 5;
         return score;
       };
 

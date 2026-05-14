@@ -63,18 +63,14 @@ export async function POST(request: NextRequest) {
     // then compressed/resized via Cloudinary transformation before storage.
     const validation = validateChatMediaFile(file);
     const isWeeklyCheckInImage = isWeeklyCheckInFolder(folder) && isImageFile(file);
-    const isWeeklyCheckInOversizeImage =
-      isWeeklyCheckInImage && validation.error === 'Image size exceeds 10MB limit.';
+    const isWeeklyCheckInOversizeImage = isWeeklyCheckInImage && validation.error === 'Image size exceeds 10MB limit.';
 
     if (!validation.valid && !isWeeklyCheckInOversizeImage) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     if (isWeeklyCheckInOversizeImage && file.size > WEEKLY_CHECKIN_IMAGE_MAX_BYTES) {
-      return NextResponse.json(
-        { error: 'Weekly check-in image size exceeds 35MB limit.' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Weekly check-in image size exceeds 35MB limit.' }, { status: 400 });
     }
 
     // Prepare Cloudinary upload

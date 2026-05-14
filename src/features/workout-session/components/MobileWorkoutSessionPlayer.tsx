@@ -233,9 +233,7 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 space-y-4 text-center">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Workout completed</p>
           <h1 className="text-2xl font-bold text-foreground">You already trained this</h1>
-          <p className="text-sm text-muted-foreground">
-            {lockMessage ?? 'This workout has already been completed.'}
-          </p>
+          <p className="text-sm text-muted-foreground">{lockMessage ?? 'This workout has already been completed.'}</p>
           <div className="grid gap-3">
             <button
               type="button"

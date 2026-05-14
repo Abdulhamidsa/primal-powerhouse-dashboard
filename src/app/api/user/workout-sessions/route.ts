@@ -14,18 +14,18 @@ const startSessionSchema = z.object({
  * Start a new workout session. Abandons any existing IN_PROGRESS session for same assignment.
  * If restart=true, completed sessions for this assignment are deleted so the workout can be retried.
  */
- export async function POST(request: NextRequest) {
-   const auth = requireApiAuth(request, 'client');
-   if (!auth.ok) return auth.res;
+export async function POST(request: NextRequest) {
+  const auth = requireApiAuth(request, 'client');
+  if (!auth.ok) return auth.res;
 
-   const clientId = auth.user.userId;
-   const body = await request.json();
-   const parsed = startSessionSchema.safeParse(body);
-   if (!parsed.success) {
-     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 422 });
-   }
+  const clientId = auth.user.userId;
+  const body = await request.json();
+  const parsed = startSessionSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 422 });
+  }
 
-   const { planAssignmentId, restart = false } = parsed.data;
+  const { planAssignmentId, restart = false } = parsed.data;
   const assignment = await (prisma as any).workoutPlanAssignment.findUnique({
     where: { id: planAssignmentId },
     select: { clientId: true },
