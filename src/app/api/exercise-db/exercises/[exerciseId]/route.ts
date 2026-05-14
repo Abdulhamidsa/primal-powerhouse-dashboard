@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 const EXERCISE_DB_BASE_URL = 'https://www.exercisedb.dev';
 
@@ -14,7 +15,35 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!exerciseId || exerciseId.trim().length === 0) {
       return NextResponse.json(
         { success: false, error: 'exerciseId is required' },
-        { status: 400, headers: EXERCISE_CACHE_HEADERS }
+        { status: 400, headers: EXERCISE_CACHE_HEADERS },
+      );
+    }
+
+    const localExercise = await prisma.exercise.findUnique({ where: { id: exerciseId } });
+    if (localExercise) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            exerciseId: localExercise.id,
+            name: localExercise.name,
+            imageUrl: localExercise.imageUrl || '',
+            gifUrl: localExercise.imageUrl || '',
+            videoUrl: localExercise.videoUrl || '',
+            targetMuscles: localExercise.muscleGroup ? [localExercise.muscleGroup] : [],
+            bodyParts: localExercise.muscleGroup ? [localExercise.muscleGroup] : [],
+            equipments: localExercise.equipment ? [localExercise.equipment] : [],
+            secondaryMuscles: localExercise.muscleGroupSecondary ? [localExercise.muscleGroupSecondary] : [],
+            instructions: localExercise.instructions ? [localExercise.instructions] : [],
+            exerciseTips: [],
+            variations: [],
+            keywords: [localExercise.name, localExercise.description ?? ''].filter(Boolean),
+            overview: localExercise.description ?? '',
+            difficultyLevel: '',
+            relatedExerciseIds: [],
+          },
+        },
+        { headers: EXERCISE_CACHE_HEADERS },
       );
     }
 
@@ -33,7 +62,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
           success: false,
           error: `ExerciseDB request failed with status ${upstreamResponse.status}`,
         },
-        { status: upstreamResponse.status, headers: EXERCISE_CACHE_HEADERS }
+        { status: upstreamResponse.status, headers: EXERCISE_CACHE_HEADERS },
       );
     }
 
@@ -46,7 +75,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         error: 'Failed to fetch exercise details from ExerciseDB',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500, headers: EXERCISE_CACHE_HEADERS }
+      { status: 500, headers: EXERCISE_CACHE_HEADERS },
     );
   }
 }

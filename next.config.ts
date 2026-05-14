@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'www.exercisedb.dev' },
       { protocol: 'https', hostname: 'static.exercisedb.dev' },
+      { protocol: 'https', hostname: 'cdn.exercisedb.dev' },
     ],
     formats: ['image/webp', 'image/avif'],
   },

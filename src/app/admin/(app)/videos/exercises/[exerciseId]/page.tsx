@@ -39,14 +39,26 @@ export default function ExerciseDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <div className="relative w-full aspect-square max-h-[520px] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-700">
-              <Image
-                src={exercise.gifUrl}
-                alt={exercise.name}
-                fill
-                unoptimized
-                className="object-contain"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+              {exercise.videoUrl ? (
+                <video
+                  src={exercise.videoUrl}
+                  className="w-full h-full object-contain"
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                  controls
+                />
+              ) : (
+                <Image
+                  src={exercise.gifUrl}
+                  alt={exercise.name}
+                  fill
+                  unoptimized
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              )}
             </div>
           </div>
 

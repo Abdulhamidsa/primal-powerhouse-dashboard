@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { X, Plus, Trash2, GripVertical, Search } from 'lucide-react';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
 import type { WorkoutPlan } from '../types/workoutPlan.types';
-import { getExerciseDbExercises } from '@/features/exercises/api/exerciseDb.api';
 import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
+import { useRapidAPIExercises } from '@/features/exercises/hooks/useRapidAPIExercises';
+import { useRapidAPIFilterOptions } from '@/features/exercises/hooks/useRapidAPIFilterOptions';
+import ExerciseFilters from '@/features/exercises/components/ExerciseFilters';
 import Image from 'next/image';
 
 interface ExerciseRow {
@@ -28,6 +30,18 @@ interface Props {
 
 export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) {
   const { create, update } = useWorkoutPlanActions();
+  const filterOptions = useRapidAPIFilterOptions();
+  const {
+    exercises: exerciseDbResults,
+    isLoading: isLoadingExercises,
+    query: videoSearch,
+    setQuery: setVideoSearch,
+    filters,
+    updateFilters,
+    clearFilters,
+    hasMore,
+    loadMore,
+  } = useRapidAPIExercises();
 
   const [name, setName] = useState(plan?.name ?? '');
   const [description, setDescription] = useState(plan?.description ?? '');
@@ -45,56 +59,9 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
     })) ?? [],
   );
 
-  const [videoSearch, setVideoSearch] = useState('');
   const [showVideoPicker, setShowVideoPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [exerciseDbResults, setExerciseDbResults] = useState<ExerciseDbExercise[]>([]);
-  const [isLoadingExercises, setIsLoadingExercises] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
-  const searchExercises = useCallback(async (query: string, page: number = 0) => {
-    setIsLoadingExercises(true);
-    try {
-      const response = await getExerciseDbExercises({
-        q: query || '',
-        offset: page * 25,
-        limit: 25,
-      });
-      if (response.success && response.data) {
-        if (page === 0) {
-          setExerciseDbResults(response.data);
-        } else {
-          setExerciseDbResults(prev => [...prev, ...response.data]);
-        }
-        setHasMore((response.metadata?.nextPage ?? null) !== null);
-        setCurrentPage(page);
-      }
-    } catch (err) {
-      console.error('Error searching exercises:', err);
-    } finally {
-      setIsLoadingExercises(false);
-    }
-  }, []);
-
-  // Initial load of exercises
-  useEffect(() => {
-    searchExercises('', 0);
-  }, [searchExercises]);
-
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (videoSearch.trim()) {
-        setCurrentPage(0);
-        searchExercises(videoSearch, 0);
-      } else {
-        searchExercises('', 0);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [videoSearch, searchExercises]);
 
   function addExercise(exercise: ExerciseDbExercise) {
     setExercises(prev => [
@@ -113,7 +80,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
     ]);
     setShowVideoPicker(false);
     setVideoSearch('');
-    setExerciseDbResults([]);
+    clearFilters();
   }
 
   function removeExercise(idx: number) {
@@ -165,11 +132,8 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl flex flex-col"
-        style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)' }}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
@@ -331,10 +295,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
       {/* Video picker overlay */}
       {showVideoPicker && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div
-            className="w-full max-w-md max-h-[70vh] overflow-hidden rounded-2xl flex flex-col"
-            style={{ background: 'var(--color-background)', border: '1px solid var(--color-border)' }}
-          >
+          <div className="w-full max-w-md max-h-[90vh] overflow-hidden rounded-2xl flex flex-col bg-card">
             <div
               className="flex items-center justify-between p-4 border-b"
               style={{ borderColor: 'var(--color-border)' }}
@@ -344,7 +305,9 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                 <X size={18} style={{ color: 'var(--color-text-secondary)' }} />
               </button>
             </div>
-            <div className="p-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+
+            {/* Search input */}
+            <div className="p-3 border-b space-y-3" style={{ borderColor: 'var(--color-border)' }}>
               <div
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border"
                 style={{ borderColor: 'var(--color-border)' }}
@@ -358,7 +321,20 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                   className="flex-1 bg-transparent text-sm text-[var(--color-text-primary)] outline-none"
                 />
               </div>
+
+              {/* Filters */}
+              <ExerciseFilters
+                bodyParts={filterOptions.bodyParts}
+                equipments={filterOptions.equipments}
+                targetMuscles={filterOptions.targetMuscles}
+                difficulties={filterOptions.difficulties}
+                selectedFilters={filters}
+                onFilterChange={updateFilters}
+                onClear={clearFilters}
+              />
             </div>
+
+            {/* Results */}
             <div className="overflow-y-auto flex-1 divide-y" style={{ borderColor: 'var(--color-border)' }}>
               {isLoadingExercises && exerciseDbResults.length === 0 ? (
                 <p className="p-4 text-sm text-[var(--color-text-secondary)] text-center">Loading exercises…</p>
@@ -377,6 +353,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                         alt={ex.name}
                         width={40}
                         height={40}
+                        unoptimized
                         className="w-10 h-10 rounded object-cover shrink-0"
                       />
                     ) : (
@@ -400,10 +377,12 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                 ))
               )}
             </div>
+
+            {/* Load more button */}
             {hasMore && exerciseDbResults.length > 0 && (
               <div className="border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
                 <button
-                  onClick={() => searchExercises(videoSearch, currentPage + 1)}
+                  onClick={loadMore}
                   disabled={isLoadingExercises}
                   className="w-full px-3 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60"
                   style={{ background: 'var(--color-accent)' }}

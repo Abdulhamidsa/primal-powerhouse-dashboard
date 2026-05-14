@@ -5,10 +5,24 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { validateImageFile } from '@/lib/cloudinary';
+import { validateChatMediaFile } from '@/lib/cloudinary';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 seconds timeout
+
+const WEEKLY_CHECKIN_IMAGE_MAX_BYTES = 35 * 1024 * 1024;
+
+function isWeeklyCheckInFolder(folder: string | null): boolean {
+  return (folder ?? '').toLowerCase().trim() === 'weekly-checkins';
+}
+
+function isImageFile(file: File): boolean {
+  return file.type.toLowerCase().startsWith('image/');
+}
+
+function isGifImage(file: File): boolean {
+  return file.type.toLowerCase() === 'image/gif';
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +34,7 @@ export async function POST(request: NextRequest) {
       console.error('Missing NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME environment variable');
       return NextResponse.json(
         { error: 'Cloudinary is not configured. Please add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to your environment.' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -28,7 +42,7 @@ export async function POST(request: NextRequest) {
       console.error('Missing NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET environment variable');
       return NextResponse.json(
         { error: 'Cloudinary is not configured. Please add NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your environment.' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -40,16 +54,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Validate the file
-    const validation = validateImageFile(file);
-    if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
-    }
-
     // Get optional parameters
     const folder = formData.get('folder') as string | null;
     const publicId = formData.get('publicId') as string | null;
     const tags = formData.get('tags') as string | null;
+
+    // Validate the file. Weekly check-in images are allowed to be larger,
+    // then compressed/resized via Cloudinary transformation before storage.
+    const validation = validateChatMediaFile(file);
+    const isWeeklyCheckInImage = isWeeklyCheckInFolder(folder) && isImageFile(file);
+    const isWeeklyCheckInOversizeImage =
+      isWeeklyCheckInImage && validation.error === 'Image size exceeds 10MB limit.';
+
+    if (!validation.valid && !isWeeklyCheckInOversizeImage) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+
+    if (isWeeklyCheckInOversizeImage && file.size > WEEKLY_CHECKIN_IMAGE_MAX_BYTES) {
+      return NextResponse.json(
+        { error: 'Weekly check-in image size exceeds 35MB limit.' },
+        { status: 400 },
+      );
+    }
 
     // Prepare Cloudinary upload
     const cloudinaryFormData = new FormData();
@@ -65,8 +91,14 @@ export async function POST(request: NextRequest) {
       cloudinaryFormData.append('tags', tags);
     }
 
-    // Upload to Cloudinary
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    if (isWeeklyCheckInImage && !isGifImage(file)) {
+      cloudinaryFormData.append('transformation', 'c_limit,w_2200,q_auto:good,f_auto');
+    }
+
+    // GIFs can go through the image upload endpoint, videos need the video endpoint.
+    const uploadUrl = file.type.startsWith('video/')
+      ? `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
+      : `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
     const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
       body: cloudinaryFormData,
@@ -80,7 +112,7 @@ export async function POST(request: NextRequest) {
           error: 'Failed to upload to Cloudinary',
           details: error.error?.message || 'Unknown error',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -91,6 +123,7 @@ export async function POST(request: NextRequest) {
       data: {
         publicId: result.public_id,
         url: result.secure_url,
+        resourceType: result.resource_type,
         width: result.width,
         height: result.height,
         format: result.format,
@@ -104,7 +137,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to upload image',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

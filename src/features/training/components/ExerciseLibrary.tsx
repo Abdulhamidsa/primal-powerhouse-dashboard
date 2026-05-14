@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useCoachExercises } from '../hooks/useCoachExercises';
+import { useQuickExerciseCreate } from '../hooks/useQuickExerciseCreate';
 import { createExerciseSchema } from '../schemas/exercise.schemas';
-import { muscleGroupEnum, equipmentEnum, difficultyLevelEnum } from '../enums/training.enums';
+import { quickExerciseCreateSchema } from '../schemas/quickExercise.schemas';
+import { muscleGroupEnum, equipmentEnum } from '../enums/training.enums';
 import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exercise.schemas';
 import type { Exercise } from '@prisma/client';
 
@@ -19,8 +21,23 @@ export function ExerciseLibrary() {
   const [formData, setFormData] = useState<Partial<CreateExerciseInput>>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quickName, setQuickName] = useState('');
+  const [quickDescription, setQuickDescription] = useState('');
+  const [quickMediaFile, setQuickMediaFile] = useState<File | null>(null);
+  const [quickMediaPreview, setQuickMediaPreview] = useState<string | null>(null);
+  const [quickError, setQuickError] = useState<string | null>(null);
+  const [quickSuccess, setQuickSuccess] = useState<string | null>(null);
 
-  const { exercises, isLoading, isError, createExercise, updateExercise, deleteExercise } = useCoachExercises(filters);
+  const {
+    exercises,
+    isLoading,
+    isError,
+    createExercise,
+    updateExercise,
+    deleteExercise,
+    mutate: mutateExercises,
+  } = useCoachExercises(filters);
+  const { createQuickExercise, isUploading } = useQuickExerciseCreate();
 
   const handleOpenForm = (exercise?: Exercise) => {
     if (exercise) {
@@ -84,6 +101,48 @@ export function ExerciseLibrary() {
     }
   };
 
+  const handleQuickMediaChange = (file: File | null) => {
+    setQuickMediaFile(file);
+    setQuickMediaPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleQuickCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setQuickError(null);
+    setQuickSuccess(null);
+
+    const mediaKind = quickMediaFile?.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
+    const parsed = quickExerciseCreateSchema.safeParse({
+      name: quickName,
+      description: quickDescription || undefined,
+      mediaKind,
+    });
+
+    if (!parsed.success) {
+      setQuickError(parsed.error.flatten().formErrors?.[0] ?? 'Invalid input');
+      return;
+    }
+
+    if (!quickMediaFile) {
+      setQuickError('Please upload a GIF or video file.');
+      return;
+    }
+
+    try {
+      await createQuickExercise({
+        ...parsed.data,
+        mediaFile: quickMediaFile,
+      });
+      setQuickName('');
+      setQuickDescription('');
+      handleQuickMediaChange(null);
+      setQuickSuccess('Custom exercise added.');
+      await mutateExercises();
+    } catch (err) {
+      setQuickError(err instanceof Error ? err.message : 'Failed to add exercise');
+    }
+  };
+
   const muscleGroups = muscleGroupEnum.options;
   const equipmentOptions = equipmentEnum.options;
 
@@ -97,6 +156,80 @@ export function ExerciseLibrary() {
         >
           Add Exercise
         </button>
+      </div>
+
+      <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Quick Add Custom Exercise</h2>
+          <p className="text-sm text-gray-600">
+            Add a name and a GIF or video. It will be saved to the shared exercise library.
+          </p>
+        </div>
+
+        {quickError && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{quickError}</div>}
+        {quickSuccess && <div className="p-3 bg-green-100 text-green-700 rounded-lg text-sm">{quickSuccess}</div>}
+
+        <form onSubmit={handleQuickCreate} className="grid gap-4 md:grid-cols-[1.2fr_1fr_auto] md:items-end">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              required
+              value={quickName}
+              onChange={e => setQuickName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Band Pull Apart"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">GIF or Video</label>
+            <input
+              type="file"
+              accept="image/gif,image/*,video/*"
+              onChange={e => handleQuickMediaChange(e.target.files?.[0] ?? null)}
+              className="w-full text-sm text-gray-700"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isUploading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isUploading ? 'Saving...' : 'Add custom exercise'}
+          </button>
+
+          <div className="md:col-span-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Optional Description</label>
+            <textarea
+              value={quickDescription}
+              onChange={e => setQuickDescription(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Optional note for your own reference"
+            />
+          </div>
+
+          {quickMediaPreview && (
+            <div className="md:col-span-3">
+              <p className="text-xs text-gray-500 mb-2">Preview</p>
+              {quickMediaFile?.type.startsWith('video/') ? (
+                <video
+                  src={quickMediaPreview}
+                  className="w-full max-h-64 rounded-lg border object-contain bg-black"
+                  controls
+                />
+              ) : (
+                <img
+                  src={quickMediaPreview}
+                  alt="Custom exercise preview"
+                  className="w-full max-h-64 rounded-lg border object-contain"
+                />
+              )}
+            </div>
+          )}
+        </form>
       </div>
 
       {/* Filters */}

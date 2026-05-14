@@ -2,6 +2,9 @@ export interface ExerciseDbExercise {
   exerciseId: string;
   name: string;
   gifUrl: string;
+  imageUrl?: string;
+  imageUrls?: Record<string, string>;
+  videoUrl?: string;
   targetMuscles?: string[];
   target?: string | string[];
   bodyParts?: string[];
@@ -10,6 +13,12 @@ export interface ExerciseDbExercise {
   equipment?: string;
   secondaryMuscles?: string[];
   instructions?: string[];
+  exerciseTips?: string[];
+  variations?: string[];
+  keywords?: string[];
+  overview?: string;
+  difficultyLevel?: string;
+  relatedExerciseIds?: string[];
 }
 
 export interface ExerciseDbMetadata {

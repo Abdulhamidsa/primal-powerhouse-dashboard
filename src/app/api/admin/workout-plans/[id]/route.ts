@@ -63,6 +63,42 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     });
 
     if (exercises !== undefined) {
+      const uniqueVideosMap = new Map<string, (typeof exercises)[number]>();
+      for (const ex of exercises) {
+        if (!uniqueVideosMap.has(ex.videoId)) {
+          uniqueVideosMap.set(ex.videoId, ex);
+        }
+      }
+
+      for (const [videoId, ex] of uniqueVideosMap.entries()) {
+        const updateData: Record<string, unknown> = {};
+        if (ex.videoTitle) updateData.title = ex.videoTitle;
+        if (ex.gifUrl) updateData.thumbnailUrl = ex.gifUrl;
+
+        await tx.video.upsert({
+          where: { id: videoId },
+          update: updateData,
+          create: {
+            id: videoId,
+            title: ex.videoTitle ?? videoId,
+            description: null,
+            category: 'STRENGTH_TRAINING',
+            difficulty: 'BEGINNER',
+            duration: 0,
+            videoUrl: '',
+            thumbnailUrl: ex.gifUrl ?? null,
+            equipment: null,
+            muscleGroups: null,
+            tags: null,
+            instructions: null,
+            tips: null,
+            isPublic: true,
+            viewCount: 0,
+            coachId: auth.user.userId,
+          },
+        });
+      }
+
       await tx.workoutPlanExercise.deleteMany({ where: { workoutPlanId: id } });
       for (let i = 0; i < exercises.length; i++) {
         const ex = exercises[i];

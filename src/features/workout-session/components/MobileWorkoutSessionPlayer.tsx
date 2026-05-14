@@ -40,6 +40,7 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
   const [lockMessage, setLockMessage] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartRef = useRef<number | null>(null);
@@ -67,6 +68,20 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [assignment.id]);
+
+  async function handleRestartWorkout() {
+    setIsRestarting(true);
+    try {
+      const session = await startWorkoutSession(assignment.id, true);
+      setSessionId(session.id);
+      setIsLocked(false);
+      setLockMessage(null);
+    } catch (error: any) {
+      setLockMessage(String(error?.message ?? 'Failed to restart workout.'));
+    } finally {
+      setIsRestarting(false);
+    }
+  }
 
   // Rest timer
   useEffect(() => {
@@ -219,16 +234,27 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Workout completed</p>
           <h1 className="text-2xl font-bold text-foreground">You already trained this</h1>
           <p className="text-sm text-muted-foreground">
-            {lockMessage ?? 'This workout has already been completed and cannot be submitted again.'}
+            {lockMessage ?? 'This workout has already been completed.'}
           </p>
-          <button
-            type="button"
-            onClick={onDone}
-            className="mt-2 w-full rounded-2xl py-3 text-sm font-semibold text-white"
-            style={{ background: 'var(--color-accent)' }}
-          >
-            Back to training
-          </button>
+          <div className="grid gap-3">
+            <button
+              type="button"
+              onClick={handleRestartWorkout}
+              disabled={isRestarting}
+              className="w-full rounded-2xl py-3 text-sm font-semibold text-white"
+              style={{ background: 'var(--color-accent)' }}
+            >
+              {isRestarting ? 'Restarting…' : 'Restart and try again'}
+            </button>
+            <button
+              type="button"
+              onClick={onDone}
+              className="w-full rounded-2xl py-3 text-sm font-semibold border border-border"
+              style={{ color: 'var(--color-foreground)' }}
+            >
+              Back to training
+            </button>
+          </div>
         </div>
       </div>
     );
