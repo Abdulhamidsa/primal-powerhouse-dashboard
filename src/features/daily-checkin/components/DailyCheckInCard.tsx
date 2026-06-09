@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { CheckCircle2, ChevronDown, Dumbbell, Flame, Moon, PenLine, Salad, Utensils } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { DailyCompletionRing } from '@/features/daily-checkin/components/DailyCompletionRing';
 import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { useDailyCheckInToday, useUpsertDailyCheckIn } from '@/features/daily-checkin/hooks/useDailyCheckIn';
@@ -47,6 +50,99 @@ const SLEEP_OPTIONS: Array<{ value: DailyCheckInSleep; label: string }> = [
 ];
 
 type SavingField = 'energy' | 'nutrition' | 'training' | 'hunger' | 'sleep' | 'note' | null;
+
+type ChoiceOption<T> = {
+  value: T;
+  label: string;
+};
+
+function SectionTitle({
+  icon: Icon,
+  title,
+  subtitle,
+}: {
+  icon: ComponentType<{ size?: number; className?: string }>;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted/40 text-foreground">
+        <Icon size={16} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold tracking-tight text-foreground">{title}</p>
+        {subtitle ? <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function OptionGrid<T extends string>({
+  options,
+  selectedValue,
+  disabled,
+  onSelect,
+  colsClassName,
+}: {
+  options: Array<ChoiceOption<T>>;
+  selectedValue: T | null | undefined;
+  disabled: boolean;
+  onSelect: (value: T) => void;
+  colsClassName: string;
+}) {
+  return (
+    <div className={cn('grid gap-2 rounded-2xl border border-border bg-muted/20 p-2', colsClassName)}>
+      {options.map(option => {
+        const selected = selectedValue === option.value;
+
+        return (
+          <Button
+            key={option.value}
+            type="button"
+            variant={selected ? 'default' : 'outline'}
+            disabled={disabled}
+            aria-pressed={selected}
+            onClick={() => onSelect(option.value)}
+            className={cn(
+              'h-12 rounded-2xl px-3 text-sm font-medium shadow-none transition-all active:scale-[0.98]',
+              selected ? 'border-primary bg-primary text-primary-foreground' : 'bg-background'
+            )}
+          >
+            {option.label}
+          </Button>
+        );
+      })}
+    </div>
+  );
+}
+
+function StatusPill({
+  label,
+  selected,
+  tone = 'neutral',
+}: {
+  label: string;
+  selected: boolean;
+  tone?: 'neutral' | 'good' | 'warn';
+}) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
+        selected
+          ? tone === 'good'
+            ? 'border-primary/20 bg-primary/10 text-primary'
+            : tone === 'warn'
+              ? 'border-amber-500/20 bg-amber-500/10 text-amber-700'
+              : 'border-border bg-muted/60 text-foreground'
+          : 'border-border bg-background text-muted-foreground'
+      )}
+    >
+      {label}
+    </span>
+  );
+}
 
 export function DailyCheckInCard() {
   const { dayDate, entry, isLoading } = useDailyCheckInToday();
@@ -155,255 +251,189 @@ export function DailyCheckInCard() {
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm">
-      {/* Header */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(prev => !prev)}
-        className="flex w-full items-center justify-between gap-4 px-2 py-2 text-left"
-        aria-expanded={isExpanded}
-        aria-label="Toggle daily check-in details"
-      >
-        <div>
-          <p className="text-base font-semibold text-foreground">Today&apos;s Check-In</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {completionData.isComplete ? 'All done for today' : `${completionData.remaining} of 5 remaining`}
-          </p>
-        </div>
+    <Card className="overflow-hidden rounded-[28px] border-border bg-card shadow-sm">
+      <CardContent className="p-0">
+        <button
+          type="button"
+          onClick={() => setIsExpanded(prev => !prev)}
+          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left sm:px-5"
+          aria-expanded={isExpanded}
+          aria-label="Toggle daily check-in details"
+        >
+          <div className="min-w-0">
+            <p className="text-base font-semibold tracking-tight text-foreground">Today&apos;s Check-In</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {completionData.isComplete ? 'All done for today' : `${completionData.remaining} of 5 remaining`}
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <DailyCompletionRing percentage={completionData.pct} size={56} strokeWidth={6} />
-          <ChevronDown
-            size={16}
-            className={`text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-          />
-        </div>
-      </button>
+          <div className="flex items-center gap-2">
+            <DailyCompletionRing percentage={completionData.pct} size={58} strokeWidth={6} />
+            <ChevronDown
+              size={16}
+              className={cn('text-muted-foreground transition-transform duration-300', isExpanded && 'rotate-180')}
+            />
+          </div>
+        </button>
 
-      <div
-        className={`grid transition-all duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-      >
-        <div className="overflow-hidden">
-          <div
-            className={`transition-opacity duration-200 ${isExpanded ? 'opacity-100' : 'opacity-0'} border-t border-border/50`}
-          >
-            <div className="divide-y divide-border/50">
-              {/* Energy */}
-              <div className="px-2 py-2">
-                <div className="mb-3 flex items-center gap-2">
-                  <Flame size={14} className="text-muted-foreground" />
-                  <p className="text-sm font-medium text-foreground">Energy</p>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
-                  {ENERGY_OPTIONS.map(option => {
-                    const isActive = entry?.energy === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={isActive}
-                        disabled={anyLoading || savingField === 'energy'}
-                        onClick={() => void saveEnergy(option.value)}
-                        className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
-                        style={{
-                          borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                          background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                          opacity: anyLoading || savingField === 'energy' ? 0.6 : 1,
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Nutrition */}
-              <div className="px-2 py-2">
-                <div className="mb-3 flex items-center gap-2">
-                  <Salad size={14} className="text-muted-foreground" />
-                  <p className="text-sm font-medium text-foreground">Nutrition</p>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
-                  {NUTRITION_OPTIONS.map(option => {
-                    const isActive = nutritionEntry?.status === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={isActive}
-                        disabled={anyLoading || savingField === 'nutrition'}
-                        onClick={() => void saveNutrition(option.value)}
-                        className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
-                        style={{
-                          borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                          background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                          opacity: anyLoading || savingField === 'nutrition' ? 0.6 : 1,
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Training */}
-              <div className="px-2 py-2">
-                <div className="mb-3 flex items-center gap-2">
-                  <Dumbbell size={14} className="text-muted-foreground" />
-                  <p className="text-sm font-medium text-foreground">Training</p>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
-                  {TRAINING_OPTIONS.map(option => {
-                    const isActive = trainingEntry?.status === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={isActive}
-                        disabled={anyLoading || savingField === 'training'}
-                        onClick={() => void saveTraining(option.value)}
-                        className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
-                        style={{
-                          borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                          background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                          opacity: anyLoading || savingField === 'training' ? 0.6 : 1,
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Hunger */}
-              <div className="px-2 py-2">
-                <div className="mb-3 flex items-center gap-2">
-                  <Utensils size={14} className="text-muted-foreground" />
-                  <p className="text-sm font-medium text-foreground">Hunger</p>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-background/60 p-1">
-                  {HUNGER_OPTIONS.map(option => {
-                    const isActive = entry?.hunger === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={isActive}
-                        disabled={anyLoading || savingField === 'hunger'}
-                        onClick={() => void saveHunger(option.value)}
-                        className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
-                        style={{
-                          borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                          background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                          opacity: anyLoading || savingField === 'hunger' ? 0.6 : 1,
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Sleep */}
-              <div className="px-2 py-2">
-                <div className="mb-3 flex items-center gap-2">
-                  <Moon size={14} className="text-muted-foreground" />
-                  <p className="text-sm font-medium text-foreground">Sleep</p>
-                </div>
-                <div className="grid grid-cols-4 gap-1.5 rounded-2xl bg-background/60 p-1">
-                  {SLEEP_OPTIONS.map(option => {
-                    const isActive = entry?.sleep === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={isActive}
-                        disabled={anyLoading || savingField === 'sleep'}
-                        onClick={() => void saveSleep(option.value)}
-                        className="rounded-xl border py-2.5 text-sm font-medium transition-all active:scale-[0.97]"
-                        style={{
-                          borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
-                          background: isActive ? 'var(--color-accent-muted)' : 'var(--color-card)',
-                          opacity: anyLoading || savingField === 'sleep' ? 0.6 : 1,
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Add note (optional) */}
-              <div className="px-2 py-2">
-                {!noteOpen ? (
-                  <button
-                    type="button"
-                    onClick={() => setNoteOpen(true)}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <PenLine size={13} />
-                    <span>
-                      {entry?.note ? 'Edit note' : 'Add note'} <span className="opacity-60">(optional)</span>
-                    </span>
-                  </button>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <textarea
-                      value={noteValue}
-                      onChange={e => setNoteValue(e.target.value)}
-                      maxLength={500}
-                      rows={3}
-                      placeholder="Anything else to note today..."
-                      className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+        <div
+          className={cn(
+            'grid transition-[grid-template-rows] duration-300 ease-out',
+            isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+          )}
+        >
+          <div className="overflow-hidden">
+            <div className="border-t border-border/60 px-4 pb-4 pt-1 sm:px-5">
+              <div className="space-y-4">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <SectionTitle
+                    icon={Flame}
+                    title="Energy"
+                    subtitle="How your day feels so far"
+                  />
+                  <div className="mt-3">
+                    <OptionGrid
+                      options={ENERGY_OPTIONS}
+                      selectedValue={entry?.energy}
+                      disabled={anyLoading || savingField === 'energy'}
+                      onSelect={value => void saveEnergy(value)}
+                      colsClassName="grid-cols-3"
                     />
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        disabled={savingField === 'note'}
-                        onClick={() => void saveNote()}
-                        className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity disabled:opacity-50"
-                        style={{ background: 'var(--color-accent)', color: 'var(--color-bg)' }}
-                      >
-                        Save note
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNoteOpen(false);
-                          setNoteValue(entry?.note ?? '');
-                        }}
-                        className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        Cancel
-                      </button>
-                      <span className="ml-auto text-[10px] text-muted-foreground">{noteValue.length}/500</span>
-                    </div>
                   </div>
-                )}
-              </div>
-            </div>
+                </section>
 
-            {/* Footer status */}
-            <div className="px-5 py-3.5">
-              {errorMessage ? (
-                <p className="text-xs text-[var(--color-accent)]">{errorMessage}</p>
-              ) : completionData.isComplete ? (
-                <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)]">
-                  <CheckCircle2 size={14} className="text-[var(--color-accent)]" />
-                  All done for today.
-                </p>
-              ) : (
-                <p className="text-xs text-[var(--color-text-muted)]">{completionData.pct}% completed</p>
-              )}
+                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <SectionTitle icon={Salad} title="Nutrition" subtitle="How closely today matched plan" />
+                  <div className="mt-3">
+                    <OptionGrid
+                      options={NUTRITION_OPTIONS}
+                      selectedValue={nutritionEntry?.status}
+                      disabled={anyLoading || savingField === 'nutrition'}
+                      onSelect={value => void saveNutrition(value)}
+                      colsClassName="grid-cols-3"
+                    />
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <SectionTitle icon={Dumbbell} title="Training" subtitle="Did you complete the session?" />
+                  <div className="mt-3">
+                    <OptionGrid
+                      options={TRAINING_OPTIONS}
+                      selectedValue={trainingEntry?.status}
+                      disabled={anyLoading || savingField === 'training'}
+                      onSelect={value => void saveTraining(value)}
+                      colsClassName="grid-cols-3"
+                    />
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <SectionTitle icon={Utensils} title="Hunger" subtitle="How hungry you feel right now" />
+                  <div className="mt-3">
+                    <OptionGrid
+                      options={HUNGER_OPTIONS}
+                      selectedValue={entry?.hunger}
+                      disabled={anyLoading || savingField === 'hunger'}
+                      onSelect={value => void saveHunger(value)}
+                      colsClassName="grid-cols-3"
+                    />
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <SectionTitle icon={Moon} title="Sleep" subtitle="How well you slept" />
+                  <div className="mt-3">
+                    <OptionGrid
+                      options={SLEEP_OPTIONS}
+                      selectedValue={entry?.sleep}
+                      disabled={anyLoading || savingField === 'sleep'}
+                      onSelect={value => void saveSleep(value)}
+                      colsClassName="grid-cols-2 sm:grid-cols-4"
+                    />
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <SectionTitle
+                      icon={PenLine}
+                      title={noteOpen ? 'Note' : entry?.note ? 'Edit note' : 'Add note'}
+                      subtitle="Optional quick note for today"
+                    />
+                    {!noteOpen ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 rounded-full px-3 text-xs"
+                        onClick={() => setNoteOpen(true)}
+                      >
+                        {entry?.note ? 'Edit' : 'Add'}
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {noteOpen ? (
+                    <div className="mt-3 space-y-3">
+                      <textarea
+                        value={noteValue}
+                        onChange={e => setNoteValue(e.target.value)}
+                        maxLength={500}
+                        rows={4}
+                        placeholder="Anything else to note today..."
+                        className="min-h-[108px] w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      />
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          disabled={savingField === 'note'}
+                          onClick={() => void saveNote()}
+                          className="h-10 rounded-full px-4"
+                        >
+                          Save note
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={savingField === 'note'}
+                          onClick={() => {
+                            setNoteOpen(false);
+                            setNoteValue(entry?.note ?? '');
+                          }}
+                          className="h-10 rounded-full px-4"
+                        >
+                          Cancel
+                        </Button>
+                        <span className="ml-auto text-[11px] text-muted-foreground">{noteValue.length}/500</span>
+                      </div>
+                    </div>
+                  ) : null}
+                </section>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-background px-4 py-3">
+                  {errorMessage ? (
+                    <p className="text-xs font-medium text-destructive">{errorMessage}</p>
+                  ) : completionData.isComplete ? (
+                    <p className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+                      <CheckCircle2 size={14} />
+                      All done for today.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">{completionData.pct}% completed</p>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <StatusPill label="Energy" selected={Boolean(entry?.energy)} tone="good" />
+                    <StatusPill label="Plan" selected={Boolean(nutritionEntry?.status)} tone="warn" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
