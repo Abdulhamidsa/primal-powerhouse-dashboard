@@ -56,12 +56,12 @@ function StatusBadge({ label, tone }: { label: string; tone: 'good' | 'warn' | '
 
 type Props = {
   checkIn: AdminDailyCheckInListItem;
-  onView: () => void;
-  onMarkReviewed: () => Promise<void>;
+  onViewAction: () => void;
+  onMarkReviewedAction: () => Promise<void>;
   isMarkingReviewed: boolean;
 };
 
-export function DailyCheckInCard({ checkIn, onView, onMarkReviewed, isMarkingReviewed }: Props) {
+export function DailyCheckInCard({ checkIn, onViewAction, onMarkReviewedAction, isMarkingReviewed }: Props) {
   const dayLabel = formatShortDateLabel(checkIn.dayDate);
   const submittedLabel = new Date(checkIn.submittedAt).toLocaleTimeString(undefined, {
     hour: 'numeric',
@@ -142,7 +142,7 @@ export function DailyCheckInCard({ checkIn, onView, onMarkReviewed, isMarkingRev
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={onView}
+            onClick={onViewAction}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity"
             style={{ background: 'var(--color-accent)', color: '#fff' }}
           >
@@ -152,7 +152,7 @@ export function DailyCheckInCard({ checkIn, onView, onMarkReviewed, isMarkingRev
           {!checkIn.reviewed ? (
             <button
               type="button"
-              onClick={onMarkReviewed}
+              onClick={onMarkReviewedAction}
               disabled={isMarkingReviewed}
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity"
               style={{

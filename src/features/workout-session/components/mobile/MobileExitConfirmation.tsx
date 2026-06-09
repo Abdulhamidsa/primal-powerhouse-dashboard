@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 interface Props {
   onContinue: () => void;
   onExit: () => void;
@@ -9,15 +7,7 @@ interface Props {
 }
 
 export default function MobileExitConfirmation({ onContinue, onExit, isLoading }: Props) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const t = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
-
   function handleClose() {
-    setMounted(false);
     setTimeout(onContinue, 250);
   }
 

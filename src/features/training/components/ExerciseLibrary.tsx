@@ -8,6 +8,7 @@ import { quickExerciseCreateSchema } from '../schemas/quickExercise.schemas';
 import { muscleGroupEnum, equipmentEnum } from '../enums/training.enums';
 import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exercise.schemas';
 import type { Exercise } from '@prisma/client';
+import Image from 'next/image';
 
 export function ExerciseLibrary() {
   const [filters, setFilters] = useState<{
@@ -221,9 +222,11 @@ export function ExerciseLibrary() {
                   controls
                 />
               ) : (
-                <img
+                <Image
                   src={quickMediaPreview}
                   alt="Custom exercise preview"
+                  width={640}
+                  height={360}
                   className="w-full max-h-64 rounded-lg border object-contain"
                 />
               )}

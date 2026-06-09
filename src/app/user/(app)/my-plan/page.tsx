@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CheckCircle2, Save, Undo2, X } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
@@ -20,6 +20,13 @@ const TYPE_LABEL: Record<MealTypeKey, string> = {
 
 const TYPE_ORDER: MealTypeKey[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'];
 
+type MealPickerState = {
+  mealType: MealTypeKey;
+  currentMealId?: string;
+  currentMealName?: string;
+  mode: 'select' | 'swap';
+};
+
 export default function UserMyPlanPage() {
   const {
     loading,
@@ -33,6 +40,9 @@ export default function UserMyPlanPage() {
     isSnackFull,
     hasChanges,
     isSaving,
+    selectedTotals,
+    coachTargetTotals,
+    delta,
     selectOption,
     saveDraft,
     resetDraftToSaved,
@@ -46,11 +56,20 @@ export default function UserMyPlanPage() {
     toggleCompletion,
   } = useMealAdherenceToday();
 
-  const [swapState, setSwapState] = useState<{
-    mealType: MealTypeKey;
-    currentMealId: string;
-    currentMealName: string;
-  } | null>(null);
+  const [swapState, setSwapState] = useState<MealPickerState | null>(null);
+
+  useEffect(() => {
+    if (!swapState) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSwapState(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [swapState]);
 
   const isPlanComplete = hasRequiredSlots;
 
@@ -92,13 +111,25 @@ export default function UserMyPlanPage() {
   }, [optionsByType, swapState]);
 
   const onSwapOptionSelect = (mealType: MealTypeKey, currentMealId: string, currentMealName: string) => {
-    setSwapState({ mealType, currentMealId, currentMealName });
+    setSwapState({
+      mealType,
+      currentMealId,
+      currentMealName,
+      mode: 'swap',
+    });
+  };
+
+  const onMealSelect = (mealType: MealTypeKey) => {
+    setSwapState({
+      mealType,
+      mode: 'select',
+    });
   };
 
   const handleSelectReplacement = (option: (typeof swapOptions)[number]) => {
     if (!swapState) return;
 
-    if (swapState.mealType === 'SNACK') {
+    if (swapState.mode === 'swap' && swapState.mealType === 'SNACK') {
       if (option.meal.id === swapState.currentMealId) {
         setSwapState(null);
         return;
@@ -159,7 +190,44 @@ export default function UserMyPlanPage() {
           </div>
         </PageHeader>
 
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
+          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+            <div>
+              <p className="text-xs text-[var(--color-text-muted)]">Calories</p>
+              <p className="font-semibold text-[var(--color-text)]">
+                {selectedTotals.calories}
+                <span className="ml-1 font-normal text-[var(--color-text-muted)]">kcal</span>
+              </p>
+            </div>
 
+            <div>
+              <p className="text-xs text-[var(--color-text-muted)]">Protein</p>
+              <p className="font-semibold text-[var(--color-text)]">{selectedTotals.protein}g</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-[var(--color-text-muted)]">Carbs</p>
+              <p className="font-semibold text-[var(--color-text)]">{selectedTotals.carbs}g</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-[var(--color-text-muted)]">Fat</p>
+              <p className="font-semibold text-[var(--color-text)]">{selectedTotals.fat}g</p>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
+            <span>
+              Target: {coachTargetTotals.calories} kcal, {coachTargetTotals.protein}g protein, {coachTargetTotals.carbs}
+              g carbs, {coachTargetTotals.fat}g fat
+            </span>
+            <span>·</span>
+            <span className={delta.calories > 0 ? 'text-amber-400' : 'text-emerald-400'}>
+              {delta.calories > 0 ? '+' : ''}
+              {delta.calories} kcal
+            </span>
+          </div>
+        </div>
 
         {loading ? <SkeletonMealGrid /> : null}
 
@@ -200,8 +268,15 @@ export default function UserMyPlanPage() {
                 </div>
 
                 {section.items.length === 0 ? (
-                  <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
-                    No {TYPE_LABEL[section.type].toLowerCase()} selected yet.
+                  <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-center text-sm text-[var(--color-text-muted)]">
+                    <p>No {TYPE_LABEL[section.type].toLowerCase()} selected yet.</p>
+                    <button
+                      type="button"
+                      onClick={() => onMealSelect(section.type)}
+                      className="mt-3 rounded-2xl bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    >
+                      Select {TYPE_LABEL[section.type]}
+                    </button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -256,14 +331,14 @@ export default function UserMyPlanPage() {
                     key={`${item.mealType}_${item.side.id}`}
                     badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
                     name={item.side.name}
-                      imageUrl={item.side.imageUrl ?? undefined}
-                      ingredientsSource={item.side.ingredients}
-                      instructionsSource={item.side.instructions}
-                      helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
-                      metaItems={[
-                        item.side.foodOrigin ?? null,
-                        item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
-                      ].filter((meta): meta is string => Boolean(meta))}
+                    imageUrl={item.side.imageUrl ?? undefined}
+                    ingredientsSource={item.side.ingredients}
+                    instructionsSource={item.side.instructions}
+                    helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
+                    metaItems={[
+                      item.side.foodOrigin ?? null,
+                      item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
+                    ].filter((meta): meta is string => Boolean(meta))}
                   />
                 ))}
               </div>
@@ -273,7 +348,13 @@ export default function UserMyPlanPage() {
       </div>
 
       {swapState ? (
-        <div className="fixed inset-0 z-[70] bg-black/60 p-4 backdrop-blur-sm" onClick={() => setSwapState(null)}>
+        <div
+          className="fixed inset-0 z-[70] bg-black/60 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="meal-picker-title"
+          onClick={() => setSwapState(null)}
+        >
           <div className="flex min-h-full items-center justify-center">
             <section
               className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-5"
@@ -281,19 +362,23 @@ export default function UserMyPlanPage() {
             >
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-[var(--color-text)]">
-                    Swipe {TYPE_LABEL[swapState.mealType]}
+                  <h2 id="meal-picker-title" className="text-lg font-semibold text-[var(--color-text)]">
+                    {swapState.mode === 'swap'
+                      ? `Swap ${TYPE_LABEL[swapState.mealType]}`
+                      : `Select ${TYPE_LABEL[swapState.mealType]}`}
                   </h2>
-                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                    Current selection: {swapState.currentMealName}
-                  </p>
+                  {swapState.mode === 'swap' ? (
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      Current selection: {swapState.currentMealName}
+                    </p>
+                  ) : null}
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setSwapState(null)}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
-                  aria-label="Close swap options"
+                  aria-label="Close meal options"
                 >
                   <X size={16} />
                 </button>
@@ -301,7 +386,7 @@ export default function UserMyPlanPage() {
 
               {swapOptions.length === 0 ? (
                 <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 text-sm text-[var(--color-text-muted)]">
-                  No alternatives available for this meal type.
+                  No {swapState.mode === 'swap' ? 'alternatives' : 'options'} available for this meal type.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -313,14 +398,14 @@ export default function UserMyPlanPage() {
                   <div className="-mx-1 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="flex snap-x snap-mandatory gap-3 px-1">
                       {swapOptions.map(option => (
-                        <div key={option.sourceAssignmentId} className="w-[85vw] max-w-[330px] shrink-0 snap-start">
+                        <div
+                          key={`${option.meal.id}:${option.sourceAssignmentId ?? 'default'}`}
+                          className="w-[85vw] max-w-[330px] shrink-0 snap-start"
+                        >
                           <MealOptionCard
                             option={option}
                             selected={isSelected(option.mealType, option.meal.id, option.sourceAssignmentId)}
                             onSelect={() => handleSelectReplacement(option)}
-                            onPreview={() => {
-                              handleSelectReplacement(option);
-                            }}
                             disabled={
                               option.mealType === 'SNACK' &&
                               !isSelected('SNACK', option.meal.id, option.sourceAssignmentId) &&

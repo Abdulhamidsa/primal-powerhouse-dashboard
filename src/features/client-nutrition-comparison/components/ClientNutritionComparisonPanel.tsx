@@ -65,7 +65,7 @@ function formatDateForUi(dateKey: string): string {
   });
 }
 
-function nutrientRows(today: DailyNutritionComparison | undefined): Array<{
+function nutrientRows(_today: DailyNutritionComparison | undefined): Array<{
   key: 'calories' | 'protein' | 'carbs' | 'fat';
   label: string;
   icon: ReactNode;
