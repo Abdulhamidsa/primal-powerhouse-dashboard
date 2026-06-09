@@ -8,8 +8,8 @@ import { useDailyCheckInToday, useDailyCheckInInsights } from '@/features/daily-
 import { buildTodayMissionSummary } from '@/features/today-mission/lib/todayMission';
 import type { TodayMissionSummary } from '@/features/today-mission/types/todayMission.types';
 
-export function useTodayMission() {
-  const mealPlanner = useMealSelectionPlanner();
+export function useTodayMission(enabled = true) {
+  const mealPlanner = useMealSelectionPlanner(enabled);
   const adherence = useMealAdherenceToday();
   const dailyCheckIn = useDailyCheckInToday();
   const dailyInsights = useDailyCheckInInsights();
@@ -38,6 +38,7 @@ export function useTodayMission() {
   ]);
 
   const isLoading =
+    !enabled ||
     mealPlanner.loading ||
     adherence.isLoading ||
     dailyCheckIn.isLoading ||

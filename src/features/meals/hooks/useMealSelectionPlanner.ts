@@ -34,9 +34,9 @@ function totalsFromItems(items: SelectionItem[]): MealMacroTotals {
   );
 }
 
-export function useMealSelectionPlanner() {
-  const optionsSWR = useSWR(USER_MEAL_OPTIONS_URL, getUserMealOptions);
-  const selectionSWR = useSWR(USER_MEAL_SELECTION_URL, getUserMealSelection);
+export function useMealSelectionPlanner(enabled = true) {
+  const optionsSWR = useSWR(enabled ? USER_MEAL_OPTIONS_URL : null, getUserMealOptions);
+  const selectionSWR = useSWR(enabled ? USER_MEAL_SELECTION_URL : null, getUserMealSelection);
 
   const [draftItems, setDraftItems] = useState<SelectionItem[]>([]);
   const [hasTouchedDraft, setHasTouchedDraft] = useState(false);
@@ -183,6 +183,10 @@ export function useMealSelectionPlanner() {
   }
 
   async function saveDraft() {
+    if (!enabled) {
+      return false;
+    }
+
     if (snackCount > snackMax) {
       setSaveError({ message: 'You can select up to two snacks', status: 400 });
       return false;

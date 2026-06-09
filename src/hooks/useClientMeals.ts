@@ -1,6 +1,7 @@
 import useSWR from 'swr';
 import type { ApiError } from '@/lib/fetcher';
 import { ActiveMealPlanSummary, MealAssignment } from '@/lib/client-page/types';
+import { httpClient } from '@/lib/http/client';
 
 /**
  * Custom hook to fetch meal assignments for a specific client
@@ -18,14 +19,27 @@ export function useClientMeals(clientId: string | null) {
   const { data, error, isLoading, mutate, isValidating } = useSWR<UseClientMealsData, ApiError>(
     key,
     async (url: string) => {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        console.warn('Failed to fetch meal plans');
-        return { assignments: [], activeMealPlan: null };
-      }
-
-      const mealPlans = await response.json();
+      const mealPlans = await httpClient.get<
+        Array<{
+          id: string;
+          clientId: string;
+          name: string;
+          startDate: string;
+          updatedAt: string;
+          isActive?: boolean;
+          endDate?: string;
+          mealAssignments?: {
+            id: string;
+            mealId: string;
+            notes?: string;
+            dayOfWeek?: number;
+            mealType?: string;
+            portion?: number;
+            meal: MealAssignment['meal'];
+            side?: MealAssignment['side'];
+          }[];
+        }>
+      >(url);
 
       if (!Array.isArray(mealPlans)) {
         console.warn('Meal plans response is not an array');

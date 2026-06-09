@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSWRConfig } from 'swr';
 import { MessageSquare, Search, Users, X } from 'lucide-react';
 import AssignContentModal from '@/components/AssignContentModal';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
@@ -19,7 +20,11 @@ import {
 import {
   archiveClient,
   deleteMealAssignment,
+  getClientFeatureVisibility,
+  getClientVideoAssignments,
   unarchiveClient,
+  buildClientFeatureVisibilityUrl,
+  buildClientVideoAssignmentsUrl,
 } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
 import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
@@ -28,6 +33,8 @@ import {
   useClientVideoAssignmentActions,
 } from '@/features/admin-clients-dashboard/hooks/useClientVideoAssignments';
 import { useClientNotes } from '@/features/admin-clients-dashboard/hooks/useClientNotes';
+import { getAdminClientDailyCheckIns } from '@/features/daily-checkin/api/adminDailyCheckIn.api';
+import { getAdminClientWeeklyCheckIns } from '@/features/weekly-checkin/api/adminWeeklyCheckIn.api';
 import { ClientListPane } from '@/features/admin-clients-dashboard/components/ClientListPane';
 import { ClientNotesPane } from '@/features/admin-clients-dashboard/components/ClientNotesPane';
 import { ClientChatPane } from '@/features/client-coach-messaging/components/ClientChatPane';
@@ -43,10 +50,21 @@ import type {
   DashboardTabKey,
   LeftPaneMode,
 } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import { getWorkoutPlans } from '@/features/workout-plans/api/workoutPlan.api';
+import { getAdminClientWorkoutSessions } from '@/features/workout-session/api/adminWorkoutSession.api';
+import { httpClient } from '@/lib/http/client';
 
 const DASHBOARD_PANE_WIDTH_STORAGE_KEY = 'admin-clients-left-pane-width';
 const DASHBOARD_PANE_MIN = 320;
 const DASHBOARD_PANE_MAX = 620;
+const DASHBOARD_TAB_ORDER: DashboardTabKey[] = [
+  'summary',
+  'nutrition',
+  'assignments',
+  'check-ins',
+  'training',
+  'feature-visibility',
+];
 
 function clampDashboardPaneWidth(nextWidth: number): number {
   return Math.min(DASHBOARD_PANE_MAX, Math.max(DASHBOARD_PANE_MIN, Math.round(nextWidth)));
@@ -55,15 +73,22 @@ function clampDashboardPaneWidth(nextWidth: number): number {
 export default function ClientsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { mutate: globalMutate } = useSWRConfig();
+  const [isTabTransitionPending, startTabTransition] = useTransition();
   const layoutRef = useRef<HTMLElement | null>(null);
   const leftPaneRef = useRef<HTMLElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
+  const preloadedTabsRef = useRef<{ clientId: string | null; tabs: Set<DashboardTabKey> }>({
+    clientId: null,
+    tabs: new Set(),
+  });
 
   const [leftPaneMode, setLeftPaneMode] = useState<LeftPaneMode>('list');
   const [leftPaneWidth, setLeftPaneWidth] = useState<number | null>(null);
   const [isResizingPane, setIsResizingPane] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTabKey>('summary');
+  const [mountedTabs, setMountedTabs] = useState<DashboardTabKey[]>(['summary']);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
@@ -134,6 +159,22 @@ export default function ClientsPage() {
   const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(selectedClientId ?? '');
   const { markReviewed: markDailyReviewed } = useAdminDailyCheckInActions(selectedClientId ?? '');
 
+  useEffect(() => {
+    setActiveTab('summary');
+    setMountedTabs(['summary']);
+  }, [selectedClientId]);
+
+  useEffect(() => {
+    preloadedTabsRef.current = {
+      clientId: selectedClientId,
+      tabs: new Set(),
+    };
+  }, [selectedClientId]);
+
+  useEffect(() => {
+    setMountedTabs(prev => (prev.includes(activeTab) ? prev : [...prev, activeTab]));
+  }, [activeTab]);
+
   const summaryWeightKg = useMemo(() => {
     if (!weeklyCheckIns?.checkIns?.length) return client?.currentWeight ?? null;
     const withWeight = weeklyCheckIns.checkIns
@@ -160,6 +201,119 @@ export default function ClientsPage() {
     setShowHealthMetricsModal(false);
     setHealthMetricsResults(null);
   }, [selectedClientId]);
+
+  useEffect(() => {
+    if (!selectedClientId) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void Promise.allSettled([
+        globalMutate(buildClientVideoAssignmentsUrl(selectedClientId), getClientVideoAssignments(selectedClientId), {
+          revalidate: false,
+          populateCache: true,
+        }),
+        globalMutate(
+          `/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`,
+          httpClient.get(`/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`),
+          { revalidate: false, populateCache: true },
+        ),
+        globalMutate(
+          `/api/admin/clients/${encodeURIComponent(selectedClientId)}/weekly-checkins`,
+          getAdminClientWeeklyCheckIns(selectedClientId),
+          { revalidate: false, populateCache: true },
+        ),
+        globalMutate(
+          `/api/admin/clients/${encodeURIComponent(selectedClientId)}/daily-checkins`,
+          getAdminClientDailyCheckIns(selectedClientId),
+          { revalidate: false, populateCache: true },
+        ),
+        globalMutate(
+          `/api/admin/clients/${encodeURIComponent(selectedClientId)}/workout-sessions`,
+          getAdminClientWorkoutSessions(selectedClientId),
+          { revalidate: false, populateCache: true },
+        ),
+        globalMutate('/api/admin/workout-plans', getWorkoutPlans(), { revalidate: false, populateCache: true }),
+        globalMutate(buildClientFeatureVisibilityUrl(selectedClientId), getClientFeatureVisibility(selectedClientId), {
+          revalidate: false,
+          populateCache: true,
+        }),
+      ]);
+    }, 150);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [globalMutate, selectedClientId]);
+
+  const prefetchDashboardTab = (tab: DashboardTabKey) => {
+    if (!selectedClientId) return;
+
+    const current = preloadedTabsRef.current;
+    if (current.clientId !== selectedClientId) {
+      current.clientId = selectedClientId;
+      current.tabs = new Set();
+    }
+
+    if (current.tabs.has(tab)) {
+      return;
+    }
+
+    current.tabs.add(tab);
+
+    switch (tab) {
+      case 'nutrition':
+        void globalMutate(
+          `/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`,
+          httpClient.get(`/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`),
+          { revalidate: false, populateCache: true },
+        );
+        break;
+      case 'assignments':
+        void Promise.allSettled([
+          globalMutate(buildClientVideoAssignmentsUrl(selectedClientId), getClientVideoAssignments(selectedClientId), {
+            revalidate: false,
+            populateCache: true,
+          }),
+          globalMutate(
+            `/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`,
+            httpClient.get(`/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`),
+            { revalidate: false, populateCache: true },
+          ),
+        ]);
+        break;
+      case 'check-ins':
+        void Promise.allSettled([
+          globalMutate(
+            `/api/admin/clients/${encodeURIComponent(selectedClientId)}/weekly-checkins`,
+            getAdminClientWeeklyCheckIns(selectedClientId),
+            { revalidate: false, populateCache: true },
+          ),
+          globalMutate(
+            `/api/admin/clients/${encodeURIComponent(selectedClientId)}/daily-checkins`,
+            getAdminClientDailyCheckIns(selectedClientId),
+            { revalidate: false, populateCache: true },
+          ),
+        ]);
+        break;
+      case 'training':
+        void Promise.allSettled([
+          globalMutate(
+            `/api/admin/clients/${encodeURIComponent(selectedClientId)}/workout-sessions`,
+            getAdminClientWorkoutSessions(selectedClientId),
+            { revalidate: false, populateCache: true },
+          ),
+          globalMutate('/api/admin/workout-plans', getWorkoutPlans(), { revalidate: false, populateCache: true }),
+        ]);
+        break;
+      case 'feature-visibility':
+        void globalMutate(
+          buildClientFeatureVisibilityUrl(selectedClientId),
+          getClientFeatureVisibility(selectedClientId),
+          { revalidate: false, populateCache: true },
+        );
+        break;
+      case 'summary':
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     if (!selectedClientId) return;
@@ -299,6 +453,77 @@ export default function ClientsPage() {
 
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
+  };
+
+  const renderDashboardTabContent = (tab: DashboardTabKey) => {
+    if (!client) return null;
+
+    switch (tab) {
+      case 'summary':
+        return (
+          <SummaryTabContent
+            client={client}
+            summaryWeightKg={summaryWeightKg}
+            weeklyWeightHistory={weeklyCheckIns?.checkIns ?? []}
+            onEditProfileAction={() => setShowProfileEditModal(true)}
+            healthMetricsResult={healthMetricsResults}
+            onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}
+            onCloseHealthMetricsResultsAction={() => {}}
+            onHealthMetricsNotesSavedAction={() => {
+              void refreshClient();
+            }}
+            onArchiveClientAction={handleArchiveClient}
+            onRefreshClientAction={() => {
+              void refreshClient();
+            }}
+          />
+        );
+      case 'nutrition':
+        return <NutritionTabContent clientId={client.id} mealAssignments={mealAssignments} />;
+      case 'assignments':
+        return (
+          <AssignmentsTabContent
+            clientId={client.id}
+            mealAssignments={mealAssignments}
+            videoAssignments={videoAssignments}
+            activeMealPlan={activeMealPlan}
+            currentGoalCalories={client.goalCalories}
+            onAssignMealsAction={() => {
+              setAssignModalType('meals');
+              setShowAssignModal(true);
+            }}
+            onAssignVideosAction={() => {
+              setAssignModalType('videos');
+              setShowAssignModal(true);
+            }}
+            onRemoveMealAssignmentAction={handleRemoveMealAssignment}
+            onRemoveVideoAssignmentAction={handleRemoveVideoAssignment}
+            onRefreshMealsAction={async () => {
+              await refreshMeals();
+            }}
+          />
+        );
+      case 'check-ins':
+        return (
+          <CheckInsTabContent
+            weeklyData={weeklyCheckIns}
+            dailyData={dailyCheckIns}
+            isWeeklyLoading={isWeeklyCheckInsLoading}
+            isDailyLoading={isDailyCheckInsLoading}
+            isWeeklyError={Boolean(weeklyCheckInsError)}
+            isDailyError={Boolean(dailyCheckInsError)}
+            onDeleteWeeklyAction={handleDeleteCheckIn}
+            onResetWeeklyAction={handleResetCheckIns}
+            onMarkDailyReviewedAction={markDailyReviewed}
+          />
+        );
+      case 'training':
+        return <TrainingTabContent clientId={client.id} />;
+      case 'feature-visibility':
+        return <ClientFeatureVisibilityTab clientId={client.id} />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -443,7 +668,12 @@ export default function ClientsPage() {
               <div className="px-4 py-3">
                 <ClientDetailTabs
                   activeTab={activeTab}
-                  onTabChangeAction={setActiveTab}
+                  onTabChangeAction={tab => {
+                    startTabTransition(() => {
+                      setActiveTab(tab);
+                    });
+                  }}
+                  onTabPrefetchAction={prefetchDashboardTab}
                   actions={
                     isClientFocusMode ? (
                       <>
@@ -487,72 +717,21 @@ export default function ClientsPage() {
                 />
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 pb-4">
-                {activeTab === 'summary' ? (
-                  <SummaryTabContent
-                    client={client}
-                    summaryWeightKg={summaryWeightKg}
-                    weeklyWeightHistory={weeklyCheckIns?.checkIns ?? []}
-                    onEditProfileAction={() => setShowProfileEditModal(true)}
-                    healthMetricsResult={healthMetricsResults}
-                    onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}
-                    onCloseHealthMetricsResultsAction={() => {}}
-                    onHealthMetricsNotesSavedAction={() => {
-                      void refreshClient();
-                    }}
-                    onArchiveClientAction={handleArchiveClient}
-                    onRefreshClientAction={() => {
-                      void refreshClient();
-                    }}
-                  />
-                ) : null}
+              <div className="flex-1 overflow-y-auto px-4 pb-4" aria-busy={isTabTransitionPending}>
+                {DASHBOARD_TAB_ORDER.filter(tab => mountedTabs.includes(tab)).map(tab => {
+                  const isActive = tab === activeTab;
 
-                {activeTab === 'nutrition' ? (
-                  <NutritionTabContent clientId={client.id} mealAssignments={mealAssignments} />
-                ) : null}
-
-                {activeTab === 'assignments' ? (
-                  <AssignmentsTabContent
-                    clientId={client.id}
-                    mealAssignments={mealAssignments}
-                    videoAssignments={videoAssignments}
-                    activeMealPlan={activeMealPlan}
-                    currentGoalCalories={client.goalCalories}
-                    onAssignMealsAction={() => {
-                      setAssignModalType('meals');
-                      setShowAssignModal(true);
-                    }}
-                    onAssignVideosAction={() => {
-                      setAssignModalType('videos');
-                      setShowAssignModal(true);
-                    }}
-                    onRemoveMealAssignmentAction={handleRemoveMealAssignment}
-                    onRemoveVideoAssignmentAction={handleRemoveVideoAssignment}
-                    onRefreshMealsAction={async () => {
-                      await refreshMeals();
-                    }}
-                  />
-                ) : null}
-
-                {activeTab === 'check-ins' ? (
-                  <CheckInsTabContent
-                    weeklyData={weeklyCheckIns}
-                    dailyData={dailyCheckIns}
-                    isWeeklyLoading={isWeeklyCheckInsLoading}
-                    isDailyLoading={isDailyCheckInsLoading}
-                    isWeeklyError={Boolean(weeklyCheckInsError)}
-                    isDailyError={Boolean(dailyCheckInsError)}
-                    onDeleteWeeklyAction={handleDeleteCheckIn}
-                    onResetWeeklyAction={handleResetCheckIns}
-                    onMarkDailyReviewedAction={markDailyReviewed}
-                  />
-                ) : null}
-
-                {activeTab === 'training' && client ? <TrainingTabContent clientId={client.id} /> : null}
-
-                {activeTab === 'feature-visibility' && client ? (
-                  <ClientFeatureVisibilityTab clientId={client.id} />
-                ) : null}
+                  return (
+                    <div
+                      key={tab}
+                      hidden={!isActive}
+                      aria-hidden={!isActive}
+                      className={isActive ? '' : 'pointer-events-none'}
+                    >
+                      {renderDashboardTabContent(tab)}
+                    </div>
+                  );
+                })}
               </div>
             </>
           ) : (

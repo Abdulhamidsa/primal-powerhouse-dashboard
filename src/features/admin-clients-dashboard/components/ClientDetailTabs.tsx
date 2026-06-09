@@ -14,10 +14,12 @@ const tabs: Array<{ key: DashboardTabKey; label: string; icon: React.ComponentTy
 export function ClientDetailTabs({
   activeTab,
   onTabChangeAction,
+  onTabPrefetchAction,
   actions,
 }: {
   activeTab: DashboardTabKey;
   onTabChangeAction: (tab: DashboardTabKey) => void;
+  onTabPrefetchAction?: (tab: DashboardTabKey) => void;
   actions?: React.ReactNode;
 }) {
   return (
@@ -33,6 +35,9 @@ export function ClientDetailTabs({
                 key={tab.key}
                 type="button"
                 onClick={() => onTabChangeAction(tab.key)}
+                onPointerEnter={() => onTabPrefetchAction?.(tab.key)}
+                onFocus={() => onTabPrefetchAction?.(tab.key)}
+                onTouchStart={() => onTabPrefetchAction?.(tab.key)}
                 className={cx(
                   'inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors',
                   isActive ? 'shadow-sm' : '',

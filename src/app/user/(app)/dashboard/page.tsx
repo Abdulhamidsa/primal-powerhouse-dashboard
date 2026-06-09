@@ -13,10 +13,44 @@ import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUn
 import { TodayMissionCard, useTodayMission } from '@/features/today-mission';
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 
-export default function UserDashboardPage() {
-  const { user, error, isLoading } = useUserData();
-  const [greeting, setGreeting] = useState({ text: '', icon: null as React.ReactNode });
+type GreetingState = { text: string; icon: React.ReactNode };
 
+function DashboardSectionsSkeleton() {
+  return (
+    <div className="space-y-5">
+      <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-5">
+        <div className="h-5 w-24 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+        <div className="mt-3 h-6 w-3/4 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+        <div className="mt-2 h-4 w-full animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+        <div className="mt-6 flex items-center gap-3">
+          <div className="h-24 w-24 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-full animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+            <div className="h-4 w-4/5 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+            <div className="h-4 w-2/3 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+          </div>
+        </div>
+      </section>
+
+      <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max gap-2">
+          {[1, 2, 3, 4].map(index => (
+            <div
+              key={index}
+              className="min-w-[116px] rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
+            >
+              <div className="h-10 w-10 animate-pulse rounded-2xl bg-[var(--color-bg-alt)]" />
+              <div className="mt-3 h-4 w-20 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+              <div className="mt-1 h-3 w-14 animate-pulse rounded-full bg-[var(--color-bg-alt)]" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardSections() {
   const { entry: dailyEntry } = useDailyCheckInToday();
   const { summary: insightsSummary } = useDailyCheckInInsights();
   const { status: weeklyStatus } = useWeeklyCheckInCurrentWeek();
@@ -25,50 +59,11 @@ export default function UserDashboardPage() {
   const { summary: todayMission, isLoading: todayMissionLoading, error: todayMissionError } = useTodayMission();
   const { visibility } = useClientSelfFeatureVisibility();
 
-  useMotivationNotification(user?.motivationalMessage);
-
-  useEffect(() => {
-    const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
-    const hour = new Date(denmarkTime).getHours();
-
-    if (hour >= 5 && hour < 12) {
-      setGreeting({ text: 'Good Morning', icon: <Sun size={18} /> });
-    } else if (hour >= 12 && hour < 18) {
-      setGreeting({ text: 'Good Afternoon', icon: <Sun size={18} /> });
-    } else {
-      setGreeting({ text: 'Good Evening', icon: <Moon size={18} /> });
-    }
-  }, []);
-
-  if (isLoading) {
-    return <SkeletonDashboard />;
-  }
-
-  if (error) {
-    return (
-      <div className="px-4 py-6">
-        <div className="rounded-[28px] border border-destructive/20 bg-destructive/5 p-5">
-          <p className="text-sm font-semibold text-destructive">Error loading dashboard</p>
-          <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const firstName = user?.name?.split(' ')[0] || 'Member';
-  const todayLabel = new Date().toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-  });
-
-  const coachMessage = user?.motivationalMessage || 'No coach message yet. Check back after your next review.';
-  const streakCount = insightsSummary?.streakCount ?? 0;
-
   const isDailyDone = dailyEntry?.isComplete === true;
   const completedMeals = adherenceSummary?.completion.completedCount ?? 0;
   const totalMeals = adherenceSummary?.completion.totalSelectedCount ?? 0;
   const isMealsDone = totalMeals > 0 && completedMeals === totalMeals;
+  const streakCount = insightsSummary?.streakCount ?? 0;
 
   const todayActions = [
     ...(visibility?.dailyCheckinsEnabled
@@ -78,7 +73,7 @@ export default function UserDashboardPage() {
             title: 'Daily Check-In',
             description: isDailyDone ? 'Done' : 'Due',
             href: '/user/check-ins',
-            icon: isDailyDone ? CheckCircle2 : ClipboardCheck,
+            icon: CheckCircle2,
             iconBg: isDailyDone ? 'bg-[var(--color-success-muted)]' : 'bg-[var(--color-warning-muted)]',
             iconColor: isDailyDone ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]',
             badge: isDailyDone ? 'Done' : 'Due',
@@ -155,6 +150,103 @@ export default function UserDashboardPage() {
   const primaryActions = todayActions.slice(0, 4);
 
   return (
+    <div className="space-y-5">
+      <section>
+        <TodayMissionCard
+          summary={
+            {
+              ...todayMission,
+            } as never
+          }
+          isLoading={todayMissionLoading}
+          errorMessage={todayMissionError?.message ?? null}
+        />
+      </section>
+
+      <section className="space-y-3">
+        <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-max gap-2">
+            {primaryActions.map(action => {
+              const Icon = action.icon;
+
+              return (
+                <Link
+                  key={action.key}
+                  href={action.href}
+                  className="group min-w-[116px] rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-transform duration-150 active:scale-[0.98]"
+                  title={`${action.title} ${action.description}`}
+                >
+                  <div className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${action.iconBg}`}>
+                    <Icon size={17} className={action.iconColor} />
+                  </div>
+
+                  <p className="mt-3 text-[12px] font-semibold leading-4 text-[var(--color-text)]">{action.title}</p>
+                  <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                    {action.badge ?? action.description}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default function UserDashboardPage() {
+  const { user, error, isLoading } = useUserData();
+  const [greeting, setGreeting] = useState<GreetingState>({ text: '', icon: null });
+  const [dashboardReady, setDashboardReady] = useState(false);
+
+  useMotivationNotification(user?.motivationalMessage);
+
+  useEffect(() => {
+    const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
+    const hour = new Date(denmarkTime).getHours();
+
+    if (hour >= 5 && hour < 12) {
+      setGreeting({ text: 'Good Morning', icon: <Sun size={18} /> });
+    } else if (hour >= 12 && hour < 18) {
+      setGreeting({ text: 'Good Afternoon', icon: <Sun size={18} /> });
+    } else {
+      setGreeting({ text: 'Good Evening', icon: <Moon size={18} /> });
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDashboardReady(true);
+    }, 120);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  if (isLoading) {
+    return <SkeletonDashboard />;
+  }
+
+  if (error) {
+    return (
+      <div className="px-4 py-6">
+        <div className="rounded-[28px] border border-destructive/20 bg-destructive/5 p-5">
+          <p className="text-sm font-semibold text-destructive">Error loading dashboard</p>
+          <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const firstName = user?.name?.split(' ')[0] || 'Member';
+  const todayLabel = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+
+  const coachMessage = user?.motivationalMessage || 'No coach message yet. Check back after your next review.';
+
+  return (
     <div className="px-4 pb-6 md:px-5">
       <div className="mx-auto w-full max-w-xl space-y-5">
         {/* Full-bleed gradient greeting header */}
@@ -203,41 +295,7 @@ export default function UserDashboardPage() {
           </div>
         </section>
 
-        <section>
-          <TodayMissionCard
-            summary={todayMission}
-            isLoading={todayMissionLoading}
-            errorMessage={todayMissionError?.message ?? null}
-          />
-        </section>
-
-        <section className="space-y-3">
-          <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex min-w-max gap-2">
-              {primaryActions.map(action => {
-                const Icon = action.icon;
-
-                return (
-                  <Link
-                    key={action.key}
-                    href={action.href}
-                    className="group min-w-[116px] rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition-transform duration-150 active:scale-[0.98]"
-                    title={`${action.title} ${action.description}`}
-                  >
-                    <div className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${action.iconBg}`}>
-                      <Icon size={17} className={action.iconColor} />
-                    </div>
-
-                    <p className="mt-3 text-[12px] font-semibold leading-4 text-[var(--color-text)]">{action.title}</p>
-                    <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                      {action.badge ?? action.description}
-                    </p>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        {dashboardReady ? <DashboardSections /> : <DashboardSectionsSkeleton />}
       </div>
     </div>
   );
