@@ -55,12 +55,12 @@ function StatChip({ icon: Icon, label, value }: { icon: React.ElementType; label
 
 function CheckInCard({
   checkIn,
-  onView,
+  onViewAction,
   onDelete,
   isDeleting,
 }: {
   checkIn: AdminWeeklyCheckInListItem;
-  onView: () => void;
+  onViewAction: () => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
@@ -104,7 +104,7 @@ function CheckInCard({
         <div className="flex flex-shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={onView}
+            onClick={onViewAction}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity"
             style={{ background: 'var(--color-accent)', color: '#fff' }}
           >
@@ -218,7 +218,7 @@ export function CheckInsTabContent({
     }
   };
 
-  const dailyChecks = dailyData?.checkIns ?? [];
+  // const dailyChecks = dailyData?.checkIns ?? [];
   const weeklyChecks = weeklyData?.checkIns ?? [];
   const selectedDailyChecks = selectedDayData.daily;
   const selectedWeeklyChecks = selectedDayData.weekly;
@@ -371,8 +371,8 @@ export function CheckInsTabContent({
                     <DailyCheckInCard
                       key={checkIn.id}
                       checkIn={checkIn}
-                      onView={() => setSelectedDailyCheckIn(checkIn)}
-                      onMarkReviewed={() => handleMarkDailyReviewed(checkIn.id)}
+                      onViewAction={() => setSelectedDailyCheckIn(checkIn)}
+                      onMarkReviewedAction={() => handleMarkDailyReviewed(checkIn.id)}
                       isMarkingReviewed={reviewingDailyId === checkIn.id}
                     />
                   ))}
@@ -417,7 +417,7 @@ export function CheckInsTabContent({
                     <CheckInCard
                       key={checkIn.id}
                       checkIn={checkIn}
-                      onView={() => setSelectedCheckIn(checkIn)}
+                      onViewAction={() => setSelectedCheckIn(checkIn)}
                       onDelete={() => handleDelete(checkIn.id)}
                       isDeleting={deletingId === checkIn.id}
                     />
