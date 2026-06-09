@@ -20,10 +20,8 @@ import {
 import {
   archiveClient,
   deleteMealAssignment,
-  getClientFeatureVisibility,
   getClientVideoAssignments,
   unarchiveClient,
-  buildClientFeatureVisibilityUrl,
   buildClientVideoAssignmentsUrl,
 } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
@@ -35,6 +33,10 @@ import {
 import { useClientNotes } from '@/features/admin-clients-dashboard/hooks/useClientNotes';
 import { getAdminClientDailyCheckIns } from '@/features/daily-checkin/api/adminDailyCheckIn.api';
 import { getAdminClientWeeklyCheckIns } from '@/features/weekly-checkin/api/adminWeeklyCheckIn.api';
+import {
+  buildClientFeatureVisibilityUrl,
+  getClientFeatureVisibility,
+} from '@/features/client-feature-visibility/api/clientFeatureVisibility.api';
 import { ClientListPane } from '@/features/admin-clients-dashboard/components/ClientListPane';
 import { ClientNotesPane } from '@/features/admin-clients-dashboard/components/ClientNotesPane';
 import { ClientChatPane } from '@/features/client-coach-messaging/components/ClientChatPane';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { CheckCircle, Eye, FileText, Salad, Scale, Dumbbell } from 'lucide-react';
+import { CheckCircle, Eye, Scale } from 'lucide-react';
 import type { AdminDailyCheckInListItem } from '@/features/daily-checkin/types/adminDailyCheckIn.types';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
 
