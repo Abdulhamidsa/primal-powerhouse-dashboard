@@ -215,21 +215,30 @@ export default function UserMyPlanPage() {
                 Unsaved
               </span>
             ) : null}
-
-            <div className="ml-auto">
-              <MealPlanRandomizeButton
-                onClick={mealPlanRandomizer.requestRandomize}
-                confirmOpen={mealPlanRandomizer.confirmOpen}
-                onConfirmOpenChange={mealPlanRandomizer.setConfirmOpen}
-                onConfirm={mealPlanRandomizer.randomize}
-                isRandomizing={mealPlanRandomizer.isRandomizing || isSaving}
-                hasExistingSelection={mealPlanRandomizer.hasExistingSelection}
-                errorMessage={mealPlanRandomizer.errorMessage}
-                disabled={loading || !optionsByType}
-              />
-            </div>
           </div>
         </PageHeader>
+
+        <section className="rounded-[28px] border border-border bg-card px-4 py-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Quick action
+              </p>
+              <p className="mt-1 text-sm font-medium tracking-tight text-foreground">Build a random full plan</p>
+            </div>
+
+            <MealPlanRandomizeButton
+              onClick={mealPlanRandomizer.requestRandomize}
+              confirmOpen={mealPlanRandomizer.confirmOpen}
+              onConfirmOpenChange={mealPlanRandomizer.setConfirmOpen}
+              onConfirm={mealPlanRandomizer.randomize}
+              isRandomizing={mealPlanRandomizer.isRandomizing || isSaving}
+              hasExistingSelection={mealPlanRandomizer.hasExistingSelection}
+              errorMessage={mealPlanRandomizer.errorMessage}
+              disabled={loading || !optionsByType}
+            />
+          </div>
+        </section>
 
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
           <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
