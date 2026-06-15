@@ -193,22 +193,31 @@ const MobileTabItem = React.memo(function MobileTabItem({
   item,
   active,
   unreadCount,
+  tabRef,
 }: {
   item: NavItem;
   active: boolean;
   unreadCount: number;
+  tabRef: (node: HTMLAnchorElement | null) => void;
 }) {
   const Icon = item.icon;
 
   return (
     <Link
       href={item.href}
+      ref={tabRef}
       className={cn(
-        'relative flex min-w-0 flex-col items-center justify-center rounded-[22px] px-2 py-2.5 transition-all duration-200',
-        active ? 'bg-background/95 shadow-sm' : 'hover:bg-background/45 active:scale-[0.98]',
+        'relative flex min-w-0 flex-col items-center justify-center rounded-[22px] px-2 py-2.5 transition-[transform,color,opacity] duration-300 ease-out active:scale-[0.98]',
+        active ? 'text-foreground' : 'text-muted-foreground/85 hover:text-foreground',
       )}
     >
-      <div className={cn('transition-colors', active ? 'text-primary' : 'text-muted-foreground')}>
+      <div
+        className={cn(
+          'relative z-10 transition-[transform,color] duration-300 ease-out',
+          active ? 'text-primary' : 'text-current',
+        )}
+        style={{ transform: active ? 'translateY(-1px) scale(1.08)' : 'translateY(0) scale(1)' }}
+      >
         <Icon size={18} />
       </div>
 
@@ -220,9 +229,10 @@ const MobileTabItem = React.memo(function MobileTabItem({
 
       <span
         className={cn(
-          'mt-1 max-w-full truncate text-[9px] font-medium',
-          active ? 'text-primary' : 'text-muted-foreground',
+          'relative z-10 mt-1 max-w-full truncate text-[9px] font-medium transition-[transform,color] duration-300 ease-out',
+          active ? 'text-primary' : 'text-current',
         )}
+        style={{ transform: active ? 'translateY(-0.5px)' : 'translateY(0)' }}
       >
         {item.mobileName ?? item.name}
       </span>
@@ -245,10 +255,13 @@ export default function Navigation({
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileNavRef = useRef<HTMLDivElement | null>(null);
+  const mobileTabRefs = useRef(new Map<string, HTMLAnchorElement | null>());
+  const [mobileIndicator, setMobileIndicator] = useState({ x: 0, width: 0, ready: false });
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
-  const safeNavItems = isMounted ? navItems : [];
+  const safeNavItems = useMemo(() => (isMounted ? navItems : []), [isMounted, navItems]);
   const safeUnreadTotal = isMounted ? unreadTotal : 0;
   const safeUser = isMounted ? user : null;
 
@@ -260,6 +273,58 @@ export default function Navigation({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (userType !== 'user') return;
+
+    const updateIndicator = () => {
+      const nav = mobileNavRef.current;
+      const activeItem = safeNavItems.find(item => isActivePath(pathname, item.href));
+      const activeLink = activeItem ? mobileTabRefs.current.get(activeItem.href) : null;
+
+      if (!nav || !activeLink) return;
+
+      const navRect = nav.getBoundingClientRect();
+      const linkRect = activeLink.getBoundingClientRect();
+
+      setMobileIndicator({
+        x: linkRect.left - navRect.left,
+        width: linkRect.width,
+        ready: true,
+      });
+    };
+
+    const raf = window.requestAnimationFrame(updateIndicator);
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateIndicator);
+
+      return () => {
+        window.cancelAnimationFrame(raf);
+        window.removeEventListener('resize', updateIndicator);
+      };
+    }
+
+    const observer = new ResizeObserver(() => {
+      window.requestAnimationFrame(updateIndicator);
+    });
+
+    if (mobileNavRef.current) {
+      observer.observe(mobileNavRef.current);
+    }
+
+    mobileTabRefs.current.forEach(link => {
+      if (link) observer.observe(link);
+    });
+
+    window.addEventListener('resize', updateIndicator);
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      observer.disconnect();
+      window.removeEventListener('resize', updateIndicator);
+    };
+  }, [pathname, safeNavItems, userType]);
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -437,13 +502,44 @@ export default function Navigation({
           className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-xl rounded-[28px] border border-border/70 bg-card/85 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden"
           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
-          <div className="grid grid-cols-5 items-center gap-1 px-2 py-2">
+          <div ref={mobileNavRef} className="relative grid grid-cols-5 items-center gap-1 px-2 py-2">
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-1 rounded-[22px] border transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                left: 8,
+                width: mobileIndicator.width - 8,
+                transform: `translate3d(${mobileIndicator.x}px, 0, 0)`,
+                opacity: mobileIndicator.ready ? 1 : 0,
+                background:
+                  'radial-gradient(circle at 50% 15%, rgba(255,255,255,0.24), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.04) 75%, rgba(255,255,255,0.02) 100%)',
+                borderColor: 'rgba(255,255,255,0.10)',
+                boxShadow: '0 12px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10)',
+                willChange: 'transform, width, opacity',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-1 rounded-[22px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                left: 8,
+                width: mobileIndicator.width - 8,
+                transform: `translate3d(${mobileIndicator.x}px, 0, 0) scale(1.08)`,
+                opacity: mobileIndicator.ready ? 0.45 : 0,
+                background:
+                  'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.16), rgba(255,255,255,0.05) 62%, transparent 100%)',
+                willChange: 'transform, width, opacity',
+              }}
+            />
             {safeNavItems.map(item => (
               <MobileTabItem
                 key={item.href}
                 item={item}
                 active={isActivePath(pathname, item.href)}
                 unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
+                tabRef={node => {
+                  mobileTabRefs.current.set(item.href, node);
+                }}
               />
             ))}
           </div>
