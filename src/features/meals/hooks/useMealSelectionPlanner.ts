@@ -182,12 +182,15 @@ export function useMealSelectionPlanner(enabled = true) {
     setSaveError(null);
   }
 
-  async function saveDraft() {
+  async function saveDraft(overrideItems: SelectionItem[] | null = null) {
     if (!enabled) {
       return false;
     }
 
-    if (snackCount > snackMax) {
+    const itemsToSave = overrideItems ?? draftItems;
+    const snackCountToSave = itemsToSave.filter(item => item.mealType === 'SNACK').length;
+
+    if (snackCountToSave > snackMax) {
       setSaveError({ message: 'You can select up to two snacks', status: 400 });
       return false;
     }
@@ -196,9 +199,9 @@ export function useMealSelectionPlanner(enabled = true) {
     setSaveError(null);
 
     try {
-      await saveUserMealSelection({
+      const result = await saveUserMealSelection({
         name: 'Current',
-        items: draftItems.map(item => ({
+        items: itemsToSave.map(item => ({
           mealType: item.mealType,
           slotIndex: item.slotIndex,
           mealId: item.mealId,
@@ -207,6 +210,7 @@ export function useMealSelectionPlanner(enabled = true) {
       });
 
       await Promise.all([optionsSWR.mutate(), selectionSWR.mutate()]);
+      setDraftItems(result.selection.items ?? itemsToSave);
       setHasTouchedDraft(false);
       return true;
     } catch (error) {

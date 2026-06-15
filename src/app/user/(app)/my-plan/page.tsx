@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
+import { MealPlanRandomizeButton } from '@/features/meal-plan-randomizer/components/MealPlanRandomizeButton';
+import { useMealPlanRandomizer } from '@/features/meal-plan-randomizer/hooks/useMealPlanRandomizer';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { PlanSelectedMealCard } from '@/features/meals/components/PlanSelectedMealCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
@@ -39,6 +41,7 @@ export default function UserMyPlanPage() {
     hasRequiredSlots,
     isSelected,
     isSnackFull,
+    snackMax,
     hasChanges,
     isSaving,
     selectedTotals,
@@ -77,6 +80,13 @@ export default function UserMyPlanPage() {
   const totalSelectedMeals = useMemo(() => {
     return TYPE_ORDER.reduce((acc, type) => acc + selectedByType[type].length, 0);
   }, [selectedByType]);
+
+  const mealPlanRandomizer = useMealPlanRandomizer({
+    optionsByType,
+    snackMax,
+    selectedCount: totalSelectedMeals,
+    saveDraft,
+  });
 
   const selectedSides = useMemo(() => {
     return [selectedByType.LUNCH[0], selectedByType.DINNER[0]]
@@ -190,7 +200,7 @@ export default function UserMyPlanPage() {
           title="Meal Plan"
           description="Select your meals for today. Your choices are saved and used to track adherence and build your shopping list."
         >
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
               {totalSelectedMeals} selected
             </span>
@@ -205,6 +215,19 @@ export default function UserMyPlanPage() {
                 Unsaved
               </span>
             ) : null}
+
+            <div className="ml-auto">
+              <MealPlanRandomizeButton
+                onClick={mealPlanRandomizer.requestRandomize}
+                confirmOpen={mealPlanRandomizer.confirmOpen}
+                onConfirmOpenChange={mealPlanRandomizer.setConfirmOpen}
+                onConfirm={mealPlanRandomizer.randomize}
+                isRandomizing={mealPlanRandomizer.isRandomizing || isSaving}
+                hasExistingSelection={mealPlanRandomizer.hasExistingSelection}
+                errorMessage={mealPlanRandomizer.errorMessage}
+                disabled={loading || !optionsByType}
+              />
+            </div>
           </div>
         </PageHeader>
 
