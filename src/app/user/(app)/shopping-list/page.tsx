@@ -118,7 +118,7 @@ export default function ShoppingListPage() {
   const allItems = useMemo(() => (data?.sections ?? []).flatMap(s => s.items), [data]);
   const totalCount = allItems.length;
   const checkedCount = useMemo(() => Object.values(checkedById).filter(Boolean).length, [checkedById]);
-  const progress = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
+  // const progress = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const hasItems = !!data && data.sections.some(s => s.items.length > 0);
   const isPageLoading = isLoading || selectionSWR.isLoading;
@@ -183,19 +183,19 @@ export default function ShoppingListPage() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+            <span className="rounded-full inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground">
               {checkedCount} / {totalCount || 0} checked
             </span>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            {/* <span className="rounded-full inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-xs font-medium text-primary">
               {progress}% complete
-            </span>
+            </span> */}
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleGenerate}
               disabled={isPageLoading}
-              className="h-8 rounded-full border-border bg-background px-3 text-xs text-foreground"
+              className="h-8 rounded-full flex gap-2 border-border bg-background px-3 text-xs text-foreground"
             >
               <RefreshCcw size={12} className={isPageLoading ? 'animate-spin' : ''} />
               Refresh
@@ -215,7 +215,11 @@ export default function ShoppingListPage() {
           </div>
         ) : null}
 
-        {isPageLoading ? <div className="mt-4"><ShoppingListSkeleton /></div> : null}
+        {isPageLoading ? (
+          <div className="mt-4">
+            <ShoppingListSkeleton />
+          </div>
+        ) : null}
 
         {!isPageLoading && !error && !hasItems ? (
           <section className="mt-5 rounded-[30px] border border-border bg-card px-5 py-8 text-center shadow-sm">
