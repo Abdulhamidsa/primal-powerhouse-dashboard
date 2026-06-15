@@ -228,10 +228,10 @@ export default function UserMyPlanPage() {
             </div>
 
             <MealPlanRandomizeButton
-              onClick={mealPlanRandomizer.requestRandomize}
+              onClickAction={mealPlanRandomizer.requestRandomize}
               confirmOpen={mealPlanRandomizer.confirmOpen}
-              onConfirmOpenChange={mealPlanRandomizer.setConfirmOpen}
-              onConfirm={mealPlanRandomizer.randomize}
+              onConfirmOpenChangeAction={mealPlanRandomizer.setConfirmOpen}
+              onConfirmAction={mealPlanRandomizer.randomize}
               isRandomizing={mealPlanRandomizer.isRandomizing || isSaving}
               hasExistingSelection={mealPlanRandomizer.hasExistingSelection}
               errorMessage={mealPlanRandomizer.errorMessage}
@@ -413,9 +413,7 @@ export default function UserMyPlanPage() {
                       Current selection: {swapState.currentMealName}
                     </p>
                   ) : (
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                      Pick a meal to add to this slot.
-                    </p>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">Pick a meal to add to this slot.</p>
                   )}
                 </div>
 

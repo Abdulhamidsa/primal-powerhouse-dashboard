@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/dialog';
 
 type MealPlanRandomizeButtonProps = {
-  onClick: () => void;
+  onClickAction: () => void;
   confirmOpen: boolean;
-  onConfirmOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirmOpenChangeAction: (open: boolean) => void;
+  onConfirmAction: () => void;
   isRandomizing: boolean;
   hasExistingSelection: boolean;
   errorMessage: string | null;
@@ -23,10 +23,10 @@ type MealPlanRandomizeButtonProps = {
 };
 
 export function MealPlanRandomizeButton({
-  onClick,
+  onClickAction,
   confirmOpen,
-  onConfirmOpenChange,
-  onConfirm,
+  onConfirmOpenChangeAction,
+  onConfirmAction,
   isRandomizing,
   hasExistingSelection,
   errorMessage,
@@ -37,9 +37,9 @@ export function MealPlanRandomizeButton({
       <Button
         type="button"
         variant="outline"
-        onClick={onClick}
+        onClick={onClickAction}
         disabled={isRandomizing || disabled}
-        className="h-10 rounded-full border-border bg-card px-4 text-sm font-medium text-foreground shadow-sm"
+        className="h-10 rounded-full flex gap-2 border-border bg-card px-4 text-sm font-medium text-foreground shadow-sm"
       >
         <Shuffle size={14} />
         Randomize
@@ -47,7 +47,7 @@ export function MealPlanRandomizeButton({
 
       {errorMessage ? <p className="mt-2 text-xs text-destructive">{errorMessage}</p> : null}
 
-      <Dialog open={confirmOpen} onOpenChange={onConfirmOpenChange}>
+      <Dialog open={confirmOpen} onOpenChange={onConfirmOpenChangeAction}>
         <DialogContent className="rounded-[28px] border-border bg-card p-5 sm:max-w-md">
           <DialogHeader className="space-y-2 text-left">
             <DialogTitle className="text-[20px] tracking-tight">Randomize meals?</DialogTitle>
@@ -68,13 +68,13 @@ export function MealPlanRandomizeButton({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onConfirmOpenChange(false)}
+              onClick={() => onConfirmOpenChangeAction(false)}
               className="h-10 rounded-full px-4"
             >
               Cancel
             </Button>
 
-            <Button type="button" onClick={onConfirm} disabled={isRandomizing} className="h-10 rounded-full px-4">
+            <Button type="button" onClick={onConfirmAction} disabled={isRandomizing} className="h-10 rounded-full px-4">
               {isRandomizing ? 'Randomizing...' : 'Continue'}
             </Button>
           </DialogFooter>
