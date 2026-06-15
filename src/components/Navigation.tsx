@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -207,13 +207,13 @@ const MobileTabItem = React.memo(function MobileTabItem({
       href={item.href}
       ref={tabRef}
       className={cn(
-        'relative flex min-w-0 flex-col items-center justify-center rounded-[22px] px-2 py-2.5 transition-[transform,color,opacity] duration-300 ease-out active:scale-[0.98]',
+        'relative flex h-full w-full min-w-0 flex-col items-center justify-center rounded-[22px] px-1 py-2.5 text-center transition-[transform,color,opacity] duration-300 ease-out active:scale-[0.98]',
         active ? 'text-foreground' : 'text-muted-foreground/85 hover:text-foreground',
       )}
     >
       <div
         className={cn(
-          'relative z-10 transition-[transform,color] duration-300 ease-out',
+          'relative z-10 flex items-center justify-center transition-[transform,color] duration-300 ease-out',
           active ? 'text-primary' : 'text-current',
         )}
         style={{ transform: active ? 'translateY(-1px) scale(1.08)' : 'translateY(0) scale(1)' }}
@@ -229,7 +229,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
 
       <span
         className={cn(
-          'relative z-10 mt-1 max-w-full truncate text-[9px] font-medium transition-[transform,color] duration-300 ease-out',
+          'relative z-10 mt-1 w-full max-w-full truncate text-[9px] font-medium leading-none transition-[transform,color] duration-300 ease-out',
           active ? 'text-primary' : 'text-current',
         )}
         style={{ transform: active ? 'translateY(-0.5px)' : 'translateY(0)' }}
@@ -261,8 +261,8 @@ export default function Navigation({
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
-  const safeNavItems = useMemo(() => (isMounted ? navItems : []), [isMounted, navItems]);
-  const safeUnreadTotal = isMounted ? unreadTotal : 0;
+  const safeNavItems = navItems;
+  const safeUnreadTotal = unreadTotal;
   const safeUser = isMounted ? user : null;
 
   useEffect(() => {
@@ -274,12 +274,12 @@ export default function Navigation({
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (userType !== 'user') return;
 
     const updateIndicator = () => {
       const nav = mobileNavRef.current;
-      const activeItem = safeNavItems.find(item => isActivePath(pathname, item.href));
+      const activeItem = navItems.find(item => isActivePath(pathname, item.href));
       const activeLink = activeItem ? mobileTabRefs.current.get(activeItem.href) : null;
 
       if (!nav || !activeLink) return;
@@ -324,7 +324,7 @@ export default function Navigation({
       observer.disconnect();
       window.removeEventListener('resize', updateIndicator);
     };
-  }, [pathname, safeNavItems, userType]);
+  }, [navItems, pathname, userType]);
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -502,13 +502,13 @@ export default function Navigation({
           className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-xl rounded-[28px] border border-border/70 bg-card/85 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden"
           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
-          <div ref={mobileNavRef} className="relative grid grid-cols-5 items-center gap-1 px-2 py-2">
+          <div ref={mobileNavRef} className="relative grid grid-cols-5 items-stretch gap-1 px-2 py-2">
             <div
               aria-hidden="true"
               className="absolute inset-y-1 rounded-[22px] border transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
                 left: 8,
-                width: mobileIndicator.width - 8,
+                width: Math.max(mobileIndicator.width - 8, 0),
                 transform: `translate3d(${mobileIndicator.x}px, 0, 0)`,
                 opacity: mobileIndicator.ready ? 1 : 0,
                 background:
@@ -523,7 +523,7 @@ export default function Navigation({
               className="absolute inset-y-1 rounded-[22px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
                 left: 8,
-                width: mobileIndicator.width - 8,
+                width: Math.max(mobileIndicator.width - 8, 0),
                 transform: `translate3d(${mobileIndicator.x}px, 0, 0) scale(1.08)`,
                 opacity: mobileIndicator.ready ? 0.45 : 0,
                 background:
