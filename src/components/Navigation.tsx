@@ -218,7 +218,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
         )}
         style={{ transform: active ? 'translateY(-1px) scale(1.08)' : 'translateY(0) scale(1)' }}
       >
-        <Icon size={18} />
+        <Icon size={21} />
       </div>
 
       {unreadCount > 0 ? (
