@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { JSX, useMemo } from 'react';
+import { JSX, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, Film, Utensils, MessageCircle } from 'lucide-react';
 import type { Client, TabKey } from '@/lib/client-page/types';
 import { cx } from '@/lib/ui';
@@ -38,6 +38,9 @@ export function ClientHeader({
   onMessageAction: () => void;
 }) {
   const statusTone = useMemo(() => getStatusTone(client.status), [client.status]);
+  const tabsWrapRef = useRef<HTMLDivElement | null>(null);
+  const tabButtonRefs = useRef(new Map<TabKey, HTMLButtonElement | null>());
+  const [indicator, setIndicator] = useState({ x: 0, width: 0, ready: false });
 
   const statusStyles = useMemo(() => {
     const base = {
@@ -75,6 +78,54 @@ export function ClientHeader({
 
     return base;
   }, [statusTone]);
+
+  useLayoutEffect(() => {
+    const updateIndicator = () => {
+      const wrap = tabsWrapRef.current;
+      const activeButton = tabButtonRefs.current.get(activeTab);
+
+      if (!wrap || !activeButton) return;
+
+      const wrapRect = wrap.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
+
+      setIndicator({
+        x: buttonRect.left - wrapRect.left,
+        width: buttonRect.width,
+        ready: true,
+      });
+    };
+
+    updateIndicator();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateIndicator);
+
+      return () => {
+        window.removeEventListener('resize', updateIndicator);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      window.requestAnimationFrame(updateIndicator);
+    });
+
+    const wrap = tabsWrapRef.current;
+    if (wrap) {
+      resizeObserver.observe(wrap);
+    }
+
+    tabButtonRefs.current.forEach(button => {
+      if (button) resizeObserver.observe(button);
+    });
+
+    window.addEventListener('resize', updateIndicator);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateIndicator);
+    };
+  }, [activeTab, tabs]);
 
   const avatarSrc =
     client.avatar ||
@@ -196,24 +247,52 @@ export function ClientHeader({
               borderColor: 'var(--color-border)',
             }}
           >
-            <div className="flex items-center justify-around gap-1 overflow-x-auto no-scrollbar py-1 px-1">
+            <div
+              ref={tabsWrapRef}
+              className="relative flex items-center justify-around gap-1 overflow-x-auto no-scrollbar py-1 px-1"
+            >
+              <div
+                aria-hidden="true"
+                className="absolute top-1 bottom-1 rounded-lg border shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-[transform,width,opacity] duration-500 ease-out"
+                style={{
+                  left: 0,
+                  width: indicator.width,
+                  transform: `translateX(${indicator.x}px)`,
+                  opacity: indicator.ready ? 1 : 0,
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08))',
+                  borderColor: 'rgba(255,255,255,0.10)',
+                  willChange: 'transform, width, opacity',
+                }}
+              />
               {tabs.map(t => {
                 const isActive = activeTab === t.key;
                 return (
                   <button
                     key={t.key}
                     onClick={() => onTabChangeAction(t.key)}
+                    ref={node => {
+                      tabButtonRefs.current.set(t.key, node);
+                    }}
                     className={cx(
-                      'flex items-center flex-wrap justify-center gap-2 p-2 rounded-lg sm:text-sm font-medium transition active:scale-[0.99]',
-                      isActive ? 'shadow-sm' : 'opacity-80 hover:opacity-100'
+                      'relative z-10 flex items-center flex-wrap justify-center gap-2 p-2 rounded-lg sm:text-sm font-medium transition-[color,transform,opacity] duration-300 active:scale-[0.99]',
+                      isActive
+                        ? 'shadow-sm text-[var(--color-text)]'
+                        : 'text-[var(--color-text-muted)] opacity-85 hover:opacity-100',
                     )}
                     style={{
-                      background: isActive ? 'rgba(255,255,255,0.10)' : 'transparent',
-                      color: isActive ? 'var(--color-text)' : 'var(--color-text-muted)',
-                      border: isActive ? '1px solid var(--color-border)' : '1px solid transparent',
+                      background: 'transparent',
+                      border: '1px solid transparent',
                     }}
                   >
-                    <span style={{ color: isActive ? 'var(--color-accent)' : 'currentColor' }}>{t.icon}</span>
+                    <span
+                      className="transition-transform duration-300"
+                      style={{
+                        color: isActive ? 'var(--color-accent)' : 'currentColor',
+                        transform: isActive ? 'scale(1.06)' : 'scale(1)',
+                      }}
+                    >
+                      {t.icon}
+                    </span>
                     <span className="hidden sm:inline">{t.label}</span>
                     <span className="sm:hidden text-sm">
                       {t.key === 'overview'
