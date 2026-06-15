@@ -253,14 +253,30 @@ export function ClientHeader({
             >
               <div
                 aria-hidden="true"
-                className="absolute top-1 bottom-1 rounded-lg border shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-[transform,width,opacity] duration-500 ease-out"
+                className="absolute top-1 bottom-1 rounded-lg border transition-[transform,width,opacity] duration-700"
                 style={{
                   left: 0,
                   width: indicator.width,
-                  transform: `translateX(${indicator.x}px)`,
+                  transform: `translate3d(${indicator.x}px, 0, 0) scale(1.04)`,
                   opacity: indicator.ready ? 1 : 0,
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08))',
-                  borderColor: 'rgba(255,255,255,0.10)',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0.08))',
+                  borderColor: 'rgba(255,255,255,0.12)',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10)',
+                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                  willChange: 'transform, width, opacity',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="absolute top-1 bottom-1 rounded-lg blur-md transition-[transform,width,opacity] duration-700"
+                style={{
+                  left: 0,
+                  width: indicator.width,
+                  transform: `translate3d(${indicator.x}px, 0, 0) scale(1.12)`,
+                  opacity: indicator.ready ? 0.55 : 0,
+                  background:
+                    'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18), rgba(255,255,255,0.05) 70%, transparent 100%)',
+                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
                   willChange: 'transform, width, opacity',
                 }}
               />
@@ -274,9 +290,9 @@ export function ClientHeader({
                       tabButtonRefs.current.set(t.key, node);
                     }}
                     className={cx(
-                      'relative z-10 flex items-center flex-wrap justify-center gap-2 p-2 rounded-lg sm:text-sm font-medium transition-[color,transform,opacity] duration-300 active:scale-[0.99]',
+                      'relative z-10 flex items-center flex-wrap justify-center gap-2 p-2 rounded-lg sm:text-sm font-medium transition-[color,transform,opacity] duration-300 ease-out active:scale-[0.99]',
                       isActive
-                        ? 'shadow-sm text-[var(--color-text)]'
+                        ? 'shadow-sm text-[var(--color-text)] -translate-y-[1px]'
                         : 'text-[var(--color-text-muted)] opacity-85 hover:opacity-100',
                     )}
                     style={{
@@ -285,10 +301,10 @@ export function ClientHeader({
                     }}
                   >
                     <span
-                      className="transition-transform duration-300"
+                      className="transition-transform duration-300 ease-out"
                       style={{
                         color: isActive ? 'var(--color-accent)' : 'currentColor',
-                        transform: isActive ? 'scale(1.06)' : 'scale(1)',
+                        transform: isActive ? 'scale(1.1) translateY(-0.5px)' : 'scale(1)',
                       }}
                     >
                       {t.icon}
