@@ -20,7 +20,7 @@ import { useUpsertWeeklyCheckIn, useWeeklyCheckInCurrentWeek } from '@/features/
 import { formatDateLabel } from '@/features/weekly-checkin/utils/week';
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 
-const TOTAL_STEPS = 3;
+// const TOTAL_STEPS = 3;
 
 type PhotoFieldKey = 'progressPhotoFrontUrl' | 'progressPhotoSideUrl' | 'progressPhotoBackUrl';
 

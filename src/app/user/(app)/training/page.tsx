@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
+// import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
 import { UserTrainingAssignments } from '@/features/training/components/UserTrainingAssignments';
 import WorkoutPlansSection from '@/features/workout-session/components/WorkoutPlansSection';
 

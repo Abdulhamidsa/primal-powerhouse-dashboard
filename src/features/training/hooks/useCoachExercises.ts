@@ -1,11 +1,11 @@
 import useSWR from 'swr';
-import { useSWRConfig } from 'swr';
+// import { useSWRConfig } from 'swr';
 import { getCoachExercises, createExercise, updateExercise, deleteExercise } from '../api/coachTraining.api';
 import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exercise.schemas';
-import type { Exercise } from '@prisma/client';
+// import type { Exercise } from '@prisma/client';
 
 export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: string; search?: string }) {
-  const { mutate } = useSWRConfig();
+  // const { mutate } = useSWRConfig();
   const key = ['coach-exercises', filters];
 
   const {

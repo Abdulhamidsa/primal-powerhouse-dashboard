@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { CalendarDays, Dumbbell, RefreshCcw } from 'lucide-react';
-import { WorkoutSessionPlayer } from '@/features/training/components/WorkoutSessionPlayer';
+// import { WorkoutSessionPlayer } from '@/features/training/components/WorkoutSessionPlayer';
 import { useTrainingPlan, useTrainingPlanDay } from '@/features/training/hooks/useTrainingPlan';
 import { useTrainingSessionActions, useTrainingSession } from '@/features/training/hooks/useTrainingSession';
 

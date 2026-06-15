@@ -1,9 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import type {
-  CreateWorkoutTemplateInput,
-  UpdateWorkoutTemplateInput,
-  TemplateExerciseInput,
-} from '../schemas/template.schemas';
+import type { CreateWorkoutTemplateInput, UpdateWorkoutTemplateInput } from '../schemas/template.schemas';
 import type { WorkoutTemplateWithExercises } from '../types/index';
 
 /**
