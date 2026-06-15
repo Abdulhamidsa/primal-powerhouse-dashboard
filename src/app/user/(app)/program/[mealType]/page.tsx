@@ -201,7 +201,9 @@ export default function ProgramMealTypePage() {
               </button>
               <div className="absolute bottom-3 left-3 right-3">
                 <h2 className="text-lg font-semibold text-white">{previewMeal.name}</h2>
-                {previewMeal.description ? <p className="mt-1 line-clamp-2 text-xs text-white/85">{previewMeal.description}</p> : null}
+                {previewMeal.description ? (
+                  <p className="mt-1 line-clamp-2 text-xs text-white/85">{previewMeal.description}</p>
+                ) : null}
               </div>
             </div>
 
@@ -323,7 +325,7 @@ export default function ProgramMealTypePage() {
         <div className="mx-auto flex w-full max-w-6xl justify-end">
           <button
             type="button"
-            onClick={saveDraft}
+            onClick={() => saveDraft()}
             disabled={!hasChanges || isSaving}
             className="rounded-2xl bg-[var(--color-accent-translucent)] px-4 py-2 text-sm font-medium text-[var(--color-text)] disabled:opacity-60"
           >
@@ -382,7 +384,9 @@ function SideOptionCard({
           className="block w-full text-left disabled:cursor-default"
         >
           <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text)]">{option.side.name}</p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">{option.side.type === 'SOUP' ? 'Soup' : 'Salad'}</p>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            {option.side.type === 'SOUP' ? 'Soup' : 'Salad'}
+          </p>
           <p className="text-xs text-[var(--color-text-muted)]">
             Linked to {option.sourceMealType.toLowerCase()}: {option.meal.name}
           </p>

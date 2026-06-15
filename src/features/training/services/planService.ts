@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import type { CreateClientTrainingPlanInput, UpdateClientTrainingPlanInput } from '../schemas/plan.schemas';
-import type { ClientTrainingPlanWithDays } from '../types/index';
+// import type { ClientTrainingPlanWithDays } from '../types/index';
 
 /**
  * Training Plan Service

@@ -139,6 +139,7 @@ Return ONLY valid JSON, no other text.`;
         {
           success: false,
           message: 'Failed to parse AI response',
+          error: e instanceof Error ? e.message : 'Unknown error',
         },
         { status: 500 },
       );
