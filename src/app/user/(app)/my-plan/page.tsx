@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, CheckCircle2, Save, Undo2, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Plus, Save, Undo2, X } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
+import { Button } from '@/components/ui/button';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { PlanSelectedMealCard } from '@/features/meals/components/PlanSelectedMealCard';
@@ -165,6 +166,23 @@ export default function UserMyPlanPage() {
     }
   };
 
+  const renderEmptyMealState = (mealType: MealTypeKey) => (
+    <div className="rounded-[28px] border border-border bg-card px-4 py-5 text-center shadow-sm">
+      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Plus size={18} />
+      </div>
+
+      <p className="mt-3 text-sm font-semibold tracking-tight text-foreground">
+        No {TYPE_LABEL[mealType].toLowerCase()} added yet
+      </p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">Add a meal to start building today&apos;s plan.</p>
+
+      <Button type="button" size="sm" onClick={() => onMealSelect(mealType)} className="mt-4 h-10 rounded-full px-4">
+        Add {TYPE_LABEL[mealType]}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="px-4 md:px-6">
       <div className={`mx-auto max-w-5xl 2xl:max-w-6xl space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
@@ -268,16 +286,7 @@ export default function UserMyPlanPage() {
                 </div>
 
                 {section.items.length === 0 ? (
-                  <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-center text-sm text-[var(--color-text-muted)]">
-                    <p>No {TYPE_LABEL[section.type].toLowerCase()} selected yet.</p>
-                    <button
-                      type="button"
-                      onClick={() => onMealSelect(section.type)}
-                      className="mt-3 rounded-2xl bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                    >
-                      Select {TYPE_LABEL[section.type]}
-                    </button>
-                  </div>
+                  renderEmptyMealState(section.type)
                 ) : (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {section.items.map(item => (
@@ -322,7 +331,7 @@ export default function UserMyPlanPage() {
 
             {selectedSides.length === 0 ? (
               <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
-                No sides selected yet. Choose a linked lunch or dinner side from Program.
+                No sides selected yet. Choose a linked lunch or dinner meal to unlock a side.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -365,13 +374,17 @@ export default function UserMyPlanPage() {
                   <h2 id="meal-picker-title" className="text-lg font-semibold text-[var(--color-text)]">
                     {swapState.mode === 'swap'
                       ? `Swap ${TYPE_LABEL[swapState.mealType]}`
-                      : `Select ${TYPE_LABEL[swapState.mealType]}`}
+                      : `Add ${TYPE_LABEL[swapState.mealType]}`}
                   </h2>
                   {swapState.mode === 'swap' ? (
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                       Current selection: {swapState.currentMealName}
                     </p>
-                  ) : null}
+                  ) : (
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                      Pick a meal to add to this slot.
+                    </p>
+                  )}
                 </div>
 
                 <button
