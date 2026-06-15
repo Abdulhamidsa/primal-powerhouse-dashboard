@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Download, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -112,43 +114,48 @@ export default function InstallPrompt() {
   if (installed || !visible || !deferredPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-in slide-in-from-bottom duration-300">
-      <div className="bg-card border-2 border-primary rounded-lg shadow-2xl p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Download size={20} />
-          </div>
+    <div className="fixed inset-x-4 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md animate-in slide-in-from-bottom-4 fade-in-0 duration-300">
+      <Card className="overflow-hidden rounded-[28px] border-border/80 bg-card/90 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-primary/10 text-primary">
+              <Download size={18} />
+            </div>
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground text-sm">Install Primal Powerhouse</h3>
-            <p className="text-xs text-muted-foreground mt-1">Get faster access and work offline</p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground">Install Primal Powerhouse</h3>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">Add it to your home screen for quicker access.</p>
+                </div>
 
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={handleInstall}
-                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                Install
-              </button>
+                <button
+                  onClick={handleDismiss}
+                  className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-              <button
-                onClick={handleDismiss}
-                className="px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                Not now
-              </button>
+              <div className="mt-3 flex gap-2">
+                <Button onClick={handleInstall} size="sm" className="h-9 flex-1 rounded-full px-4">
+                  Install
+                </Button>
+
+                <Button
+                  onClick={handleDismiss}
+                  variant="outline"
+                  size="sm"
+                  className="h-9 rounded-full px-4 text-muted-foreground"
+                >
+                  Not now
+                </Button>
+              </div>
             </div>
           </div>
-
-          <button
-            onClick={handleDismiss}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Close"
-          >
-            <X size={20} />
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -111,12 +111,13 @@ const userNavItems: NavItem[] = [
     icon: ClipboardCheck,
     description: 'Weekly & daily tracking',
   },
-  {
-    name: 'Program',
-    href: '/user/program',
-    icon: Utensils,
-    description: 'Meals & training',
-  },
+  // Temporarily hidden to simplify the mobile dock.
+  // {
+  //   name: 'Program',
+  //   href: '/user/program',
+  //   icon: Utensils,
+  //   description: 'Meals & training',
+  // },
   {
     name: 'Training',
     href: '/user/training',
@@ -203,12 +204,12 @@ const MobileTabItem = React.memo(function MobileTabItem({
     <Link
       href={item.href}
       className={cn(
-        'relative flex min-w-0 flex-col items-center justify-center rounded-xl px-1 py-1.5 transition-colors',
-        active ? 'bg-background/85 shadow-sm' : 'hover:bg-background/45',
+        'relative flex min-w-0 flex-col items-center justify-center rounded-[22px] px-2 py-2.5 transition-all duration-200',
+        active ? 'bg-background/95 shadow-sm' : 'hover:bg-background/45 active:scale-[0.98]',
       )}
     >
-      <div className={active ? 'text-primary' : 'text-muted-foreground'}>
-        <Icon size={18} />{' '}
+      <div className={cn('transition-colors', active ? 'text-primary' : 'text-muted-foreground')}>
+        <Icon size={18} />
       </div>
 
       {unreadCount > 0 ? (
@@ -218,7 +219,10 @@ const MobileTabItem = React.memo(function MobileTabItem({
       ) : null}
 
       <span
-        className={`mt-0.5 max-w-full truncate text-[9px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}
+        className={cn(
+          'mt-1 max-w-full truncate text-[9px] font-medium',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
       >
         {item.mobileName ?? item.name}
       </span>
@@ -377,7 +381,7 @@ export default function Navigation({
       </header>
       {userType === 'user' ? (
         <div
-          className="sticky top-0 z-20 border-b border-border bg-card/80 px-4 pb-2 pt-3 backdrop-blur-xl lg:hidden"
+          className="sticky top-0 z-20 border-b border-border/70 bg-card/70 px-4 pb-2 pt-3 backdrop-blur-xl lg:hidden"
           style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
         >
           <div className="mx-auto flex w-full max-w-xl items-center justify-between">
@@ -418,8 +422,8 @@ export default function Navigation({
       ) : null}
       <main
         className={cn(
-          'w-full flex-1 min-h-0 overflow-y-auto',
-          isChatRoute ? 'overflow-hidden lg:px-6 lg:py-6' : 'pb-0',
+          'w-full flex-1 min-h-0 overflow-y-auto pb-28 lg:pb-0',
+          isChatRoute ? 'overflow-hidden lg:px-6 lg:py-6' : '',
         )}
       >
         {children ?? (
@@ -430,10 +434,10 @@ export default function Navigation({
       </main>
       {!isChatRoute ? (
         <nav
-          className="shrink-0 border-t border-border bg-card/95 shadow-lg backdrop-blur-lg lg:hidden"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+          className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-xl rounded-[28px] border border-border/70 bg-card/85 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden"
+          style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
-          <div className="mx-auto grid h-20 max-w-lg grid-cols-6 items-center px-2 py-2">
+          <div className="grid grid-cols-5 items-center gap-1 px-2 py-2">
             {safeNavItems.map(item => (
               <MobileTabItem
                 key={item.href}
