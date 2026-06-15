@@ -171,7 +171,7 @@ const DesktopTopNavItem = React.memo(function DesktopTopNavItem({
     >
       <Icon size={17} className={active ? 'text-primary' : ''} />
 
-      <span className="text-sm font-medium">{item.name}</span>
+      {/* <span className="text-sm font-medium">{item.name}</span> */}
 
       {unreadCount > 0 ? (
         <span
@@ -207,7 +207,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
       href={item.href}
       ref={tabRef}
       className={cn(
-        'relative flex h-full w-full min-w-0 flex-col items-center justify-center rounded-[22px] px-1 py-2.5 text-center transition-[transform,color,opacity] duration-300 ease-out active:scale-[0.98]',
+        'relative flex h-full w-full min-w-0 flex-col items-center justify-center rounded-[22px] p-2 text-center transition-[transform,color,opacity] duration-300 ease-out active:scale-[0.98]',
         active ? 'text-foreground' : 'text-muted-foreground/85 hover:text-foreground',
       )}
     >
@@ -227,7 +227,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
         </span>
       ) : null}
 
-      <span
+      {/* <span
         className={cn(
           'relative z-10 mt-1 w-full max-w-full truncate text-[9px] font-medium leading-none transition-[transform,color] duration-300 ease-out',
           active ? 'text-primary' : 'text-current',
@@ -235,7 +235,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
         style={{ transform: active ? 'translateY(-0.5px)' : 'translateY(0)' }}
       >
         {item.mobileName ?? item.name}
-      </span>
+      </span> */}
     </Link>
   );
 });
@@ -507,8 +507,8 @@ export default function Navigation({
               aria-hidden="true"
               className="absolute inset-y-1 rounded-[22px] border transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
-                left: 4,
-                width: Math.max(mobileIndicator.width - 8, 0),
+                left: 7,
+                width: Math.max(mobileIndicator.width - 16, 0),
                 transform: `translate3d(${mobileIndicator.x}px, 0, 0)`,
                 opacity: mobileIndicator.ready ? 1 : 0,
                 background:
@@ -520,10 +520,10 @@ export default function Navigation({
             />
             <div
               aria-hidden="true"
-              className="absolute inset-0 rounded-[22px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="absolute inset-0 rounded-[20px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
-                left: 4,
-                width: Math.max(mobileIndicator.width - 8, 0),
+                left: 7,
+                width: Math.max(mobileIndicator.width - 16, 0),
                 transform: `translate3d(${mobileIndicator.x}px, 0, 0) scale(1.08)`,
                 opacity: mobileIndicator.ready ? 0.45 : 0,
                 background:
