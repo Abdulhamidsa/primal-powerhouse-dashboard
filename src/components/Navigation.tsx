@@ -507,7 +507,7 @@ export default function Navigation({
               aria-hidden="true"
               className="absolute inset-y-1 rounded-[22px] border transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
-                left: 8,
+                left: 5,
                 width: Math.max(mobileIndicator.width - 8, 0),
                 transform: `translate3d(${mobileIndicator.x}px, 0, 0)`,
                 opacity: mobileIndicator.ready ? 1 : 0,
@@ -520,9 +520,9 @@ export default function Navigation({
             />
             <div
               aria-hidden="true"
-              className="absolute inset-y-1 rounded-[22px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="absolute inset-0 rounded-[22px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
-                left: 8,
+                left: 5,
                 width: Math.max(mobileIndicator.width - 8, 0),
                 transform: `translate3d(${mobileIndicator.x}px, 0, 0) scale(1.08)`,
                 opacity: mobileIndicator.ready ? 0.45 : 0,
