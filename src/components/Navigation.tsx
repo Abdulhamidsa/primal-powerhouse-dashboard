@@ -21,16 +21,17 @@ import {
   Handshake,
   Dumbbell,
 } from 'lucide-react';
+import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDrawer.tsx';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/hooks/useUserData';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
 
-const LazyChatDrawer = dynamic<{ open: boolean; onClose: () => void }>(
-  () => import('../features/client-coach-messaging/components/ChatDrawer.js').then(mod => mod.ChatDrawer),
-  { ssr: false, loading: () => null },
-);
+const LazyChatDrawer = dynamic<{ open: boolean; onClose: () => void }>(() => Promise.resolve(ChatDrawer), {
+  ssr: false,
+  loading: () => null,
+});
 
 type NavItem = {
   name: string;

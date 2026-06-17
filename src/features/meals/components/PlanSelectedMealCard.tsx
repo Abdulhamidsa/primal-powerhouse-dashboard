@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Check, CheckCircle2, Clock3, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
@@ -23,6 +23,7 @@ export function PlanSelectedMealCard({
   onToggleCompletionAction,
   onSwapAction,
   isPending = false,
+  imagePriority = false,
 }: {
   badgeLabel: string;
   name: string;
@@ -37,6 +38,7 @@ export function PlanSelectedMealCard({
   onToggleCompletionAction?: () => void;
   onSwapAction?: () => void;
   isPending?: boolean;
+  imagePriority?: boolean;
 }) {
   const [showDetails, setShowDetails] = useState(false);
 
@@ -51,10 +53,33 @@ export function PlanSelectedMealCard({
     return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, [completedAt]);
 
+  useEffect(() => {
+    if (!showDetails) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowDetails(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showDetails]);
+
   return (
     <>
       <article
-        className="overflow-hidden rounded-[24px] border bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.16)]"
+        role="button"
+        tabIndex={0}
+        aria-label={`View details for ${name}`}
+        onClick={() => setShowDetails(true)}
+        onKeyDown={event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setShowDetails(true);
+          }
+        }}
+        className="group overflow-hidden rounded-[24px] border bg-[var(--color-surface)] shadow-[0_8px_30px_rgba(0,0,0,0.16)] transition-colors hover:border-[var(--color-accent-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
         style={{
           borderColor: isCompleted ? 'var(--color-accent)' : 'var(--color-border)',
         }}
@@ -65,6 +90,7 @@ export function PlanSelectedMealCard({
             alt={name}
             fill
             className="object-cover"
+            priority={imagePriority}
             sizes="(max-width: 768px) 100vw, 50vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
@@ -105,7 +131,10 @@ export function PlanSelectedMealCard({
             {onToggleCompletionAction !== undefined ? (
               <button
                 type="button"
-                onClick={onToggleCompletionAction}
+                onClick={event => {
+                  event.stopPropagation();
+                  onToggleCompletionAction();
+                }}
                 disabled={isPending}
                 aria-label={isCompleted ? 'Mark as not done' : 'Mark as done'}
                 className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -123,22 +152,16 @@ export function PlanSelectedMealCard({
             {onSwapAction !== undefined ? (
               <button
                 type="button"
-                onClick={onSwapAction}
+                onClick={event => {
+                  event.stopPropagation();
+                  onSwapAction();
+                }}
                 aria-label="Swap meal"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
                 <RefreshCcw size={15} />
               </button>
             ) : null}
-
-            <button
-              type="button"
-              onClick={() => setShowDetails(true)}
-              aria-label="View meal details"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
-              <Info size={15} />
-            </button>
           </div>
         </div>
       </article>

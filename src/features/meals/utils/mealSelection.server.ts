@@ -10,6 +10,8 @@ import {
 } from '@/features/meals/utils/mealSelection';
 
 type ClientWithAssignments = {
+  goalCalories?: number | null;
+  goalMacros?: string | null;
   mealPlans: Array<{
     id: string;
     name: string;
@@ -58,29 +60,7 @@ type ClientWithAssignments = {
   }>;
 };
 
-export async function getClientCoachAssignedMealOptions(clientId: string): Promise<Record<MealTypeKey, MealOption[]>> {
-  const client = (await prisma.client.findUnique({
-    where: { id: clientId },
-    include: {
-      mealPlans: {
-        where: { isActive: true },
-        include: {
-          mealAssignments: {
-            include: {
-              meal: true,
-              side: true,
-            },
-            orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }, { createdAt: 'asc' }],
-          },
-        },
-      },
-    },
-  })) as ClientWithAssignments | null;
-
-  if (!client) {
-    throw new Error('Client not found');
-  }
-
+function buildOptionsByTypeFromClient(client: ClientWithAssignments): Record<MealTypeKey, MealOption[]> {
   const grouped: Record<MealTypeKey, MealOption[]> = {
     BREAKFAST: [],
     LUNCH: [],
@@ -153,6 +133,51 @@ export async function getClientCoachAssignedMealOptions(clientId: string): Promi
   return grouped;
 }
 
+function buildCoachTargetsFromClient(client: ClientWithAssignments): MealSelectionMacroTotals | null {
+  if (!client.goalMacros) return null;
+
+  const goalMacros = parseGoalMacros(client.goalMacros);
+  if (!goalMacros) return null;
+
+  const goalCalories =
+    typeof client.goalCalories === 'number'
+      ? client.goalCalories
+      : goalMacros.protein * 4 + goalMacros.carbs * 4 + goalMacros.fat * 9;
+
+  return roundMacroTotals({
+    calories: goalCalories,
+    protein: goalMacros.protein,
+    carbs: goalMacros.carbs,
+    fat: goalMacros.fat,
+  });
+}
+
+export async function getClientCoachAssignedMealOptions(clientId: string): Promise<Record<MealTypeKey, MealOption[]>> {
+  const client = (await prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      mealPlans: {
+        where: { isActive: true },
+        include: {
+          mealAssignments: {
+            include: {
+              meal: true,
+              side: true,
+            },
+            orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }, { createdAt: 'asc' }],
+          },
+        },
+      },
+    },
+  })) as ClientWithAssignments | null;
+
+  if (!client) {
+    throw new Error('Client not found');
+  }
+
+  return buildOptionsByTypeFromClient(client);
+}
+
 export function buildBaselineFromOptions(optionsByType: Record<MealTypeKey, MealOption[]>) {
   const baselineSelection = buildBaselineSelection(optionsByType);
   const baselineTotals = computeSelectionTotals(baselineSelection);
@@ -161,9 +186,33 @@ export function buildBaselineFromOptions(optionsByType: Record<MealTypeKey, Meal
 }
 
 export async function loadMealSelectionContext(clientId: string) {
-  const optionsByType = await getClientCoachAssignedMealOptions(clientId);
+  const client = (await prisma.client.findUnique({
+    where: { id: clientId },
+    select: {
+      goalCalories: true,
+      goalMacros: true,
+      mealPlans: {
+        where: { isActive: true },
+        include: {
+          mealAssignments: {
+            include: {
+              meal: true,
+              side: true,
+            },
+            orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }, { createdAt: 'asc' }],
+          },
+        },
+      },
+    },
+  })) as ClientWithAssignments | null;
+
+  if (!client) {
+    throw new Error('Client not found');
+  }
+
+  const optionsByType = buildOptionsByTypeFromClient(client);
   const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
-  const coachTargets = await getClientCoachMacroTargets(clientId);
+  const coachTargets = buildCoachTargetsFromClient(client);
 
   return {
     optionsByType,

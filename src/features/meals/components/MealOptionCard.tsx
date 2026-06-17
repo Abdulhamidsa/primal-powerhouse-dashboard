@@ -11,12 +11,14 @@ export function MealOptionCard({
   onSelect,
   disabled,
   onPreview,
+  imagePriority = false,
 }: {
   option: MealOption;
   selected: boolean;
   onSelect: () => void;
   disabled?: boolean;
   onPreview?: () => void;
+  imagePriority?: boolean;
 }) {
   const totalTime = (option.meal.prepTime ?? 0) + (option.meal.cookTime ?? 0);
   const metaItems = [
@@ -27,6 +29,19 @@ export function MealOptionCard({
 
   return (
     <article
+      role={onPreview ? 'button' : undefined}
+      tabIndex={onPreview ? 0 : undefined}
+      onClick={onPreview}
+      onKeyDown={
+        onPreview
+          ? event => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onPreview();
+              }
+            }
+          : undefined
+      }
       className={[
         'overflow-hidden rounded-3xl border bg-[var(--color-surface)] transition-colors',
         selected
@@ -34,25 +49,26 @@ export function MealOptionCard({
           : 'border-[var(--color-border)] hover:border-[var(--color-accent-muted)]',
       ].join(' ')}
     >
-      <button type="button" onClick={onPreview} disabled={!onPreview} className="relative h-36 w-full text-left disabled:cursor-default">
+      <div className="relative h-36 w-full text-left">
         <Image
           src={option.meal.imageUrl?.trim() ? option.meal.imageUrl : fallbackImage}
           alt={option.meal.name}
           fill
           className="object-cover"
+          priority={imagePriority}
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
-      </button>
+      </div>
 
       <div className="space-y-3 p-4">
-        <button type="button" onClick={onPreview} disabled={!onPreview} className="block w-full text-left disabled:cursor-default">
+        <div className="block w-full text-left">
           <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text)]">{option.meal.name}</p>
           {option.meal.description ? (
             <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-text-muted)]">{option.meal.description}</p>
           ) : null}
           {totalTime > 0 ? <p className="text-xs text-[var(--color-text-muted)]">{totalTime} min total</p> : null}
-        </button>
+        </div>
 
         {metaItems.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -70,7 +86,10 @@ export function MealOptionCard({
 
         <button
           type="button"
-          onClick={onSelect}
+          onClick={event => {
+            event.stopPropagation();
+            onSelect();
+          }}
           disabled={disabled}
           className={[
             'inline-flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium transition-colors',
