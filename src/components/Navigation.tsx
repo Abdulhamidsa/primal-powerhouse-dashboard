@@ -266,7 +266,7 @@ export default function Navigation({
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
   const safeNavItems = navItems;
   const safeUnreadTotal = dashboardSummary?.unreadTotal ?? unreadTotal;
-  const safeUser = isMounted ? dashboardSummary?.user ?? user ?? null : null;
+  const safeUser = isMounted ? (dashboardSummary?.user ?? user ?? null) : null;
 
   useEffect(() => {
     setAccountMenuOpen(false);
@@ -502,7 +502,7 @@ export default function Navigation({
       </main>
       {!isChatRoute ? (
         <nav
-          className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-xl rounded-[28px] border border-border/70 bg-card/85 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden"
+          className="fixed inset-x-3 bottom-6 z-40 mx-auto max-w-xl rounded-[28px] border border-border/70 bg-card/85 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden"
           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
           <div ref={mobileNavRef} className="relative grid grid-cols-5 items-stretch gap-1 px-2 py-2">
