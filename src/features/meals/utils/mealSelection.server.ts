@@ -160,6 +160,19 @@ export function buildBaselineFromOptions(optionsByType: Record<MealTypeKey, Meal
   return { baselineSelection, baselineTotals };
 }
 
+export async function loadMealSelectionContext(clientId: string) {
+  const optionsByType = await getClientCoachAssignedMealOptions(clientId);
+  const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
+  const coachTargets = await getClientCoachMacroTargets(clientId);
+
+  return {
+    optionsByType,
+    baselineSelection,
+    baselineTotals,
+    coachTargets,
+  };
+}
+
 export function hydrateSelectionAgainstOptions(
   optionsByType: Record<MealTypeKey, MealOption[]>,
   rawItems: Array<{ mealType: string; slotIndex: number; mealId: string; sourceMealAssignmentId?: string | null }>,
@@ -196,7 +209,7 @@ export function hydrateSelectionAgainstOptions(
   });
 }
 
-function parseGoalMacros(goalMacros: string | null): { protein: number; carbs: number; fat: number } | null {
+export function parseGoalMacros(goalMacros: string | null): { protein: number; carbs: number; fat: number } | null {
   if (!goalMacros) return null;
 
   try {

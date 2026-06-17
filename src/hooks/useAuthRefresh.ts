@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { httpClient } from '@/lib/http/client';
 
 /**
  * Hook that automatically refreshes the auth token periodically
@@ -16,23 +17,22 @@ export function useAuthRefresh() {
         const pathname = window.location.pathname || '';
         const authRole = pathname.startsWith('/admin') ? 'admin' : pathname.startsWith('/user') ? 'client' : undefined;
 
-        const response = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          credentials: 'include',
+        await httpClient.post('/api/auth/refresh', undefined, {
           headers: authRole ? { 'x-auth-role': authRole } : undefined,
         });
 
-        if (response.ok) {
-          console.log('[AUTH] Token refreshed successfully');
-        } else if (response.status === 401) {
+        console.log('[AUTH] Token refreshed successfully');
+      } catch (error: any) {
+        if (error?.status === 401) {
           // Token is no longer valid, user needs to login again
           console.warn('[AUTH] Token refresh failed - user needs to login');
           try {
             localStorage.removeItem('userType');
           } catch {}
           // Do not redirect here; allow middleware/page guards to handle it
+          return;
         }
-      } catch (error) {
+
         console.error('[AUTH] Token refresh error:', error);
       }
     };

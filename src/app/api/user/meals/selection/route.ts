@@ -4,9 +4,7 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
 import { invalidateMealCaches } from '@/lib/cache-tags';
 import {
-  buildBaselineFromOptions,
-  getClientCoachMacroTargets,
-  getClientCoachAssignedMealOptions,
+  loadMealSelectionContext,
   hydrateSelectionAgainstOptions,
 } from '@/features/meals/utils/mealSelection.server';
 import { computeSelectionTotals, macroDelta } from '@/features/meals/utils/mealSelection';
@@ -19,9 +17,9 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
-    const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
-    const coachTargets = await getClientCoachMacroTargets(user.userId);
+    const { optionsByType, baselineSelection, baselineTotals, coachTargets } = await loadMealSelectionContext(
+      user.userId,
+    );
     const comparisonTotals = coachTargets ?? baselineTotals;
 
     const selectionSet = await (prisma as any).userMealSelectionSet.findUnique({
@@ -76,7 +74,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const payload = parsed.data;
-    const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
+    const { optionsByType, baselineSelection, baselineTotals, coachTargets } = await loadMealSelectionContext(
+      user.userId,
+    );
 
     const validByType = {
       BREAKFAST: new Map(optionsByType.BREAKFAST.map(option => [option.sourceAssignmentId, option.meal.id])),
@@ -134,8 +134,6 @@ export async function PUT(request: NextRequest) {
       return selectionSet;
     });
 
-    const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
-    const coachTargets = await getClientCoachMacroTargets(user.userId);
     const comparisonTotals = coachTargets ?? baselineTotals;
 
     const selectedItems = hydrateSelectionAgainstOptions(optionsByType, payload.items);

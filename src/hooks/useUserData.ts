@@ -9,12 +9,16 @@ export type UserData = {
   goalWeight?: number | null;
 };
 
-export function useUserData() {
+export function useUserData(enabled = true) {
   const key = '/api/user/data';
 
-  const { data, error, isLoading, mutate, isValidating } = useSWR<UserData, ApiError>(key, fetcher, {
-    revalidateOnFocus: true,
-  });
+  const { data, error, isLoading, mutate, isValidating } = useSWR<UserData, ApiError>(
+    enabled ? key : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+    },
+  );
 
   return {
     user: data,

@@ -2,9 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import {
-  buildBaselineFromOptions,
-  getClientCoachAssignedMealOptions,
-  getClientCoachMacroTargets,
+  loadMealSelectionContext,
 } from '@/features/meals/utils/mealSelection.server';
 
 export async function GET(request: NextRequest) {
@@ -14,9 +12,9 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
-    const { baselineSelection, baselineTotals } = buildBaselineFromOptions(optionsByType);
-    const coachTargets = await getClientCoachMacroTargets(user.userId);
+    const { optionsByType, baselineSelection, baselineTotals, coachTargets } = await loadMealSelectionContext(
+      user.userId,
+    );
 
     return jsonWithCache({
       optionsByType,

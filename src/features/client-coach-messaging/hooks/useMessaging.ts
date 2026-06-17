@@ -81,8 +81,8 @@ function updateConversationListPreview(
   };
 }
 
-export function useConversations() {
-  const { data, error, isLoading, mutate } = useSWR(buildConversationsUrl(), listConversations);
+export function useConversations(enabled = true) {
+  const { data, error, isLoading, mutate } = useSWR(enabled ? buildConversationsUrl() : null, listConversations);
 
   return {
     conversations: data?.items ?? [],
