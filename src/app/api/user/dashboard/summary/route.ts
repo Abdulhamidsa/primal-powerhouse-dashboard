@@ -5,6 +5,8 @@ import { loadUserDashboardSummary } from '@/features/user-dashboard/lib/loadUser
 import { userDashboardSummarySchema } from '@/features/user-dashboard/schemas/userDashboard.schema';
 
 export async function GET(request: NextRequest) {
+  const startedAt = performance.now();
+
   try {
     const { error, user } = requireAuth(request, 'client');
     if (error || !user) {
@@ -19,7 +21,11 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Failed to build dashboard summary' }, { status: 500 });
     }
 
-    return jsonWithCache(parsed.data);
+    const response = jsonWithCache(parsed.data);
+    const duration = Math.round(performance.now() - startedAt);
+    response.headers.set('Server-Timing', `dashboard-summary;dur=${duration}`);
+    console.info('[USER_DASHBOARD_SUMMARY_GET]', { userId: user.userId, durationMs: duration });
+    return response;
   } catch (error) {
     console.error('[USER_DASHBOARD_SUMMARY_GET] Failed:', error);
     return jsonWithCache({ error: 'Failed to load dashboard summary' }, { status: 500 });

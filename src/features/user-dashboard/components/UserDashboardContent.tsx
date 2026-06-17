@@ -2,14 +2,23 @@
 
 import Link from 'next/link';
 import { useMemo, type ComponentType, type ReactNode } from 'react';
-import { CheckCircle2, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardCheck,
+  Flame,
+  MessageSquare,
+  Moon,
+  Sun,
+  Utensils,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import { TodayMissionCard } from '@/features/today-mission/components/TodayMissionCard';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
 
 type GreetingState = { text: string; icon: ReactNode };
-type ActionTone = 'good' | 'warn' | 'neutral' | 'accent';
+type ActionTone = 'good' | 'warn' | 'neutral';
 
 type DashboardAction = {
   key: string;
@@ -18,55 +27,59 @@ type DashboardAction = {
   href: string;
   icon: ComponentType<{ size?: number; className?: string }>;
   tone: ActionTone;
-  badge: string | null;
 };
 
 function TodayBadge({ streakCount }: { streakCount: number }) {
   if (streakCount <= 0) return null;
 
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-semibold text-foreground">
+    <div
+      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold text-foreground shadow-sm"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+    >
       <Flame size={12} className="text-primary" />
       {streakCount} day streak
     </div>
   );
 }
 
-function DashboardActionRail({ actions }: { actions: DashboardAction[] }) {
+function StatTile({
+  action,
+}: {
+  action: DashboardAction;
+}) {
+  const Icon = action.icon;
+
+  const toneStyle =
+    action.tone === 'good'
+      ? { background: 'var(--color-success-muted)', color: 'var(--color-success)', borderColor: 'var(--color-success-muted)' }
+      : action.tone === 'warn'
+        ? { background: 'var(--color-warning-muted)', color: 'var(--color-warning)', borderColor: 'var(--color-warning-muted)' }
+        : { background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', borderColor: 'var(--color-border)' };
+
   return (
-    <section className="space-y-3">
-      <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex min-w-max gap-3">
-          {actions.map(action => {
-            const Icon = action.icon;
-            const toneClasses =
-              action.tone === 'good'
-                ? 'bg-primary/10 text-primary'
-                : action.tone === 'warn'
-                  ? 'bg-amber-500/10 text-amber-700'
-                  : action.tone === 'accent'
-                    ? 'bg-primary/10 text-primary'
-                    : 'bg-muted/40 text-muted-foreground';
-
-            return (
-              <Link
-                key={action.key}
-                href={action.href}
-                className="group min-w-[128px] snap-start rounded-3xl border border-border bg-card p-4 shadow-sm transition-transform active:scale-[0.98]"
-                title={`${action.title} ${action.description}`}
-              >
-                <div className={cn('inline-flex h-11 w-11 items-center justify-center rounded-2xl', toneClasses)}>
-                  <Icon size={17} />
-                </div>
-
-                <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">{action.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{action.badge ?? action.description}</p>
-              </Link>
-            );
-          })}
+    <Link
+      href={action.href}
+      className="group rounded-[22px] border p-4 shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-transform active:scale-[0.99]"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      title={`${action.title} ${action.description}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className={cn(
+            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors',
+          )}
+          style={toneStyle}
+        >
+          <Icon size={16} />
         </div>
+
+        <ArrowRight size={15} className="mt-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </div>
-    </section>
+
+      <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">{action.title}</p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.description}</p>
+    </Link>
   );
 }
 
@@ -75,20 +88,14 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
     const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
     const hour = new Date(denmarkTime).getHours();
 
-    if (hour >= 5 && hour < 12) {
-      return { text: 'Good Morning', icon: <Sun size={18} /> };
-    }
-
-    if (hour >= 12 && hour < 18) {
-      return { text: 'Good Afternoon', icon: <Sun size={18} /> };
-    }
-
-    return { text: 'Good Evening', icon: <Moon size={18} /> };
+    if (hour >= 5 && hour < 12) return { text: 'Good morning', icon: <Sun size={18} /> };
+    if (hour >= 12 && hour < 18) return { text: 'Good afternoon', icon: <Sun size={18} /> };
+    return { text: 'Good evening', icon: <Moon size={18} /> };
   }, []);
 
   const { summary: todayMission } = useTodayMission(summary);
   const firstName = summary.user.name.split(' ')[0] || 'Member';
-  const coachMessage = summary.user.motivationalMessage || 'No coach message yet. Check back after your next review.';
+  const coachMessage = summary.user.motivationalMessage || 'No coach note yet. Check back after your next review.';
 
   const actions = useMemo<DashboardAction[]>(() => {
     const completion = summary.adherence.completion;
@@ -101,102 +108,135 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
     if (summary.featureVisibility.dailyCheckinsEnabled) {
       result.push({
         key: 'daily',
-        title: 'Daily Check-In',
-        description: isDailyDone ? 'Done' : 'Due',
+        title: 'Daily check-in',
+        description: isDailyDone ? 'Completed for today' : 'Open and complete today\'s check-in',
         href: '/user/check-ins',
         icon: CheckCircle2,
         tone: isDailyDone ? 'good' : 'warn',
-        badge: isDailyDone ? 'Done' : 'Due',
       });
     }
 
     if (summary.featureVisibility.weeklyCheckinsEnabled) {
       result.push({
         key: 'weekly',
-        title: 'Weekly Check-In',
-        description: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
+        title: 'Weekly check-in',
+        description:
+          weeklyStatus === 'completed'
+            ? 'Submitted for this week'
+            : weeklyStatus === 'overdue'
+              ? 'Needs attention today'
+              : 'Due this week',
         href: '/user/check-ins',
-        icon: weeklyStatus === 'completed' ? CheckCircle2 : ClipboardCheck,
+        icon: ClipboardCheck,
         tone: weeklyStatus === 'completed' ? 'good' : 'warn',
-        badge: weeklyStatus === 'completed' ? 'Done' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due',
       });
     }
 
     if (summary.featureVisibility.nutritionTrackingEnabled) {
       result.push({
         key: 'meals',
-        title: "Today's Meals",
+        title: "Today's meals",
         description:
-          completion.totalSelectedCount > 0 ? `${completion.completedCount}/${completion.totalSelectedCount}` : 'None',
+          completion.totalSelectedCount > 0
+            ? isMealsDone
+              ? 'All selected meals complete'
+              : `${completion.completedCount}/${completion.totalSelectedCount} done`
+            : 'No meals selected yet',
         href: '/user/my-plan',
-        icon: isMealsDone ? CheckCircle2 : Utensils,
+        icon: Utensils,
         tone: isMealsDone ? 'good' : 'warn',
-        badge: completion.totalSelectedCount > 0 ? `${completion.completedCount}/${completion.totalSelectedCount}` : '—',
       });
     }
 
     result.push({
       key: 'chat',
-      title: 'Message Coach',
-      description: summary.unreadTotal > 0 ? `${summary.unreadTotal} new` : 'Open',
+      title: 'Message coach',
+      description: summary.unreadTotal > 0 ? `${summary.unreadTotal} unread messages` : 'Open the coach chat',
       href: '/user/chat',
       icon: MessageSquare,
-      tone: summary.unreadTotal > 0 ? 'accent' : 'neutral',
-      badge: summary.unreadTotal > 0 ? `${summary.unreadTotal} new` : null,
+      tone: summary.unreadTotal > 0 ? 'warn' : 'neutral',
     });
 
     return result.slice(0, 4);
   }, [
+    summary.adherence.completion.completedCount,
+    summary.adherence.completion.totalSelectedCount,
     summary.dailyCheckIn.isComplete,
     summary.featureVisibility.dailyCheckinsEnabled,
     summary.featureVisibility.nutritionTrackingEnabled,
     summary.featureVisibility.weeklyCheckinsEnabled,
-    summary.adherence.completion.completedCount,
-    summary.adherence.completion.totalSelectedCount,
     summary.unreadTotal,
     summary.weeklyCheckIn.status,
   ]);
 
+  const dateLabel = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
+
   return (
-    <div className="space-y-5">
-      <section className="rounded-3xl border border-border bg-card p-4 shadow-sm">
+    <div className="space-y-4">
+      <section
+        className="overflow-hidden rounded-[30px] border p-5 shadow-[0_16px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              {new Date().toLocaleDateString(undefined, {
-                weekday: 'long',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{dateLabel}</p>
 
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]">
-              {greeting.text},
-              <br />
-              {firstName}
-            </h1>
+            <div className="mt-2 flex items-center gap-3">
+              <div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-muted-foreground shadow-sm"
+                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+              >
+                {greeting.icon}
+              </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <TodayBadge streakCount={summary.streakCount} />
+              <div className="min-w-0">
+                <h1 className="text-[1.9rem] font-semibold tracking-tight text-foreground">
+                  {greeting.text}, {firstName}
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">Your day is ready. Keep it simple, one step at a time.</p>
+              </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Coach</p>
-              <p className="mt-1 text-sm leading-6 text-foreground">{coachMessage}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <TodayBadge streakCount={summary.streakCount} />
+              <div
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground"
+                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                {summary.unreadTotal > 0 ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting` : 'Coach chat quiet'}
+              </div>
             </div>
           </div>
 
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted/40 text-muted-foreground">
+          <div
+            className="hidden rounded-full border p-2 text-muted-foreground shadow-sm sm:flex"
+            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+          >
             {greeting.icon}
           </div>
         </div>
+
+        <div
+          className="mt-4 rounded-[24px] border p-4"
+          style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+        >
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach note</p>
+          <p className="mt-2 text-sm leading-6 text-foreground">{coachMessage}</p>
+        </div>
       </section>
 
-      <DashboardActionRail actions={actions} />
-
-      <section className="space-y-3">
-        <TodayMissionCard summary={todayMission} />
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {actions.map(action => (
+          <StatTile key={action.key} action={action} />
+        ))}
       </section>
+
+      <TodayMissionCard summary={todayMission} />
     </div>
   );
 }

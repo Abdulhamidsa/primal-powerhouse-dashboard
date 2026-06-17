@@ -3,6 +3,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -20,12 +21,16 @@ import {
   Handshake,
   Dumbbell,
 } from 'lucide-react';
-import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDrawer';
 import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/hooks/useUserData';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
+
+const LazyChatDrawer = dynamic<{ open: boolean; onClose: () => void }>(
+  () => import('../features/client-coach-messaging/components/ChatDrawer.js').then(mod => mod.ChatDrawer),
+  { ssr: false, loading: () => null },
+);
 
 type NavItem = {
   name: string;
@@ -548,7 +553,9 @@ export default function Navigation({
           </div>
         </nav>
       ) : null}
-      {userType === 'user' ? <ChatDrawer open={chatDrawerOpen} onClose={() => setChatDrawerOpen(false)} /> : null}
+      {userType === 'user' && chatDrawerOpen ? (
+        <LazyChatDrawer open={chatDrawerOpen} onClose={() => setChatDrawerOpen(false)} />
+      ) : null}
     </div>
   );
 }
