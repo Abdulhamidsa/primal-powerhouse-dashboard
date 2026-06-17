@@ -8,7 +8,7 @@ import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUser
 export default function UserDashboardPage() {
   const { summary, error, isLoading } = useUserDashboardSummary();
 
-  useMotivationNotification(summary?.user.motivationalMessage);
+  useMotivationNotification(summary?.user.motivationalMessage ?? undefined);
 
   if (isLoading) {
     return (

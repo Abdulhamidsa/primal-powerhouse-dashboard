@@ -6,6 +6,9 @@ import {
   calculateStreak,
   serializeDailyCheckIn,
 } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
+import type { DailyCheckInEnergy, DailyCheckInHunger, DailyCheckInSleep } from '@/features/daily-checkin/types/dailyCheckIn.types';
+import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
+import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
 import { parseGoalMacros } from '@/features/meals/utils/mealSelection.server';
 
@@ -39,6 +42,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           motivationalMessage: true,
           currentWeight: true,
           targetWeight: true,
+          goalCalories: true,
+          goalMacros: true,
         },
       }),
       prisma.clientFeatureVisibility.findUnique({
@@ -191,11 +196,11 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
     string,
     {
       weightKg: number | null;
-      energy: string | null;
-      hunger: string | null;
-      sleep: string | null;
-      nutritionStatus?: string | null;
-      trainingStatus?: string | null;
+      energy: DailyCheckInEnergy | null;
+      hunger: DailyCheckInHunger | null;
+      sleep: DailyCheckInSleep | null;
+      nutritionStatus?: DailyNutritionStatus | null;
+      trainingStatus?: DailyTrainingStatus | null;
     }
   >();
 
