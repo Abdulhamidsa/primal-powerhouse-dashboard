@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Plus, Save, Undo2, X } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
@@ -44,9 +44,6 @@ export default function UserMyPlanPage() {
     snackMax,
     hasChanges,
     isSaving,
-    selectedTotals,
-    coachTargetTotals,
-    delta,
     selectOption,
     saveDraft,
     resetDraftToSaved,
@@ -61,6 +58,12 @@ export default function UserMyPlanPage() {
   } = useMealAdherenceToday();
 
   const [swapState, setSwapState] = useState<MealPickerState | null>(null);
+  const mountStartedAtRef = useRef<number | null>(null);
+  const loggedPaintRef = useRef(false);
+
+  useEffect(() => {
+    mountStartedAtRef.current = performance.now();
+  }, []);
 
   useEffect(() => {
     if (!swapState) return;
@@ -74,6 +77,20 @@ export default function UserMyPlanPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [swapState]);
+
+  useEffect(() => {
+    if (loading || error || loggedPaintRef.current) return;
+
+    loggedPaintRef.current = true;
+    const mountStartedAt = mountStartedAtRef.current ?? performance.now();
+
+    const raf = window.requestAnimationFrame(() => {
+      const paintAt = performance.now();
+      console.info('[USER_MEAL_PLAN_PAINT]', { renderMs: Math.round(paintAt - mountStartedAt) });
+    });
+
+    return () => window.cancelAnimationFrame(raf);
+  }, [error, loading]);
 
   const isPlanComplete = hasRequiredSlots;
 
@@ -177,15 +194,18 @@ export default function UserMyPlanPage() {
   };
 
   const renderEmptyMealState = (mealType: MealTypeKey) => (
-    <div className="rounded-[28px] border border-border bg-card px-4 py-5 text-center shadow-sm">
-      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+    <div
+      className="rounded-[28px] border px-4 py-5 text-center shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+    >
+      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
         <Plus size={18} />
       </div>
 
-      <p className="mt-3 text-sm font-semibold tracking-tight text-foreground">
+      <p className="mt-3 text-sm font-semibold tracking-tight text-[var(--color-text)]">
         No {TYPE_LABEL[mealType].toLowerCase()} added yet
       </p>
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">Add a meal to start building today&apos;s plan.</p>
+      <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">Add a meal to start building today&apos;s plan.</p>
 
       <Button type="button" size="sm" onClick={() => onMealSelect(mealType)} className="mt-4 h-10 rounded-full px-4">
         Add {TYPE_LABEL[mealType]}
@@ -194,11 +214,11 @@ export default function UserMyPlanPage() {
   );
 
   return (
-    <div className="px-4 md:px-6">
-      <div className={`mx-auto max-w-5xl 2xl:max-w-6xl space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
+    <div className="px-4 pb-6 pt-4 md:px-6">
+      <div className={`mx-auto max-w-6xl space-y-4 md:space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
         <PageHeader
           title="Meal Plan"
-          description="Select your meals for today. Your choices are saved and used to track adherence and build your shopping list."
+          description="Select today&apos;s meals, swap options, and keep the plan tidy."
         >
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
@@ -218,13 +238,16 @@ export default function UserMyPlanPage() {
           </div>
         </PageHeader>
 
-        <section className="rounded-[28px] border border-border bg-card px-4 py-4 shadow-sm">
+        <section
+          className="rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.12)]"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Quick action
               </p>
-              <p className="mt-1 text-sm font-medium tracking-tight text-foreground">Build a random full plan</p>
+              <p className="mt-1 text-sm font-medium tracking-tight text-[var(--color-text)]">Build a random full plan</p>
             </div>
 
             <MealPlanRandomizeButton
@@ -239,45 +262,6 @@ export default function UserMyPlanPage() {
             />
           </div>
         </section>
-
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
-          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)]">Calories</p>
-              <p className="font-semibold text-[var(--color-text)]">
-                {selectedTotals.calories}
-                <span className="ml-1 font-normal text-[var(--color-text-muted)]">kcal</span>
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)]">Protein</p>
-              <p className="font-semibold text-[var(--color-text)]">{selectedTotals.protein}g</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)]">Carbs</p>
-              <p className="font-semibold text-[var(--color-text)]">{selectedTotals.carbs}g</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-[var(--color-text-muted)]">Fat</p>
-              <p className="font-semibold text-[var(--color-text)]">{selectedTotals.fat}g</p>
-            </div>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-            <span>
-              Target: {coachTargetTotals.calories} kcal, {coachTargetTotals.protein}g protein, {coachTargetTotals.carbs}
-              g carbs, {coachTargetTotals.fat}g fat
-            </span>
-            <span>·</span>
-            <span className={delta.calories > 0 ? 'text-amber-400' : 'text-emerald-400'}>
-              {delta.calories > 0 ? '+' : ''}
-              {delta.calories} kcal
-            </span>
-          </div>
-        </div>
 
         {loading ? <SkeletonMealGrid /> : null}
 
@@ -303,7 +287,11 @@ export default function UserMyPlanPage() {
 
         {!loading && !error
           ? orderedSections.map(section => (
-              <section key={section.type} className="space-y-3 ">
+              <section
+                key={section.type}
+                className="space-y-3 rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.10)]"
+                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+              >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-semibold text-[var(--color-text)]">{TYPE_LABEL[section.type]}</h2>
@@ -330,6 +318,7 @@ export default function UserMyPlanPage() {
                         ingredientsSource={item.meal.ingredients}
                         instructionsSource={item.meal.instructions}
                         description={item.meal.description ?? undefined}
+                        imagePriority
                         metaItems={[
                           (item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0) > 0
                             ? `${(item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0)} min total`
@@ -351,7 +340,10 @@ export default function UserMyPlanPage() {
           : null}
 
         {!loading && !error ? (
-          <section className="space-y-3">
+          <section
+            className="space-y-3 rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.10)]"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold text-[var(--color-text)]">Sides</h2>
@@ -368,17 +360,18 @@ export default function UserMyPlanPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {selectedSides.map(item => (
-                  <PlanSelectedMealCard
-                    key={`${item.mealType}_${item.side.id}`}
-                    badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
-                    name={item.side.name}
-                    imageUrl={item.side.imageUrl ?? undefined}
-                    ingredientsSource={item.side.ingredients}
-                    instructionsSource={item.side.instructions}
-                    helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
-                    metaItems={[
-                      item.side.foodOrigin ?? null,
-                      item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
+                    <PlanSelectedMealCard
+                      key={`${item.mealType}_${item.side.id}`}
+                      badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
+                      name={item.side.name}
+                      imageUrl={item.side.imageUrl ?? undefined}
+                      ingredientsSource={item.side.ingredients}
+                      instructionsSource={item.side.instructions}
+                      helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
+                      imagePriority
+                      metaItems={[
+                        item.side.foodOrigin ?? null,
+                        item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
                     ].filter((meta): meta is string => Boolean(meta))}
                   />
                 ))}

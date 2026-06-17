@@ -51,18 +51,15 @@ export function useMealSelectionPlanner(enabled = true) {
     if (!summary?.optionsByType) return [];
 
     return [...summary.optionsByType.LUNCH, ...summary.optionsByType.DINNER]
-      .filter(
-        (option): option is MealOption & { mealType: 'LUNCH' | 'DINNER'; side: NonNullable<MealOption['side']> } =>
-          (option.mealType === 'LUNCH' || option.mealType === 'DINNER') && Boolean(option.side),
-      )
+      .filter(option => (option.mealType === 'LUNCH' || option.mealType === 'DINNER') && Boolean(option.side))
       .map(option => ({
         sourceAssignmentId: option.sourceAssignmentId,
-        sourceMealType: option.mealType,
+        sourceMealType: option.mealType as 'LUNCH' | 'DINNER',
         meal: option.meal,
         portion: option.portion,
         scheduledTime: option.scheduledTime,
-        side: option.side,
-      }));
+        side: option.side as NonNullable<MealOption['side']>,
+      })) as SideProgramOption[];
   }, [summary?.optionsByType]);
 
   useEffect(() => {
@@ -208,7 +205,7 @@ export function useMealSelectionPlanner(enabled = true) {
   }
 
   function resetDraftToSaved() {
-    setDraftItems(selectionSWR.data?.selection?.items ?? []);
+    setDraftItems(summary?.selection?.items ?? []);
     setHasTouchedDraft(false);
     setSaveError(null);
   }

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Check, CheckCircle2, Clock3, Flame, Info, RefreshCcw, Wheat, X } from 'lucide-react';
+import { Check, CheckCircle2, Clock3, Flame, RefreshCcw, Wheat, X } from 'lucide-react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 
 const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';

@@ -17,33 +17,33 @@ const sideSelectionOptionSchema = z.object({
   protein: z.number().finite(),
   carbs: z.number().finite(),
   fat: z.number().finite(),
-  fiber: z.number().finite().nullable(),
-  imageUrl: z.string().nullable(),
+  fiber: z.number().finite().nullable().optional(),
+  imageUrl: z.string().nullable().optional(),
   ingredients: z.array(z.string()),
   spices: z.array(z.string()),
   instructions: z.array(z.string()),
-  foodOrigin: z.string().nullable(),
+  foodOrigin: z.string().nullable().optional(),
 });
 
 const mealSchema = z.object({
   id: z.string(),
   name: z.string(),
   type: z.string(),
-  description: z.string().nullable(),
+  description: z.string().nullable().optional(),
   calories: z.number().finite(),
   protein: z.number().finite(),
   carbs: z.number().finite(),
   fat: z.number().finite(),
-  ingredients: z.string().nullable(),
-  spices: z.string().nullable(),
-  instructions: z.string().nullable(),
-  category: z.string().nullable(),
-  difficulty: z.string().nullable(),
-  imageUrl: z.string().nullable(),
-  prepTime: z.number().finite().nullable(),
-  cookTime: z.number().finite().nullable(),
-  servings: z.number().finite().nullable(),
-  tags: z.string().nullable(),
+  ingredients: z.string().nullable().optional(),
+  spices: z.string().nullable().optional(),
+  instructions: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  difficulty: z.string().nullable().optional(),
+  imageUrl: z.string().nullable().optional(),
+  prepTime: z.number().finite().nullable().optional(),
+  cookTime: z.number().finite().nullable().optional(),
+  servings: z.number().finite().nullable().optional(),
+  tags: z.string().nullable().optional(),
 });
 
 const mealOptionSchema = z.object({
@@ -55,7 +55,13 @@ const mealOptionSchema = z.object({
   meal: mealSchema,
 });
 
-const mealSelectionItemSchema = mealOptionSchema.extend({
+const mealSelectionItemSchema = z.object({
+  sourceAssignmentId: z.string().nullable().optional(),
+  mealType: mealTypeKeySchema,
+  mealId: z.string(),
+  portion: z.number().finite(),
+  side: sideSelectionOptionSchema.nullable().optional(),
+  meal: mealSchema,
   slotIndex: z.number().int().min(0),
 });
 
@@ -83,4 +89,3 @@ export const mealPlanSummarySchema = z.object({
   delta: mealMacroTotalsSchema,
   hasSavedSelection: z.boolean().optional(),
 });
-
