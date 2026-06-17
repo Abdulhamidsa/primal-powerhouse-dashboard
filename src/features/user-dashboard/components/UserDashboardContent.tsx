@@ -2,16 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, type ComponentType, type ReactNode } from 'react';
-import {
-  ArrowRight,
-  CheckCircle2,
-  ClipboardCheck,
-  Flame,
-  MessageSquare,
-  Moon,
-  Sun,
-  Utensils,
-} from 'lucide-react';
+import { ArrowRight, CheckCircle2, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import { TodayMissionCard } from '@/features/today-mission/components/TodayMissionCard';
@@ -43,18 +34,22 @@ function TodayBadge({ streakCount }: { streakCount: number }) {
   );
 }
 
-function StatTile({
-  action,
-}: {
-  action: DashboardAction;
-}) {
+function StatTile({ action }: { action: DashboardAction }) {
   const Icon = action.icon;
 
   const toneStyle =
     action.tone === 'good'
-      ? { background: 'var(--color-success-muted)', color: 'var(--color-success)', borderColor: 'var(--color-success-muted)' }
+      ? {
+          background: 'var(--color-success-muted)',
+          color: 'var(--color-success)',
+          borderColor: 'var(--color-success-muted)',
+        }
       : action.tone === 'warn'
-        ? { background: 'var(--color-warning-muted)', color: 'var(--color-warning)', borderColor: 'var(--color-warning-muted)' }
+        ? {
+            background: 'var(--color-warning-muted)',
+            color: 'var(--color-warning)',
+            borderColor: 'var(--color-warning-muted)',
+          }
         : { background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', borderColor: 'var(--color-border)' };
 
   return (
@@ -66,15 +61,16 @@ function StatTile({
     >
       <div className="flex items-start justify-between gap-3">
         <div
-          className={cn(
-            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors',
-          )}
+          className={cn('inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors')}
           style={toneStyle}
         >
           <Icon size={16} />
         </div>
 
-        <ArrowRight size={15} className="mt-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        <ArrowRight
+          size={15}
+          className="mt-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        />
       </div>
 
       <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">{action.title}</p>
@@ -101,7 +97,8 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
     const completion = summary.adherence.completion;
     const isDailyDone = summary.dailyCheckIn.isComplete === true;
     const weeklyStatus = summary.weeklyCheckIn.status;
-    const isMealsDone = completion.totalSelectedCount > 0 && completion.completedCount === completion.totalSelectedCount;
+    const isMealsDone =
+      completion.totalSelectedCount > 0 && completion.completedCount === completion.totalSelectedCount;
 
     const result: DashboardAction[] = [];
 
@@ -109,7 +106,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
       result.push({
         key: 'daily',
         title: 'Daily check-in',
-        description: isDailyDone ? 'Completed for today' : 'Open and complete today\'s check-in',
+        description: isDailyDone ? 'Completed for today' : "Open and complete today's check-in",
         href: '/user/check-ins',
         icon: CheckCircle2,
         tone: isDailyDone ? 'good' : 'warn',
@@ -159,8 +156,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
 
     return result.slice(0, 4);
   }, [
-    summary.adherence.completion.completedCount,
-    summary.adherence.completion.totalSelectedCount,
+    summary.adherence.completion,
     summary.dailyCheckIn.isComplete,
     summary.featureVisibility.dailyCheckinsEnabled,
     summary.featureVisibility.nutritionTrackingEnabled,
@@ -197,7 +193,9 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                 <h1 className="text-[1.9rem] font-semibold tracking-tight text-foreground">
                   {greeting.text}, {firstName}
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">Your day is ready. Keep it simple, one step at a time.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Your day is ready. Keep it simple, one step at a time.
+                </p>
               </div>
             </div>
 
@@ -208,7 +206,9 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {summary.unreadTotal > 0 ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting` : 'Coach chat quiet'}
+                {summary.unreadTotal > 0
+                  ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting`
+                  : 'Coach chat quiet'}
               </div>
             </div>
           </div>
