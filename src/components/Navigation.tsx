@@ -100,23 +100,25 @@ const adminNavItems: NavItem[] = [
 
 const userNavItems: NavItem[] = [
   {
-    name: 'Dashboard',
+    name: 'Today',
+    mobileName: 'Today',
     href: '/user/dashboard',
     icon: BarChart2,
-    description: 'Overview',
+    description: 'Your day at a glance',
   },
   {
-    name: 'Meal Plan',
+    name: 'Plan',
     mobileName: 'Plan',
     href: '/user/my-plan',
     icon: CalendarCheck2,
-    description: 'Selected meals',
+    description: 'Meals and swaps',
   },
   {
     name: 'Check-Ins',
+    mobileName: 'Check-ins',
     href: '/user/check-ins',
     icon: ClipboardCheck,
-    description: 'Weekly & daily tracking',
+    description: 'Daily and weekly tracking',
   },
   // Temporarily hidden to simplify the mobile dock.
   // {
@@ -127,16 +129,17 @@ const userNavItems: NavItem[] = [
   // },
   {
     name: 'Training',
+    mobileName: 'Train',
     href: '/user/training',
     icon: Activity,
-    description: 'New training system',
+    description: 'Workout plans and videos',
   },
   {
-    name: 'Shopping List',
-    mobileName: 'Shopping',
+    name: 'Shopping',
+    mobileName: 'Shop',
     href: '/user/shopping-list',
     icon: ShoppingBag,
-    description: 'Groceries & prep',
+    description: 'Groceries and prep',
   },
 ];
 
@@ -177,8 +180,7 @@ const DesktopTopNavItem = React.memo(function DesktopTopNavItem({
       ].join(' ')}
     >
       <Icon size={17} className={active ? 'text-primary' : ''} />
-
-      {/* <span className="text-sm font-medium">{item.name}</span> */}
+      <span className="text-sm font-medium">{item.name}</span>
 
       {unreadCount > 0 ? (
         <span
@@ -234,7 +236,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
         </span>
       ) : null}
 
-      {/* <span
+      <span
         className={cn(
           'relative z-10 mt-1 w-full max-w-full truncate text-[9px] font-medium leading-none transition-[transform,color] duration-300 ease-out',
           active ? 'text-primary' : 'text-current',
@@ -242,7 +244,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
         style={{ transform: active ? 'translateY(-0.5px)' : 'translateY(0)' }}
       >
         {item.mobileName ?? item.name}
-      </span> */}
+      </span>
     </Link>
   );
 });

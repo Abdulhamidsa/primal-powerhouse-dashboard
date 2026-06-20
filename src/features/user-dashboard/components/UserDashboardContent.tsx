@@ -62,7 +62,7 @@ function StatTile({ action }: { action: DashboardAction }) {
   return (
     <Link
       href={action.href}
-      className="group rounded-[22px] border p-4 shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-transform active:scale-[0.99]"
+      className="group rounded-[22px] border p-4 shadow-sm transition-transform active:scale-[0.99]"
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       title={`${action.title} ${action.description}`}
     >
@@ -97,7 +97,7 @@ function ResumeCard({ action }: { action: ResumeAction }) {
   return (
     <Link
       href={action.href}
-      className="block rounded-[24px] border p-5 shadow-sm transition-transform active:scale-[0.98]"
+      className="group block rounded-[24px] border p-5 shadow-sm transition-transform active:scale-[0.98]"
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       title={`${action.title} - ${action.description}`}
     >
@@ -272,11 +272,16 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
   });
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-5 md:space-y-6">
       <section
-        className="relative z-0 overflow-hidden rounded-[30px] border p-5 shadow-[0_16px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+        className="relative z-0 overflow-hidden rounded-[32px] border bg-card/75 p-5 shadow-sm backdrop-blur-xl sm:p-6"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
+        />
+
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{dateLabel}</p>
@@ -320,13 +325,6 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
               </div>
             </div>
           </div>
-
-          <div
-            className="hidden rounded-full border p-2 text-muted-foreground shadow-sm sm:flex"
-            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-          >
-            {greeting.icon}
-          </div>
         </div>
 
         <div
@@ -338,7 +336,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
         </div>
       </section>
 
-      <div aria-hidden="true" className="h-2 md:h-4" />
+      <div aria-hidden="true" className="h-2 md:h-3" />
 
       <ResumeCard action={resumeAction} />
 

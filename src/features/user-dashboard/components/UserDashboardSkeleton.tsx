@@ -2,7 +2,7 @@ export function UserDashboardSkeleton() {
   return (
     <div className="space-y-4">
       <section
-        className="overflow-hidden rounded-[30px] border p-5 shadow-[0_16px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+        className="overflow-hidden rounded-[30px] border bg-card/75 p-5 shadow-sm backdrop-blur-xl"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
         <div className="h-3 w-24 animate-pulse rounded-full" style={{ background: 'var(--color-bg-alt)' }} />
@@ -34,7 +34,7 @@ export function UserDashboardSkeleton() {
         {[1, 2, 3, 4].map(index => (
           <div
             key={index}
-            className="rounded-[22px] border p-4 shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+            className="rounded-[22px] border p-4 shadow-sm"
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
             <div className="h-10 w-10 animate-pulse rounded-2xl" style={{ background: 'var(--color-bg-alt)' }} />
@@ -45,7 +45,7 @@ export function UserDashboardSkeleton() {
       </section>
 
       <section
-        className="overflow-hidden rounded-[30px] border p-5 shadow-[0_16px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+        className="overflow-hidden rounded-[30px] border bg-card/75 p-5 shadow-sm backdrop-blur-xl"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
         <div className="h-3 w-24 animate-pulse rounded-full" style={{ background: 'var(--color-bg-alt)' }} />
