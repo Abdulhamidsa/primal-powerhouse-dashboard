@@ -37,15 +37,15 @@ export default function UserCheckInsPage() {
   // If no check-in features are enabled, show a message
   if (!visibility?.dailyCheckinsEnabled && !visibility?.weeklyCheckinsEnabled) {
     return (
-      <div className="px-4 pb-8 md:px-5">
-        <div className="mx-auto w-full max-w-xl space-y-6">
+      <div className="px-4 pb-8 pt-4 md:px-5">
+        <div className="mx-auto w-full max-w-3xl space-y-6">
           <PageHeader
             title="Check-Ins"
             label="Tracking"
             description="Track your daily and weekly progress in one place."
           />
           <div
-            className="rounded-2xl border p-5"
+            className="rounded-[28px] border bg-card/75 p-5 shadow-sm backdrop-blur-xl"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
             <p style={{ color: 'var(--color-text-muted)' }}>
@@ -58,8 +58,8 @@ export default function UserCheckInsPage() {
   }
 
   return (
-    <div className="px-4 pb-8 md:px-5">
-      <div className="mx-auto w-full max-w-xl space-y-6">
+    <div className="px-4 pb-8 pt-4 md:px-5">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
         <PageHeader
           title="Check-Ins"
           label="Tracking"
@@ -102,8 +102,8 @@ export default function UserCheckInsPage() {
           />
         </section>
 
-        <section className="space-y-3">
-          <div className="rounded-2xl border border-border/70 bg-background/60 p-1">
+        <section className="space-y-4 rounded-[30px] border bg-card/75 p-3 shadow-sm backdrop-blur-xl" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+          <div className="rounded-[22px] border border-border/70 bg-background/60 p-1">
             <div
               className="grid gap-1"
               style={{

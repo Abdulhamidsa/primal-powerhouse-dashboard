@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, Dumbbell, Play, Sparkles } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 // import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
 import { UserTrainingAssignments } from '@/features/training/components/UserTrainingAssignments';
 import WorkoutPlansSection from '@/features/workout-session/components/WorkoutPlansSection';
@@ -23,25 +24,49 @@ export default function UserTrainingPage() {
   const nextWorkout = assignments[0] ?? null;
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="max-w-6xl mx-auto space-y-5">
+    <div className="px-4 pb-8 pt-4 md:px-6">
+      <div className="mx-auto w-full max-w-6xl space-y-5">
+        <PageHeader
+          label="Training"
+          title="Keep the next session easy to start"
+          description="Workout plans are your guided sessions. Exercise videos are the reference library you can open when you need a form reminder or a quick refresh."
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+              {assignments.length} workout plan{assignments.length === 1 ? '' : 's'}
+            </span>
+            <span className="rounded-full bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+              {videos.length} exercise video{videos.length === 1 ? '' : 's'}
+            </span>
+            <span className="rounded-full bg-[var(--color-accent-translucent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)]">
+              Start, continue, finish
+            </span>
+          </div>
+        </PageHeader>
+
         <section
-          className="rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.08)]"
+          className="rounded-[30px] border bg-card/75 px-4 py-4 shadow-sm backdrop-blur-xl"
           style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Training</p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Keep the next session easy to start</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Resume</p>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+                {nextWorkout ? 'Continue where you left off' : 'No active workout right now'}
+              </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Workout plans are your guided sessions. Exercise videos are the reference library you can open when you
-                need a form reminder or a quick refresh.
+                {nextWorkout
+                  ? `${nextWorkout.workoutPlan.name} is ready for your next session.`
+                  : 'Use workout plans for guided sessions and exercise videos for form reminders.'}
               </p>
             </div>
 
             <div className="grid gap-2 sm:min-w-[220px]">
-              <MiniStat label="Workout plans" value={`${assignments.length}`} />
-              <MiniStat label="Exercise videos" value={`${videos.length}`} />
+              <MiniStat
+                label="Workout plans"
+                value={nextWorkout ? `${assignments.length} active` : `${assignments.length}`}
+              />
+              <MiniStat label="Exercise videos" value={`${videos.length} available`} />
             </div>
           </div>
 
@@ -80,8 +105,7 @@ export default function UserTrainingPage() {
 
         {/* <TrainingDashboard /> */}
 
-        {/* Tab bar */}
-        <div className="inline-flex rounded-2xl border border-border bg-card/60 p-1">
+        <div className="inline-flex rounded-[20px] border border-border/70 bg-card/70 p-1 shadow-sm backdrop-blur-xl">
           {TABS.map(t => {
             const active = t.key === tab;
             return (
@@ -109,7 +133,7 @@ export default function UserTrainingPage() {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2">
+    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 shadow-sm">
       <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--color-text-muted)]">{label}</p>
       <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">{value}</p>
     </div>
