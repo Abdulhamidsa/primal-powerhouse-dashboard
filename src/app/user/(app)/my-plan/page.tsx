@@ -35,12 +35,14 @@ export default function UserMyPlanPage() {
     loading,
     error,
     saveError,
+    insight,
     optionsByType,
     selectedByType,
     draftItems,
     hasRequiredSlots,
     isSelected,
     isSnackFull,
+    snackCount,
     snackMax,
     hasChanges,
     isSaving,
@@ -237,6 +239,31 @@ export default function UserMyPlanPage() {
             ) : null}
           </div>
         </PageHeader>
+
+        <section className="grid gap-3 md:grid-cols-[1.4fr_0.9fr]">
+          <div
+            className="rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.08)]"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Today&apos;s focus</p>
+            <p className="mt-2 text-lg font-semibold tracking-tight text-[var(--color-text)]">{insight.title}</p>
+            <p className="mt-1 text-sm leading-6 text-[var(--color-text-muted)]">{insight.description}</p>
+            <p className="mt-2 text-xs text-[var(--color-text-muted)]">{insight.helper}</p>
+          </div>
+
+          <div
+            className="rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.08)]"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Selection status</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+              <MiniStat label="Core meals" value={hasRequiredSlots ? 'Ready' : 'Incomplete'} />
+              <MiniStat label="Snacks" value={`${snackCount}/${snackMax}`} />
+              <MiniStat label="Saving" value={isSaving ? 'Working' : hasChanges ? 'Unsaved' : 'Saved'} />
+              <MiniStat label="Draft" value={`${totalSelectedMeals} items`} />
+            </div>
+          </div>
+        </section>
 
         <section
           className="rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.12)]"
@@ -460,11 +487,15 @@ export default function UserMyPlanPage() {
       ) : null}
 
       {hasChanges ? (
-        <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 p-3 backdrop-blur-xl sm:px-6 lg:bottom-0">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
-            <div className="hidden items-center gap-2 md:flex">
-              {isPlanComplete ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1.5 text-xs font-semibold text-emerald-400">
+      <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 p-3 backdrop-blur-xl sm:px-6 lg:bottom-0">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
+          <p className="hidden text-xs text-[var(--color-text-muted)] md:block">
+            Your draft stays here until you save, so you can swap meals without losing progress.
+          </p>
+
+          <div className="hidden items-center gap-2 md:flex">
+            {isPlanComplete ? (
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1.5 text-xs font-semibold text-emerald-400">
                   <CheckCircle2 size={14} />
                   Plan ready
                 </div>
@@ -500,6 +531,15 @@ export default function UserMyPlanPage() {
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--color-text-muted)]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[var(--color-text)]">{value}</p>
     </div>
   );
 }

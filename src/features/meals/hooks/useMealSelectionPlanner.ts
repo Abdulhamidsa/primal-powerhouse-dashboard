@@ -5,31 +5,22 @@ import type { ApiError } from '@/lib/request';
 import { saveUserMealSelection, USER_MEAL_OPTIONS_URL, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
 import { getUserMealPlanSummary, USER_MEAL_PLAN_SUMMARY_URL } from '@/features/meals/api/mealPlan.api';
 import type {
-  MealMacroTotals,
   MealOption,
   MealTypeKey,
   SelectionItem,
   SideProgramOption,
 } from '@/features/meals/types/mealSelection.types';
 import type { MealPlanSummaryResponse } from '@/features/meals/types/mealPlanSummary.types';
+import {
+  buildMealSelectionInsight,
+  emptyTotals,
+  groupSelectionItemsByType,
+  hasMealSelectionChanges,
+  toggleMealSelectionItem,
+  totalsFromSelectionItems,
+} from '@/features/meals/lib/mealSelectionPlanner';
 
 const REQUIRED_TYPES: MealTypeKey[] = ['BREAKFAST', 'LUNCH', 'DINNER'];
-
-function emptyTotals(): MealMacroTotals {
-  return { calories: 0, protein: 0, carbs: 0, fat: 0 };
-}
-
-function totalsFromItems(items: SelectionItem[]): MealMacroTotals {
-  return items.reduce(
-    (acc, item) => ({
-      calories: Math.round(acc.calories + item.meal.calories * item.portion + (item.side?.calories ?? 0)),
-      protein: Math.round(acc.protein + item.meal.protein * item.portion + (item.side?.protein ?? 0)),
-      carbs: Math.round(acc.carbs + item.meal.carbs * item.portion + (item.side?.carbs ?? 0)),
-      fat: Math.round(acc.fat + item.meal.fat * item.portion + (item.side?.fat ?? 0)),
-    }),
-    emptyTotals(),
-  );
-}
 
 export function useMealSelectionPlanner(enabled = true) {
   const { mutate: globalMutate } = useSWRConfig();
@@ -101,7 +92,7 @@ export function useMealSelectionPlanner(enabled = true) {
 
   const baselineTotals = summary?.baselineTotals ?? emptyTotals();
   const coachTargetTotals = summary?.coachTargets ?? baselineTotals;
-  const selectedTotals = useMemo(() => totalsFromItems(draftItems), [draftItems]);
+  const selectedTotals = useMemo(() => totalsFromSelectionItems(draftItems), [draftItems]);
 
   const delta = useMemo(
     () => ({
@@ -114,13 +105,7 @@ export function useMealSelectionPlanner(enabled = true) {
   );
 
   const selectedByType = useMemo(() => {
-    return draftItems.reduce<Record<MealTypeKey, SelectionItem[]>>(
-      (acc, item) => {
-        acc[item.mealType].push(item);
-        return acc;
-      },
-      { BREAKFAST: [], LUNCH: [], DINNER: [], SNACK: [] },
-    );
+    return groupSelectionItemsByType(draftItems);
   }, [draftItems]);
 
   const hasRequiredSlots = REQUIRED_TYPES.every(type => selectedByType[type].length === 1);
@@ -129,79 +114,13 @@ export function useMealSelectionPlanner(enabled = true) {
 
   const hasChanges = useMemo(() => {
     const source = summary?.selection?.items ?? [];
-    if (source.length !== draftItems.length) return true;
-
-    const sourceKey = source
-      .map(item => `${item.mealType}:${item.slotIndex}:${item.mealId}:${item.sourceAssignmentId ?? ''}`)
-      .sort()
-      .join('|');
-    const draftKey = draftItems
-      .map(item => `${item.mealType}:${item.slotIndex}:${item.mealId}:${item.sourceAssignmentId ?? ''}`)
-      .sort()
-      .join('|');
-
-    return sourceKey !== draftKey;
+    return hasMealSelectionChanges(source, draftItems);
   }, [summary?.selection?.items, draftItems]);
 
   function selectOption(option: MealOption) {
     setHasTouchedDraft(true);
     setSaveError(null);
-
-    setDraftItems(previous => {
-      const current = [...previous];
-
-      if (option.mealType === 'SNACK') {
-        const existingSnackIndex = current.findIndex(
-          item => item.mealType === 'SNACK' && item.mealId === option.meal.id,
-        );
-
-        if (existingSnackIndex >= 0) {
-          current.splice(existingSnackIndex, 1);
-          const normalizedSnacks = current
-            .filter(item => item.mealType === 'SNACK')
-            .sort((a, b) => a.slotIndex - b.slotIndex)
-            .map((item, index) => ({ ...item, slotIndex: index }));
-
-          const nonSnacks = current.filter(item => item.mealType !== 'SNACK');
-          return [...nonSnacks, ...normalizedSnacks];
-        }
-
-        const snackItems = current.filter(item => item.mealType === 'SNACK');
-        if (snackItems.length >= snackMax) {
-          return current;
-        }
-
-        const usedSlots = new Set(snackItems.map(item => item.slotIndex));
-        const slotIndex = usedSlots.has(0) ? 1 : 0;
-
-        return [
-          ...current,
-          {
-            mealType: 'SNACK',
-            slotIndex,
-            mealId: option.meal.id,
-            sourceAssignmentId: option.sourceAssignmentId,
-            portion: option.portion,
-            side: option.side ?? null,
-            meal: option.meal,
-          },
-        ];
-      }
-
-      const withoutType = current.filter(item => item.mealType !== option.mealType);
-      return [
-        ...withoutType,
-        {
-          mealType: option.mealType,
-          slotIndex: 0,
-          mealId: option.meal.id,
-          sourceAssignmentId: option.sourceAssignmentId,
-          portion: option.portion,
-          side: option.side ?? null,
-          meal: option.meal,
-        },
-      ];
-    });
+    setDraftItems(previous => toggleMealSelectionItem(previous, option, snackMax));
   }
 
   function resetDraftToSaved() {
@@ -327,5 +246,13 @@ export function useMealSelectionPlanner(enabled = true) {
     isSelected,
     saveDraft,
     resetDraftToSaved,
+    insight: buildMealSelectionInsight({
+      selectedTotals,
+      targetTotals: coachTargetTotals,
+      snackCount,
+      snackMax,
+      hasRequiredSlots,
+      hasChanges,
+    }),
   };
 }

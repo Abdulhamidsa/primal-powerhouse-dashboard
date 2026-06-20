@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { UserDashboardContent } from '@/features/user-dashboard/components/UserDashboardContent';
 import { UserDashboardSkeleton } from '@/features/user-dashboard/components/UserDashboardSkeleton';
@@ -8,29 +7,8 @@ import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUser
 
 export default function UserDashboardPage() {
   const { summary, error, isLoading } = useUserDashboardSummary();
-  const mountStartedAtRef = useRef<number | null>(null);
-  const loggedPaintRef = useRef(false);
 
   useMotivationNotification(summary?.user.motivationalMessage ?? undefined);
-
-  useEffect(() => {
-    mountStartedAtRef.current = performance.now();
-  }, []);
-
-  useEffect(() => {
-    if (isLoading || error || !summary || loggedPaintRef.current) return;
-
-    loggedPaintRef.current = true;
-    const mountStartedAt = mountStartedAtRef.current ?? performance.now();
-
-    const raf = window.requestAnimationFrame(() => {
-      const paintAt = performance.now();
-      const renderMs = Math.round(paintAt - mountStartedAt);
-      console.info('[USER_DASHBOARD_PAINT]', { renderMs });
-    });
-
-    return () => window.cancelAnimationFrame(raf);
-  }, [error, isLoading, summary]);
 
   if (isLoading) {
     return (

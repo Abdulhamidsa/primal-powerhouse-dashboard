@@ -1,3 +1,5 @@
+import type { MealSelectionInsight } from '@/features/meals/lib/mealSelectionPlanner';
+
 export function MealSelectionSummaryCard({
   selectedCount,
   requiredSelectedCount,
@@ -5,6 +7,7 @@ export function MealSelectionSummaryCard({
   snackCount,
   snackMax,
   hasChanges = false,
+  insight,
 }: {
   selectedCount: number;
   requiredSelectedCount: number;
@@ -12,9 +15,16 @@ export function MealSelectionSummaryCard({
   snackCount: number;
   snackMax: number;
   hasChanges?: boolean;
+  insight?: MealSelectionInsight;
 }) {
   const completion = requiredCount > 0 ? Math.round((requiredSelectedCount / requiredCount) * 100) : 0;
   const isReady = requiredSelectedCount >= requiredCount && snackCount <= snackMax;
+  const toneClass =
+    insight?.tone === 'good'
+      ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
+      : insight?.tone === 'warn'
+        ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
+        : 'border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)]';
 
   return (
     <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
@@ -27,6 +37,14 @@ export function MealSelectionSummaryCard({
           <span className="rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-400">Unsaved</span>
         ) : null}
       </div>
+
+      {insight ? (
+        <div className={`mt-4 rounded-2xl border px-4 py-3 ${toneClass}`}>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em]">{insight.title}</p>
+          <p className="mt-1 text-sm leading-6">{insight.description}</p>
+          <p className="mt-1 text-xs opacity-80">{insight.helper}</p>
+        </div>
+      ) : null}
 
       <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4">
         <div className="flex items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">

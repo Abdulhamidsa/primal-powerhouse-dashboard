@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Bell, LogOut, Mail, Smartphone, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
@@ -12,6 +11,7 @@ import { usePushSubscription } from '@/features/client-coach-messaging/hooks/use
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
+import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 interface UserData {
   id: string;
@@ -114,7 +114,6 @@ function NotificationStatusPill({ label, tone = 'neutral' }: { label: string; to
 }
 
 export default function UserProfilePage() {
-  const router = useRouter();
   const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const { data: privacyData, isLoading: isPrivacyLoading } = usePrivacyCenter();
   const { updateConsent } = usePrivacyActions();
@@ -131,36 +130,23 @@ export default function UserProfilePage() {
     isServiceWorkerReady,
     errorMessage,
   } = usePushSubscription();
+  const { user, error: profileError, isLoading } = useUserProfile();
+  const { logout } = useUserLogout();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
   const [testFeedback, setTestFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/auth/me', { credentials: 'include' });
+    setUserData(user);
+  }, [user]);
 
-        if (!response.ok) {
-          router.push('/user/login');
-          return;
-        }
-
-        const data = await response.json();
-        setUserData(data.user);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        router.push('/user/login');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [router]);
+  useEffect(() => {
+    if (!profileError || profileError.status !== 401) return;
+    void logout();
+  }, [logout, profileError]);
 
   if (isLoading) {
     return <SkeletonUserProfile />;
@@ -168,7 +154,7 @@ export default function UserProfilePage() {
 
   const handleSignOut = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await logout();
       window.location.href = '/user/login';
     } catch (error) {
       console.error('Sign out error:', error);

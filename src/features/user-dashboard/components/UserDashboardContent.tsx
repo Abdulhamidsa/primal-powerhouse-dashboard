@@ -20,6 +20,13 @@ type DashboardAction = {
   tone: ActionTone;
 };
 
+type ResumeAction = {
+  title: string;
+  description: string;
+  href: string;
+  tone: ActionTone;
+};
+
 function TodayBadge({ streakCount }: { streakCount: number }) {
   if (streakCount <= 0) return null;
 
@@ -79,6 +86,41 @@ function StatTile({ action }: { action: DashboardAction }) {
   );
 }
 
+function ResumeCard({ action }: { action: ResumeAction }) {
+  const toneClass =
+    action.tone === 'good'
+      ? 'border-emerald-500/15 bg-emerald-500/10 text-emerald-600'
+      : action.tone === 'warn'
+        ? 'border-amber-500/15 bg-amber-500/10 text-amber-700'
+        : 'border-border/60 bg-background/75 text-muted-foreground';
+
+  return (
+    <Link
+      href={action.href}
+      className="block rounded-[24px] border p-5 shadow-sm transition-transform active:scale-[0.98]"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      title={`${action.title} - ${action.description}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next up</p>
+          <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{action.title}</h3>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">{action.description}</p>
+        </div>
+
+        <ArrowRight
+          size={15}
+          className="mt-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        />
+      </div>
+
+      <div className={`mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass}`}>
+        Resume where you left off
+      </div>
+    </Link>
+  );
+}
+
 export function UserDashboardContent({ summary }: { summary: UserDashboardSummary }) {
   const greeting = useMemo<GreetingState>(() => {
     const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
@@ -92,6 +134,64 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
   const { summary: todayMission } = useTodayMission(summary);
   const firstName = summary.user.name.split(' ')[0] || 'Member';
   const coachMessage = summary.user.motivationalMessage || 'No coach note yet. Check back after your next review.';
+  const resumeAction = useMemo<ResumeAction>(() => {
+    if (summary.featureVisibility.dailyCheckinsEnabled && !summary.dailyCheckIn.isComplete) {
+      return {
+        title: "Finish today's check-in",
+        description: 'Log energy, nutrition, training, hunger, and sleep before the day slips away.',
+        href: '/user/check-ins',
+        tone: 'warn',
+      };
+    }
+
+    if (summary.featureVisibility.weeklyCheckinsEnabled && summary.weeklyCheckIn.status !== 'completed') {
+      return {
+        title: 'Submit weekly check-in',
+        description:
+          summary.weeklyCheckIn.status === 'overdue'
+            ? 'Your weekly update needs attention today.'
+            : 'Keep your coach updated on progress for the week.',
+        href: '/user/check-ins',
+        tone: summary.weeklyCheckIn.status === 'overdue' ? 'warn' : 'neutral',
+      };
+    }
+
+    if (summary.featureVisibility.nutritionTrackingEnabled && summary.adherence.completion.percentage < 100) {
+      return {
+        title: 'Continue meal plan',
+        description: `${summary.adherence.completion.completedCount}/${summary.adherence.completion.totalSelectedCount} meals completed so far.`,
+        href: '/user/my-plan',
+        tone: 'warn',
+      };
+    }
+
+    if (summary.unreadTotal > 0) {
+      return {
+        title: 'Read coach messages',
+        description: `${summary.unreadTotal} unread message${summary.unreadTotal === 1 ? '' : 's'} are waiting.`,
+        href: '/user/chat',
+        tone: 'warn',
+      };
+    }
+
+    return {
+      title: 'Open training',
+      description: 'Keep momentum going with your workout plan and exercise videos.',
+      href: '/user/training',
+      tone: summary.featureVisibility.workoutTrackingEnabled ? 'good' : 'neutral',
+    };
+  }, [
+    summary.adherence.completion.completedCount,
+    summary.adherence.completion.percentage,
+    summary.adherence.completion.totalSelectedCount,
+    summary.dailyCheckIn.isComplete,
+    summary.featureVisibility.dailyCheckinsEnabled,
+    summary.featureVisibility.nutritionTrackingEnabled,
+    summary.featureVisibility.weeklyCheckinsEnabled,
+    summary.featureVisibility.workoutTrackingEnabled,
+    summary.unreadTotal,
+    summary.weeklyCheckIn.status,
+  ]);
 
   const actions = useMemo<DashboardAction[]>(() => {
     const completion = summary.adherence.completion;
@@ -172,9 +272,9 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 md:space-y-8">
       <section
-        className="overflow-hidden rounded-[30px] border p-5 shadow-[0_16px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+        className="relative z-0 overflow-hidden rounded-[30px] border p-5 shadow-[0_16px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
         <div className="flex items-start justify-between gap-4">
@@ -210,6 +310,14 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                   ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting`
                   : 'Coach chat quiet'}
               </div>
+              <div
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground"
+                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                {summary.adherence.completion.completedCount}/{summary.adherence.completion.totalSelectedCount} meals
+                done
+              </div>
             </div>
           </div>
 
@@ -230,7 +338,11 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div aria-hidden="true" className="h-2 md:h-4" />
+
+      <ResumeCard action={resumeAction} />
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map(action => (
           <StatTile key={action.key} action={action} />
         ))}
