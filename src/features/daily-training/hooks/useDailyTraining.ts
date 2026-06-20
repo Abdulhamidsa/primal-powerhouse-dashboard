@@ -26,7 +26,12 @@ export function useDailyTrainingToday() {
   const dayDate = getTodayDateKeyLocal();
   const key = buildDailyTrainingCurrentUrl(dayDate);
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => getDailyTrainingCurrent(dayDate));
+  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => getDailyTrainingCurrent(dayDate), {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+  });
 
   return {
     dayDate,

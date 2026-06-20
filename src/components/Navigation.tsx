@@ -22,9 +22,7 @@ import {
   Dumbbell,
 } from 'lucide-react';
 import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDrawer.tsx';
-import { useChatUnread } from '@/features/client-coach-messaging/hooks/useChatUnread';
 import { cn } from '@/lib/utils';
-import { useUserData } from '@/hooks/useUserData';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
 
@@ -257,10 +255,7 @@ export default function Navigation({
   userType?: 'admin' | 'user';
 }) {
   const pathname = usePathname();
-  const isUserDashboardRoute = userType === 'user' && pathname === '/user/dashboard';
-  const { summary: dashboardSummary } = useUserDashboardSummary(isUserDashboardRoute);
-  const { user } = useUserData(userType === 'user' && !isUserDashboardRoute);
-  const { unreadTotal } = useChatUnread(userType === 'user' && !isUserDashboardRoute);
+  const { summary: dashboardSummary } = useUserDashboardSummary(userType === 'user');
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
@@ -273,8 +268,8 @@ export default function Navigation({
 
   const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
   const safeNavItems = navItems;
-  const safeUnreadTotal = dashboardSummary?.unreadTotal ?? unreadTotal;
-  const safeUser = isMounted ? (dashboardSummary?.user ?? user ?? null) : null;
+  const safeUnreadTotal = dashboardSummary?.unreadTotal ?? 0;
+  const safeUser = isMounted ? (dashboardSummary?.user ?? null) : null;
 
   useEffect(() => {
     setAccountMenuOpen(false);

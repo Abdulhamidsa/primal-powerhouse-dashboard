@@ -8,7 +8,12 @@ export function useUserWorkoutAssignments() {
   const { data, error, isLoading, mutate } = useSWR<WorkoutPlanAssignmentWithPlan[]>(
     '/api/user/workout-assignments',
     getUserWorkoutAssignments,
-    { revalidateOnFocus: false },
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+    },
   );
 
   return { assignments: data ?? [], error, isLoading, mutate };

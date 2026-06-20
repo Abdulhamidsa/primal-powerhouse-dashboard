@@ -29,6 +29,7 @@ export function useMealSelectionPlanner(enabled = true) {
     keepPreviousData: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
+    revalidateIfStale: false,
   });
 
   const [draftItems, setDraftItems] = useState<SelectionItem[]>([]);

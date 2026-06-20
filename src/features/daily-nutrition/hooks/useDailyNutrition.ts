@@ -26,7 +26,12 @@ export function useDailyNutritionToday() {
   const dayDate = getTodayDateKeyLocal();
   const key = buildDailyNutritionCurrentUrl(dayDate);
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => getDailyNutritionCurrent(dayDate));
+  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => getDailyNutritionCurrent(dayDate), {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+  });
 
   return {
     dayDate,

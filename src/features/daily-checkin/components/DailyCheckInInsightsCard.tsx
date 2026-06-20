@@ -23,7 +23,7 @@ import {
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
 import type { DailyCheckInHistoryItem } from '@/features/daily-checkin/types/dailyCheckIn.types';
-import { useUserData } from '@/hooks/useUserData';
+import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
 
 function parseWeightInput(value: string): number | null {
   const trimmed = value.trim();
@@ -60,8 +60,8 @@ export function DailyCheckInInsightsCard() {
   const { dayDate, entry: todayEntry, isLoading: todayLoading } = useDailyCheckInToday();
   const { history, isLoading } = useDailyCheckInInsights();
   const { submit } = useUpsertDailyCheckIn();
-  const { user } = useUserData();
-  const targetWeight = user?.goalWeight ?? null;
+  const { summary: dashboardSummary } = useUserDashboardSummary();
+  const targetWeight = dashboardSummary?.user.goalWeight ?? null;
 
   const [weightValue, setWeightValue] = useState('');
   const [isSavingWeight, setIsSavingWeight] = useState(false);

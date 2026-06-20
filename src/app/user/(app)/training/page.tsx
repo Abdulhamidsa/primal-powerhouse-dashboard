@@ -1,14 +1,22 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, Dumbbell, Play, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 // import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
-import { UserTrainingAssignments } from '@/features/training/components/UserTrainingAssignments';
 import WorkoutPlansSection from '@/features/workout-session/components/WorkoutPlansSection';
 import { useUserWorkoutAssignments } from '@/features/workout-session/hooks/useUserWorkoutAssignments';
 import { useUserTraining } from '@/features/training/hooks/useUserTraining';
+
+const UserTrainingAssignments = dynamic(
+  () => import('@/features/training/components/UserTrainingAssignments.lazy.tsx').then(mod => mod.default),
+  {
+    ssr: false,
+    loading: () => <div className="h-52 animate-pulse rounded-3xl border border-border/70 bg-card/60" />,
+  },
+);
 
 const TABS = [
   { key: 'plans', label: 'Workout Plans' },

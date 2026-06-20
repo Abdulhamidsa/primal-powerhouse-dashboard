@@ -16,7 +16,10 @@ export function useUserData(enabled = true) {
     enabled ? key : null,
     fetcher,
     {
-      revalidateOnFocus: true,
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
     },
   );
 

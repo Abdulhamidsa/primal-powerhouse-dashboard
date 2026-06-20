@@ -30,7 +30,12 @@ export function useMealAdherenceToday() {
   const dayDate = getTodayDateKeyLocal();
   const key = buildAdherenceCurrentUrl(dayDate);
 
-  const { data, error, isLoading, isValidating } = useSWR(key, () => getAdherenceCurrent(dayDate));
+  const { data, error, isLoading, isValidating } = useSWR(key, () => getAdherenceCurrent(dayDate), {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+  });
 
   const completionKeys = useMemo(() => {
     const set = new Set<string>();

@@ -1,17 +1,32 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { CalendarCheck2, ClipboardCheck, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
-import { WeeklyCheckInCard } from '@/features/weekly-checkin/components/WeeklyCheckInCard';
 import { DailyCheckInCard } from '@/features/daily-checkin/components/DailyCheckInCard';
-import { DailyCheckInInsightsCard } from '@/features/daily-checkin/components/DailyCheckInInsightsCard';
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 import { useDailyCheckInToday } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { useDailyNutritionToday } from '@/features/daily-nutrition/hooks/useDailyNutrition';
 import { useDailyTrainingToday } from '@/features/daily-training/hooks/useDailyTraining';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
 import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
+
+const DailyCheckInInsightsCard = dynamic(
+  () => import('@/features/daily-checkin/components/DailyCheckInInsightsCard.lazy.tsx').then(mod => mod.default),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse rounded-3xl border border-border/70 bg-card/60" />,
+  },
+);
+
+const WeeklyCheckInCard = dynamic(
+  () => import('@/features/weekly-checkin/components/WeeklyCheckInCard.lazy.tsx').then(mod => mod.default),
+  {
+    ssr: false,
+    loading: () => <div className="h-56 animate-pulse rounded-3xl border border-border/70 bg-card/60" />,
+  },
+);
 
 type CheckInTab = 'daily' | 'weekly';
 

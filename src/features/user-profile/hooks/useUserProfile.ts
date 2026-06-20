@@ -10,7 +10,10 @@ export function useUserProfile() {
     USER_PROFILE_ME_URL,
     getUserProfile,
     {
-      revalidateOnFocus: true,
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
     },
   );
 
@@ -34,4 +37,3 @@ export function useUserLogout() {
 
   return { logout };
 }
-

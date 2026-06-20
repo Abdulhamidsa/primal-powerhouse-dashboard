@@ -22,7 +22,13 @@ export function useDailyCheckInToday() {
   const key = buildDailyCheckInCurrentUrl(dayDate);
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<DailyCheckInCurrentResponse, ApiError>(key, () =>
-    getDailyCheckInCurrent(dayDate)
+    getDailyCheckInCurrent(dayDate),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+    },
   );
 
   return {
@@ -38,7 +44,13 @@ export function useDailyCheckInToday() {
 export function useDailyCheckInInsights() {
   const { data, error, isLoading, isValidating, mutate } = useSWR<DailyCheckInInsightsResponse, ApiError>(
     DAILY_CHECK_IN_INSIGHTS_URL,
-    getDailyCheckInInsights
+    getDailyCheckInInsights,
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+    },
   );
 
   return {

@@ -11,8 +11,18 @@ import {
 export function useUserTraining() {
   const [selectedTag, setSelectedTag] = useState('all');
 
-  const videosSWR = useSWR(USER_TRAINING_VIDEOS_URL, getUserTrainingVideos);
-  const coachSWR = useSWR(USER_TRAINING_COACH_URL, getUserTrainingCoach);
+  const videosSWR = useSWR(USER_TRAINING_VIDEOS_URL, getUserTrainingVideos, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+  });
+  const coachSWR = useSWR(USER_TRAINING_COACH_URL, getUserTrainingCoach, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+  });
 
   const assignments = useMemo(() => videosSWR.data ?? [], [videosSWR.data]);
 
