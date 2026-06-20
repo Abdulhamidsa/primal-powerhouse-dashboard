@@ -11,6 +11,7 @@ import {
   listConversations,
   sendConversationMessage,
 } from '@/features/client-coach-messaging/api/messaging.api';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { toConversationChannel } from '@/lib/realtime/channels';
 import type {
@@ -175,6 +176,7 @@ export function useConversationMessages(conversationId: string | null) {
           updateConversationListPreview(previous, message.conversationId, message.createdAt),
         false,
       );
+      globalMutate(USER_DASHBOARD_SUMMARY_URL);
     };
 
     channel.bind('message.created', handleMessageCreated);
@@ -204,6 +206,7 @@ export function useConversationMessages(conversationId: string | null) {
       },
       false,
     );
+    globalMutate(USER_DASHBOARD_SUMMARY_URL);
   }, [conversationId, data, globalMutate]);
 
   const markPending = (message: ChatMessage): ChatMessage => ({
@@ -277,6 +280,7 @@ export function useConversationMessages(conversationId: string | null) {
           updateConversationListPreview(previous, conversationId, created.createdAt),
         false,
       );
+      globalMutate(USER_DASHBOARD_SUMMARY_URL);
     } catch (error) {
       mutate(previous => {
         if (!previous) return previous;
@@ -331,6 +335,7 @@ export function useConversationMessages(conversationId: string | null) {
           updateConversationListPreview(previous, conversationId, created.createdAt),
         false,
       );
+      globalMutate(USER_DASHBOARD_SUMMARY_URL);
     } catch (error) {
       mutate(previous => {
         if (!previous) return previous;

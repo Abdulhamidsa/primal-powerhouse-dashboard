@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import type {
   StartTrainingSessionInput,
   CompleteTrainingSessionInput,
@@ -143,6 +144,8 @@ export const trainingSessionService = {
         },
       });
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId });
   },
 
   /**
@@ -210,18 +213,14 @@ export const trainingSessionService = {
       throw new Error('Session not found or unauthorized');
     }
 
-    return (prisma as any).$transaction(async (tx: any) => {
-      // Update session status
-      // const updatedSession = await tx.trainingSession.update({
-      //   where: { id: sessionId },
-      //   data: {
-      //     status: input.status,
-      //     completedAt: input.status === 'COMPLETED' ? new Date() : null,
-      //     perceivedDifficulty: input.perceivedDifficulty ?? null,
-      //     overallFeedback: input.overallFeedback ?? null,
-      //     caloriesBurned: input.caloriesBurned ?? null,
-      //   },
-      // });
+    const updatedSession = await (prisma as any).$transaction(async (tx: any) => {
+      await tx.trainingSession.update({
+        where: { id: sessionId },
+        data: {
+          status: input.status,
+          completedAt: input.status === 'COMPLETED' ? new Date() : null,
+        },
+      });
 
       // Update plan day status if session completed
       if (input.status === 'COMPLETED') {
@@ -245,6 +244,10 @@ export const trainingSessionService = {
         },
       });
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId });
+    return updatedSession;
+
   },
 
   /**
@@ -303,10 +306,13 @@ export const trainingSessionService = {
       throw new Error('Plan day not found');
     }
 
-    return prisma.trainingPlanDay.update({
+    const skipped = await prisma.trainingPlanDay.update({
       where: { id: planDayId },
       data: { status: 'SKIPPED' },
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId });
+    return skipped;
   },
 
   /**

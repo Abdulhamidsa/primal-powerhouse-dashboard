@@ -9,6 +9,7 @@ import {
   deleteMealCompletion,
   getAdherenceCurrent,
 } from '@/features/adherence/api/adherence.api';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 import type { MealTypeKey, SelectionItem } from '@/features/meals/types/mealSelection.types';
 
 function getTodayDateKeyLocal(): string {
@@ -71,7 +72,7 @@ export function useMealAdherenceToday() {
         await createMealCompletion(payload);
       }
 
-      await mutate(key);
+      await Promise.all([mutate(key), mutate(USER_DASHBOARD_SUMMARY_URL)]);
     } finally {
       setPendingKeys(prev => {
         const next = new Set(prev);

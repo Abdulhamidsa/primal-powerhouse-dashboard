@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const updateAvatarSchema = z
@@ -42,6 +43,8 @@ export async function PUT(request: NextRequest) {
         targetWeight: true,
       },
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId: auth.user.userId });
 
     return NextResponse.json({ user: client });
   } catch (error) {

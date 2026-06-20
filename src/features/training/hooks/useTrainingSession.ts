@@ -24,6 +24,7 @@ import type {
   StartTrainingSessionInput,
   UpdateSetInput,
 } from '@/features/training/schemas/session.schemas';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 
 export function useTrainingSession(sessionId?: string) {
   const key = sessionId ? `${TRAINING_SESSION_URL}/${encodeURIComponent(sessionId)}` : null;
@@ -80,6 +81,7 @@ export function useTrainingSessionActions() {
         mutate(TRAINING_SESSION_URL),
         mutate((key: string) => key.startsWith('/api/user/training/plan')),
         mutate(TRAINING_HISTORY_URL),
+        mutate(USER_DASHBOARD_SUMMARY_URL),
       ]);
       return session;
     },
@@ -94,12 +96,16 @@ export function useTrainingSessionActions() {
         mutate(`${TRAINING_SESSION_URL}/${encodeURIComponent(sessionId)}`),
         mutate((key: string) => key.startsWith('/api/user/training/plan')),
         mutate(TRAINING_HISTORY_URL),
+        mutate(USER_DASHBOARD_SUMMARY_URL),
       ]);
       return session;
     },
     skipPlanDay: async (planDayId: string) => {
       const result = await skipTrainingPlanDay(planDayId);
-      await mutate((key: string) => key.startsWith('/api/user/training/plan'));
+      await Promise.all([
+        mutate((key: string) => key.startsWith('/api/user/training/plan')),
+        mutate(USER_DASHBOARD_SUMMARY_URL),
+      ]);
       return result;
     },
   };

@@ -30,6 +30,48 @@ export const userDashboardUserSchema = z.object({
   goalWeight: z.number().nullable(),
 });
 
+export const userDashboardTrainingSnapshotSchema = z.object({
+  activeAssignmentCount: z.number().int().min(0),
+  activeAssignmentId: z.string().nullable(),
+  activePlanName: z.string().nullable(),
+  activeSessionId: z.string().nullable(),
+});
+
+export const userDashboardActionSchema = z.object({
+  key: z.string(),
+  kind: z.enum(['daily-checkin', 'weekly-checkin', 'meals', 'training', 'messages']),
+  title: z.string(),
+  description: z.string(),
+  href: z.string(),
+});
+
+export const userDashboardResumeRouteSchema = z.object({
+  href: z.string(),
+  label: z.string(),
+  description: z.string(),
+});
+
+export const userDashboardTodayCompletionSchema = z.object({
+  completedCount: z.number().int().min(0),
+  totalCount: z.number().int().min(0),
+  isComplete: z.boolean(),
+  label: z.string(),
+  description: z.string(),
+});
+
+export const userDashboardPendingAttentionItemSchema = z.object({
+  key: z.string(),
+  kind: z.enum(['daily-checkin', 'weekly-checkin', 'meals', 'training', 'messages']),
+  title: z.string(),
+  description: z.string(),
+  href: z.string(),
+});
+
+export const userDashboardPendingAttentionSchema = z.object({
+  count: z.number().int().min(0),
+  items: z.array(userDashboardPendingAttentionItemSchema),
+});
+
 export const userDashboardDailyCheckInSchema = z.object({
   dayDate: dayDateKeySchema,
   isComplete: z.boolean(),
@@ -63,4 +105,9 @@ export const userDashboardSummarySchema = z.object({
   dailyCheckIn: userDashboardDailyCheckInSchema,
   weeklyCheckIn: userDashboardWeeklyCheckInSchema,
   adherence: userDashboardAdherenceSchema,
+  training: userDashboardTrainingSnapshotSchema,
+  nextAction: userDashboardActionSchema,
+  resumeRoute: userDashboardResumeRouteSchema,
+  todayCompletionState: userDashboardTodayCompletionSchema,
+  pendingAttention: userDashboardPendingAttentionSchema,
 });

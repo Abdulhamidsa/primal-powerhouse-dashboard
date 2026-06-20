@@ -5,6 +5,7 @@ import { useSWRConfig } from 'swr';
 import { getPusherClient, hasPusherClientConfig } from '@/lib/realtime/pusher-client';
 import { toUserChannel } from '@/lib/realtime/channels';
 import { buildConversationsUrl } from '@/features/client-coach-messaging/api/messaging.api';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 import type {
   ConversationListResponse,
   MessageNotification,
@@ -50,6 +51,7 @@ export function useMessageNotifications(userId: string) {
         },
         false,
       );
+      globalMutate(USER_DASHBOARD_SUMMARY_URL);
     };
 
     channel.bind('notification.message', handler);

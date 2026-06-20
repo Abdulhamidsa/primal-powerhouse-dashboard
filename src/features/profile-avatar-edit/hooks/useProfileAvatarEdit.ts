@@ -6,6 +6,7 @@ import type { ApiError } from '@/lib/request';
 import { updateOwnProfileAvatar, uploadProfileAvatarImage } from '@/features/profile-avatar-edit/api/profileAvatar.api';
 import { profileAvatarPayloadSchema } from '@/features/profile-avatar-edit/schemas/profileAvatar.schema';
 import type { ProfileAvatarResponse } from '@/features/profile-avatar-edit/types/profileAvatar.types';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 
 const PROFILE_ME_CACHE_KEY = '/api/auth/me';
 
@@ -23,6 +24,7 @@ export function useProfileAvatarEdit() {
       const payload = profileAvatarPayloadSchema.parse({ avatar: uploadResult.data.url });
       const result = await updateOwnProfileAvatar(payload);
       await mutate(PROFILE_ME_CACHE_KEY);
+      await mutate(USER_DASHBOARD_SUMMARY_URL);
       return result;
     } catch (err) {
       const apiError = err as ApiError;

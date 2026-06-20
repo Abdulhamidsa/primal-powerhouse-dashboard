@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { toggleMealCompletionSchema } from '@/features/adherence/schemas/adherence.schema';
 
 function parseDateKeyUtc(dateKey: string): Date {
@@ -119,6 +120,7 @@ export async function POST(request: NextRequest) {
     });
 
     const completion = await updateDailyNutritionRollup(user.userId, dayDateUtc);
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
 
     return jsonWithCache({
       success: true,
@@ -163,6 +165,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     const completion = await updateDailyNutritionRollup(user.userId, dayDateUtc);
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
 
     return jsonWithCache({
       success: true,

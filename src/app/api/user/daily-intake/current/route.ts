@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { dailyIntakeOverrideSchema } from '@/features/adherence/schemas/adherence.schema';
@@ -112,6 +113,8 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
+
     return jsonWithCache({
       success: true,
       dayDate: payload.dayDate,
@@ -154,6 +157,8 @@ export async function DELETE(request: NextRequest) {
         dayDate: dayDateUtc,
       },
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
 
     return jsonWithCache({
       success: true,

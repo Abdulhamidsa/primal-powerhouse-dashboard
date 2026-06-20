@@ -12,6 +12,10 @@ export const CACHE_TAGS = {
   workoutSessions: 'workout-sessions',
 } as const;
 
+export function userDashboardSummaryTag(clientId: string): string {
+  return `client:${clientId}:user-dashboard-summary`;
+}
+
 export function mealTag(mealId: string): string {
   return `meal:${mealId}`;
 }
@@ -130,5 +134,11 @@ export function invalidateWorkoutCaches(options?: { planId?: string; clientId?: 
 
   if (options?.coachId) {
     revalidateTag(coachWorkoutPlansTag(options.coachId));
+  }
+}
+
+export function invalidateUserDashboardSummaryCaches(options?: { clientId?: string }): void {
+  if (options?.clientId) {
+    revalidateTag(userDashboardSummaryTag(options.clientId));
   }
 }

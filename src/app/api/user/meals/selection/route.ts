@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
-import { invalidateMealCaches } from '@/lib/cache-tags';
+import { invalidateMealCaches, invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import {
   loadMealSelectionContext,
   hydrateSelectionAgainstOptions,
@@ -140,6 +140,7 @@ export async function PUT(request: NextRequest) {
     const selectedTotals = computeSelectionTotals(selectedItems);
 
     invalidateMealCaches({ clientId: user.userId });
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
 
     return jsonWithCache({
       success: true,

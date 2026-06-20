@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { serializeDailyCheckIn } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
@@ -124,6 +125,8 @@ export async function PUT(request: NextRequest) {
         submittedAt: new Date(),
       },
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
 
     const [nutritionEntry, trainingEntry] = await Promise.all([
       (prisma as any).dailyNutritionLog.findUnique({

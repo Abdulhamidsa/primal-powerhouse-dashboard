@@ -4,6 +4,7 @@ import { useSWRConfig } from 'swr';
 import type { ApiError } from '@/lib/request';
 import { saveUserMealSelection, USER_MEAL_OPTIONS_URL, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
 import { getUserMealPlanSummary, USER_MEAL_PLAN_SUMMARY_URL } from '@/features/meals/api/mealPlan.api';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 import type {
   MealOption,
   MealTypeKey,
@@ -197,6 +198,7 @@ export function useMealSelectionPlanner(enabled = true) {
       }
 
       await summarySWR.mutate();
+      await globalMutate(USER_DASHBOARD_SUMMARY_URL);
 
       return true;
     } catch (error) {

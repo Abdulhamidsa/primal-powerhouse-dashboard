@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
-import { invalidateWorkoutCaches } from '@/lib/cache-tags';
+import { invalidateWorkoutCaches, invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { completeSessionSchema } from '@/features/workout-session/schemas/workoutSession.schemas';
 
 type RouteContext = { params: Promise<{ sessionId: string }> };
@@ -72,5 +72,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   });
 
   invalidateWorkoutCaches({ clientId });
+  invalidateUserDashboardSummaryCaches({ clientId });
   return NextResponse.json({ ok: true });
 }

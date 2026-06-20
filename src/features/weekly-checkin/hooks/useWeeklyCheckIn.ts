@@ -7,6 +7,7 @@ import {
   getWeeklyCheckInCurrent,
   upsertWeeklyCheckIn,
 } from '@/features/weekly-checkin/api/weeklyCheckIn.api';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 import type {
   WeeklyCheckInCurrentResponse,
   WeeklyCheckInPayload,
@@ -37,7 +38,7 @@ export function useUpsertWeeklyCheckIn() {
 
   const submit = async (weekStartDate: string, payload: WeeklyCheckInPayload) => {
     const result = await upsertWeeklyCheckIn(weekStartDate, payload);
-    await mutate(buildWeeklyCheckInCurrentUrl(weekStartDate));
+    await Promise.all([mutate(buildWeeklyCheckInCurrentUrl(weekStartDate)), mutate(USER_DASHBOARD_SUMMARY_URL)]);
     return result;
   };
 

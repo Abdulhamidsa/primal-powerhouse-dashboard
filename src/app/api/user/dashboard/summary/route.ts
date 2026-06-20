@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import { loadUserDashboardSummary } from '@/features/user-dashboard/lib/loadUserDashboardSummary';
+import { getCachedUserDashboardSummary } from '@/features/user-dashboard/lib/loadUserDashboardSummary';
 import { userDashboardSummarySchema } from '@/features/user-dashboard/schemas/userDashboard.schema';
 
 export async function GET(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const summary = await loadUserDashboardSummary(user.userId);
+    const summary = await getCachedUserDashboardSummary(user.userId);
     const parsed = userDashboardSummarySchema.safeParse(summary);
 
     if (!parsed.success) {

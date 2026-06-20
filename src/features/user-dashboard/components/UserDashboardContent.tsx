@@ -1,31 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, type ComponentType, type ReactNode } from 'react';
-import { ArrowRight, CheckCircle2, ClipboardCheck, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
+import { useMemo } from 'react';
+import { ArrowRight, CheckCircle2, ClipboardCheck, Dumbbell, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import { TodayMissionCard } from '@/features/today-mission/components/TodayMissionCard';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
 
-type GreetingState = { text: string; icon: ReactNode };
-type ActionTone = 'good' | 'warn' | 'neutral';
+const ACTION_ICONS = {
+  'daily-checkin': CheckCircle2,
+  'weekly-checkin': ClipboardCheck,
+  meals: Utensils,
+  training: Dumbbell,
+  messages: MessageSquare,
+} as const;
 
-type DashboardAction = {
-  key: string;
-  title: string;
-  description: string;
-  href: string;
-  icon: ComponentType<{ size?: number; className?: string }>;
-  tone: ActionTone;
-};
-
-type ResumeAction = {
-  title: string;
-  description: string;
-  href: string;
-  tone: ActionTone;
-};
+type DashboardAction = UserDashboardSummary['pendingAttention']['items'][number] | UserDashboardSummary['nextAction'];
 
 function TodayBadge({ streakCount }: { streakCount: number }) {
   if (streakCount <= 0) return null;
@@ -41,35 +32,29 @@ function TodayBadge({ streakCount }: { streakCount: number }) {
   );
 }
 
-function StatTile({ action }: { action: DashboardAction }) {
-  const Icon = action.icon;
-
-  const toneStyle =
-    action.tone === 'good'
-      ? {
-          background: 'var(--color-success-muted)',
-          color: 'var(--color-success)',
-          borderColor: 'var(--color-success-muted)',
-        }
-      : action.tone === 'warn'
-        ? {
-            background: 'var(--color-warning-muted)',
-            color: 'var(--color-warning)',
-            borderColor: 'var(--color-warning-muted)',
-          }
-        : { background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', borderColor: 'var(--color-border)' };
+function StatTile({ action, emphasis }: { action: DashboardAction; emphasis?: boolean }) {
+  const Icon = ACTION_ICONS[action.kind];
 
   return (
     <Link
       href={action.href}
-      className="group rounded-[22px] border p-4 shadow-sm transition-transform active:scale-[0.99]"
-      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      className={cn(
+        'group rounded-[22px] border p-4 shadow-sm transition-transform active:scale-[0.99]',
+        emphasis ? 'border-primary/30 bg-primary/5' : '',
+      )}
+      style={{ background: 'var(--color-surface)', borderColor: emphasis ? 'var(--color-primary-muted)' : 'var(--color-border)' }}
       title={`${action.title} ${action.description}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div
-          className={cn('inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors')}
-          style={toneStyle}
+          className={cn(
+            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors',
+            emphasis ? 'text-primary' : 'text-[var(--color-text-muted)]',
+          )}
+          style={{
+            background: emphasis ? 'var(--color-accent-translucent)' : 'var(--color-bg-alt)',
+            borderColor: 'var(--color-border)',
+          }}
         >
           <Icon size={16} />
         </div>
@@ -86,25 +71,18 @@ function StatTile({ action }: { action: DashboardAction }) {
   );
 }
 
-function ResumeCard({ action }: { action: ResumeAction }) {
-  const toneClass =
-    action.tone === 'good'
-      ? 'border-emerald-500/15 bg-emerald-500/10 text-emerald-600'
-      : action.tone === 'warn'
-        ? 'border-amber-500/15 bg-amber-500/10 text-amber-700'
-        : 'border-border/60 bg-background/75 text-muted-foreground';
-
+function ResumeCard({ action }: { action: UserDashboardSummary['resumeRoute'] }) {
   return (
     <Link
       href={action.href}
       className="group block rounded-[24px] border p-5 shadow-sm transition-transform active:scale-[0.98]"
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-      title={`${action.title} - ${action.description}`}
+      title={`${action.label} - ${action.description}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next up</p>
-          <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{action.title}</h3>
+          <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{action.label}</h3>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">{action.description}</p>
         </div>
 
@@ -114,7 +92,7 @@ function ResumeCard({ action }: { action: ResumeAction }) {
         />
       </div>
 
-      <div className={`mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${toneClass}`}>
+      <div className="mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold border-border/60 bg-background/75 text-muted-foreground">
         Resume where you left off
       </div>
     </Link>
@@ -122,7 +100,7 @@ function ResumeCard({ action }: { action: ResumeAction }) {
 }
 
 export function UserDashboardContent({ summary }: { summary: UserDashboardSummary }) {
-  const greeting = useMemo<GreetingState>(() => {
+  const greeting = useMemo(() => {
     const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
     const hour = new Date(denmarkTime).getHours();
 
@@ -134,142 +112,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
   const { summary: todayMission } = useTodayMission(summary);
   const firstName = summary.user.name.split(' ')[0] || 'Member';
   const coachMessage = summary.user.motivationalMessage || 'No coach note yet. Check back after your next review.';
-  const resumeAction = useMemo<ResumeAction>(() => {
-    if (summary.featureVisibility.dailyCheckinsEnabled && !summary.dailyCheckIn.isComplete) {
-      return {
-        title: "Finish today's check-in",
-        description: 'Log energy, nutrition, training, hunger, and sleep before the day slips away.',
-        href: '/user/check-ins',
-        tone: 'warn',
-      };
-    }
-
-    if (summary.featureVisibility.weeklyCheckinsEnabled && summary.weeklyCheckIn.status !== 'completed') {
-      return {
-        title: 'Submit weekly check-in',
-        description:
-          summary.weeklyCheckIn.status === 'overdue'
-            ? 'Your weekly update needs attention today.'
-            : 'Keep your coach updated on progress for the week.',
-        href: '/user/check-ins',
-        tone: summary.weeklyCheckIn.status === 'overdue' ? 'warn' : 'neutral',
-      };
-    }
-
-    if (summary.featureVisibility.nutritionTrackingEnabled && summary.adherence.completion.percentage < 100) {
-      return {
-        title: 'Continue meal plan',
-        description: `${summary.adherence.completion.completedCount}/${summary.adherence.completion.totalSelectedCount} meals completed so far.`,
-        href: '/user/my-plan',
-        tone: 'warn',
-      };
-    }
-
-    if (summary.unreadTotal > 0) {
-      return {
-        title: 'Read coach messages',
-        description: `${summary.unreadTotal} unread message${summary.unreadTotal === 1 ? '' : 's'} are waiting.`,
-        href: '/user/chat',
-        tone: 'warn',
-      };
-    }
-
-    return {
-      title: 'Open training',
-      description: 'Keep momentum going with your workout plan and exercise videos.',
-      href: '/user/training',
-      tone: summary.featureVisibility.workoutTrackingEnabled ? 'good' : 'neutral',
-    };
-  }, [
-    summary.adherence.completion.completedCount,
-    summary.adherence.completion.percentage,
-    summary.adherence.completion.totalSelectedCount,
-    summary.dailyCheckIn.isComplete,
-    summary.featureVisibility.dailyCheckinsEnabled,
-    summary.featureVisibility.nutritionTrackingEnabled,
-    summary.featureVisibility.weeklyCheckinsEnabled,
-    summary.featureVisibility.workoutTrackingEnabled,
-    summary.unreadTotal,
-    summary.weeklyCheckIn.status,
-  ]);
-
-  const actions = useMemo<DashboardAction[]>(() => {
-    const completion = summary.adherence.completion;
-    const isDailyDone = summary.dailyCheckIn.isComplete === true;
-    const weeklyStatus = summary.weeklyCheckIn.status;
-    const isMealsDone =
-      completion.totalSelectedCount > 0 && completion.completedCount === completion.totalSelectedCount;
-
-    const result: DashboardAction[] = [];
-
-    if (summary.featureVisibility.dailyCheckinsEnabled) {
-      result.push({
-        key: 'daily',
-        title: 'Daily check-in',
-        description: isDailyDone ? 'Completed for today' : "Open and complete today's check-in",
-        href: '/user/check-ins',
-        icon: CheckCircle2,
-        tone: isDailyDone ? 'good' : 'warn',
-      });
-    }
-
-    if (summary.featureVisibility.weeklyCheckinsEnabled) {
-      result.push({
-        key: 'weekly',
-        title: 'Weekly check-in',
-        description:
-          weeklyStatus === 'completed'
-            ? 'Submitted for this week'
-            : weeklyStatus === 'overdue'
-              ? 'Needs attention today'
-              : 'Due this week',
-        href: '/user/check-ins',
-        icon: ClipboardCheck,
-        tone: weeklyStatus === 'completed' ? 'good' : 'warn',
-      });
-    }
-
-    if (summary.featureVisibility.nutritionTrackingEnabled) {
-      result.push({
-        key: 'meals',
-        title: "Today's meals",
-        description:
-          completion.totalSelectedCount > 0
-            ? isMealsDone
-              ? 'All selected meals complete'
-              : `${completion.completedCount}/${completion.totalSelectedCount} done`
-            : 'No meals selected yet',
-        href: '/user/my-plan',
-        icon: Utensils,
-        tone: isMealsDone ? 'good' : 'warn',
-      });
-    }
-
-    result.push({
-      key: 'chat',
-      title: 'Message coach',
-      description: summary.unreadTotal > 0 ? `${summary.unreadTotal} unread messages` : 'Open the coach chat',
-      href: '/user/chat',
-      icon: MessageSquare,
-      tone: summary.unreadTotal > 0 ? 'warn' : 'neutral',
-    });
-
-    return result.slice(0, 4);
-  }, [
-    summary.adherence.completion,
-    summary.dailyCheckIn.isComplete,
-    summary.featureVisibility.dailyCheckinsEnabled,
-    summary.featureVisibility.nutritionTrackingEnabled,
-    summary.featureVisibility.weeklyCheckinsEnabled,
-    summary.unreadTotal,
-    summary.weeklyCheckIn.status,
-  ]);
-
-  const dateLabel = new Date().toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-  });
+  const visibleActions = summary.pendingAttention.items.length > 0 ? summary.pendingAttention.items : [summary.nextAction];
 
   return (
     <div className="space-y-5 md:space-y-6">
@@ -284,7 +127,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
 
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{dateLabel}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today</p>
 
             <div className="mt-2 flex items-center gap-3">
               <div
@@ -298,9 +141,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                 <h1 className="text-[1.9rem] font-semibold tracking-tight text-foreground">
                   {greeting.text}, {firstName}
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Your day is ready. Keep it simple, one step at a time.
-                </p>
+                <p className="mt-1 text-sm text-muted-foreground">Keep it simple. One clear step at a time.</p>
               </div>
             </div>
 
@@ -310,20 +151,26 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                 className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground"
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {summary.unreadTotal > 0
-                  ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting`
-                  : 'Coach chat quiet'}
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                {summary.todayCompletionState.label}
               </div>
               <div
                 className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground"
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                {summary.adherence.completion.completedCount}/{summary.adherence.completion.totalSelectedCount} meals
-                done
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                {summary.unreadTotal > 0
+                  ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting`
+                  : 'Coach chat quiet'}
               </div>
             </div>
+          </div>
+
+          <div
+            className="hidden rounded-full border p-2 text-muted-foreground shadow-sm sm:flex"
+            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+          >
+            {greeting.icon}
           </div>
         </div>
 
@@ -336,13 +183,11 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
         </div>
       </section>
 
-      <div aria-hidden="true" className="h-2 md:h-3" />
-
-      <ResumeCard action={resumeAction} />
+      <ResumeCard action={summary.resumeRoute} />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {actions.map(action => (
-          <StatTile key={action.key} action={action} />
+        {visibleActions.slice(0, 4).map((action, index) => (
+          <StatTile key={action.key} action={action} emphasis={index === 0} />
         ))}
       </section>
 

@@ -11,6 +11,7 @@ import {
   buildDailyCheckInCurrentUrl,
   DAILY_CHECK_IN_INSIGHTS_URL,
 } from '@/features/daily-checkin/api/dailyCheckIn.api';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 
 function getTodayDateKeyLocal(): string {
@@ -46,6 +47,7 @@ export function useUpsertDailyTraining() {
       mutate(buildDailyTrainingCurrentUrl(dayDate)),
       mutate(buildDailyCheckInCurrentUrl(dayDate)),
       mutate(DAILY_CHECK_IN_INSIGHTS_URL),
+      mutate(USER_DASHBOARD_SUMMARY_URL),
     ]);
     return result;
   };

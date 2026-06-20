@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { decryptOrFallback, encryptField } from '@/lib/security/field-crypto';
 import { rateLimit } from '@/lib/security/rate-limit';
 import {
@@ -310,6 +311,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error('Failed to publish realtime chat event:', error);
     }
   }
+
+  invalidateUserDashboardSummaryCaches({ clientId: conversation.clientId });
 
   // Send browser push notification when coach sends to client
   if (actor.type === 'coach' || actor.type === 'admin') {

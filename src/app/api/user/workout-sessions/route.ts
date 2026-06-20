@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
-import { invalidateWorkoutCaches } from '@/lib/cache-tags';
+import { invalidateUserDashboardSummaryCaches, invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { z } from 'zod';
 
 const startSessionSchema = z.object({
@@ -76,5 +76,6 @@ export async function POST(request: NextRequest) {
   });
 
   invalidateWorkoutCaches({ clientId });
+  invalidateUserDashboardSummaryCaches({ clientId });
   return NextResponse.json(session, { status: 201 });
 }

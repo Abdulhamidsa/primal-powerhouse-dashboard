@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { weekStartDateSchema, weeklyCheckInUpsertSchema } from '@/features/weekly-checkin/schemas/weeklyCheckIn.schema';
 import { decryptOrFallback, encryptField } from '@/lib/security/field-crypto';
 
@@ -264,6 +265,8 @@ export async function PUT(request: NextRequest) {
       create: createData,
       select,
     });
+
+    invalidateUserDashboardSummaryCaches({ clientId: user.userId });
 
     return jsonWithCache({
       success: true,
