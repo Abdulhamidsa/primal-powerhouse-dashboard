@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle2, CircleAlert, Plus, Save, Undo2, X } from 'lucide-react';
+import { AlertCircle, CircleAlert, Plus, X } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdheren
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { PlanSelectedMealCard } from '@/features/meals/components/PlanSelectedMealCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
-import type { MealTypeKey } from '@/features/meals/types/mealSelection.types';
+import type { MealOption, MealTypeKey } from '@/features/meals/types/mealSelection.types';
 import { saveShoppingListDraft } from '@/features/meals/utils/shoppingListStorage';
 
 const TYPE_LABEL: Record<MealTypeKey, string> = {
@@ -109,6 +109,54 @@ function HelpStep({ number, title, description }: { number: string; title: strin
   );
 }
 
+function MealSwapConfirmModal({
+  mealType,
+  currentMealName,
+  nextMealName,
+  isSaving,
+  onCancel,
+  onConfirm,
+}: {
+  mealType: MealTypeKey;
+  currentMealName?: string;
+  nextMealName: string;
+  isSaving: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="meal-swap-confirm-title">
+      <section className="w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-center shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">{TYPE_LABEL[mealType]}</p>
+        <h2 id="meal-swap-confirm-title" className="mt-2 text-xl font-semibold tracking-tight text-[var(--color-text)]">
+          {currentMealName ? 'Swap this meal?' : 'Choose this meal?'}
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
+          {currentMealName ? (
+            <>
+              Replace <span className="font-semibold text-[var(--color-text)]">{currentMealName}</span> with{' '}
+              <span className="font-semibold text-[var(--color-text)]">{nextMealName}</span>?
+            </>
+          ) : (
+            <>
+              Choose <span className="font-semibold text-[var(--color-text)]">{nextMealName}</span> for today?
+            </>
+          )}
+        </p>
+
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button type="button" onClick={onCancel} disabled={isSaving} className="min-h-11 rounded-full border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-50">
+            Cancel
+          </button>
+          <button type="button" onClick={onConfirm} disabled={isSaving} className="min-h-11 rounded-full bg-[var(--color-accent)] px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60">
+            {isSaving ? 'Saving…' : 'Yes, save'}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function UserMyPlanPage() {
   const {
     loading,
@@ -116,16 +164,11 @@ export default function UserMyPlanPage() {
     saveError,
     optionsByType,
     selectedByType,
-    draftItems,
-    hasRequiredSlots,
     isSelected,
     isSnackFull,
     snackMax,
-    hasChanges,
     isSaving,
-    selectOption,
-    saveDraft,
-    resetDraftToSaved,
+    selectOptionAndSave,
   } = useMealSelectionPlanner();
 
   const {
@@ -137,6 +180,7 @@ export default function UserMyPlanPage() {
   } = useMealAdherenceToday();
 
   const [swapState, setSwapState] = useState<MealPickerState | null>(null);
+  const [pendingSwap, setPendingSwap] = useState<MealOption | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const mountStartedAtRef = useRef<number | null>(null);
   const loggedPaintRef = useRef(false);
@@ -150,6 +194,7 @@ export default function UserMyPlanPage() {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        setPendingSwap(null);
         setSwapState(null);
       }
     };
@@ -171,8 +216,6 @@ export default function UserMyPlanPage() {
 
     return () => window.cancelAnimationFrame(raf);
   }, [error, loading]);
-
-  const isPlanComplete = hasRequiredSlots;
 
   const selectedSides = useMemo(() => {
     return [selectedByType.LUNCH[0], selectedByType.DINNER[0]]
@@ -225,40 +268,30 @@ export default function UserMyPlanPage() {
 
   const handleSelectReplacement = (option: (typeof swapOptions)[number]) => {
     if (!swapState) return;
-
-    if (swapState.mode === 'swap' && swapState.mealType === 'SNACK') {
-      if (option.meal.id === swapState.currentMealId) {
-        setSwapState(null);
-        return;
-      }
-
-      const currentSnack = selectedByType.SNACK.find(item => item.meal.id === swapState.currentMealId);
-      if (currentSnack) {
-        selectOption({
-          sourceAssignmentId: currentSnack.sourceAssignmentId ?? currentSnack.mealId,
-          mealType: 'SNACK',
-          portion: currentSnack.portion,
-          scheduledTime: null,
-          meal: currentSnack.meal,
-        });
-      }
-    }
-
-    selectOption(option);
-    setSwapState(null);
+    setPendingSwap(option);
   };
 
-  const handleSaveDraft = async () => {
-    const ok = await saveDraft();
+  const handleConfirmSwap = async () => {
+    if (!swapState || !pendingSwap) return;
+
+    const currentSnack =
+      swapState.mode === 'swap' && swapState.mealType === 'SNACK'
+        ? selectedByType.SNACK.find(item => item.meal.id === swapState.currentMealId)
+        : undefined;
+    const result = await selectOptionAndSave(pendingSwap, currentSnack);
+
+    const ok = result.ok;
     if (ok) {
       saveShoppingListDraft(
-        draftItems.map(item => ({
+        result.items.map(item => ({
           mealType: item.mealType,
           slotIndex: item.slotIndex,
           mealId: item.mealId,
           sourceAssignmentId: item.sourceAssignmentId ?? null,
         })),
       );
+      setPendingSwap(null);
+      setSwapState(null);
     }
   };
 
@@ -286,7 +319,7 @@ export default function UserMyPlanPage() {
 
   return (
     <div className="px-4 pb-6 pt-4 md:px-6">
-      <div className={`mx-auto max-w-6xl space-y-4 md:space-y-5 ${hasChanges ? 'pb-28' : 'pb-6'}`}>
+      <div className="mx-auto max-w-6xl space-y-4 pb-6 md:space-y-5">
         <PageHeader title="Meal Plan" description="Choose your meals for today and mark them done after eating.">
           <button
             type="button"
@@ -443,7 +476,10 @@ export default function UserMyPlanPage() {
 
                 <button
                   type="button"
-                  onClick={() => setSwapState(null)}
+                  onClick={() => {
+                    setPendingSwap(null);
+                    setSwapState(null);
+                  }}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
                   aria-label="Close meal options"
                 >
@@ -490,50 +526,15 @@ export default function UserMyPlanPage() {
         </div>
       ) : null}
 
-      {hasChanges ? (
-        <div className="fixed inset-x-0 bottom-24 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 p-3 backdrop-blur-xl sm:px-6 lg:bottom-0">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
-            <p className="hidden text-xs text-[var(--color-text-muted)] md:block">
-              Your draft stays here until you save, so you can swap meals without losing progress.
-            </p>
-
-            <div className="hidden items-center gap-2 md:flex">
-              {isPlanComplete ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/12 px-3 py-1.5 text-xs font-semibold text-emerald-400">
-                  <CheckCircle2 size={14} />
-                  Plan ready
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent-translucent)] px-3 py-1.5 text-xs font-semibold text-[var(--color-accent)]">
-                  <AlertCircle size={14} />
-                  Complete breakfast, lunch and dinner
-                </div>
-              )}
-            </div>
-
-            <div className="ml-auto flex items-center gap-2">
-              <button
-                type="button"
-                onClick={resetDraftToSaved}
-                disabled={!hasChanges || isSaving}
-                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Undo2 size={14} />
-                Reset
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={!hasChanges || isSaving}
-                className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Save size={14} />
-                {isSaving ? 'Saving...' : 'Save Selection'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {swapState && pendingSwap ? (
+        <MealSwapConfirmModal
+          mealType={swapState.mealType}
+          currentMealName={swapState.mode === 'swap' ? swapState.currentMealName : undefined}
+          nextMealName={pendingSwap.meal.name}
+          isSaving={isSaving}
+          onCancel={() => setPendingSwap(null)}
+          onConfirm={() => void handleConfirmSwap()}
+        />
       ) : null}
     </div>
   );

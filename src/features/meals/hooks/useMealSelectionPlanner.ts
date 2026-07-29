@@ -125,6 +125,27 @@ export function useMealSelectionPlanner(enabled = true) {
     setDraftItems(previous => toggleMealSelectionItem(previous, option, snackMax));
   }
 
+  async function selectOptionAndSave(option: MealOption, removeItem?: SelectionItem) {
+    let nextItems = draftItems;
+
+    if (removeItem) {
+      nextItems = nextItems.filter(
+        item =>
+          !(
+            item.mealType === removeItem.mealType &&
+            item.mealId === removeItem.mealId &&
+            item.slotIndex === removeItem.slotIndex &&
+            item.sourceAssignmentId === removeItem.sourceAssignmentId
+          ),
+      );
+    }
+
+    nextItems = toggleMealSelectionItem(nextItems, option, snackMax);
+    const ok = await saveDraft(nextItems);
+
+    return { ok, items: nextItems };
+  }
+
   function resetDraftToSaved() {
     setDraftItems(summary?.selection?.items ?? []);
     setHasTouchedDraft(false);
@@ -246,6 +267,7 @@ export function useMealSelectionPlanner(enabled = true) {
     hasChanges,
     isSaving,
     selectOption,
+    selectOptionAndSave,
     isSelected,
     saveDraft,
     resetDraftToSaved,
