@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { ActiveMealPlanSummary } from '@/lib/client-page/types';
 import { useMealPlanRecalculation } from '@/features/meal-plan-recalculation/hooks/useMealPlanRecalculation';
 import type {
@@ -41,6 +42,7 @@ export function MealPlanRecalculationModal({
   const { submit, isSubmitting } = useMealPlanRecalculation(clientId);
 
   const disabled = !activeMealPlan || isSubmitting;
+  const canApply = previewResult?.validation.canApply ?? false;
 
   const canPreview = useMemo(() => {
     const calories = Number(newDailyCalories);
@@ -58,6 +60,11 @@ export function MealPlanRecalculationModal({
       }) ?? [],
     [previewResult],
   );
+
+  useEffect(() => {
+    setPreviewResult(null);
+    setErrorMessage(null);
+  }, [newDailyCalories, optimizationMode]);
 
   if (!isOpen) return null;
 
@@ -82,7 +89,7 @@ export function MealPlanRecalculationModal({
   };
 
   const handleApply = async () => {
-    if (!activeMealPlan || !previewResult) return;
+    if (!activeMealPlan || !previewResult || !previewResult.validation.canApply) return;
     setErrorMessage(null);
     onOptimisticApplyStartAction?.(previewResult.deltas);
 
@@ -118,7 +125,7 @@ export function MealPlanRecalculationModal({
               Adjust Plan Calories
             </h3>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-              Preview slot-based portion updates first, then confirm apply.
+              Recalculate assigned weekly meals.
             </p>
           </div>
           <button
@@ -232,6 +239,24 @@ export function MealPlanRecalculationModal({
 
         {previewResult && (
           <div className="mb-5 space-y-4">
+            {previewResult.validation.status === 'blocked' && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444' }}
+              >
+                {previewResult.validation.reasons.join(' ')}
+              </div>
+            )}
+
+            {previewResult.validation.summaryReason && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}
+              >
+                {previewResult.validation.summaryReason}
+              </div>
+            )}
+
             <div>
               <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                 Slot Summaries
@@ -262,6 +287,131 @@ export function MealPlanRecalculationModal({
               <StatItem label="Fat gap" value={`${previewResult.targets.fat - previewResult.projectedTotals.fat}g`} />
               <StatItem label="Adjustments" value={previewResult.adjustmentsApplied} />
             </div>
+
+            {previewResult.recommendedAdditions.length > 0 && (
+              <div>
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                  Recommended Additions
+                </p>
+                <div className="grid gap-3">
+                  {previewResult.recommendedAdditions.map(addition => (
+                    <div
+                      key={`${addition.type}-${addition.daysNeeded}`}
+                      className="rounded-xl border p-4"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {addition.type}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                            {addition.reason}
+                          </p>
+                        </div>
+                        <p className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
+                          {addition.daysNeeded} days
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                        <MiniStat
+                          label="Calories/day"
+                          value={`${addition.targetCaloriesPerDay.min}-${addition.targetCaloriesPerDay.max}`}
+                        />
+                        <MiniStat
+                          label="Protein/day"
+                          value={`${addition.targetProteinPerDay.min}-${addition.targetProteinPerDay.max}g`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {previewResult.replacementOpportunities.length > 0 && (
+              <div>
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                  Replacement Opportunities
+                </p>
+                <div className="grid gap-3">
+                  {previewResult.replacementOpportunities.map(opportunity => (
+                    <div
+                      key={opportunity.assignmentId}
+                      className="rounded-xl border p-4"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {opportunity.mealName}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                            {formatMealTypeLabel(opportunity.mealType)} day {opportunity.dayOfWeek}
+                          </p>
+                        </div>
+                        <p className="text-xs font-medium" style={{ color: priorityColor(opportunity.priority) }}>
+                          {opportunity.priority.toUpperCase()}
+                        </p>
+                      </div>
+
+                      <div className="grid gap-3 text-sm mt-3">
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                            Why this matters
+                          </p>
+                          <p className="text-sm" style={{ color: 'var(--color-text)' }}>
+                            {opportunity.reason}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                            Suggested replacement
+                          </p>
+                          <p className="text-sm" style={{ color: 'var(--color-text)' }}>
+                            {opportunity.coachingMessage}
+                          </p>
+                          <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                            {opportunity.suggestedReplacementType} · Target{' '}
+                            {opportunity.targetProteinPer100Kcal.toFixed(1)}g protein / 100 kcal
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                            Expected protein improvement
+                          </p>
+                          <p className="text-sm" style={{ color: 'var(--color-text)' }}>
+                            Current {opportunity.currentProtein}g, desired {opportunity.targetProteinRange.min}-
+                            {opportunity.targetProteinRange.max}g, estimated +{opportunity.estimatedProteinIncrease.min}
+                            -{opportunity.estimatedProteinIncrease.max}g
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <MiniStat label="Protein / 100 kcal" value={opportunity.proteinPer100Kcal.toFixed(1)} />
+                          <MiniStat label="Suitability score" value={opportunity.suitabilityScore.toFixed(1)} />
+                          <MiniStat
+                            label="Calories target"
+                            value={`${opportunity.targetCaloriesRange.min}-${opportunity.targetCaloriesRange.max}`}
+                          />
+                          <MiniStat
+                            label="Protein target"
+                            value={`${opportunity.targetProteinRange.min}-${opportunity.targetProteinRange.max}g`}
+                          />
+                          <MiniStat
+                            label="Gap contribution"
+                            value={`${opportunity.contributionToRemainingProteinGap}g`}
+                          />
+                          <MiniStat label="Priority" value={opportunity.priority} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <p className="text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
@@ -313,14 +463,14 @@ export function MealPlanRecalculationModal({
           <button
             type="button"
             onClick={handleApply}
-            disabled={!previewResult || disabled}
+            disabled={!previewResult || !canApply || disabled}
             className="px-4 py-2 rounded-lg text-sm font-medium"
             style={{
-              background: previewResult && !disabled ? '#22c55e' : 'var(--color-bg-alt)',
-              color: previewResult && !disabled ? 'white' : 'var(--color-text-muted)',
+              background: previewResult && canApply && !disabled ? '#22c55e' : 'var(--color-bg-alt)',
+              color: previewResult && canApply && !disabled ? 'white' : 'var(--color-text-muted)',
             }}
           >
-            Confirm Apply
+            {previewResult && !canApply ? 'Preview Blocked' : 'Confirm Apply'}
           </button>
         </div>
       </div>
@@ -348,6 +498,24 @@ function SlotSummaryCard({ summary }: { summary: MealSlotSummary }) {
   const proteinGap = summary.target.protein - summary.projected.protein;
   const carbGap = summary.target.carbs - summary.projected.carbs;
   const fatGap = summary.target.fat - summary.projected.fat;
+  const coverageText =
+    summary.normalizationStatus === 'missing'
+      ? `Missing: ${summary.coverageDays}/${summary.expectedDays} days covered`
+      : summary.normalizationStatus === 'partially_normalized'
+        ? `Partially normalized: ${summary.coverageDays}/${summary.expectedDays} days covered`
+        : `Normalized across ${summary.coverageDays}/${summary.expectedDays} days`;
+  const badgeText =
+    summary.normalizationStatus === 'missing'
+      ? 'Missing'
+      : summary.normalizationStatus === 'partially_normalized'
+        ? 'Partial'
+        : 'Normalized';
+  const suitabilityColor =
+    summary.suitabilityStatus === 'good'
+      ? '#22c55e'
+      : summary.suitabilityStatus === 'borderline'
+        ? '#f59e0b'
+        : '#ef4444';
 
   return (
     <div
@@ -360,24 +528,48 @@ function SlotSummaryCard({ summary }: { summary: MealSlotSummary }) {
             {formatMealTypeLabel(summary.mealType)}
           </p>
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {summary.included
-              ? `Normalized across ${summary.coverageDays}/${summary.expectedDays} days`
-              : `Skipped: ${summary.coverageDays}/${summary.expectedDays} days covered`}
+            {coverageText}
           </p>
         </div>
-        <p className="text-xs font-medium" style={{ color: summary.included ? 'var(--color-text)' : '#f59e0b' }}>
-          {summary.included ? `${summary.expectedAccuracyPercent?.toFixed(1) ?? '0.0'}%` : 'Skipped'}
+        <p
+          className="text-xs font-medium"
+          style={{ color: summary.normalizationStatus === 'missing' ? '#f59e0b' : 'var(--color-text)' }}
+        >
+          {summary.normalizationStatus === 'missing'
+            ? badgeText
+            : summary.normalizationStatus === 'partially_normalized'
+              ? `${summary.expectedAccuracyPercent?.toFixed(1) ?? '0.0'}%`
+              : `${summary.expectedAccuracyPercent?.toFixed(1) ?? '0.0'}%`}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-        <MiniStat label="Target kcal" value={summary.target.calories} />
+        <MiniStat label={summary.targetLabel} value={summary.target.calories} />
         <MiniStat label="Projected kcal" value={summary.projected.calories} />
+        <MiniStat label="Protein / 100 kcal" value={summary.proteinPer100Kcal.toFixed(1)} />
+        <MiniStat
+          label="Suitability"
+          value={<span style={{ color: suitabilityColor }}>{summary.suitabilityStatus}</span>}
+        />
         <MiniStat label="Protein gap" value={`${proteinGap}g`} />
         <MiniStat label="Carb gap" value={`${carbGap}g`} />
         <MiniStat label="Fat gap" value={`${fatGap}g`} />
         <MiniStat label="Bounds" value={summary.hasBoundsClamping ? 'Limited' : 'Free'} />
       </div>
+
+      {summary.suitabilityReasons.length > 0 && (
+        <ul className="mb-3 space-y-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          {summary.suitabilityReasons.map(reason => (
+            <li key={reason}>• {reason}</li>
+          ))}
+        </ul>
+      )}
+
+      {summary.targetHint && (
+        <p className="mb-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          {summary.targetHint}
+        </p>
+      )}
 
       {summary.warning && (
         <p className="text-xs" style={{ color: summary.included ? 'var(--color-text-muted)' : '#f59e0b' }}>
@@ -388,7 +580,7 @@ function SlotSummaryCard({ summary }: { summary: MealSlotSummary }) {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string | number }) {
+function MiniStat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
       <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
@@ -403,4 +595,10 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 
 function formatMealTypeLabel(value: string): string {
   return value.charAt(0) + value.slice(1).toLowerCase();
+}
+
+function priorityColor(priority: 'high' | 'medium' | 'low') {
+  if (priority === 'high') return '#ef4444';
+  if (priority === 'medium') return '#f59e0b';
+  return '#22c55e';
 }

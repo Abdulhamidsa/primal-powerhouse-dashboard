@@ -5,6 +5,7 @@ import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWi
 import { calculateBMI } from '@/lib/health/calculators';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { WeightTargetProgressCard } from '@/features/admin-clients-dashboard/components/WeightTargetProgressCard';
+import { WeightProjectionTimelineCard } from '@/features/admin-clients-dashboard/components/WeightProjectionTimelineCard';
 import { MotivationalMessageTab } from '@/features/admin-clients-dashboard/components/MotivationalMessageTab';
 import type { AdminClientDetail } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
@@ -193,6 +194,14 @@ export function SummaryTabContent({
           </p>
         )}
       </div>
+
+      <WeightProjectionTimelineCard
+        clientName={client.name}
+        currentWeightKg={summaryWeightKg}
+        targetWeightKg={client.targetWeight}
+        weeklyCheckIns={weeklyWeightHistory}
+        healthMetrics={healthMetricsResult}
+      />
 
       <HealthMetricsWidget
         bmi={bmi}

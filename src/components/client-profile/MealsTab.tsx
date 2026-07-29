@@ -5,6 +5,7 @@ import { JSX, useState } from 'react';
 import Image from 'next/image';
 import EditMealModal from '../EditMealModal';
 import { MealPlanRecalculationModal } from '@/features/meal-plan-recalculation/components/MealPlanRecalculationModal';
+import { SlotTargetCalculatorModal } from '@/features/slot-target-calculator/components/SlotTargetCalculatorModal';
 import type { MealPortionDelta } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
 
 export function MealsTab({
@@ -28,6 +29,7 @@ export function MealsTab({
   const [mealToEdit, setMealToEdit] = useState<string | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showRecalcModal, setShowRecalcModal] = useState(false);
+  const [showCalculatorModal, setShowCalculatorModal] = useState(false);
   const [optimisticPortions, setOptimisticPortions] = useState<Record<string, number>>({});
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [bannerType, setBannerType] = useState<'success' | 'error'>('success');
@@ -153,6 +155,17 @@ export function MealsTab({
                 }}
               >
                 Adjust Plan Calories
+              </button>
+              <button
+                type="button"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm"
+                style={{ color: 'var(--color-text)' }}
+                onClick={() => {
+                  setShowMoreMenu(false);
+                  setShowCalculatorModal(true);
+                }}
+              >
+                Slot Target Calculator
               </button>
             </div>
           )}
@@ -556,6 +569,15 @@ export function MealsTab({
         onOptimisticApplyStartAction={handleOptimisticApplyStart}
         onOptimisticRollbackAction={handleOptimisticRollback}
         onAppliedAction={handleRecalcApplied}
+      />
+
+      <SlotTargetCalculatorModal
+        open={showCalculatorModal}
+        onOpenChange={setShowCalculatorModal}
+        mealAssignments={assignments}
+        clientId={clientId}
+        mealPlanId={activeMealPlan?.id}
+        initialTargetCalories={currentGoalCalories ?? undefined}
       />
     </section>
   );

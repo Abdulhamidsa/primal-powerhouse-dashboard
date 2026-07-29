@@ -1,9 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { RotateCcw, X } from 'lucide-react';
+import { ClientCredentialsModal } from '@/features/client-credentials';
+import type {
+  ClientCredentials,
+  CredentialDisplayMode,
+} from '@/features/client-credentials/types/clientCredentials.types';
 import { clientProfileEditFormSchema } from '@/features/client-profile-edit/schemas/clientProfileEdit.schema';
 import { useClientProfileEdit } from '@/features/client-profile-edit/hooks/useClientProfileEdit';
+import { useResetClientPassword } from '@/features/client-credentials/hooks/useResetClientPassword';
 import type {
   ClientProfileEditFieldErrors,
   ClientProfileEditFormValues,
@@ -58,8 +64,13 @@ export function ClientProfileEditModal({
     targetWeight: initialValues.targetWeight ?? null,
   });
   const [fieldErrors, setFieldErrors] = useState<ClientProfileEditFieldErrors>({});
+  const [credentialModal, setCredentialModal] = useState<{
+    mode: CredentialDisplayMode;
+    credentials: ClientCredentials;
+  } | null>(null);
 
   const { submit, isSubmitting, error } = useClientProfileEdit(clientId);
+  const { resetPassword, isLoading: isResettingPassword, error: resetError } = useResetClientPassword(clientId);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -89,6 +100,20 @@ export function ClientProfileEditModal({
 
   if (!isOpen) return null;
 
+  async function handleResetPassword() {
+    if (!window.confirm('Reset this client password now? The current password will stop working immediately.')) {
+      return;
+    }
+
+    const result = await resetPassword();
+    if (result) {
+      setCredentialModal({
+        mode: 'reset',
+        credentials: result,
+      });
+    }
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -113,8 +138,9 @@ export function ClientProfileEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-xl">
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-lg font-semibold text-foreground">Edit Client Profile</h2>
           <button
@@ -263,20 +289,42 @@ export function ClientProfileEditModal({
               type="button"
               onClick={onCloseAction}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isResettingPassword}
             >
               Cancel
             </button>
             <button
+              type="button"
+              onClick={handleResetPassword}
+              disabled={isSubmitting || isResettingPassword}
+              className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/20 disabled:opacity-60"
+            >
+              <span className="inline-flex items-center gap-2">
+                <RotateCcw className="h-4 w-4" />
+                {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+              </span>
+            </button>
+            <button
               type="submit"
-              disabled={isSubmitting || !hasChanges}
+              disabled={isSubmitting || isResettingPassword || !hasChanges}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
+          {resetError ? <p className="text-xs text-destructive">{resetError}</p> : null}
         </form>
       </div>
-    </div>
+      </div>
+
+      {credentialModal ? (
+        <ClientCredentialsModal
+          open
+          mode={credentialModal.mode}
+          credentials={credentialModal.credentials}
+          onCloseAction={() => setCredentialModal(null)}
+        />
+      ) : null}
+    </>
   );
 }

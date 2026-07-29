@@ -340,7 +340,7 @@ export default function ClientProfilePage() {
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--color-text-muted)' }}>Name</span>
                   <span style={{ color: 'var(--color-text)' }} className="font-medium">
-                    {client.name}
+                    {client.name}sss
                   </span>
                 </div>
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>

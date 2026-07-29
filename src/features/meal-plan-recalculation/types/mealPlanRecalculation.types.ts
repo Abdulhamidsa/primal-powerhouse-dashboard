@@ -26,13 +26,87 @@ export type RecalculationMacroTargets = {
   fat: number;
 };
 
+export type MealSlotNormalizationStatus = 'normalized' | 'partially_normalized' | 'missing';
+
+export type MealPlanRecalculationValidationStatus = 'ok' | 'warning' | 'blocked';
+export type MealPlanRecalculationTargetStatus =
+  | 'ok'
+  | 'warning'
+  | 'blocked'
+  | 'needsAdditionalMeals'
+  | 'targetUnreachableWithCurrentAssignments';
+
+export type MealSuitabilityStatus = 'good' | 'borderline' | 'poor';
+export type MealReplacementPriority = 'high' | 'medium' | 'low';
+
+export type MealReplacementOpportunity = {
+  assignmentId: string;
+  mealName: string;
+  mealType: string;
+  dayOfWeek: number;
+  calories: number;
+  protein: number;
+  currentProtein: number;
+  proteinPer100Kcal: number;
+  targetProteinPer100Kcal: number;
+  targetCaloriesRange: {
+    min: number;
+    max: number;
+  };
+  targetProteinRange: {
+    min: number;
+    max: number;
+  };
+  suggestedReplacementType: string;
+  coachingMessage: string;
+  estimatedProteinIncrease: {
+    min: number;
+    max: number;
+  };
+  suitabilityStatus: MealSuitabilityStatus;
+  suitabilityScore: number;
+  priority: MealReplacementPriority;
+  contributionToRemainingProteinGap: number;
+  reason: string;
+};
+
+export type MealPlanRecommendedAddition = {
+  type: string;
+  daysNeeded: number;
+  targetCaloriesPerDay: {
+    min: number;
+    max: number;
+  };
+  targetProteinPerDay: {
+    min: number;
+    max: number;
+  };
+  reason: string;
+};
+
+export type MealPlanRecalculationValidation = {
+  status: MealPlanRecalculationValidationStatus;
+  canApply: boolean;
+  calorieAccuracyPercent: number;
+  proteinGapPercent: number;
+  reasons: string[];
+  targetStatus: MealPlanRecalculationTargetStatus;
+  summaryReason: string | null;
+};
+
 export type MealSlotSummary = {
   mealType: string;
   included: boolean;
+  normalizationStatus: MealSlotNormalizationStatus;
   coverageDays: number;
   expectedDays: number;
   target: RecalculationMacroTargets;
+  targetLabel: string;
+  targetHint: string | null;
   projected: RecalculationMacroTargets;
+  proteinPer100Kcal: number;
+  suitabilityStatus: MealSuitabilityStatus;
+  suitabilityReasons: string[];
   expectedAccuracyPercent: number | null;
   hasBoundsClamping: boolean;
   warning: string | null;
@@ -48,6 +122,9 @@ export type MealPlanRecalculationResult = {
   projectedTotals: RecalculationMacroTargets;
   expectedAccuracyPercent: number;
   hasBoundsClamping: boolean;
+  validation: MealPlanRecalculationValidation;
+  recommendedAdditions: MealPlanRecommendedAddition[];
+  replacementOpportunities: MealReplacementOpportunity[];
   slotSummaries: MealSlotSummary[];
   deltas: MealPortionDelta[];
   warning: string | null;

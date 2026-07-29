@@ -9,7 +9,7 @@ import { httpClient } from '@/lib/http/client';
  * @returns Meal assignments data, loading state, error, and refresh function
  */
 export function useClientMeals(clientId: string | null) {
-  const key = clientId ? `/api/meal-plans?clientId=${clientId}` : null;
+  const key = clientId ? `/api/clients/${clientId}/meal-plans` : null;
 
   type UseClientMealsData = {
     assignments: MealAssignment[];

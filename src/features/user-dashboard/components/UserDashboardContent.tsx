@@ -2,100 +2,30 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { ArrowRight, CheckCircle2, ClipboardCheck, Dumbbell, Flame, MessageSquare, Moon, Sun, Utensils } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowRight, CheckCircle2, Flame, Moon, Sun } from 'lucide-react';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
-import { TodayMissionCard } from '@/features/today-mission/components/TodayMissionCard';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
-
-const ACTION_ICONS = {
-  'daily-checkin': CheckCircle2,
-  'weekly-checkin': ClipboardCheck,
-  meals: Utensils,
-  training: Dumbbell,
-  messages: MessageSquare,
-} as const;
-
-type DashboardAction = UserDashboardSummary['pendingAttention']['items'][number] | UserDashboardSummary['nextAction'];
 
 function TodayBadge({ streakCount }: { streakCount: number }) {
   if (streakCount <= 0) return null;
 
   return (
-    <div
-      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold text-foreground shadow-sm"
-      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-    >
+    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold text-foreground" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
       <Flame size={12} className="text-primary" />
       {streakCount} day streak
+    </span>
+  );
+}
+
+function StatusItem({ label, value, complete }: { label: string; value: string; complete?: boolean }) {
+  return (
+    <div className="min-w-0 px-3 first:pl-0 last:pr-0 sm:px-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+      <div className="mt-1.5 flex items-center gap-1.5">
+        {complete !== undefined ? <span className={`h-1.5 w-1.5 rounded-full ${complete ? 'bg-emerald-500' : 'bg-primary'}`} /> : null}
+        <p className="truncate text-sm font-semibold text-foreground">{value}</p>
+      </div>
     </div>
-  );
-}
-
-function StatTile({ action, emphasis }: { action: DashboardAction; emphasis?: boolean }) {
-  const Icon = ACTION_ICONS[action.kind];
-
-  return (
-    <Link
-      href={action.href}
-      className={cn(
-        'group rounded-[22px] border p-4 shadow-sm transition-transform active:scale-[0.99]',
-        emphasis ? 'border-primary/30 bg-primary/5' : '',
-      )}
-      style={{ background: 'var(--color-surface)', borderColor: emphasis ? 'var(--color-primary-muted)' : 'var(--color-border)' }}
-      title={`${action.title} ${action.description}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition-colors',
-            emphasis ? 'text-primary' : 'text-[var(--color-text-muted)]',
-          )}
-          style={{
-            background: emphasis ? 'var(--color-accent-translucent)' : 'var(--color-bg-alt)',
-            borderColor: 'var(--color-border)',
-          }}
-        >
-          <Icon size={16} />
-        </div>
-
-        <ArrowRight
-          size={15}
-          className="mt-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-        />
-      </div>
-
-      <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">{action.title}</p>
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.description}</p>
-    </Link>
-  );
-}
-
-function ResumeCard({ action }: { action: UserDashboardSummary['resumeRoute'] }) {
-  return (
-    <Link
-      href={action.href}
-      className="group block rounded-[24px] border p-5 shadow-sm transition-transform active:scale-[0.98]"
-      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-      title={`${action.label} - ${action.description}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next up</p>
-          <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">{action.label}</h3>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">{action.description}</p>
-        </div>
-
-        <ArrowRight
-          size={15}
-          className="mt-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-        />
-      </div>
-
-      <div className="mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold border-border/60 bg-background/75 text-muted-foreground">
-        Resume where you left off
-      </div>
-    </Link>
   );
 }
 
@@ -104,94 +34,89 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
     const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
     const hour = new Date(denmarkTime).getHours();
 
-    if (hour >= 5 && hour < 12) return { text: 'Good morning', icon: <Sun size={18} /> };
-    if (hour >= 12 && hour < 18) return { text: 'Good afternoon', icon: <Sun size={18} /> };
-    return { text: 'Good evening', icon: <Moon size={18} /> };
+    if (hour >= 5 && hour < 12) return { text: 'Good morning', icon: <Sun size={17} /> };
+    if (hour >= 12 && hour < 18) return { text: 'Good afternoon', icon: <Sun size={17} /> };
+    return { text: 'Good evening', icon: <Moon size={17} /> };
   }, []);
 
   const { summary: todayMission } = useTodayMission(summary);
   const firstName = summary.user.name.split(' ')[0] || 'Member';
   const coachMessage = summary.user.motivationalMessage || 'No coach note yet. Check back after your next review.';
-  const visibleActions = summary.pendingAttention.items.length > 0 ? summary.pendingAttention.items : [summary.nextAction];
+  const isCheckInComplete = summary.dailyCheckIn.isComplete;
+  const isMealsComplete = todayMission.mealProgress.total > 0 && todayMission.mealProgress.percentage === 100;
+  const primaryAction = summary.nextAction;
 
   return (
-    <div className="space-y-5 md:space-y-6">
-      <section
-        className="relative z-0 overflow-hidden rounded-[32px] border bg-card/75 p-5 shadow-sm backdrop-blur-xl sm:p-6"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-      >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
-        />
+    <div className="space-y-3 md:space-y-4">
+      <section className="relative overflow-hidden rounded-[30px] border p-5 shadow-sm backdrop-blur-xl sm:p-6" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-
-            <div className="mt-2 flex items-center gap-3">
-              <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-muted-foreground shadow-sm"
-                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-              >
-                {greeting.icon}
-              </div>
-
-              <div className="min-w-0">
-                <h1 className="text-[1.9rem] font-semibold tracking-tight text-foreground">
-                  {greeting.text}, {firstName}
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">Keep it simple. One clear step at a time.</p>
-              </div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              {greeting.icon}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">Today</p>
             </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <TodayBadge streakCount={summary.streakCount} />
-              <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground"
-                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                {summary.todayCompletionState.label}
-              </div>
-              <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground"
-                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {summary.unreadTotal > 0
-                  ? `${summary.unreadTotal} coach message${summary.unreadTotal === 1 ? '' : 's'} waiting`
-                  : 'Coach chat quiet'}
-              </div>
-            </div>
+            <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight tracking-tight text-foreground">
+              {greeting.text}, {firstName}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">One clear step at a time.</p>
           </div>
 
-          <div
-            className="hidden rounded-full border p-2 text-muted-foreground shadow-sm sm:flex"
-            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-          >
-            {greeting.icon}
-          </div>
+          <TodayBadge streakCount={summary.streakCount} />
         </div>
 
-        <div
-          className="mt-4 rounded-[24px] border p-4"
-          style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach note</p>
-          <p className="mt-2 text-sm leading-6 text-foreground">{coachMessage}</p>
+        <div className="mt-5 border-t border-border/70 pt-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today&apos;s focus</p>
+              <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-foreground">{todayMission.headline}</h2>
+              <p className="mt-1 text-sm leading-5 text-muted-foreground">{todayMission.description}</p>
+            </div>
+            <span className="shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+              {todayMission.badgeLabel}
+            </span>
+          </div>
+
+          <Link href={primaryAction.href} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform active:scale-[0.99]">
+            <span className="truncate">{primaryAction.title}</span>
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
 
-      <ResumeCard action={summary.resumeRoute} />
+      <section className="rounded-[26px] border px-4 py-4 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Your progress</p>
+            <p className="mt-1 text-sm font-semibold text-foreground">{summary.todayCompletionState.label}</p>
+          </div>
+          <span className="text-xs text-muted-foreground">{todayMission.mealProgress.percentage}% meals</span>
+        </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {visibleActions.slice(0, 4).map((action, index) => (
-          <StatTile key={action.key} action={action} emphasis={index === 0} />
-        ))}
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--color-bg-alt)' }}>
+          <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, todayMission.mealProgress.percentage))}%` }} />
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 divide-x divide-border/70">
+          <StatusItem label="Meals" value={`${todayMission.mealProgress.completed}/${todayMission.mealProgress.total}`} complete={isMealsComplete} />
+          <StatusItem label="Check-in" value={isCheckInComplete ? 'Complete' : 'Due'} complete={isCheckInComplete} />
+          <StatusItem label="Coach" value={summary.unreadTotal > 0 ? `${summary.unreadTotal} unread` : 'All clear'} complete={summary.unreadTotal === 0} />
+        </div>
       </section>
 
-      <TodayMissionCard summary={todayMission} />
+      <section className="rounded-[26px] border px-4 py-3.5 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: 'var(--color-accent-translucent)', color: 'var(--color-accent)' }}>
+            <CheckCircle2 size={15} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach note</p>
+            <p className="mt-1 text-sm leading-5 text-foreground">{coachMessage}</p>
+          </div>
+          {summary.unreadTotal > 0 ? <Link href="/user/chat" className="ml-auto shrink-0 pt-1 text-xs font-semibold text-primary">Chat</Link> : null}
+        </div>
+      </section>
     </div>
   );
 }

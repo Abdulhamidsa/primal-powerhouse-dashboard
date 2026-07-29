@@ -4,6 +4,7 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { createClientSchema } from '@/features/client-creation/schemas/clientCreation.schema';
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,18 +70,22 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { coachId, ...clientData } = body;
+    const parsed = createClientSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return jsonWithCache(
+        {
+          error: 'Invalid client payload',
+          details: parsed.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const { coachId, password, progressPhotos, sessionsCompleted, status, ...clientData } = parsed.data;
 
     // Default to the authenticated user as the coach
     const userId = coachId || auth.user.userId;
-
-    // Validate required fields
-    if (!clientData.name) {
-      return jsonWithCache({ error: 'Client name is required' }, { status: 400 });
-    }
-    if (!clientData.email) {
-      return jsonWithCache({ error: 'Client email is required' }, { status: 400 });
-    }
 
     // Check for existing client with same email
     const existingClient = await prisma.client.findUnique({
@@ -98,7 +103,7 @@ export async function POST(request: NextRequest) {
         .toString('base64')
         .replace(/[^a-zA-Z0-9]/g, '')
         .slice(0, 12)}!`;
-    const plainPassword = (clientData.password && String(clientData.password).trim()) || generatePassword();
+    const plainPassword = (password && String(password).trim()) || generatePassword();
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     // Prepare data for Prisma
@@ -107,19 +112,20 @@ export async function POST(request: NextRequest) {
       email: clientData.email,
       phone: clientData.phone || null,
       avatar: clientData.avatar || null,
-      status: clientData.status || 'ACTIVE',
+      status: status || 'ACTIVE',
       currentWeight: clientData.currentWeight || null,
       targetWeight: clientData.targetWeight || null,
       height: clientData.height || null,
       age: clientData.age || null,
+      gender: clientData.gender || null,
       activityLevel: clientData.activityLevel || null,
       password: hashedPassword,
       notes: clientData.notes || null,
-      sessionsCompleted: clientData.sessionsCompleted || 0,
+      sessionsCompleted: sessionsCompleted || 0,
       coachId: userId,
       dietaryRestrictions: JSON.stringify(clientData.dietaryRestrictions || []),
       goals: JSON.stringify(clientData.goals || []),
-      progressPhotos: JSON.stringify(clientData.progressPhotos || []),
+      progressPhotos: JSON.stringify(progressPhotos || []),
     };
 
     console.log('Creating client with:', clientToCreate);

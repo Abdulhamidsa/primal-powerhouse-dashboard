@@ -1593,7 +1593,7 @@ export default function IntegratedMealAssignmentModal({
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-start overflow-y-auto">
       <div
-        className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl m-2 sm:m-4 w-full max-w-7xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)] overflow-y-auto"
+        className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl m-2 sm:m-4 w-full max-w-fit max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)] overflow-y-auto"
         style={{
           background: 'var(--color-surface)',
           borderColor: 'var(--color-border)',

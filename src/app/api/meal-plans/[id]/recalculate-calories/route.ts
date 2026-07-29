@@ -5,9 +5,12 @@ import { requireAuth } from '@/lib/auth';
 import { invalidateMealCaches } from '@/lib/cache-tags';
 import { calculateMacroRecommendations } from '@/lib/health/calculators';
 import { mealPlanRecalculationSchema } from '@/features/meal-plan-recalculation/schemas/mealPlanRecalculation.schema';
+import {
+  evaluateMealPlanRecalculation,
+  type MealPlanRecalculationAssignment,
+} from '@/features/meal-plan-recalculation/lib/recalculation';
 import type {
   MealPlanRecalculationResult,
-  MealPortionDelta,
   OptimizationMode,
   RecalculationMacroTargets,
 } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
@@ -465,13 +468,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const slotDailyTargets = splitDailyTargetsBySlot(targets);
 
     const numDays = Math.max(1, new Set(mealPlan.mealAssignments.map(a => a.dayOfWeek)).size);
-    const planTargets: RecalculationMacroTargets = {
-      calories: targets.calories * numDays,
-      protein: targets.protein * numDays,
-      carbs: targets.carbs * numDays,
-      fat: targets.fat * numDays,
-    };
-
     const originalMealIds = Array.from(
       new Set(
         mealPlan.mealAssignments
@@ -539,187 +535,43 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const slotCoverage = new Map<MealSlotType, Set<number>>(
-      MEAL_SLOT_ORDER.map(mealType => [mealType, new Set<number>()]),
-    );
-    for (const item of withDerivedPortions) {
-      slotCoverage.get(item.mealType)?.add(item.dayOfWeek);
-    }
-
-    const includedSlots = new Set<MealSlotType>(
-      MEAL_SLOT_ORDER.filter(mealType => (slotCoverage.get(mealType)?.size ?? 0) === numDays),
-    );
-
-    const slotPlanTargets = new Map<MealSlotType, RecalculationMacroTargets>(
-      MEAL_SLOT_ORDER.map(mealType => [mealType, scaleTargets(slotDailyTargets[mealType], numDays)]),
-    );
-
-    const initialPortionsByAssignmentId = new Map<string, number>();
-    const clampedByAssignmentId = new Map<string, boolean>();
-
-    for (const mealType of MEAL_SLOT_ORDER) {
-      const slotItems = withDerivedPortions.filter(item => item.mealType === mealType);
-
-      if (slotItems.length === 0) {
-        continue;
-      }
-
-      if (!includedSlots.has(mealType)) {
-        for (const item of slotItems) {
-          initialPortionsByAssignmentId.set(item.assignment.id, item.logicalOldPortion);
-          clampedByAssignmentId.set(item.assignment.id, false);
-        }
-        continue;
-      }
-
-      const slotCurrentTotals = calculateTotals(
-        slotItems.map(item => ({ portion: item.logicalOldPortion, meal: item.baseMeal })),
-      );
-      const targetTotals = slotPlanTargets.get(mealType) ?? scaleTargets(slotDailyTargets[mealType], numDays);
-      const scaleFactor = slotCurrentTotals.calories > 0 ? targetTotals.calories / slotCurrentTotals.calories : 1;
-
-      for (const item of slotItems) {
-        const scaled = round1(item.logicalOldPortion * scaleFactor);
-        const clamped = clampPortion(scaled, mealType);
-        initialPortionsByAssignmentId.set(item.assignment.id, clamped.value);
-        clampedByAssignmentId.set(item.assignment.id, clamped.clamped);
-      }
-    }
-
-    let optimizationMode: OptimizationMode = input.optimizationMode;
-    let optimizedPortions = new Map(initialPortionsByAssignmentId);
-
-    if (input.optimizationMode === 'macro_optimized') {
-      for (const mealType of MEAL_SLOT_ORDER) {
-        if (!includedSlots.has(mealType)) {
-          continue;
-        }
-
-        const slotItems = withDerivedPortions.filter(item => item.mealType === mealType);
-        if (slotItems.length === 0) {
-          continue;
-        }
-
-        const optimized = optimizePortionsForMacros({
-          targets: slotPlanTargets.get(mealType) ?? scaleTargets(slotDailyTargets[mealType], numDays),
-          assignments: slotItems.map(item => ({
-            assignmentId: item.assignment.id,
-            mealType,
-            oldPortion: item.logicalOldPortion,
-            meal: item.baseMeal,
-          })),
-          initialNewPortions: optimizedPortions,
-          maxMealAdjustments: input.maxMealAdjustments,
-        });
-
-        optimizedPortions = optimized.optimized;
-      }
-    }
-
-    const optimizedDeltas = withDerivedPortions
-      .map(({ assignment, mealType, dayOfWeek, logicalOldPortion }) => {
-        const nextPortion = optimizedPortions.get(assignment.id) ?? logicalOldPortion;
-        return {
-          assignmentId: assignment.id,
-          mealName: assignment.meal.name,
-          mealType,
-          dayOfWeek,
-          oldPortion: logicalOldPortion,
-          newPortion: nextPortion,
-          wasClampedByBounds:
-            clampedByAssignmentId.get(assignment.id) === true ||
-            nextPortion <= getPortionBounds(mealType).min + 0.0001 ||
-            nextPortion >= getPortionBounds(mealType).max - 0.0001,
-        } satisfies MealPortionDelta;
-      })
-      .sort((left, right) => {
-        const mealTypeDiff =
-          MEAL_SLOT_ORDER.indexOf(left.mealType as MealSlotType) -
-          MEAL_SLOT_ORDER.indexOf(right.mealType as MealSlotType);
-        if (mealTypeDiff !== 0) return mealTypeDiff;
-        if (left.dayOfWeek !== right.dayOfWeek) return left.dayOfWeek - right.dayOfWeek;
-        return left.mealName.localeCompare(right.mealName);
-      });
-
-    const adjustmentsApplied = optimizedDeltas.filter(
-      delta => Math.abs(delta.newPortion - delta.oldPortion) > 0.0001,
-    ).length;
-
-    const projectedTotals = calculateTotals(
-      withDerivedPortions.map(({ assignment, baseMeal }) => {
-        const delta = optimizedDeltas.find(item => item.assignmentId === assignment.id)!;
-        return { portion: delta.newPortion, meal: baseMeal };
-      }),
-    );
-
-    const slotSummaries = MEAL_SLOT_ORDER.map(mealType => {
-      const slotItems = withDerivedPortions.filter(item => item.mealType === mealType);
-      const coverageDays = slotCoverage.get(mealType)?.size ?? 0;
-      const included = includedSlots.has(mealType);
-      const target = slotDailyTargets[mealType];
-      const projectedPlanTotals = calculateTotals(
-        slotItems.map(({ assignment, baseMeal }) => {
-          const delta = optimizedDeltas.find(item => item.assignmentId === assignment.id);
-          return {
-            portion: delta?.newPortion ?? 0,
-            meal: baseMeal,
-          };
-        }),
-      );
-      const projected = divideTargets(projectedPlanTotals, coverageDays || 1);
-      const slotHasClamping = optimizedDeltas.some(delta => delta.mealType === mealType && delta.wasClampedByBounds);
-
-      let warning: string | null = null;
-      let expectedAccuracyPercent: number | null = null;
-
-      if (!included) {
-        warning =
-          coverageDays === 0
-            ? `${formatMealTypeLabel(mealType)} is missing from this plan and was not normalized.`
-            : `${formatMealTypeLabel(mealType)} exists on ${coverageDays} of ${numDays} days and was skipped.`;
-      } else {
-        expectedAccuracyPercent = calculateAccuracyPercent(target.calories, projected.calories);
-        if (slotHasClamping || expectedAccuracyPercent < 99) {
-          warning = `${formatMealTypeLabel(mealType)} could not hit target exactly within safe portion limits.`;
-        }
-      }
-
-      return {
-        mealType,
-        included,
-        coverageDays,
-        expectedDays: numDays,
-        target,
-        projected,
-        expectedAccuracyPercent,
-        hasBoundsClamping: slotHasClamping,
-        warning,
-      };
+    const recalculation = evaluateMealPlanRecalculation({
+      numDays,
+      targets,
+      assignments: withDerivedPortions.map(item => ({
+        assignmentId: item.assignment.id,
+        mealName: item.assignment.meal.name,
+        mealType: item.mealType,
+        dayOfWeek: item.dayOfWeek,
+        logicalOldPortion: item.logicalOldPortion,
+        baseMeal: item.baseMeal,
+      })),
+      optimizationMode: input.optimizationMode,
+      maxMealAdjustments: input.maxMealAdjustments,
     });
 
-    const expectedAccuracyPercent = calculateAccuracyPercent(planTargets.calories, projectedTotals.calories);
-    const hasBoundsClamping = optimizedDeltas.some(delta => delta.wasClampedByBounds);
-
-    const skippedSlots = slotSummaries
-      .filter(summary => !summary.included)
-      .map(summary => formatMealTypeLabel(summary.mealType));
-    const warningParts: string[] = [];
-    if (skippedSlots.length > 0) {
-      warningParts.push(`Skipped slot normalization for: ${skippedSlots.join(', ')}.`);
-    }
-    if (hasBoundsClamping || expectedAccuracyPercent < 99) {
-      warningParts.push(
-        `Target cannot be reached exactly within safe portion limits. Expected overall accuracy: ${expectedAccuracyPercent.toFixed(1)}%.`,
+    if (input.mode === 'apply' && !recalculation.validation.canApply) {
+      return NextResponse.json(
+        {
+          message: 'Preview is below the application threshold. Review the preview and try again.',
+          validation: recalculation.validation,
+          recoveryAction: 'Adjust target',
+        },
+        { status: 422 },
       );
     }
-    const warning = warningParts.length > 0 ? warningParts.join(' ') : null;
 
-    const dailyProjectedTotals: RecalculationMacroTargets = {
-      calories: Math.round(projectedTotals.calories / numDays),
-      protein: Math.round(projectedTotals.protein / numDays),
-      carbs: Math.round(projectedTotals.carbs / numDays),
-      fat: Math.round(projectedTotals.fat / numDays),
-    };
+    const optimizedDeltas = recalculation.deltas;
+    const projectedTotals = recalculation.projectedWeeklyTotals;
+    const dailyProjectedTotals = recalculation.projectedDailyTotals;
+    const slotSummaries = recalculation.slotSummaries;
+    const expectedAccuracyPercent = recalculation.expectedAccuracyPercent;
+    const hasBoundsClamping = recalculation.hasBoundsClamping;
+    const warning = recalculation.warning;
+    const adjustmentsApplied = recalculation.adjustmentsApplied;
+    const recommendedAdditions = recalculation.recommendedAdditions;
+    const replacementOpportunities = recalculation.replacementOpportunities;
+    const optimizationMode: OptimizationMode = input.optimizationMode;
 
     const result: MealPlanRecalculationResult = {
       mealPlanId: mealPlan.id,
@@ -729,6 +581,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       projectedTotals: dailyProjectedTotals,
       expectedAccuracyPercent,
       hasBoundsClamping,
+      validation: recalculation.validation,
+      recommendedAdditions,
+      replacementOpportunities,
       slotSummaries,
       deltas: optimizedDeltas,
       warning,

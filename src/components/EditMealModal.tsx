@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import NextImage from 'next/image';
-import { Copy, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Sparkles } from 'lucide-react';
 import { DataService } from '@/services/dataService';
 import ImageUpload from '@/components/ImageUpload';
 import IngredientSearch from '@/components/IngredientSearch';
@@ -49,6 +49,8 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
   const [clientName, setClientName] = useState<string | null>(null);
   const [templateUsageCount, setTemplateUsageCount] = useState(0);
   const [showTemplateWarning, setShowTemplateWarning] = useState(false);
+  const [expandedIngredientId, setExpandedIngredientId] = useState<string | null>(null);
+  const [calorieScaleTarget, setCalorieScaleTarget] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     type: 'BREAKFAST',
@@ -91,6 +93,60 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     carbs: Math.round((totalsPreview.carbs / servingsNumber) * 10) / 10,
     fat: Math.round((totalsPreview.fat / servingsNumber) * 10) / 10,
     fiber: Math.round((totalsPreview.fiber / servingsNumber) * 10) / 10,
+  };
+
+  const formatIngredientAmount = (amount: number) => {
+    if (!Number.isFinite(amount)) return '0';
+    const rounded = Math.round(amount * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/\.00$/, '');
+  };
+
+  const calculateIngredientNutrition = (ingredient: EditableIngredient) => {
+    if (!ingredient.nutritionPer100g) return null;
+
+    const grams =
+      ingredient.unit === 'piece' && (ingredient.gramsPerUnit ?? 0) > 0
+        ? (Number(ingredient.amount) || 0) * Number(ingredient.gramsPerUnit)
+        : Number(ingredient.amount) || 0;
+
+    if (grams <= 0) return null;
+
+    const ratio = grams / 100;
+
+    return {
+      calories: Math.round((ingredient.nutritionPer100g.caloriesKcal ?? 0) * ratio),
+      protein: Math.round(((ingredient.nutritionPer100g.proteinG ?? 0) * ratio) * 10) / 10,
+      carbs: Math.round(((ingredient.nutritionPer100g.carbsG ?? 0) * ratio) * 10) / 10,
+      fat: Math.round(((ingredient.nutritionPer100g.fatG ?? 0) * ratio) * 10) / 10,
+      fiber: Math.round(((ingredient.nutritionPer100g.fiberG ?? 0) * ratio) * 10) / 10,
+    };
+  };
+
+  const getIngredientDisplayTitle = (ingredient: EditableIngredient) => {
+    const amount = formatIngredientAmount(ingredient.amount);
+    const unitLabel = ingredient.unit === 'piece' ? ingredient.displayUnitLabel || 'piece' : ingredient.unit || 'g';
+    if (ingredient.unit === 'piece') {
+      return `${amount} ${unitLabel}${Number(ingredient.amount) !== 1 ? 's' : ''}`;
+    }
+
+    return `${amount} ${unitLabel}`;
+  };
+
+  const scaleIngredientsToCalories = () => {
+    const targetCalories = Number(calorieScaleTarget);
+    if (!Number.isFinite(targetCalories) || targetCalories <= 0 || totalsPreview.calories <= 0) {
+      return;
+    }
+
+    const scaleFactor = targetCalories / totalsPreview.calories;
+
+    setFormData(prev => ({
+      ...prev,
+      ingredients: prev.ingredients.map(ingredient => ({
+        ...ingredient,
+        amount: Math.max(0.01, Math.round(Number(ingredient.amount) * scaleFactor * 100) / 100),
+      })),
+    }));
   };
 
   const recalculateNutritionFields = (ingredients: EditableIngredient[]) => {
@@ -275,6 +331,15 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
           }
         }
 
+        const initialIngredients =
+          Array.isArray(meal.ingredients) && meal.ingredients.length > 0
+            ? meal.ingredients.map((ingredient: unknown, index: number) => normalizeIngredient(ingredient, index))
+            : [normalizeIngredient('', 0)];
+        const initialInstructions =
+          Array.isArray(meal.instructions) && meal.instructions.length > 0
+            ? meal.instructions.map((instruction: unknown, index: number) => normalizeInstruction(instruction, index))
+            : [normalizeInstruction('', 0)];
+
         setFormData({
           name: meal.name || '',
           type: meal.type || 'BREAKFAST',
@@ -283,19 +348,16 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
           carbs: String(meal.carbs || ''),
           fat: String(meal.fat || ''),
           fiber: String(meal.fiber || ''),
-          ingredients:
-            Array.isArray(meal.ingredients) && meal.ingredients.length > 0
-              ? meal.ingredients.map((ingredient: unknown, index: number) => normalizeIngredient(ingredient, index))
-              : [normalizeIngredient('', 0)],
-          instructions:
-            Array.isArray(meal.instructions) && meal.instructions.length > 0
-              ? meal.instructions.map((instruction: unknown, index: number) => normalizeInstruction(instruction, index))
-              : [normalizeInstruction('', 0)],
+          ingredients: initialIngredients,
+          instructions: initialInstructions,
           prepTime: String(meal.prepTime || ''),
           cookTime: String(meal.cookTime || ''),
           servings: String(meal.servings || '1'),
           tags: Array.isArray(meal.tags) && meal.tags.length > 0 ? meal.tags : [''],
         });
+
+        setExpandedIngredientId(initialIngredients[0]?.id ?? null);
+        setCalorieScaleTarget(String(meal.calories || ''));
 
         setCurrentImageUrl(meal.imageUrl || '');
       } catch (error) {
@@ -457,6 +519,8 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
     setClientName(null);
     setTemplateUsageCount(0);
     setShowTemplateWarning(false);
+    setExpandedIngredientId(null);
+    setCalorieScaleTarget('');
     setErrors({});
     setUploadError('');
     resetPromptState();
@@ -510,27 +574,30 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
 
   const addIngredientFromDb = (ingredient: SelectedIngredient) => {
     setFormData(prev => {
+      const newIngredient: EditableIngredient = {
+        id: `ingredient-${Date.now()}-${ingredient.id}`,
+        foodId: ingredient.id,
+        name: ingredient.name,
+        amount: ingredient.servingUnit === 'piece' ? 1 : ingredient.grams || 100,
+        unit: ingredient.servingUnit === 'piece' ? 'piece' : 'g',
+        gramsPerUnit: ingredient.gramsPerUnit ?? null,
+        displayUnitLabel: ingredient.displayUnitLabel ?? null,
+        nutritionPer100g: {
+          caloriesKcal: ingredient.kcalPer100g ?? 0,
+          proteinG: ingredient.proteinPer100g ?? 0,
+          carbsG: ingredient.carbsPer100g ?? 0,
+          fatG: ingredient.fatPer100g ?? 0,
+          fiberG: ingredient.fiberPer100g ?? 0,
+        },
+      };
+
       const ingredients = [
         ...prev.ingredients,
-        {
-          id: `ingredient-${Date.now()}-${ingredient.id}`,
-          foodId: ingredient.id,
-          name: ingredient.name,
-          amount: ingredient.servingUnit === 'piece' ? 1 : ingredient.grams || 100,
-          unit: ingredient.servingUnit === 'piece' ? 'piece' : 'g',
-          gramsPerUnit: ingredient.gramsPerUnit ?? null,
-          displayUnitLabel: ingredient.displayUnitLabel ?? null,
-          nutritionPer100g: {
-            caloriesKcal: ingredient.kcalPer100g ?? 0,
-            proteinG: ingredient.proteinPer100g ?? 0,
-            carbsG: ingredient.carbsPer100g ?? 0,
-            fatG: ingredient.fatPer100g ?? 0,
-            fiberG: ingredient.fiberPer100g ?? 0,
-          },
-        },
+        newIngredient,
       ];
 
       const nextNutrition = recalculateNutritionFields(ingredients);
+      setExpandedIngredientId(newIngredient.id);
       return {
         ...prev,
         ingredients,
@@ -556,16 +623,18 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
 
   const addIngredientRow = () => {
     setFormData(prev => {
+      const newIngredient: EditableIngredient = {
+        id: `ingredient-${Date.now()}-${prev.ingredients.length}`,
+        name: '',
+        amount: 100,
+        unit: 'g',
+      };
       const ingredients = [
         ...prev.ingredients,
-        {
-          id: `ingredient-${Date.now()}-${prev.ingredients.length}`,
-          name: '',
-          amount: 100,
-          unit: 'g',
-        },
+        newIngredient,
       ];
       const nextNutrition = recalculateNutritionFields(ingredients);
+      setExpandedIngredientId(newIngredient.id);
       return {
         ...prev,
         ingredients,
@@ -576,9 +645,13 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
 
   const removeIngredientRow = (index: number) => {
     setFormData(prev => {
+      const removedIngredient = prev.ingredients[index];
       const ingredients =
         prev.ingredients.length > 1 ? prev.ingredients.filter((_, i) => i !== index) : prev.ingredients;
       const nextNutrition = recalculateNutritionFields(ingredients);
+      if (removedIngredient && removedIngredient.id === expandedIngredientId) {
+        setExpandedIngredientId(ingredients[0]?.id ?? null);
+      }
       return {
         ...prev,
         ingredients,
@@ -657,36 +730,81 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{errors.general}</div>
             )}
 
-            <div className="sticky top-0 z-20 rounded-xl border border-zinc-700 bg-zinc-900/95 backdrop-blur p-3 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold tracking-wide text-zinc-300 uppercase">Live Totals</p>
-                <p className="text-xs text-zinc-400">Per serving shown below (servings: {servingsNumber})</p>
+            <div className="sticky top-0 z-20 rounded-xl border border-zinc-700 bg-zinc-900/95 p-3 shadow-lg backdrop-blur">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-300">Live Totals</p>
+                  <p className="text-xs text-zinc-400">Per serving shown below (servings: {servingsNumber})</p>
+                </div>
+                <div className="rounded-full border border-zinc-700 bg-zinc-800/70 px-3 py-1 text-xs text-zinc-400">
+                  {formData.ingredients.length} ingredient{formData.ingredients.length !== 1 ? 's' : ''}
+                </div>
               </div>
-              <div className="grid grid-cols-5 gap-2">
-                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
-                  <p className="text-[10px] text-zinc-400">kcal</p>
-                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.calories}</p>
-                  <p className="text-[10px] text-zinc-500">{perServingPreview.calories}/serv</p>
+
+              <div className="mt-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                    <p className="text-[10px] text-zinc-400">kcal</p>
+                    <p className="text-sm font-semibold text-zinc-100">{totalsPreview.calories}</p>
+                    <p className="text-[10px] text-zinc-500">{perServingPreview.calories}/serv</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                    <p className="text-[10px] text-zinc-400">Protein</p>
+                    <p className="text-sm font-semibold text-zinc-100">{totalsPreview.protein}g</p>
+                    <p className="text-[10px] text-zinc-500">{perServingPreview.protein}g/serv</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                    <p className="text-[10px] text-zinc-400">Carbs</p>
+                    <p className="text-sm font-semibold text-zinc-100">{totalsPreview.carbs}g</p>
+                    <p className="text-[10px] text-zinc-500">{perServingPreview.carbs}g/serv</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                    <p className="text-[10px] text-zinc-400">Fat</p>
+                    <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fat}g</p>
+                    <p className="text-[10px] text-zinc-500">{perServingPreview.fat}g/serv</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                    <p className="text-[10px] text-zinc-400">Fiber</p>
+                    <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fiber}g</p>
+                    <p className="text-[10px] text-zinc-500">{perServingPreview.fiber}g/serv</p>
+                  </div>
                 </div>
-                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
-                  <p className="text-[10px] text-zinc-400">Protein</p>
-                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.protein}g</p>
-                  <p className="text-[10px] text-zinc-500">{perServingPreview.protein}g/serv</p>
-                </div>
-                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
-                  <p className="text-[10px] text-zinc-400">Carbs</p>
-                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.carbs}g</p>
-                  <p className="text-[10px] text-zinc-500">{perServingPreview.carbs}g/serv</p>
-                </div>
-                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
-                  <p className="text-[10px] text-zinc-400">Fat</p>
-                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fat}g</p>
-                  <p className="text-[10px] text-zinc-500">{perServingPreview.fat}g/serv</p>
-                </div>
-                <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
-                  <p className="text-[10px] text-zinc-400">Fiber</p>
-                  <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fiber}g</p>
-                  <p className="text-[10px] text-zinc-500">{perServingPreview.fiber}g/serv</p>
+
+                <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-300">Scale ingredients</p>
+                      <p className="text-xs text-zinc-400">Set a calorie target and rescale every ingredient.</p>
+                    </div>
+                    <p className="text-xs text-zinc-500">{formatIngredientAmount(totalsPreview.calories)} kcal now</p>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="number"
+                      value={calorieScaleTarget}
+                      onChange={e => setCalorieScaleTarget(e.target.value)}
+                      className="w-full rounded-lg border px-3 py-2 text-sm text-zinc-100"
+                      style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                      min="1"
+                      placeholder={String(totalsPreview.calories || 0)}
+                      disabled={totalsPreview.calories <= 0}
+                    />
+                    <button
+                      type="button"
+                      onClick={scaleIngredientsToCalories}
+                      disabled={totalsPreview.calories <= 0 || !calorieScaleTarget}
+                      className="rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: totalsPreview.calories > 0 ? 'var(--color-accent)' : 'var(--color-bg-alt)',
+                        color: totalsPreview.calories > 0 ? 'var(--color-text-black)' : 'var(--color-text-muted)',
+                      }}
+                    >
+                      Scale
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-zinc-400">
+                    This keeps the recipe structure intact and adjusts ingredient quantities in proportion.
+                  </p>
                 </div>
               </div>
             </div>
@@ -909,41 +1027,136 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                 />
               </div>
 
-              <div className="space-y-2">
-                {formData.ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={ingredient.name}
-                      onChange={e => updateIngredientField(index, 'name', e.target.value)}
-                      className="flex-1 px-4 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg"
-                      placeholder="Ingredient name"
-                    />
-                    <input
-                      type="number"
-                      value={ingredient.amount}
-                      onChange={e => updateIngredientField(index, 'amount', Number(e.target.value) || 0)}
-                      className="w-28 px-3 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg"
-                      placeholder="grams"
-                    />
-                    <input
-                      type="text"
-                      value={ingredient.unit}
-                      onChange={e => updateIngredientField(index, 'unit', e.target.value)}
-                      className="w-24 px-3 py-3 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg"
-                      placeholder="unit"
-                    />
-                    {formData.ingredients.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeIngredientRow(index)}
-                        className="px-3 py-3 text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
+              <div className="space-y-3">
+                {formData.ingredients.map((ingredient, index) => {
+                  const ingredientNutrition = calculateIngredientNutrition(ingredient);
+                  const isExpanded = expandedIngredientId === ingredient.id;
+
+                  return (
+                    <div key={ingredient.id} className="overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900/70">
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setExpandedIngredientId(current => (current === ingredient.id ? null : ingredient.id))}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            setExpandedIngredientId(current => (current === ingredient.id ? null : ingredient.id));
+                          }
+                        }}
+                        className="flex w-full cursor-pointer items-start justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-zinc-800/70"
                       >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="truncate text-sm font-semibold text-zinc-100">
+                              {ingredient.name.trim() || `Ingredient ${index + 1}`}
+                            </h4>
+                            <span className="rounded-full border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-zinc-400">
+                              {getIngredientDisplayTitle(ingredient)}
+                            </span>
+                            {ingredient.foodId && (
+                              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300">
+                                DB linked
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-400">
+                            <span>{ingredient.unit === 'piece' ? 'Piece based' : 'Gram based'}</span>
+                            <span>•</span>
+                            <span>{ingredientNutrition?.calories ?? 0} kcal</span>
+                            <span>•</span>
+                            <span>{ingredientNutrition?.protein ?? 0}g protein</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-zinc-400">
+                          {formData.ingredients.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={e => {
+                                e.stopPropagation();
+                                removeIngredientRow(index);
+                              }}
+                              className="rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/20"
+                            >
+                              Remove
+                            </button>
+                          )}
+                          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        </div>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="border-t border-zinc-700 p-4">
+                          <div className="grid gap-3 md:grid-cols-[1.6fr_0.7fr_0.7fr]">
+                            <label className="block text-sm text-zinc-300">
+                              Ingredient name
+                              <input
+                                type="text"
+                                value={ingredient.name}
+                                onChange={e => updateIngredientField(index, 'name', e.target.value)}
+                                className="mt-1 w-full rounded-lg border px-3 py-2 text-zinc-100"
+                                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                                placeholder="Ingredient name"
+                              />
+                            </label>
+                            <label className="block text-sm text-zinc-300">
+                              Amount
+                              <input
+                                type="number"
+                                value={ingredient.amount}
+                                onChange={e => updateIngredientField(index, 'amount', Number(e.target.value) || 0)}
+                                className="mt-1 w-full rounded-lg border px-3 py-2 text-zinc-100"
+                                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                                placeholder="100"
+                                min="0"
+                                step="0.1"
+                              />
+                            </label>
+                            <label className="block text-sm text-zinc-300">
+                              Unit
+                              <input
+                                type="text"
+                                value={ingredient.unit}
+                                onChange={e => updateIngredientField(index, 'unit', e.target.value)}
+                                className="mt-1 w-full rounded-lg border px-3 py-2 text-zinc-100"
+                                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                                placeholder="g / piece"
+                              />
+                            </label>
+                          </div>
+
+                          <div className="mt-4 grid gap-3 md:grid-cols-4">
+                            <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3">
+                              <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-400">Calories</p>
+                              <p className="text-base font-semibold text-zinc-100">{ingredientNutrition?.calories ?? 0}</p>
+                            </div>
+                            <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3">
+                              <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-400">Protein</p>
+                              <p className="text-base font-semibold text-zinc-100">
+                                {ingredientNutrition?.protein ?? 0}g
+                              </p>
+                            </div>
+                            <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3">
+                              <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-400">Carbs</p>
+                              <p className="text-base font-semibold text-zinc-100">{ingredientNutrition?.carbs ?? 0}g</p>
+                            </div>
+                            <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3">
+                              <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-400">Fat</p>
+                              <p className="text-base font-semibold text-zinc-100">{ingredientNutrition?.fat ?? 0}g</p>
+                            </div>
+                          </div>
+
+                          {ingredient.foodId && (
+                            <p className="mt-3 text-xs text-zinc-500">
+                              Synced from the food database, so this ingredient carries nutrition data into the live totals.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               {errors.ingredients && <p className="text-red-500 text-sm mt-1">{errors.ingredients}</p>}
             </div>

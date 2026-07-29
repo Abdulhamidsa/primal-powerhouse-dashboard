@@ -167,7 +167,7 @@ export default function AssignPersonalizedMealsModal({
     meal =>
       meal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       meal.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meal.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      meal.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   const selectedMeal = meals.find(meal => meal.id === selectedMealId) || null;
@@ -183,7 +183,7 @@ export default function AssignPersonalizedMealsModal({
 
       // Show an alert to make the feedback clearer
       alert(
-        `"${selectedMeal?.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`
+        `"${selectedMeal?.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`,
       );
 
       // Clear success message after 3 seconds
@@ -292,14 +292,14 @@ export default function AssignPersonalizedMealsModal({
         await clientApi.createPersonalizedMeal(
           mealInput,
           clientId,
-          personalizedMeal.id // Pass the original meal ID
+          personalizedMeal.id, // Pass the original meal ID
         );
 
         setSuccessMessage(`Personalized meal created and assigned to client successfully!`);
 
         // Show an alert to make the feedback clearer
         alert(
-          `Personalized meal "${personalizedMeal.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`
+          `Personalized meal "${personalizedMeal.name}" has been added to your meal plan. Click "Create Meal Plan" to save all assignments.`,
         );
 
         // Clear success message after 3 seconds
