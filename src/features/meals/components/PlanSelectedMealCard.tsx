@@ -127,7 +127,7 @@ export function PlanSelectedMealCard({
             ) : null}
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+          <div className="grid grid-cols-2 gap-2 pt-1">
             {onToggleCompletionAction !== undefined ? (
               <button
                 type="button"
@@ -137,7 +137,7 @@ export function PlanSelectedMealCard({
                 }}
                 disabled={isPending}
                 aria-label={isCompleted ? 'Mark as not done' : 'Mark as done'}
-                className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-10 min-w-0 w-full items-center justify-center gap-1.5 rounded-full border px-2.5 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 style={{
                   borderColor: isCompleted ? 'var(--color-accent)' : 'var(--color-border)',
                   color: isCompleted ? 'var(--color-accent)' : 'var(--color-text-muted)',
@@ -145,7 +145,7 @@ export function PlanSelectedMealCard({
                 }}
               >
                 <Check size={14} />
-                {isCompleted ? 'Done' : 'Mark done'}
+                <span className="truncate">{isCompleted ? 'Done' : 'Mark done'}</span>
               </button>
             ) : null}
 
@@ -156,10 +156,11 @@ export function PlanSelectedMealCard({
                   event.stopPropagation();
                   onSwapAction();
                 }}
-                aria-label="Swap meal"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                aria-label="Change meal"
+                className="inline-flex min-h-10 min-w-0 w-full items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-2 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
-                <RefreshCcw size={15} />
+                <RefreshCcw size={14} />
+                <span className="truncate">Change meal</span>
               </button>
             ) : null}
           </div>
