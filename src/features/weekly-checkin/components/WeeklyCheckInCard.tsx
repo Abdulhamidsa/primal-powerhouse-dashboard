@@ -28,7 +28,7 @@ export function WeeklyCheckInCard() {
   if (!checkIn) {
     return (
       <Card className="rounded-3xl border-border/70 bg-card/90">
-        <CardHeader className="space-y-3 pb-3">
+        <CardHeader className="space-y-2 p-4 pb-2 sm:p-5 sm:pb-2">
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2">
               <Activity className="h-5 w-5 text-accent" />
@@ -38,7 +38,7 @@ export function WeeklyCheckInCard() {
           </div>
           <CardDescription>Track your progress for this week.</CardDescription>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="px-4 pb-4 sm:px-5 sm:pb-5">
           <Button className="w-full sm:w-auto" onClick={() => router.push('/user/check-in')}>
             Start Check-In
           </Button>
@@ -49,7 +49,7 @@ export function WeeklyCheckInCard() {
 
   return (
     <Card className="rounded-3xl border-border/70 bg-card/90">
-      <CardHeader className="space-y-3 pb-2">
+      <CardHeader className="space-y-2 p-4 pb-2 sm:p-5 sm:pb-2">
         <div className="flex items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2">
             <CalendarCheck2 className="h-5 w-5 text-accent" />
@@ -59,7 +59,7 @@ export function WeeklyCheckInCard() {
         </div>
         <CardDescription>Submitted {formatDateLabel(checkIn.submittedAt)}</CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="px-4 pb-4 sm:px-5 sm:pb-5">
         <div className="flex items-center justify-between rounded-2xl bg-muted/30 p-3">
           <div className="inline-flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-accent" />

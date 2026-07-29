@@ -1,24 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import type { ReactNode } from 'react';
+import { CalendarCheck2, ChevronDown, ClipboardCheck, Scale } from 'lucide-react';
 import { useState } from 'react';
-import { CalendarCheck2, ClipboardCheck, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { DailyCheckInCard } from '@/features/daily-checkin/components/DailyCheckInCard';
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
-import { useDailyCheckInToday } from '@/features/daily-checkin/hooks/useDailyCheckIn';
-import { useDailyNutritionToday } from '@/features/daily-nutrition/hooks/useDailyNutrition';
-import { useDailyTrainingToday } from '@/features/daily-training/hooks/useDailyTraining';
-import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
-import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
-
-const DailyCheckInInsightsCard = dynamic(
-  () => import('@/features/daily-checkin/components/DailyCheckInInsightsCard.lazy.tsx').then(mod => mod.default),
-  {
-    ssr: false,
-    loading: () => <div className="h-64 animate-pulse rounded-3xl border border-border/70 bg-card/60" />,
-  },
-);
 
 const WeeklyCheckInCard = dynamic(
   () => import('@/features/weekly-checkin/components/WeeklyCheckInCard.lazy.tsx').then(mod => mod.default),
@@ -28,42 +16,30 @@ const WeeklyCheckInCard = dynamic(
   },
 );
 
-type CheckInTab = 'daily' | 'weekly';
+const DailyCheckInInsightsCard = dynamic(
+  () => import('@/features/daily-checkin/components/DailyCheckInInsightsCard.lazy.tsx').then(mod => mod.default),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse rounded-3xl border border-border/70 bg-card/60" />,
+  },
+);
 
 export default function UserCheckInsPage() {
-  const [activeTab, setActiveTab] = useState<CheckInTab>('daily');
   const { visibility } = useClientSelfFeatureVisibility();
-  const { entry: dailyEntry, isLoading: dailyLoading } = useDailyCheckInToday();
-  const { entry: nutritionEntry, isLoading: nutritionLoading } = useDailyNutritionToday();
-  const { entry: trainingEntry, isLoading: trainingLoading } = useDailyTrainingToday();
-  const { summary: adherenceSummary, isLoading: adherenceLoading } = useMealAdherenceToday();
-  const { checkIn: weeklyCheckIn, status: weeklyStatus, isLoading: weeklyLoading } = useWeeklyCheckInCurrentWeek();
+  const [showWeightProgress, setShowWeightProgress] = useState(false);
+  const dailyEnabled = visibility?.dailyCheckinsEnabled;
+  const weeklyEnabled = visibility?.weeklyCheckinsEnabled;
 
-  const dailyCompletionCount = [
-    dailyEntry?.energy,
-    dailyEntry?.hunger,
-    dailyEntry?.sleep,
-    nutritionEntry?.status,
-    trainingEntry?.status,
-  ].filter(Boolean).length;
-  const isDailyComplete = dailyCompletionCount === 5;
-  const isDailyLoading = dailyLoading || nutritionLoading || trainingLoading;
-
-  // If no check-in features are enabled, show a message
-  if (!visibility?.dailyCheckinsEnabled && !visibility?.weeklyCheckinsEnabled) {
+  if (visibility && !dailyEnabled && !weeklyEnabled) {
     return (
       <div className="px-4 pb-8 pt-4 md:px-5">
-        <div className="mx-auto w-full max-w-3xl space-y-6">
-          <PageHeader
-            title="Check-Ins"
-            label="Tracking"
-            description="Track your daily and weekly progress in one place."
-          />
+        <div className="mx-auto w-full max-w-3xl space-y-4">
+          <PageHeader title="Check-Ins" description="Share your progress with your coach." />
           <div
-            className="rounded-[28px] border bg-card/75 p-5 shadow-sm backdrop-blur-xl"
+            className="rounded-[28px] border p-5 shadow-sm"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
-            <p style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-sm text-[var(--color-text-muted)]">
               Check-in features are not available at this time. Please contact your coach for more information.
             </p>
           </div>
@@ -74,153 +50,82 @@ export default function UserCheckInsPage() {
 
   return (
     <div className="px-4 pb-8 pt-4 md:px-5">
-      <div className="mx-auto w-full max-w-3xl space-y-6">
-        <PageHeader
-          title="Check-Ins"
-          label="Tracking"
-          description="Track your daily and weekly progress in one place."
-        />
+      <div className="mx-auto w-full max-w-3xl space-y-4 md:space-y-5">
+        <PageHeader title="Check-Ins" description="Share how you are doing so your coach can guide your next step." />
 
-        <section className="grid gap-3 sm:grid-cols-3">
-          <StatusCard
-            title="Today"
-            value={isDailyComplete ? 'Completed' : `${dailyCompletionCount}/5 done`}
-            detail={
-              isDailyComplete
-                ? 'Your daily check-in is already saved.'
-                : 'Open the daily check-in and finish the remaining items.'
-            }
-            tone={isDailyComplete ? 'good' : 'warn'}
-            loading={isDailyLoading}
-          />
-          <StatusCard
-            title="This week"
-            value={weeklyCheckIn ? 'Completed' : weeklyStatus === 'overdue' ? 'Overdue' : 'Due'}
-            detail={weeklyCheckIn ? 'Weekly check-in is in.' : 'Keep your weekly progress current for your coach.'}
-            tone={weeklyCheckIn ? 'good' : weeklyStatus === 'overdue' ? 'warn' : 'neutral'}
-            loading={weeklyLoading}
-          />
-          <StatusCard
-            title="Meal loop"
-            value={
-              adherenceSummary
-                ? `${adherenceSummary.completion.completedCount}/${adherenceSummary.completion.totalSelectedCount}`
-                : '—'
-            }
-            detail={
-              adherenceSummary
-                ? `${adherenceSummary.completion.percentage}% of selected meals completed today`
-                : 'Meal completion loads with your plan.'
-            }
-            tone={adherenceSummary && adherenceSummary.completion.percentage === 100 ? 'good' : 'neutral'}
-            loading={adherenceLoading}
-          />
-        </section>
+        {dailyEnabled ? (
+          <section
+            className="space-y-4 rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+          >
+            <SectionHeading icon={<ClipboardCheck size={16} />} eyebrow="Daily" title="Daily Check-In" description="A quick update about how you feel and how your day is going." />
+            <DailyCheckInCard />
+          </section>
+        ) : null}
 
-        <section className="space-y-4 rounded-[30px] border bg-card/75 p-3 shadow-sm backdrop-blur-xl" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
-          <div className="rounded-[22px] border border-border/70 bg-background/60 p-1">
-            <div
-              className="grid gap-1"
-              style={{
-                gridTemplateColumns:
-                  visibility?.dailyCheckinsEnabled && visibility?.weeklyCheckinsEnabled ? '1fr 1fr' : '1fr',
-              }}
+        {weeklyEnabled ? (
+          <section
+            className="space-y-4 rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+          >
+            <SectionHeading icon={<CalendarCheck2 size={16} />} eyebrow="Weekly" title="Weekly Check-In" description="Share a fuller reflection so your coach can review your week." />
+            <WeeklyCheckInCard />
+          </section>
+        ) : null}
+
+        {dailyEnabled && visibility?.dailyWeightEnabled ? (
+          <section className="overflow-hidden rounded-[30px] border shadow-sm" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+            <button
+              type="button"
+              onClick={() => setShowWeightProgress(previous => !previous)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--color-bg-alt)] sm:px-5"
+              aria-expanded={showWeightProgress}
             >
-              {visibility?.dailyCheckinsEnabled ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('daily')}
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                    activeTab === 'daily'
-                      ? 'bg-accent/20 text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:bg-background/70 hover:text-foreground'
-                  }`}
-                  aria-pressed={activeTab === 'daily'}
-                >
-                  <ClipboardCheck size={16} />
-                  <span>Daily</span>
-                </button>
-              ) : null}
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+                  <Scale size={15} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Optional</span>
+                  <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Weight progress</span>
+                </span>
+              </span>
+              <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${showWeightProgress ? 'rotate-180' : ''}`} />
+            </button>
 
-              {visibility?.weeklyCheckinsEnabled ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('weekly')}
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                    activeTab === 'weekly'
-                      ? 'bg-accent/20 text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:bg-background/70 hover:text-foreground'
-                  }`}
-                  aria-pressed={activeTab === 'weekly'}
-                >
-                  <CalendarCheck2 size={16} />
-                  <span>Weekly</span>
-                </button>
-              ) : null}
-            </div>
-          </div>
-
-          {visibility?.dailyCheckinsEnabled && activeTab === 'daily' ? (
-            <div className="space-y-4">
-              <div className="px-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-                <h3 className="mt-1 text-base font-semibold tracking-tight text-foreground">Daily Check-In</h3>
-              </div>
-
-              <DailyCheckInCard />
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 px-1">
-                  <Sparkles size={13} className="text-muted-foreground" />
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Progress
-                  </p>
-                </div>
+            {showWeightProgress ? (
+              <div className="border-t border-border/70 p-3 sm:p-4">
                 <DailyCheckInInsightsCard />
               </div>
-            </div>
-          ) : null}
-
-          {visibility?.weeklyCheckinsEnabled && activeTab === 'weekly' ? (
-            <div className="space-y-3">
-              <div className="px-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">This week</p>
-                <h3 className="mt-1 text-base font-semibold tracking-tight text-foreground">Weekly Check-In</h3>
-              </div>
-              <WeeklyCheckInCard />
-            </div>
-          ) : null}
-        </section>
+            ) : null}
+          </section>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function StatusCard({
+function SectionHeading({
+  icon,
+  eyebrow,
   title,
-  value,
-  detail,
-  tone,
-  loading,
+  description,
 }: {
+  icon: ReactNode;
+  eyebrow: string;
   title: string;
-  value: string;
-  detail: string;
-  tone: 'good' | 'warn' | 'neutral';
-  loading?: boolean;
+  description: string;
 }) {
-  const toneClass =
-    tone === 'good'
-      ? 'border-emerald-500/15 bg-emerald-500/10 text-emerald-700'
-      : tone === 'warn'
-        ? 'border-amber-500/15 bg-amber-500/10 text-amber-700'
-        : 'border-border bg-card text-muted-foreground';
-
   return (
-    <div className={`rounded-[24px] border p-4 shadow-sm ${toneClass}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-80">{title}</p>
-      <p className="mt-2 text-lg font-semibold tracking-tight text-current">{loading ? 'Loading…' : value}</p>
-      <p className="mt-1 text-xs leading-5 text-current/75">{detail}</p>
+    <div className="flex items-start gap-3 border-b border-border/70 pb-4">
+      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</p>
+        <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{title}</h2>
+        <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
+      </div>
     </div>
   );
 }

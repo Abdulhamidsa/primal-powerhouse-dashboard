@@ -256,7 +256,7 @@ export function DailyCheckInCard() {
         <button
           type="button"
           onClick={() => setIsExpanded(prev => !prev)}
-          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left sm:px-5"
+          className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left sm:px-5"
           aria-expanded={isExpanded}
           aria-label="Toggle daily check-in details"
         >
@@ -283,15 +283,15 @@ export function DailyCheckInCard() {
           )}
         >
           <div className="overflow-hidden">
-            <div className="border-t border-border/60 px-4 pb-4 pt-1 sm:px-5">
-              <div className="space-y-4">
-                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+            <div className="border-t border-border/60 px-4 pb-3 pt-1 sm:px-5">
+              <div className="space-y-3">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3">
                   <SectionTitle
                     icon={Flame}
                     title="Energy"
                     subtitle="How your day feels so far"
                   />
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     <OptionGrid
                       options={ENERGY_OPTIONS}
                       selectedValue={entry?.energy}
@@ -302,9 +302,9 @@ export function DailyCheckInCard() {
                   </div>
                 </section>
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3">
                   <SectionTitle icon={Salad} title="Nutrition" subtitle="How closely today matched plan" />
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     <OptionGrid
                       options={NUTRITION_OPTIONS}
                       selectedValue={nutritionEntry?.status}
@@ -315,9 +315,9 @@ export function DailyCheckInCard() {
                   </div>
                 </section>
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3">
                   <SectionTitle icon={Dumbbell} title="Training" subtitle="Did you complete the session?" />
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     <OptionGrid
                       options={TRAINING_OPTIONS}
                       selectedValue={trainingEntry?.status}
@@ -328,9 +328,9 @@ export function DailyCheckInCard() {
                   </div>
                 </section>
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3">
                   <SectionTitle icon={Utensils} title="Hunger" subtitle="How hungry you feel right now" />
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     <OptionGrid
                       options={HUNGER_OPTIONS}
                       selectedValue={entry?.hunger}
@@ -341,9 +341,9 @@ export function DailyCheckInCard() {
                   </div>
                 </section>
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3">
                   <SectionTitle icon={Moon} title="Sleep" subtitle="How well you slept" />
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     <OptionGrid
                       options={SLEEP_OPTIONS}
                       selectedValue={entry?.sleep}
@@ -354,7 +354,7 @@ export function DailyCheckInCard() {
                   </div>
                 </section>
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                <section className="rounded-2xl border border-border bg-muted/20 p-3">
                   <div className="flex items-center justify-between gap-3">
                     <SectionTitle
                       icon={PenLine}
@@ -375,7 +375,7 @@ export function DailyCheckInCard() {
                   </div>
 
                   {noteOpen ? (
-                    <div className="mt-3 space-y-3">
+                    <div className="mt-2.5 space-y-2.5">
                       <textarea
                         value={noteValue}
                         onChange={e => setNoteValue(e.target.value)}
@@ -412,7 +412,7 @@ export function DailyCheckInCard() {
                   ) : null}
                 </section>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-background px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-background px-3 py-2.5">
                   {errorMessage ? (
                     <p className="text-xs font-medium text-destructive">{errorMessage}</p>
                   ) : completionData.isComplete ? (
