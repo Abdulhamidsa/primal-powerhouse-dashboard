@@ -161,7 +161,6 @@ export default function UserMyPlanPage() {
   const {
     loading,
     error,
-    saveError,
     optionsByType,
     selectedByType,
     isSelected,
@@ -182,11 +181,17 @@ export default function UserMyPlanPage() {
   const [swapState, setSwapState] = useState<MealPickerState | null>(null);
   const [pendingSwap, setPendingSwap] = useState<MealOption | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [saveNotice, setSaveNotice] = useState<'saved' | 'error' | null>(null);
   const mountStartedAtRef = useRef<number | null>(null);
   const loggedPaintRef = useRef(false);
+  const saveNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     mountStartedAtRef.current = performance.now();
+
+    return () => {
+      if (saveNoticeTimerRef.current) clearTimeout(saveNoticeTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -278,10 +283,17 @@ export default function UserMyPlanPage() {
       swapState.mode === 'swap' && swapState.mealType === 'SNACK'
         ? selectedByType.SNACK.find(item => item.meal.id === swapState.currentMealId)
         : undefined;
-    const result = await selectOptionAndSave(pendingSwap, currentSnack);
+    const selectedOption = pendingSwap;
+    setPendingSwap(null);
+    setSwapState(null);
+    setSaveNotice('saved');
 
-    const ok = result.ok;
-    if (ok) {
+    if (saveNoticeTimerRef.current) clearTimeout(saveNoticeTimerRef.current);
+    saveNoticeTimerRef.current = setTimeout(() => setSaveNotice(null), 1800);
+
+    const result = await selectOptionAndSave(selectedOption, currentSnack);
+
+    if (result.ok) {
       saveShoppingListDraft(
         result.items.map(item => ({
           mealType: item.mealType,
@@ -290,9 +302,12 @@ export default function UserMyPlanPage() {
           sourceAssignmentId: item.sourceAssignmentId ?? null,
         })),
       );
-      setPendingSwap(null);
-      setSwapState(null);
+      return;
     }
+
+    setSaveNotice('error');
+    if (saveNoticeTimerRef.current) clearTimeout(saveNoticeTimerRef.current);
+    saveNoticeTimerRef.current = setTimeout(() => setSaveNotice(null), 3200);
   };
 
   const renderEmptyMealState = (mealType: MealTypeKey) => (
@@ -337,13 +352,6 @@ export default function UserMyPlanPage() {
         {error ? (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
             Failed to load your selected meals: {error.message}
-          </div>
-        ) : null}
-
-        {saveError ? (
-          <div className="flex items-center gap-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-3 text-sm text-amber-300">
-            <AlertCircle size={16} />
-            <span>{saveError.message}</span>
           </div>
         ) : null}
 
@@ -442,6 +450,20 @@ export default function UserMyPlanPage() {
       </div>
 
       <MealPlanHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      {saveNotice ? (
+        <div
+          role="status"
+          className="fixed inset-x-4 bottom-24 z-[150] mx-auto max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-[0_16px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl lg:bottom-6"
+          style={{
+            background: 'var(--color-surface)',
+            borderColor: saveNotice === 'saved' ? 'var(--color-accent)' : 'var(--color-danger)',
+            color: saveNotice === 'saved' ? 'var(--color-text)' : 'var(--color-danger)',
+          }}
+        >
+          {saveNotice === 'saved' ? 'Meal saved' : 'Something went wrong saving the meal. Your previous meal was restored.'}
+        </div>
+      ) : null}
 
       {swapState ? (
         <div

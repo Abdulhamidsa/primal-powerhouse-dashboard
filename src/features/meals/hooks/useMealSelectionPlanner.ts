@@ -126,6 +126,7 @@ export function useMealSelectionPlanner(enabled = true) {
   }
 
   async function selectOptionAndSave(option: MealOption, removeItem?: SelectionItem) {
+    const previousItems = draftItems;
     let nextItems = draftItems;
 
     if (removeItem) {
@@ -141,9 +142,17 @@ export function useMealSelectionPlanner(enabled = true) {
     }
 
     nextItems = toggleMealSelectionItem(nextItems, option, snackMax);
+    setHasTouchedDraft(true);
+    setSaveError(null);
+    setDraftItems(nextItems);
     const ok = await saveDraft(nextItems);
 
-    return { ok, items: nextItems };
+    if (!ok) {
+      setDraftItems(previousItems);
+      setHasTouchedDraft(false);
+    }
+
+    return { ok, items: nextItems, previousItems };
   }
 
   function resetDraftToSaved() {
