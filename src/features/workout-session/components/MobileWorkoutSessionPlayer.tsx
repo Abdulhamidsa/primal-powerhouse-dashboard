@@ -29,6 +29,7 @@ interface Props {
 
 export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props) {
   const exercises = assignment.workoutPlan.exercises;
+  const exerciseSignature = exercises.map(exercise => exercise.id).join('|');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [exerciseStates, setExerciseStates] = useState<LocalExerciseState[]>(() =>
@@ -49,6 +50,11 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
   const currentState = exerciseStates[currentIdx];
   const totalExercises = exercises.length;
   const completedCount = exerciseStates.filter(ex => ex.done).length;
+
+  useEffect(() => {
+    setExerciseStates(buildInitialExerciseState(exercises));
+    setCurrentIdx(0);
+  }, [assignment.id, exerciseSignature, exercises]);
 
   // Start session on mount
   useEffect(() => {
@@ -213,7 +219,7 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
     touchStartRef.current = null;
   };
 
-  const allDone = exerciseStates.every(ex => ex.done);
+  const allDone = exercises.length > 0 && exerciseStates.length === exercises.length && exerciseStates.every(ex => ex.done);
   const isLastExercise = currentIdx === exercises.length - 1;
 
   if (!started) {
@@ -254,6 +260,14 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!currentExercise || !currentState || exerciseStates.length !== exercises.length) {
+    return (
+      <div className="flex h-64 items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent" />
       </div>
     );
   }
