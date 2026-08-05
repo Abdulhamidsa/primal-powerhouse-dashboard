@@ -5,6 +5,7 @@ import {
   createPlan,
   updatePlan,
   createPlanDay,
+  bulkCreatePlanDays,
   updatePlanDay,
   deletePlanDay,
 } from '../api/coachTraining.api';
@@ -113,6 +114,19 @@ export function useCoachPlanDays(planId?: string) {
     return result;
   };
 
+  const bulkCreatePlanDaysAction = async (data: {
+    days: Array<{ date: string; type: string; workoutTemplateId?: string | null }>;
+  }) => {
+    if (!planId) throw new Error('Plan ID is required');
+
+    const result = await bulkCreatePlanDays(planId, data);
+    await mutate(
+      (key: string | unknown[]) =>
+        key === 'coach-plans' || (Array.isArray(key) && key[0] === 'coach-plan' && key[1] === planId),
+    );
+    return result;
+  };
+
   const deletePlanDayAction = async (dayId: string) => {
     if (!planId) throw new Error('Plan ID is required');
 
@@ -125,6 +139,7 @@ export function useCoachPlanDays(planId?: string) {
 
   return {
     createPlanDay: createPlanDayAction,
+    bulkCreatePlanDays: bulkCreatePlanDaysAction,
     updatePlanDay: updatePlanDayAction,
     deletePlanDay: deletePlanDayAction,
   };

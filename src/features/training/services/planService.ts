@@ -37,6 +37,11 @@ export const trainingPlanService = {
       include: {
         days: {
           include: {
+            sessions: {
+              select: { id: true, status: true, completedAt: true },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
             workoutTemplate: {
               include: {
                 exercises: {
@@ -122,7 +127,7 @@ export const trainingPlanService = {
    * Get active plan for a client
    */
   async getClientActivePlan(clientId: string) {
-    return prisma.clientTrainingPlan.findFirst({
+    const plan = await prisma.clientTrainingPlan.findFirst({
       where: {
         clientId,
         status: 'ACTIVE',
@@ -130,6 +135,11 @@ export const trainingPlanService = {
       include: {
         days: {
           include: {
+            sessions: {
+              select: { id: true, status: true, completedAt: true },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
             workoutTemplate: {
               include: {
                 exercises: {
@@ -143,6 +153,16 @@ export const trainingPlanService = {
         },
       },
     });
+
+    if (!plan) return null;
+
+    return {
+      ...plan,
+      days: plan.days.map(({ sessions, ...day }) => ({
+        ...day,
+        latestSession: sessions[0] ?? null,
+      })),
+    };
   },
 
   /**

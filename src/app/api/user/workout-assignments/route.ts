@@ -15,6 +15,11 @@ export async function GET(request: NextRequest) {
   const assignments = await (prisma as any).workoutPlanAssignment.findMany({
     where: { clientId, isActive: true },
     include: {
+      sessions: {
+        select: { id: true, status: true, completedAt: true },
+        orderBy: { startedAt: 'desc' },
+        take: 1,
+      },
       workoutPlan: {
         include: {
           exercises: {

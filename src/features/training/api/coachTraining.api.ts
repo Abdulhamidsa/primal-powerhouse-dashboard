@@ -114,6 +114,15 @@ export async function createPlanDay(
   return httpClient.post<TrainingPlanDay>(buildCoachPlanDaysUrl(planId), data);
 }
 
+export async function bulkCreatePlanDays(
+  planId: string,
+  data: {
+    days: Array<{ date: string; type: string; workoutTemplateId?: string | null }>;
+  },
+) {
+  return httpClient.post<TrainingPlanDay[]>(buildCoachPlanDaysUrl(planId), data);
+}
+
 export async function updatePlanDay(
   planId: string,
   dayId: string,

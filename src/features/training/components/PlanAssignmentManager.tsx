@@ -23,17 +23,24 @@ const emptyDayForm = (date = ''): DayFormState => ({
 });
 
 function toDateInputValue(value: string | Date) {
-  const date = typeof value === 'string' ? new Date(value) : value;
-  return date.toISOString().slice(0, 10);
+  if (typeof value === 'string') return value.slice(0, 10);
+  const date = value;
+  return `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, '0')}-${`${date.getDate()}`.padStart(2, '0')}`;
 }
 
 function formatDisplayDate(value: string | Date) {
-  const date = typeof value === 'string' ? new Date(value) : value;
+  const date = new Date(`${toDateInputValue(value)}T12:00:00`);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function addDays(value: string, amount: number) {
+  const date = new Date(`${value}T12:00:00`);
+  date.setDate(date.getDate() + amount);
+  return toDateInputValue(date);
 }
 
 export function PlanAssignmentManager() {
@@ -44,6 +51,10 @@ export function PlanAssignmentManager() {
   const [dayForm, setDayForm] = useState<DayFormState>(emptyDayForm());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [weekStart, setWeekStart] = useState('');
+  const [weekDays, setWeekDays] = useState<Array<{ type: 'WORKOUT' | 'REST'; workoutTemplateId: string }>>(
+    Array.from({ length: 7 }, () => ({ type: 'REST', workoutTemplateId: '' })),
+  );
 
   const planDaysActions = useCoachPlanDays(selectedPlanId || undefined);
   const plansWithDetails = useMemo(() => (plans ?? []) as ClientTrainingPlanWithDays[], [plans]);
@@ -64,7 +75,16 @@ export function PlanAssignmentManager() {
     setEditingDayId(null);
     setDayForm(emptyDayForm(toDateInputValue(selectedPlan.startDate)));
     setError(null);
+    setWeekStart(toDateInputValue(selectedPlan.startDate));
   }, [selectedPlan]);
+
+  useEffect(() => {
+    if (!selectedPlan || !weekStart) return;
+    setWeekDays(Array.from({ length: 7 }, (_, index) => {
+      const existing = selectedPlan.days.find(day => toDateInputValue(day.date) === addDays(weekStart, index));
+      return { type: existing?.type ?? 'REST', workoutTemplateId: existing?.workoutTemplateId ?? '' };
+    }));
+  }, [selectedPlan, weekStart]);
 
   const resetForm = () => {
     setEditingDayId(null);
@@ -78,6 +98,26 @@ export function PlanAssignmentManager() {
     const nextPlan = plansWithDetails.find(plan => plan.id === planId) ?? null;
     setDayForm(emptyDayForm(nextPlan ? toDateInputValue(nextPlan.startDate) : ''));
     setError(null);
+    setWeekStart(nextPlan ? toDateInputValue(nextPlan.startDate) : '');
+  };
+
+  const handleSaveWeek = async () => {
+    if (!selectedPlanId || !weekStart) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await planDaysActions.bulkCreatePlanDays({
+        days: weekDays.map((day, index) => ({
+          date: addDays(weekStart, index),
+          type: day.type,
+          workoutTemplateId: day.type === 'WORKOUT' ? day.workoutTemplateId || null : null,
+        })),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save the week');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEditDay = (day: ClientTrainingPlanWithDays['days'][number]) => {
@@ -197,6 +237,32 @@ export function PlanAssignmentManager() {
         </aside>
 
         <section className="space-y-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">Weekly schedule</h2>
+                <p className="text-sm text-gray-500">Quickly prepare seven dated days. Existing dates stay unchanged.</p>
+              </div>
+              <label className="text-sm font-medium text-gray-700">Week starting
+                <input type="date" value={weekStart} onChange={event => setWeekStart(event.target.value)} className="ml-2 rounded-lg border border-gray-300 px-3 py-2 font-normal" />
+              </label>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+              {weekDays.map((day, index) => (
+                <div key={index} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-xs font-semibold text-gray-900">{weekStart ? formatDisplayDate(addDays(weekStart, index)) : `Day ${index + 1}`}</p>
+                  <select value={day.type} onChange={event => setWeekDays(previous => previous.map((item, itemIndex) => itemIndex === index ? { ...item, type: event.target.value as 'WORKOUT' | 'REST', workoutTemplateId: event.target.value === 'REST' ? '' : item.workoutTemplateId } : item))} className="mt-2 w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+                    <option value="WORKOUT">Workout</option><option value="REST">Rest</option>
+                  </select>
+                  {day.type === 'WORKOUT' ? <select value={day.workoutTemplateId} onChange={event => setWeekDays(previous => previous.map((item, itemIndex) => itemIndex === index ? { ...item, workoutTemplateId: event.target.value } : item))} className="mt-2 w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+                    <option value="">Choose template</option>{selectedPlanTemplateOptions.map(template => <option key={template.id} value={template.id}>{template.name}</option>)}
+                  </select> : <p className="mt-2 text-xs text-gray-500">Recovery day</p>}
+                </div>
+              ))}
+            </div>
+            <button type="button" onClick={handleSaveWeek} disabled={isSubmitting || !selectedPlanId || !weekStart || weekDays.some(day => day.type === 'WORKOUT' && !day.workoutTemplateId)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">{isSubmitting ? 'Saving week...' : 'Save week'}</button>
+          </div>
+
           <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>

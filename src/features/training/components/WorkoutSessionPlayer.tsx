@@ -115,7 +115,7 @@ function TrainingExerciseCard({
   );
 }
 
-export function WorkoutSessionPlayer({ session }: { session: TrainingSessionDTO }) {
+export function WorkoutSessionPlayer({ session, onCompleted }: { session: TrainingSessionDTO; onCompleted?: () => void }) {
   const { updateSet, completeSession } = useTrainingSessionActions();
   const [overallFeedback, setOverallFeedback] = useState('');
   const [perceivedDifficulty, setPerceivedDifficulty] = useState<'EASY' | 'GOOD' | 'HARD' | 'VERY_HARD' | ''>('');
@@ -157,6 +157,7 @@ export function WorkoutSessionPlayer({ session }: { session: TrainingSessionDTO 
         overallFeedback: overallFeedback.trim() || null,
         caloriesBurned: null,
       });
+      onCompleted?.();
     } finally {
       setCompleting(false);
     }

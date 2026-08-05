@@ -27,16 +27,10 @@ export default function WorkoutPlansSection() {
 
   return (
     <div className="space-y-3">
-      {assignments.map(a => (
-        <Link
-          key={a.id}
-          href={`/user/workout/${encodeURIComponent(a.id)}`}
-          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:bg-card/80 transition-colors"
-        >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: 'var(--color-accent-muted)' }}
-          >
+      {assignments.map(a => {
+        const completed = a.sessions?.[0]?.status === 'COMPLETED';
+        const content = <>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--color-accent-muted)' }}>
             <Dumbbell size={18} style={{ color: 'var(--color-accent)' }} />
           </div>
           <div className="flex-1 min-w-0">
@@ -45,9 +39,11 @@ export default function WorkoutPlansSection() {
               {a.workoutPlan.exercises.length} exercise{a.workoutPlan.exercises.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <ChevronRight size={18} className="text-muted-foreground shrink-0" />
-        </Link>
-      ))}
+          {completed ? <span className="text-xs font-semibold text-emerald-600">Done</span> : <ChevronRight size={18} className="text-muted-foreground shrink-0" />}
+        </>;
+
+        return completed ? <div key={a.id} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">{content}</div> : <Link key={a.id} href={`/user/workout/${encodeURIComponent(a.id)}`} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:bg-card/80 transition-colors">{content}</Link>;
+      })}
     </div>
   );
 }

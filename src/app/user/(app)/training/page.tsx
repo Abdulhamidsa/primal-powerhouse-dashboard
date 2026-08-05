@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, ChevronDown, Dumbbell, Play } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
+import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
+import { useTrainingPlan } from '@/features/training/hooks/useTrainingPlan';
 import WorkoutPlansSection from '@/features/workout-session/components/WorkoutPlansSection';
 import { useUserWorkoutAssignments } from '@/features/workout-session/hooks/useUserWorkoutAssignments';
 
@@ -18,6 +20,7 @@ const UserTrainingAssignments = dynamic(
 
 export default function UserTrainingPage() {
   const [showVideos, setShowVideos] = useState(false);
+  const { plan, isLoading: trainingPlanLoading } = useTrainingPlan();
   const { assignments } = useUserWorkoutAssignments();
   const nextWorkout = assignments[0] ?? null;
 
@@ -26,11 +29,10 @@ export default function UserTrainingPage() {
       <div className="mx-auto w-full max-w-4xl space-y-4 md:space-y-5">
         <PageHeader title="Training" description="Choose a workout plan, then start or continue your next session." />
 
-        <section className="rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        {trainingPlanLoading ? <div className="h-56 animate-pulse rounded-[30px] border border-border bg-card/70" /> : null}
+        {plan ? <TrainingDashboard /> : !trainingPlanLoading ? <section className="rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-              <Dumbbell size={18} />
-            </div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><Dumbbell size={18} /></div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next workout</p>
               <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-foreground">
@@ -44,15 +46,11 @@ export default function UserTrainingPage() {
             </div>
           </div>
 
-          {nextWorkout ? (
-            <Link href={`/user/workout/${encodeURIComponent(nextWorkout.id)}`} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform active:scale-[0.99]">
-              <span>Start workout</span>
-              <ArrowRight size={16} />
-            </Link>
-          ) : null}
-        </section>
+          {nextWorkout ? <Link href={`/user/workout/${encodeURIComponent(nextWorkout.id)}`} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><span>Start workout</span><ArrowRight size={16} /></Link> : null}
 
-        <section className="rounded-[30px] border p-4 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        </section> : null}
+
+        {!plan && !trainingPlanLoading ? <section className="rounded-[30px] border p-4 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground">
@@ -69,7 +67,7 @@ export default function UserTrainingPage() {
           <div className="mt-3">
             <WorkoutPlansSection />
           </div>
-        </section>
+        </section> : null}
 
         <section className="overflow-hidden rounded-[26px] border shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
           <button type="button" onClick={() => setShowVideos(previous => !previous)} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--color-bg-alt)]" aria-expanded={showVideos}>

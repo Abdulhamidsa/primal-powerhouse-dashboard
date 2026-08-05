@@ -43,5 +43,6 @@ export interface WorkoutPlan {
 }
 
 export interface WorkoutPlanAssignmentWithPlan extends WorkoutPlanAssignment {
+  sessions?: Array<{ id: string; status: string; completedAt: string | null }>;
   workoutPlan: WorkoutPlan & { exercises: WorkoutPlanExercise[] };
 }

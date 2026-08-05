@@ -50,6 +50,21 @@ export const trainingSessionService = {
       throw new Error('Unauthorized');
     }
 
+    if (planDay.status === 'COMPLETED') {
+      throw new Error('This workout day is already completed');
+    }
+
+    const todayKey = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Copenhagen',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    const planDayKey = planDay.date.toISOString().slice(0, 10);
+    if (planDayKey > todayKey) {
+      throw new Error('This workout is not available yet');
+    }
+
     // If it's a REST day or no template, cannot start
     if (planDay.type === 'REST' || !planDay.workoutTemplate) {
       throw new Error('Cannot start a session for a rest day');
@@ -57,7 +72,26 @@ export const trainingSessionService = {
 
     const template = planDay.workoutTemplate;
 
-    return (prisma as any).$transaction(async (tx: any) => {
+    const result = await (prisma as any).$transaction(async (tx: any) => {
+      const existingSession = await tx.trainingSession.findFirst({
+        where: { planDayId: input.planDayId, clientId, status: 'IN_PROGRESS' },
+        include: {
+          exercises: {
+            include: { sets: { orderBy: { setNumber: 'asc' } }, exercise: true },
+            orderBy: { order: 'asc' },
+          },
+          planDay: {
+            include: {
+              workoutTemplate: {
+                include: { exercises: { include: { exercise: true }, orderBy: { order: 'asc' } } },
+              },
+            },
+          },
+        },
+      });
+
+      if (existingSession) return existingSession;
+
       // 1. Abandon any existing IN_PROGRESS sessions for this client
       await tx.trainingSession.updateMany({
         where: {
@@ -146,6 +180,7 @@ export const trainingSessionService = {
     });
 
     invalidateUserDashboardSummaryCaches({ clientId });
+    return result;
   },
 
   /**

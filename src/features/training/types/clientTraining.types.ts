@@ -50,6 +50,11 @@ export type TrainingPlanDayDTO = {
   status: PlanDayStatus;
   workoutTemplateId: string | null;
   workoutTemplate: TrainingTemplateDTO | null;
+  latestSession?: {
+    id: string;
+    status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+    completedAt: string | null;
+  } | null;
 };
 
 export type TrainingPlanDTO = {
