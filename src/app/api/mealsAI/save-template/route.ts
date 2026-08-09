@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import { saveGeneratedMealTemplateSchema } from '@/features/meals/schemas/saveGeneratedMealTemplate.schema';
+import { resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
 
 const SPICE_TERMS = [
   'salt',
@@ -33,7 +34,9 @@ type SnapshotIngredient = {
   matchedInput?: string;
   grams: number;
   amount: number;
-  unit: 'g';
+  unit: 'g' | 'piece';
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
   matchScore?: number;
   nutritionPer100g: {
     caloriesKcal: number;
@@ -191,23 +194,32 @@ export async function POST(request: Request) {
       fiberG: ingredient.fiberG ?? null,
     }));
 
-    const ingredients: SnapshotIngredient[] = normalizedIngredients.map(ingredient => ({
-      foodId: ingredient.id,
-      name: ingredient.displayName ?? ingredient.name,
-      canonicalName: ingredient.canonicalName,
-      matchedInput: ingredient.matchedInput,
-      grams: ingredient.grams,
-      amount: ingredient.grams,
-      unit: 'g',
-      matchScore: ingredient.matchScore,
-      nutritionPer100g: {
-        caloriesKcal: ingredient.caloriesKcal,
-        proteinG: ingredient.proteinG,
-        carbsG: ingredient.carbsG,
-        fatG: ingredient.fatG,
-        fiberG: ingredient.fiberG ?? null,
-      },
-    }));
+    const ingredients: SnapshotIngredient[] = normalizedIngredients.map(ingredient => {
+      const name = ingredient.displayName ?? ingredient.name;
+      const resolvedUnit = resolveIngredientUnitByName(name);
+
+      return {
+        foodId: ingredient.id,
+        name,
+        canonicalName: ingredient.canonicalName,
+        matchedInput: ingredient.matchedInput,
+        grams: ingredient.grams,
+        amount: resolvedUnit
+          ? Math.round((ingredient.grams / resolvedUnit.gramsPerUnit) * 100) / 100
+          : ingredient.grams,
+        unit: resolvedUnit ? 'piece' : 'g',
+        gramsPerUnit: resolvedUnit?.gramsPerUnit ?? null,
+        displayUnitLabel: resolvedUnit?.displayUnitLabel ?? null,
+        matchScore: ingredient.matchScore,
+        nutritionPer100g: {
+          caloriesKcal: ingredient.caloriesKcal,
+          proteinG: ingredient.proteinG,
+          carbsG: ingredient.carbsG,
+          fatG: ingredient.fatG,
+          fiberG: ingredient.fiberG ?? null,
+        },
+      };
+    });
 
     if (ingredients.some(ingredient => !ingredient.foodId)) {
       return NextResponse.json(

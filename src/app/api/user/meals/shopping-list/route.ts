@@ -8,6 +8,7 @@ import {
 } from '@/features/meals/utils/mealSelection.server';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 import type { ShoppingListEntry } from '@/features/meals/types/shoppingList.types';
+import { formatIngredientAmount, resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -175,7 +176,12 @@ function aggregateIngredients(items: ParsedIngredient[], source: 'ingredient' | 
 
     let quantity: string | undefined;
 
-    if (allHaveGrams) {
+    const resolvedUnit = resolveIngredientUnitByName(entries[0].name);
+
+    if (allHaveGrams && resolvedUnit) {
+      const totalGrams = entries.reduce((sum, e) => sum + (e.grams ?? 0), 0);
+      quantity = formatIngredientAmount(totalGrams, entries[0].name, false);
+    } else if (allHaveGrams) {
       const totalGrams = entries.reduce((sum, e) => sum + (e.grams ?? 0), 0);
       quantity = formatGrams(totalGrams);
     } else {

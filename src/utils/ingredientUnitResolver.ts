@@ -21,7 +21,12 @@ function includesAlias(normalizedName: string, alias: string): boolean {
     return false;
   }
 
-  return normalizedName.includes(normalizedAlias);
+  return (
+    normalizedName === normalizedAlias ||
+    normalizedName.startsWith(`${normalizedAlias} `) ||
+    normalizedName.endsWith(` ${normalizedAlias}`) ||
+    normalizedName.includes(` ${normalizedAlias} `)
+  );
 }
 
 function pickBestMatch(name: string): IngredientUnitRegistryItem | null {

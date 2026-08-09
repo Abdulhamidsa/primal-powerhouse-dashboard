@@ -187,7 +187,9 @@ export interface SavedTemplateIngredientSnapshot {
   matchedInput?: string;
   grams: number;
   amount: number;
-  unit: 'g';
+  unit: 'g' | 'piece';
+  gramsPerUnit?: number | null;
+  displayUnitLabel?: string | null;
   matchScore?: number;
   nutritionPer100g: {
     caloriesKcal: number;
