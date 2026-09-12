@@ -13,7 +13,7 @@ function toDateKeyUtc(date: Date): string {
 }
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const { planDayId: date } = await params;

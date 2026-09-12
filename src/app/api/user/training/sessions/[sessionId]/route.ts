@@ -6,7 +6,7 @@ import { completeTrainingSessionSchema } from '@/features/training/schemas/sessi
 type RouteContext = { params: Promise<{ sessionId: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const { sessionId } = await params;
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const { sessionId } = await params;

@@ -65,7 +65,7 @@ async function updateDailyNutritionRollup(clientId: string, dayDateUtc: Date) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request, 'client');
+    const { error, user } = await requireAuth(request, 'client');
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -83,6 +83,19 @@ export async function POST(request: NextRequest) {
 
     const payload = parsed.data;
     const dayDateUtc = parseDateKeyUtc(payload.dayDate);
+
+    const assignedMeal = await prisma.mealAssignment.findFirst({
+      where: {
+        ...(payload.sourceAssignmentId ? { id: payload.sourceAssignmentId } : {}),
+        mealId: payload.mealId,
+        mealType: payload.mealType,
+        mealPlan: { clientId: user.userId, isActive: true },
+      },
+      select: { id: true },
+    });
+    if (!assignedMeal) {
+      return jsonWithCache({ error: 'This meal is not assigned to your account.' }, { status: 403 });
+    }
 
     await (prisma as any).mealCompletion.upsert({
       where: {
@@ -135,7 +148,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request, 'client');
+    const { error, user } = await requireAuth(request, 'client');
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -6,7 +6,7 @@ import { bulkCreateTrainingPlanDaysSchema, createTrainingPlanDaySchema } from '@
 type RouteContext = { params: Promise<{ planId: string }> };
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { planId } = await params;

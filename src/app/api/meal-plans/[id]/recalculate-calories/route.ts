@@ -353,7 +353,7 @@ function formatMealTypeLabel(value: string): string {
 
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const auth = requireAuth(request, 'admin');
+    const auth = await requireAuth(request, 'admin');
     if (auth.error || !auth.user) {
       return NextResponse.json(
         { message: "You don't have permission for this client. Contact admin.", recoveryAction: 'Contact admin' },

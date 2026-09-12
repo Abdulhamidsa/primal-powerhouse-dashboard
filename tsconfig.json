@@ -33,5 +33,5 @@
     // ]
   },
   "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", "src/react-augment.d.ts.bak", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".next/**/*"]
+  "exclude": ["node_modules", ".next/**/*", "apps/**/*", "packages/**/*"]
 }

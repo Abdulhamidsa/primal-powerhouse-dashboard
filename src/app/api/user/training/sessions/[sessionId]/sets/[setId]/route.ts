@@ -6,7 +6,7 @@ import { updateSetSchema } from '@/features/training/schemas/session.schemas';
 type RouteContext = { params: Promise<{ sessionId: string; setId: string }> };
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const { sessionId, setId } = await params;

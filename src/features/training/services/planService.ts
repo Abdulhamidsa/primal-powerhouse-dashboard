@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import type { CreateClientTrainingPlanInput, UpdateClientTrainingPlanInput } from '../schemas/plan.schemas';
 // import type { ClientTrainingPlanWithDays } from '../types/index';
 
@@ -24,7 +25,7 @@ export const trainingPlanService = {
       throw new Error('Client not found or unauthorized');
     }
 
-    return (prisma as any).clientTrainingPlan.create({
+    const created = await (prisma as any).clientTrainingPlan.create({
       data: {
         clientId: input.clientId,
         coachId,
@@ -58,6 +59,8 @@ export const trainingPlanService = {
         },
       },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: input.clientId });
+    return created;
   },
 
   /**
@@ -132,6 +135,7 @@ export const trainingPlanService = {
         clientId,
         status: 'ACTIVE',
       },
+      orderBy: { startDate: 'desc' },
       include: {
         days: {
           include: {
@@ -175,7 +179,7 @@ export const trainingPlanService = {
       throw new Error('Plan not found or unauthorized');
     }
 
-    return (prisma as any).clientTrainingPlan.update({
+    const updated = await (prisma as any).clientTrainingPlan.update({
       where: { id: planId },
       data: input,
       include: {
@@ -197,6 +201,8 @@ export const trainingPlanService = {
         },
       },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+    return updated;
   },
 
   /**

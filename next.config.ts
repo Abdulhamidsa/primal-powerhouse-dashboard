@@ -2,6 +2,11 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  ...(process.env.NEXT_DIST_DIR?.trim() ? { distDir: process.env.NEXT_DIST_DIR.trim() } : {}),
+  ...(process.env.NEXT_TSCONFIG_PATH?.trim()
+    ? { typescript: { tsconfigPath: process.env.NEXT_TSCONFIG_PATH.trim() } }
+    : {}),
   poweredByHeader: false,
   compress: true,
 
@@ -20,6 +25,26 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      ...(process.env.NODE_ENV !== 'production'
+        ? [
+            {
+              source: '/api/:path*',
+              has: [
+                {
+                  type: 'header' as const,
+                  key: 'origin',
+                  value: '(?<corsOrigin>http:\\/\\/(?:localhost|127\\.0\\.0\\.1|\\[::1\\])(?::\\d+)?)',
+                },
+              ],
+              headers: [
+                { key: 'Access-Control-Allow-Origin', value: ':corsOrigin' },
+                { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, PATCH, DELETE, OPTIONS' },
+                { key: 'Access-Control-Allow-Headers', value: 'Authorization, Content-Type' },
+                { key: 'Vary', value: 'Origin' },
+              ],
+            },
+          ]
+        : []),
       {
         source: '/(.*)',
         headers: [

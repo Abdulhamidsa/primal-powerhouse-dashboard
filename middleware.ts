@@ -58,6 +58,36 @@ function base64UrlToUint8Array(base64Url: string): Uint8Array {
 }
 
 const isApiPath = (pathname: string) => pathname.startsWith('/api');
+const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+const corsMethods = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
+const corsHeaders = 'Authorization, Content-Type';
+
+function developmentCorsOrigin(request: NextRequest): string | null {
+  if (process.env.NODE_ENV === 'production') return null;
+  const origin = request.headers.get('origin');
+  if (!origin) return null;
+  try {
+    const url = new URL(origin);
+    return url.protocol === 'http:' && loopbackHosts.has(url.hostname) ? origin : null;
+  } catch {
+    return null;
+  }
+}
+
+function applyDevelopmentCors(response: NextResponse, origin: string): NextResponse {
+  response.headers.set('Access-Control-Allow-Origin', origin);
+  response.headers.set('Access-Control-Allow-Methods', corsMethods);
+  response.headers.set('Access-Control-Allow-Headers', corsHeaders);
+  const vary = response.headers.get('Vary');
+  const variesByOrigin = vary
+    ?.split(',')
+    .some((value) => value.trim().toLowerCase() === 'origin');
+  if (!variesByOrigin) {
+    response.headers.set('Vary', vary ? `${vary}, Origin` : 'Origin');
+  }
+  return response;
+}
+
 const isPwaAsset = (pathname: string) => {
   if (pathname === '/manifest.json') return true;
   if (pathname === '/sw.js') return true;
@@ -75,6 +105,15 @@ export async function middleware(request: NextRequest) {
   // Keep subdomain for "/" routing only
   const subdomain = getSubdomainFromHostname(hostname);
 
+  if (isApiPath(pathname)) {
+    const corsOrigin = developmentCorsOrigin(request);
+    if (request.method === 'OPTIONS' && corsOrigin) {
+      return applyDevelopmentCors(new NextResponse(null, { status: 204 }), corsOrigin);
+    }
+    const response = NextResponse.next();
+    return corsOrigin ? applyDevelopmentCors(response, corsOrigin) : response;
+  }
+
   const adminToken = request.cookies.get(ADMIN_AUTH_COOKIE_NAME)?.value ?? null;
   const clientToken = request.cookies.get(CLIENT_AUTH_COOKIE_NAME)?.value ?? null;
   const legacyToken = request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
@@ -89,8 +128,8 @@ export async function middleware(request: NextRequest) {
   const isAdmin = Boolean(adminPayload || payload?.type === 'admin');
   const isClient = Boolean(clientPayload || payload?.type === 'client');
 
-  // Allow API + PWA assets
-  if (isApiPath(pathname) || isPwaAsset(pathname)) {
+  // Allow PWA assets
+  if (isPwaAsset(pathname)) {
     return NextResponse.next();
   }
 
@@ -142,5 +181,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|.*\\..*).*)'],
+  matcher: ['/api/:path*', '/((?!api|_next|.*\\..*).*)'],
 };

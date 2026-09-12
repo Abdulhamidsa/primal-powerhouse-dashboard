@@ -8,7 +8,7 @@ import { updateWorkoutPlanSchema } from '@/features/workout-plans/schemas/workou
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { id } = await params;
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { id } = await params;
@@ -127,7 +127,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { id } = await params;

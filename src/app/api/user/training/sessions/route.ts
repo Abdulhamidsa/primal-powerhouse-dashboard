@@ -4,7 +4,7 @@ import { trainingSessionService } from '@/features/training/services';
 import { startTrainingSessionSchema } from '@/features/training/schemas/session.schemas';
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const body = await request.json();

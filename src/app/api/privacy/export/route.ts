@@ -17,10 +17,10 @@ function getClientIp(request: NextRequest): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const csrf = assertSameOrigin(request);
+    const csrf = await assertSameOrigin(request);
     if (!csrf.ok) return jsonWithCache({ error: csrf.message }, { status: 403 });
 
-    const auth = requireRecentClientAuth(request);
+    const auth = await requireRecentClientAuth(request);
     if (!auth.ok) return jsonWithCache({ error: auth.message }, { status: auth.status });
 
     const ip = getClientIp(request);

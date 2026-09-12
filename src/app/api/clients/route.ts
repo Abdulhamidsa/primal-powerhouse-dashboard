@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   try {

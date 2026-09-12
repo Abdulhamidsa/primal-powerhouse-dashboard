@@ -231,6 +231,10 @@ export const trainingSessionService = {
       throw new Error('Session is not in progress');
     }
 
+    if (!session.exercises.some(exercise => exercise.sets.some(set => set.id === setId))) {
+      throw new Error('Set not found in this session');
+    }
+
     return prisma.trainingSessionSet.update({
       where: { id: setId },
       data: input,
@@ -254,6 +258,9 @@ export const trainingSessionService = {
         data: {
           status: input.status,
           completedAt: input.status === 'COMPLETED' ? new Date() : null,
+          perceivedDifficulty: input.perceivedDifficulty,
+          overallFeedback: input.overallFeedback,
+          caloriesBurned: input.caloriesBurned,
         },
       });
 

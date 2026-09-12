@@ -1,0 +1,2 @@
+ALTER TABLE "side_items"
+ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;

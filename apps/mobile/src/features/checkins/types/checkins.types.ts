@@ -1,0 +1,13 @@
+import type { z } from 'zod';
+import type { dailyCheckInCurrentResponseSchema, dailyCheckInInsightsResponseSchema } from '@primal/contracts/daily-checkin/schemas/dailyCheckIn.schema';
+import type { weeklyCheckInPayloadSchema } from '@primal/contracts/weekly-checkin/schemas/weeklyCheckIn.schema';
+import type { userDashboardFeatureVisibilitySchema } from '@primal/contracts/user-dashboard/schemas/userDashboard.schema';
+export type DailyResponse = z.infer<typeof dailyCheckInCurrentResponseSchema>;
+export type Insights = z.infer<typeof dailyCheckInInsightsResponseSchema>;
+export type CheckInFeatureVisibility = z.infer<typeof userDashboardFeatureVisibilitySchema>;
+export type WeeklyCheckInPayload = z.infer<typeof weeklyCheckInPayloadSchema>;
+export type { WeeklyCheckInCurrentResponse } from '@primal/contracts/weekly-checkin/types/weeklyCheckIn.types';
+export type DailyDraft = { weightKg: string; energy: string; hunger: string; sleep: string; note: string };
+export type WeeklyDraft = { weightKg: string; strengthUpdate: string; blockerText: string; notes: string; progressPhotoFrontUrl: string; progressPhotoSideUrl: string; progressPhotoBackUrl: string };
+export type WeightChartPoint = { x: number; y: number; dayDate: string; weightKg: number };
+export type WeightChartModel = { width: number; height: number; minWeight: number; maxWeight: number; points: WeightChartPoint[] };

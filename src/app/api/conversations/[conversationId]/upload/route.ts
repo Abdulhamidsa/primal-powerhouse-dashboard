@@ -59,7 +59,7 @@ async function uploadBuffer(
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ conversationId: string }> }) {
-  const auth = requireApiAuth(request);
+  const auth = await requireApiAuth(request);
   if (!auth.ok) return auth.res;
 
   const actor = await resolveActor(auth.user);

@@ -19,7 +19,7 @@ function getWeeklyCheckInStatus(hasCurrentWeekCheckIn: boolean): 'completed' | '
 
 export async function GET(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request);
+    const { error, user } = await requireAuth(request);
     if (error || !user || user.type !== 'admin') {
       return jsonWithCache({ error: 'Not authorized' }, { status: 401 });
     }

@@ -4,10 +4,11 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { clientFeatureVisibilitySchema } from '@/features/client-feature-visibility/schemas/clientFeatureVisibility.schema';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const { id } = await params;
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const { id } = await params;
@@ -121,6 +122,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         data: parsed.data,
       });
     }
+
+    invalidateUserDashboardSummaryCaches({ clientId: id });
 
     return NextResponse.json(featureVisibility);
   } catch (error) {

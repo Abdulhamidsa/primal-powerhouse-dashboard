@@ -1,5 +1,6 @@
 import webpush from 'web-push';
 import { prisma } from '@/lib/prisma';
+import { sendMobileChatPush } from '@/features/mobile-auth/api/mobilePush.server';
 
 let initialized = false;
 
@@ -101,6 +102,10 @@ export async function sendPushToClient(
   payload: PushPayload,
   options: PushSendOptions,
 ): Promise<PushSendResult> {
+  const messageId = options.metadata?.messageId;
+  if (options.source === 'coach-message' && payload.conversationId && typeof messageId === 'string') {
+    await sendMobileChatPush(clientId, payload.conversationId, messageId);
+  }
   ensureInitialized();
 
   const subscriptions: StoredSubscription[] = await (prisma as any).pushSubscription.findMany({

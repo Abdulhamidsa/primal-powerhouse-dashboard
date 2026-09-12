@@ -8,10 +8,10 @@ import { sendPushToClient } from '@/lib/push/push-notifications';
 
 export async function POST(request: NextRequest) {
   try {
-    const csrf = assertSameOrigin(request);
+    const csrf = await assertSameOrigin(request);
     if (!csrf.ok) return jsonWithCache({ error: csrf.message }, { status: 403 });
 
-    const auth = requireApiAuth(request, 'client');
+    const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
 
     const limiter = rateLimit(`push:test:${auth.user.userId}`, 5, 60_000);

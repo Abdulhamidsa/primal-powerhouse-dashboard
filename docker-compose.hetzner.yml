@@ -1,0 +1,25 @@
+services:
+  primal-web:
+    image: ${PRIMAL_IMAGE:?Set an immutable image tag or digest}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - /etc/primal/backend.env
+    environment:
+      NODE_ENV: production
+      TZ: Europe/Copenhagen
+    ports:
+      - '127.0.0.1:3001:3000'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('http').get('http://127.0.0.1:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

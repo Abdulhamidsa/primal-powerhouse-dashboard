@@ -13,7 +13,7 @@ const assignSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { searchParams } = new URL(request.url);
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const body = await request.json();

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { AuthService, generateClientPassword } from '@/lib/auth';
+import { AuthService } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,26 +19,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    if (client.status === 'ARCHIVED') {
+    if (client.status === 'ARCHIVED' || client.status === 'INACTIVE' || client.deactivatedAt) {
       return NextResponse.json({ error: 'Account is inactive. Contact your coach.' }, { status: 401 });
     }
 
-    let isValidPassword = false;
-
-    if (client.password) {
-      isValidPassword = await AuthService.verifyPassword(password, client.password);
-    } else {
-      const defaultPassword = generateClientPassword(client.email);
-      isValidPassword = password === defaultPassword;
-
-      if (isValidPassword) {
-        const hashedPassword = await AuthService.hashPassword(password);
-        await prisma.client.update({
-          where: { id: client.id },
-          data: { password: hashedPassword },
-        });
-      }
-    }
+    const isValidPassword = client.password ? await AuthService.verifyPassword(password, client.password) : false;
 
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });

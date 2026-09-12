@@ -9,7 +9,7 @@ type RouteContext = { params: Promise<{ assignmentId: string }> };
 const patchSchema = z.object({ isActive: z.boolean() });
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { assignmentId } = await params;
@@ -38,7 +38,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { assignmentId } = await params;

@@ -24,10 +24,10 @@ function isSchemaMismatchError(error: unknown): boolean {
 
 export async function PUT(request: NextRequest) {
   try {
-    const csrf = assertSameOrigin(request);
+    const csrf = await assertSameOrigin(request);
     if (!csrf.ok) return jsonWithCache({ error: csrf.message }, { status: 403 });
 
-    const auth = requireApiAuth(request, 'client');
+    const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
 
     const ip = getClientIp(request);

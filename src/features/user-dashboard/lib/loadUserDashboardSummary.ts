@@ -1,12 +1,13 @@
+import { measureDashboardOperation } from './dashboardTiming';
 import { unstable_cache } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { userDashboardSummaryTag } from '@/lib/cache-tags';
 import { getWeeklyCheckInStatus } from '@/features/weekly-checkin/utils/week';
-import { addDays, getRecentDateKeys, parseDateKeyLocal, toDateKeyLocal } from '@/features/daily-checkin/utils/date';
+import { getRecentDateKeys, parseDateKeyUtc, toDateKeyLocal, toDateKeyUtc } from '@/features/daily-checkin/utils/date';
 import {
   calculateStreak,
-  serializeDailyCheckIn,
+  isDailyCheckInComplete,
 } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import type { DailyCheckInEnergy, DailyCheckInHunger, DailyCheckInSleep } from '@/features/daily-checkin/types/dailyCheckIn.types';
 import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
@@ -33,26 +34,24 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
   );
 
   const recentDateKeys = getRecentDateKeys(90, now);
-  const oldestDateStart = parseDateKeyLocal(recentDateKeys[recentDateKeys.length - 1]);
-  const newestDateEndExclusive = addDays(parseDateKeyLocal(recentDateKeys[0]), 1);
+  const oldestDateStart = parseDateKeyUtc(recentDateKeys[recentDateKeys.length - 1]);
+  const newestDateEndExclusive = new Date(parseDateKeyUtc(todayDateKey).getTime() + 86400000);
 
   const [
     client,
     featureVisibility,
-    dailyCheckIn,
-    nutritionEntry,
-    trainingEntry,
     weeklyCheckIn,
     completions,
     intakeOverride,
     selectionSet,
+    currentTrainingPlan,
     workoutAssignments,
     streakRows,
     streakNutritionRows,
     streakTrainingRows,
     unreadRows,
   ] = await Promise.all([
-      prisma.client.findUnique({
+      measureDashboardOperation('client', prisma.client.findUnique({
         where: { id: clientId },
         select: {
           id: true,
@@ -64,8 +63,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           goalCalories: true,
           goalMacros: true,
         },
-      }),
-      prisma.clientFeatureVisibility.findUnique({
+      })),
+      measureDashboardOperation('visibility', prisma.clientFeatureVisibility.findUnique({
         where: { clientId },
       }).then(async record =>
         record ??
@@ -83,34 +82,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
             workoutTrackingEnabled: true,
           },
         }),
-      ),
-      (prisma as any).dailyCheckIn.findUnique({
-        where: {
-          clientId_dayDate: {
-            clientId,
-            dayDate: new Date(`${todayDateKey}T00:00:00.000Z`),
-          },
-        },
-      }),
-      (prisma as any).dailyNutritionLog.findUnique({
-        where: {
-          clientId_dayDate: {
-            clientId,
-            dayDate: new Date(`${todayDateKey}T00:00:00.000Z`),
-          },
-        },
-        select: { status: true },
-      }),
-      (prisma as any).dailyTrainingLog.findUnique({
-        where: {
-          clientId_dayDate: {
-            clientId,
-            dayDate: new Date(`${todayDateKey}T00:00:00.000Z`),
-          },
-        },
-        select: { status: true },
-      }),
-      (prisma as any).weeklyCheckIn.findUnique({
+      )),
+      measureDashboardOperation('weekly-checkin', (prisma as any).weeklyCheckIn.findUnique({
         where: {
           clientId_weekStartDate: {
             clientId,
@@ -120,8 +93,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
         select: {
           submittedAt: true,
         },
-      }),
-      (prisma as any).mealCompletion.findMany({
+      })),
+      measureDashboardOperation('meal-completions', (prisma as any).mealCompletion.findMany({
         where: {
           clientId,
           dayDate: new Date(`${todayDateKey}T00:00:00.000Z`),
@@ -132,16 +105,16 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           carbsSnapshot: true,
           fatSnapshot: true,
         },
-      }),
-      (prisma as any).dailyIntakeOverride.findUnique({
+      })),
+      measureDashboardOperation('intake-override', (prisma as any).dailyIntakeOverride.findUnique({
         where: {
           clientId_dayDate: {
             clientId,
             dayDate: new Date(`${todayDateKey}T00:00:00.000Z`),
           },
         },
-      }),
-      (prisma as any).userMealSelectionSet.findUnique({
+      })),
+      measureDashboardOperation('meal-selection', (prisma as any).userMealSelectionSet.findUnique({
         where: { clientId },
         include: {
           items: {
@@ -150,8 +123,33 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
             },
           },
         },
-      }),
-      (prisma as any).workoutPlanAssignment.findMany({
+      })),
+      measureDashboardOperation('training-plan', prisma.clientTrainingPlan.findFirst({
+        where: {
+          clientId,
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          name: true,
+          days: {
+            where: { type: 'WORKOUT', sessions: { some: { status: 'IN_PROGRESS' } } },
+            orderBy: { date: 'asc' },
+            take: 1,
+            select: {
+              id: true,
+              sessions: {
+                where: { status: 'IN_PROGRESS' },
+                orderBy: { startedAt: 'desc' },
+                take: 1,
+                select: { id: true },
+              },
+            },
+          },
+        },
+        orderBy: { startDate: 'desc' },
+      })),
+      measureDashboardOperation('workout-assignments', (prisma as any).workoutPlanAssignment.findMany({
         where: {
           clientId,
           isActive: true,
@@ -179,8 +177,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
         orderBy: {
           assignedAt: 'desc',
         },
-      }),
-      (prisma as any).dailyCheckIn.findMany({
+      })),
+      measureDashboardOperation('streak-checkins', (prisma as any).dailyCheckIn.findMany({
         where: {
           clientId,
           dayDate: {
@@ -196,8 +194,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           hunger: true,
           sleep: true,
         },
-      }),
-      (prisma as any).dailyNutritionLog.findMany({
+      })),
+      measureDashboardOperation('streak-nutrition', (prisma as any).dailyNutritionLog.findMany({
         where: {
           clientId,
           dayDate: {
@@ -210,8 +208,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           dayDate: true,
           status: true,
         },
-      }),
-      (prisma as any).dailyTrainingLog.findMany({
+      })),
+      measureDashboardOperation('streak-training', (prisma as any).dailyTrainingLog.findMany({
         where: {
           clientId,
           dayDate: {
@@ -224,8 +222,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           dayDate: true,
           status: true,
         },
-      }),
-      prisma.$queryRaw<{ unreadTotal: number | bigint }[]>(Prisma.sql`
+      })),
+      measureDashboardOperation('unread-count', prisma.$queryRaw<{ unreadTotal: number | bigint }[]>(Prisma.sql`
         SELECT COUNT(m."id")::int AS "unreadTotal"
         FROM "conversations" c
         JOIN "messages" m
@@ -233,7 +231,7 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
           AND (c."clientLastReadAt" IS NULL OR m."createdAt" > c."clientLastReadAt")
           AND m."senderRole" = ANY(ARRAY['COACH', 'ADMIN']::"MessageSenderRole"[])
         WHERE c."clientId" = ${clientId}
-      `),
+      `)),
     ]);
 
   if (!client) {
@@ -253,11 +251,11 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
   >();
 
   for (const row of streakRows) {
-    recordByDateKey.set(toDateKeyLocal(row.dayDate), row);
+    recordByDateKey.set(toDateKeyUtc(row.dayDate), row);
   }
 
   for (const row of streakNutritionRows) {
-    const dateKey = toDateKeyLocal(row.dayDate);
+    const dateKey = toDateKeyUtc(row.dayDate);
     const existing = recordByDateKey.get(dateKey) ?? { weightKg: null, energy: null, hunger: null, sleep: null };
     recordByDateKey.set(dateKey, {
       ...existing,
@@ -266,7 +264,7 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
   }
 
   for (const row of streakTrainingRows) {
-    const dateKey = toDateKeyLocal(row.dayDate);
+    const dateKey = toDateKeyUtc(row.dayDate);
     const existing = recordByDateKey.get(dateKey) ?? { weightKg: null, energy: null, hunger: null, sleep: null };
     recordByDateKey.set(dateKey, {
       ...existing,
@@ -275,6 +273,9 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
   }
 
   const streakCount = calculateStreak(recordByDateKey, recentDateKeys);
+  const dailyCheckIn = streakRows.find((row: any) => toDateKeyUtc(row.dayDate) === todayDateKey) ?? null;
+  const nutritionEntry = streakNutritionRows.find((row: any) => toDateKeyUtc(row.dayDate) === todayDateKey) ?? null;
+  const trainingEntry = streakTrainingRows.find((row: any) => toDateKeyUtc(row.dayDate) === todayDateKey) ?? null;
 
   const completedCount = completions.length;
   const totalSelectedCount = selectionSet?.items?.length ?? 0;
@@ -313,26 +314,16 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
     : autoTotals;
 
   const activeWorkoutAssignment = workoutAssignments.find((assignment: any) => assignment.sessions?.[0] ?? null) ?? workoutAssignments[0] ?? null;
-  const activeTrainingSession = activeWorkoutAssignment?.sessions?.[0] ?? null;
+  const legacySession = activeWorkoutAssignment?.sessions?.[0] ?? null;
+  const currentSession = currentTrainingPlan?.days[0]?.sessions[0] ?? null;
+  const preferCurrentPlan = Boolean(currentSession || (currentTrainingPlan && !legacySession));
+  const activeTrainingSession = preferCurrentPlan ? currentSession : legacySession;
 
-  const dailyDate = new Date(`${todayDateKey}T00:00:00.000Z`);
-  const dailyEntry = dailyCheckIn
-    ? serializeDailyCheckIn({
-        ...dailyCheckIn,
-        nutritionStatus: nutritionEntry?.status ?? null,
-        trainingStatus: trainingEntry?.status ?? null,
-      })
-    : nutritionEntry || trainingEntry
-    ? serializeDailyCheckIn({
-        id: `${clientId}-${todayDateKey}`,
-        dayDate: dailyDate,
-        weightKg: null,
-        energy: null,
-          nutritionStatus: nutritionEntry?.status ?? null,
-          trainingStatus: trainingEntry?.status ?? null,
-          submittedAt: dailyDate,
-      })
-    : null;
+  const dailyEntry = {
+    ...dailyCheckIn,
+    nutritionStatus: nutritionEntry?.status ?? null,
+    trainingStatus: trainingEntry?.status ?? null,
+  };
 
   const summary: UserDashboardSummary = deriveUserDashboardSnapshot({
     generatedAt: now.toISOString(),
@@ -357,7 +348,7 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
     },
     dailyCheckIn: {
       dayDate: todayDateKey,
-      isComplete: Boolean(dailyEntry?.isComplete),
+      isComplete: isDailyCheckInComplete(dailyEntry),
       nutritionStatus: dailyEntry?.nutritionStatus ?? null,
       trainingStatus: dailyEntry?.trainingStatus ?? null,
     },
@@ -366,9 +357,9 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
       status: getWeeklyCheckInStatus(Boolean(weeklyCheckIn?.submittedAt), now),
     },
     training: {
-      activeAssignmentCount: workoutAssignments.length,
-      activeAssignmentId: activeWorkoutAssignment?.id ?? null,
-      activePlanName: activeWorkoutAssignment?.workoutPlan?.name ?? null,
+      activeAssignmentCount: workoutAssignments.length + (currentTrainingPlan ? 1 : 0),
+      activeAssignmentId: preferCurrentPlan ? null : activeWorkoutAssignment?.id ?? null,
+      activePlanName: preferCurrentPlan ? currentTrainingPlan?.name ?? null : activeWorkoutAssignment?.workoutPlan?.name ?? null,
       activeSessionId: activeTrainingSession?.id ?? null,
     },
     adherence: {
@@ -390,10 +381,10 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
 export async function getCachedUserDashboardSummary(clientId: string): Promise<UserDashboardSummary> {
   const cachedLoader = unstable_cache(
     async () => loadUserDashboardSummary(clientId),
-    [USER_DASHBOARD_SUMMARY_CACHE_KEY, clientId],
+    [USER_DASHBOARD_SUMMARY_CACHE_KEY, clientId, toDateKeyLocal(new Date())],
     {
       tags: [userDashboardSummaryTag(clientId)],
-      revalidate: false,
+      revalidate: 60,
     },
   );
 

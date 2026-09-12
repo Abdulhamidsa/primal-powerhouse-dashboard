@@ -236,7 +236,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       tags: normalizeTags(meal.tags),
     };
 
-    const authUser = AuthService.validateRequestAuth(request);
+    const authUser = await AuthService.validateRequestAuth(request);
     if (view === 'client' || authUser?.type === 'client' || fromUserPage) {
       return NextResponse.json({
         ...parsedMeal,

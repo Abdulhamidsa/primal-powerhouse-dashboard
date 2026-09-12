@@ -20,13 +20,13 @@ type RecentAuthFailure = {
   message: string;
 };
 
-export function requireRecentClientAuth(request: NextRequest): RecentAuthSuccess | RecentAuthFailure {
-  const auth = requireApiAuth(request, 'client');
+export async function requireRecentClientAuth(request: NextRequest): Promise<RecentAuthSuccess | RecentAuthFailure> {
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) {
     return { ok: false, status: 401, message: 'Unauthorized' };
   }
 
-  const tokenIat = auth.user.iat;
+  const tokenIat = auth.user.authenticatedAt ?? auth.user.iat;
   if (!tokenIat) {
     return { ok: false, status: 401, message: 'Invalid token issuance time' };
   }

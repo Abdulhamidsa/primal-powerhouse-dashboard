@@ -1,3 +1,4 @@
+import { AuthService } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 function normalizeOrigin(origin: string): string {
@@ -14,7 +15,8 @@ function buildExpectedOrigin(request: NextRequest): string {
   return host ? `${proto}://${host}` : '';
 }
 
-export function assertSameOrigin(request: NextRequest): { ok: true } | { ok: false; message: string } {
+export async function assertSameOrigin(request: NextRequest): Promise<{ ok: true } | { ok: false; message: string }> {
+  if (request.headers.get('authorization')?.startsWith('Bearer ') && await AuthService.validateRequestAuth(request, 'client')) return { ok: true };
   const method = request.method.toUpperCase();
   if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
     return { ok: true };

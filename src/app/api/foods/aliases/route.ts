@@ -35,7 +35,7 @@ function toApiFoodAlias(
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const body = await request.json();

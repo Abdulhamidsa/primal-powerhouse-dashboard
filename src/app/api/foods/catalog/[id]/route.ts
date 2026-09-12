@@ -118,7 +118,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const { id } = await params;

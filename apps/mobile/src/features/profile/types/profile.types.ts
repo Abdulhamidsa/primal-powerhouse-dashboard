@@ -1,0 +1,1 @@
+export type Profile = { user: { id: string; name: string; email: string; avatar: string | null; age: number | null; height: number | null; currentWeight: number | null; targetWeight: number | null; coach: { name: string; email: string } | null } };

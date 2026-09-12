@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import type {
   CreateTrainingPlanDayInput,
   UpdateTrainingPlanDayInput,
@@ -55,7 +56,7 @@ export const trainingPlanDayService = {
       }
     }
 
-    return prisma.trainingPlanDay.create({
+    const created = await prisma.trainingPlanDay.create({
       data: {
         planId: input.planId,
         date: input.date,
@@ -76,6 +77,8 @@ export const trainingPlanDayService = {
         },
       },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+    return created;
   },
 
   /**
@@ -94,7 +97,7 @@ export const trainingPlanDayService = {
       throw new Error('Plan not found or unauthorized');
     }
 
-    return (prisma as any).$transaction(async (tx: any) => {
+    const created = await (prisma as any).$transaction(async (tx: any) => {
       const created = [];
 
       for (const day of input.days) {
@@ -141,6 +144,8 @@ export const trainingPlanDayService = {
 
       return created;
     });
+    invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+    return created;
   },
 
   /**
@@ -153,6 +158,7 @@ export const trainingPlanDayService = {
         plan: { coachId },
       },
       include: {
+        plan: { select: { clientId: true } },
         workoutTemplate: {
           include: {
             exercises: {
@@ -201,7 +207,7 @@ export const trainingPlanDayService = {
       throw new Error('Plan day not found or unauthorized');
     }
 
-    return prisma.trainingPlanDay.update({
+    const updated = await prisma.trainingPlanDay.update({
       where: { id: dayId },
       data: input,
       include: {
@@ -215,6 +221,8 @@ export const trainingPlanDayService = {
         },
       },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: day.plan.clientId });
+    return updated;
   },
 
   /**
@@ -239,6 +247,7 @@ export const trainingPlanDayService = {
     await prisma.trainingPlanDay.delete({
       where: { id: dayId },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: day.plan.clientId });
 
     return true;
   },

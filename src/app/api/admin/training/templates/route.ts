@@ -4,7 +4,7 @@ import { workoutTemplateService } from '@/features/training/services';
 import { createWorkoutTemplateSchema } from '@/features/training/schemas/template.schemas';
 
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const templates = await workoutTemplateService.getCoachTemplates(auth.user.userId);
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const body = await request.json();

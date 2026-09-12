@@ -128,7 +128,7 @@ function toIso(date: Date): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const actor = await resolveActor(auth.user);

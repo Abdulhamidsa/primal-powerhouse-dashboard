@@ -16,10 +16,10 @@ function isPresenceTableUnavailable(error: unknown): boolean {
 
 export async function POST(request: NextRequest) {
   try {
-    const csrf = assertSameOrigin(request);
+    const csrf = await assertSameOrigin(request);
     if (!csrf.ok) return jsonWithCache({ error: csrf.message }, { status: 403 });
 
-    const auth = requireApiAuth(request, 'client');
+    const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
 
     const limiter = rateLimit(`chat-presence:${auth.user.userId}:${getRequestIpAddress(request)}`, 180, 60_000);
@@ -89,10 +89,10 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const csrf = assertSameOrigin(request);
+    const csrf = await assertSameOrigin(request);
     if (!csrf.ok) return jsonWithCache({ error: csrf.message }, { status: 403 });
 
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const clientId = request.nextUrl.searchParams.get('clientId');
