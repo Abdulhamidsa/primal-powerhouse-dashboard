@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     );
     return response;
   } catch (error) {
-    console.error('[GOOGLE_AUTH] error:', safeErrorMessage(error));
+    console.error('[GOOGLE_AUTH] error:', error);
     const response = NextResponse.redirect(redirect('/user/login?error=google'));
     clearState(response);
     return response;
