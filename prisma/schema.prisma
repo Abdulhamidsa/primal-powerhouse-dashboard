@@ -43,6 +43,7 @@ model User {
   name      String
   password  String
   role      Role     @default(COACH)
+  isSystem  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -55,6 +56,7 @@ model User {
   foodsCreated       Food[]
   coachConversations Conversation[] @relation("ConversationCoach")
   workoutPlans       WorkoutPlan[]
+  programsCreated    Program[]      @relation("ProgramCreator")
 
   // Training system relations
   exercises        Exercise[]           @relation("ExerciseCoach")
@@ -62,21 +64,26 @@ model User {
   trainingPlans    ClientTrainingPlan[] @relation("TrainingPlansCoach")
   trainingSessions TrainingSession[]    @relation("TrainingSessionsCoach")
 
+  @@index([isSystem])
   @@map("users")
 }
 
 model Client {
   authInvalidBefore DateTime?
-  mobileSessions MobileSession[]
+  mobileSessions    MobileSession[]
 
-  id                            String         @id @default(cuid())
+  id                            String             @id @default(cuid())
   name                          String
-  email                         String         @unique
+  email                         String             @unique
   password                      String?
+  serviceTier                   ClientServiceTier  @default(COACHING)
+  signupSource                  ClientSignupSource @default(ADMIN_CREATED)
+  emailVerifiedAt               DateTime?
+  onboardingCompletedAt         DateTime?
   phone                         String?
   avatar                        String?
-  status                        ClientStatus   @default(ACTIVE)
-  joinDate                      DateTime       @default(now())
+  status                        ClientStatus       @default(ACTIVE)
+  joinDate                      DateTime           @default(now())
   currentWeight                 Float?
   targetWeight                  Float?
   height                        Float?
@@ -94,25 +101,28 @@ model Client {
   motivationalMessageEncrypted  String?
   lastSession                   DateTime?
   nextSession                   DateTime?
-  sessionsCompleted             Int            @default(0)
+  sessionsCompleted             Int                @default(0)
   progressPhotos                String?
   goalCalories                  Int?
   goalMacros                    String? // JSON: {protein, carbs, fat}
-  consentAnalytics              Boolean        @default(false)
-  consentMarketingNotifications Boolean        @default(false)
-  consentOptionalTracking       Boolean        @default(false)
-  consentMessageNotifications   Boolean        @default(false)
+  consentAnalytics              Boolean            @default(false)
+  consentMarketingNotifications Boolean            @default(false)
+  consentOptionalTracking       Boolean            @default(false)
+  consentMessageNotifications   Boolean            @default(false)
   privacyUpdatedAt              DateTime?
   deactivatedAt                 DateTime?
   anonymizedAt                  DateTime?
   deletionScheduledFor          DateTime?
   deletedAt                     DateTime?
-  createdAt                     DateTime       @default(now())
-  updatedAt                     DateTime       @updatedAt
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime           @updatedAt
 
   coachId String
   coach   User   @relation(fields: [coachId], references: [id], onDelete: Cascade)
 
+  programEnrollments       ProgramEnrollment[]
+  emailVerificationTokens  EmailVerificationToken[]
+  passwordResetTokens      PasswordResetToken[]
   workouts                 Workout[]
   mealPlans                MealPlan[]
   videoAssignments         VideoAssignment[]
@@ -149,7 +159,92 @@ model Client {
   trainingPlans    ClientTrainingPlan[] @relation("TrainingPlans")
   trainingSessions TrainingSession[]    @relation("TrainingSessions")
 
+  @@index([serviceTier])
+  @@index([signupSource])
+  @@index([emailVerifiedAt])
   @@map("clients")
+}
+
+model Program {
+  id           String  @id @default(cuid())
+  slug         String  @unique
+  name         String
+  description  String?
+  durationDays Int     @default(42)
+  isActive     Boolean @default(true)
+
+  createdById String?
+  createdBy   User?   @relation("ProgramCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  enrollments ProgramEnrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("programs")
+}
+
+model ProgramEnrollment {
+  id String @id @default(cuid())
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  programId String
+  program   Program @relation(fields: [programId], references: [id], onDelete: Restrict)
+
+  status ProgramEnrollmentStatus @default(READY)
+
+  startedAt   DateTime?
+  endsAt      DateTime?
+  completedAt DateTime?
+  expiredAt   DateTime?
+  cancelledAt DateTime?
+  upgradedAt  DateTime?
+
+  goal                OnboardingGoal?
+  experienceLevel     OnboardingExperienceLevel?
+  trainingDaysPerWeek Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([programId])
+  @@index([status])
+  @@index([clientId, status])
+  @@map("program_enrollments")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  clientId  String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  clientId  String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 model ClientFeatureVisibility {
@@ -258,9 +353,9 @@ model Message {
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
+  @@unique([conversationId, senderId, clientTempId])
   @@index([conversationId, createdAt])
   @@index([senderId])
-  @@unique([conversationId, senderId, clientTempId])
   @@map("messages")
 }
 
@@ -381,8 +476,8 @@ model FoodsBackupBeforeCleanup {
   createdAt        DateTime?
   updatedAt        DateTime?
 
-  @@ignore
   @@map("foods_backup_before_cleanup")
+  @@ignore
 }
 
 model FoodsCopy1 {
@@ -407,8 +502,8 @@ model FoodsCopy1 {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime
 
-  @@ignore
   @@map("foods_copy1")
+  @@ignore
 }
 
 model MealsCopy1 {
@@ -435,8 +530,8 @@ model MealsCopy1 {
   clientId       String?
   spices         String?
 
-  @@ignore
   @@map("meals_copy1")
+  @@ignore
 }
 
 model FoodAlias {
@@ -931,6 +1026,37 @@ enum ClientStatus {
   ARCHIVED
 }
 
+enum ClientServiceTier {
+  FREE_PROGRAM
+  SELF_GUIDED_PAID
+  COACHING
+}
+
+enum ClientSignupSource {
+  ADMIN_CREATED
+  SELF_SIGNUP
+}
+
+enum ProgramEnrollmentStatus {
+  READY
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum OnboardingGoal {
+  LOSE_FAT
+  BUILD_MUSCLE
+  GENERAL_FITNESS
+}
+
+enum OnboardingExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
 enum ActivityLevel {
   LOW
   MODERATE
@@ -1368,10 +1494,10 @@ model ClientTrainingPlan {
 }
 
 model TrainingPlanDay {
-  id   String          @id @default(cuid())
-  date DateTime
+  id      String          @id @default(cuid())
+  date    DateTime
   weekday Int?
-  type TrainingDayType @default(WORKOUT)
+  type    TrainingDayType @default(WORKOUT)
 
   workoutTemplateId String?
   workoutTemplate   WorkoutTemplate? @relation(fields: [workoutTemplateId], references: [id], onDelete: SetNull)
@@ -1513,33 +1639,35 @@ model RestTimer {
 }
 
 model MobileSession {
-  id String @id @default(cuid())
-  clientId String
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  refreshHash String @unique
+  id              String             @id @default(cuid())
+  clientId        String
+  client          Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  refreshHash     String             @unique
   authenticatedAt DateTime
-  expiresAt DateTime
-  revokedAt DateTime?
-  createdAt DateTime @default(now())
-  devices MobilePushDevice[]
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdAt       DateTime           @default(now())
+  devices         MobilePushDevice[]
+
   @@index([clientId])
 }
 
 model MobilePushDevice {
-  id String @id @default(cuid())
+  id        String        @id @default(cuid())
   sessionId String
-  session MobileSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  token String @unique
-  updatedAt DateTime @updatedAt
+  session   MobileSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  token     String        @unique
+  updatedAt DateTime      @updatedAt
 }
 
 model MobilePushDelivery {
-  id String @id @default(cuid())
-  messageId String
+  id          String   @id @default(cuid())
+  messageId   String
   deviceToken String
-  receiptId String?
-  status String @default("PENDING")
-  createdAt DateTime @default(now())
+  receiptId   String?
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
   @@unique([messageId, deviceToken])
   @@index([status, createdAt])
 }
