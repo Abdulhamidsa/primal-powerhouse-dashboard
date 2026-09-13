@@ -1370,6 +1370,7 @@ model ClientTrainingPlan {
 model TrainingPlanDay {
   id   String          @id @default(cuid())
   date DateTime
+  weekday Int?
   type TrainingDayType @default(WORKOUT)
 
   workoutTemplateId String?
@@ -1389,6 +1390,7 @@ model TrainingPlanDay {
   sessions TrainingSession[]
 
   @@unique([planId, date])
+  @@index([planId, weekday])
   @@index([planId, date])
   @@index([date])
   @@index([status])

@@ -8,6 +8,8 @@ import {
   bulkCreatePlanDays,
   updatePlanDay,
   deletePlanDay,
+  saveWeeklyTrainingPattern,
+  type WeeklyTrainingPatternDayInput,
 } from '../api/coachTraining.api';
 
 export function useCoachPlans() {
@@ -115,11 +117,22 @@ export function useCoachPlanDays(planId?: string) {
   };
 
   const bulkCreatePlanDaysAction = async (data: {
-    days: Array<{ date: string; type: string; workoutTemplateId?: string | null }>;
+    days: Array<{ date?: string; weekday?: number; type: string; workoutTemplateId?: string | null; title?: string | null; note?: string | null }>;
   }) => {
     if (!planId) throw new Error('Plan ID is required');
 
     const result = await bulkCreatePlanDays(planId, data);
+    await mutate(
+      (key: string | unknown[]) =>
+        key === 'coach-plans' || (Array.isArray(key) && key[0] === 'coach-plan' && key[1] === planId),
+    );
+    return result;
+  };
+
+  const saveWeeklyPatternAction = async (days: WeeklyTrainingPatternDayInput[]) => {
+    if (!planId) throw new Error('Plan ID is required');
+
+    const result = await saveWeeklyTrainingPattern(planId, days);
     await mutate(
       (key: string | unknown[]) =>
         key === 'coach-plans' || (Array.isArray(key) && key[0] === 'coach-plan' && key[1] === planId),
@@ -140,6 +153,7 @@ export function useCoachPlanDays(planId?: string) {
   return {
     createPlanDay: createPlanDayAction,
     bulkCreatePlanDays: bulkCreatePlanDaysAction,
+    saveWeeklyPattern: saveWeeklyPatternAction,
     updatePlanDay: updatePlanDayAction,
     deletePlanDay: deletePlanDayAction,
   };

@@ -1,10 +1,23 @@
 import { httpClient } from '@/lib/http/client';
-import type { Exercise, WorkoutTemplate, ClientTrainingPlan, TrainingPlanDay } from '@prisma/client';
-import type { CreateExerciseInput, UpdateExerciseInput } from '@/features/training/schemas/exercise.schemas';
+import type { Exercise, ClientTrainingPlan, TrainingPlanDay } from '@prisma/client';
+import type { WorkoutTemplateWithExercises } from '@/features/training/types';
+import type {
+  CreateExerciseInput,
+  ImportExerciseDbExerciseInput,
+  UpdateExerciseInput,
+} from '@/features/training/schemas/exercise.schemas';
 import type {
   CreateWorkoutTemplateInput,
   UpdateWorkoutTemplateInput,
 } from '@/features/training/schemas/template.schemas';
+
+export type WeeklyTrainingPatternDayInput = {
+  weekday: number;
+  type: string;
+  workoutTemplateId?: string | null;
+  title?: string | null;
+  note?: string | null;
+};
 
 // Exercise endpoints
 export const COACH_EXERCISES_URL = '/api/admin/training/exercises';
@@ -27,6 +40,10 @@ export async function createExercise(data: CreateExerciseInput) {
   return httpClient.post<Exercise>(COACH_EXERCISES_URL, data);
 }
 
+export async function importExerciseDbExercise(data: ImportExerciseDbExerciseInput) {
+  return httpClient.post<Exercise>(`${COACH_EXERCISES_URL}/import-exercise-db`, data);
+}
+
 export async function updateExercise(id: string, data: UpdateExerciseInput) {
   return httpClient.patch<Exercise>(buildCoachExerciseUrl(id), data);
 }
@@ -43,19 +60,19 @@ export function buildCoachTemplateUrl(id: string) {
 }
 
 export async function getCoachTemplates() {
-  return httpClient.get<WorkoutTemplate[]>(COACH_TEMPLATES_URL);
+  return httpClient.get<WorkoutTemplateWithExercises[]>(COACH_TEMPLATES_URL);
 }
 
 export async function getCoachTemplate(id: string) {
-  return httpClient.get<WorkoutTemplate>(buildCoachTemplateUrl(id));
+  return httpClient.get<WorkoutTemplateWithExercises>(buildCoachTemplateUrl(id));
 }
 
 export async function createTemplate(data: CreateWorkoutTemplateInput) {
-  return httpClient.post<WorkoutTemplate>(COACH_TEMPLATES_URL, data);
+  return httpClient.post<WorkoutTemplateWithExercises>(COACH_TEMPLATES_URL, data);
 }
 
 export async function updateTemplate(id: string, data: UpdateWorkoutTemplateInput) {
-  return httpClient.patch<WorkoutTemplate>(buildCoachTemplateUrl(id), data);
+  return httpClient.patch<WorkoutTemplateWithExercises>(buildCoachTemplateUrl(id), data);
 }
 
 export async function deleteTemplate(id: string) {
@@ -117,10 +134,14 @@ export async function createPlanDay(
 export async function bulkCreatePlanDays(
   planId: string,
   data: {
-    days: Array<{ date: string; type: string; workoutTemplateId?: string | null }>;
+    days: Array<{ date?: string; weekday?: number; type: string; workoutTemplateId?: string | null; title?: string | null; note?: string | null }>;
   },
 ) {
   return httpClient.post<TrainingPlanDay[]>(buildCoachPlanDaysUrl(planId), data);
+}
+
+export async function saveWeeklyTrainingPattern(planId: string, days: WeeklyTrainingPatternDayInput[]) {
+  return httpClient.post<TrainingPlanDay[]>(buildCoachPlanDaysUrl(planId), { days });
 }
 
 export async function updatePlanDay(

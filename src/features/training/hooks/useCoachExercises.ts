@@ -1,7 +1,17 @@
 import useSWR from 'swr';
 // import { useSWRConfig } from 'swr';
-import { getCoachExercises, createExercise, updateExercise, deleteExercise } from '../api/coachTraining.api';
-import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exercise.schemas';
+import {
+  getCoachExercises,
+  createExercise,
+  importExerciseDbExercise,
+  updateExercise,
+  deleteExercise,
+} from '../api/coachTraining.api';
+import type {
+  CreateExerciseInput,
+  ImportExerciseDbExerciseInput,
+  UpdateExerciseInput,
+} from '../schemas/exercise.schemas';
 // import type { Exercise } from '@prisma/client';
 
 export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: string; search?: string }) {
@@ -27,6 +37,12 @@ export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: 
     return newExercise;
   };
 
+  const importExerciseDbExerciseAction = async (input: ImportExerciseDbExerciseInput) => {
+    const importedExercise = await importExerciseDbExercise(input);
+    await mutateLocal();
+    return importedExercise;
+  };
+
   const updateExerciseAction = async (id: string, input: UpdateExerciseInput) => {
     const updated = await updateExercise(id, input);
     await mutateLocal();
@@ -45,6 +61,7 @@ export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: 
     error,
     mutate: mutateLocal,
     createExercise: createExerciseAction,
+    importExerciseDbExercise: importExerciseDbExerciseAction,
     updateExercise: updateExerciseAction,
     deleteExercise: deleteExerciseAction,
   };

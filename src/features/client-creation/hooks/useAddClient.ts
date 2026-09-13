@@ -15,7 +15,7 @@ export function useAddClient() {
     setError(null);
     try {
       const created = await createClient(payload);
-      await mutate((key: string) => key === buildClientsUrl() || key.startsWith('/api/clients?'));
+      await mutate((key: unknown) => typeof key === 'string' && (key === buildClientsUrl() || key.startsWith('/api/clients?')));
       return created;
     } catch (err: any) {
       const message = err?.message ?? 'Failed to create client';

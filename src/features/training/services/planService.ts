@@ -3,6 +3,45 @@ import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import type { CreateClientTrainingPlanInput, UpdateClientTrainingPlanInput } from '../schemas/plan.schemas';
 // import type { ClientTrainingPlanWithDays } from '../types/index';
 
+function getCopenhagenDateKey(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Copenhagen',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+function dateKeyToNoon(dateKey: string) {
+  return new Date(`${dateKey}T12:00:00.000Z`);
+}
+
+function addDays(date: Date, amount: number) {
+  const next = new Date(date);
+  next.setUTCDate(next.getUTCDate() + amount);
+  return next;
+}
+
+function startOfIsoWeek(dateKey: string) {
+  const date = dateKeyToNoon(dateKey);
+  const day = date.getUTCDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  return addDays(date, mondayOffset);
+}
+
+function dayBounds(date: Date) {
+  const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const end = addDays(start, 1);
+  return { start, end };
+}
+
+function isInsidePlanWindow(plan: { startDate: Date; endDate: Date | null }, date: Date) {
+  const { start } = dayBounds(date);
+  const planStart = dayBounds(plan.startDate).start;
+  const planEnd = plan.endDate ? dayBounds(plan.endDate).start : null;
+  return start >= planStart && (!planEnd || start <= planEnd);
+}
+
 /**
  * Training Plan Service
  * Handles CRUD operations for client training plans
@@ -37,6 +76,7 @@ export const trainingPlanService = {
       },
       include: {
         days: {
+          where: { weekday: { not: null } },
           include: {
             sessions: {
               select: { id: true, status: true, completedAt: true },
@@ -52,7 +92,7 @@ export const trainingPlanService = {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: [{ weekday: 'asc' }, { date: 'asc' }],
         },
         client: {
           select: { id: true, name: true },
@@ -76,6 +116,7 @@ export const trainingPlanService = {
       where,
       include: {
         days: {
+          where: { weekday: { not: null } },
           include: {
             workoutTemplate: {
               include: {
@@ -86,7 +127,7 @@ export const trainingPlanService = {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: [{ weekday: 'asc' }, { date: 'asc' }],
         },
         client: {
           select: { id: true, name: true },
@@ -107,6 +148,7 @@ export const trainingPlanService = {
       },
       include: {
         days: {
+          where: { weekday: { not: null } },
           include: {
             workoutTemplate: {
               include: {
@@ -117,7 +159,7 @@ export const trainingPlanService = {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: [{ weekday: 'asc' }, { date: 'asc' }],
         },
         client: {
           select: { id: true, name: true },
@@ -138,11 +180,11 @@ export const trainingPlanService = {
       orderBy: { startDate: 'desc' },
       include: {
         days: {
+          where: { weekday: { not: null } },
           include: {
             sessions: {
-              select: { id: true, status: true, completedAt: true },
+              select: { id: true, status: true, completedAt: true, startedAt: true },
               orderBy: { createdAt: 'desc' },
-              take: 1,
             },
             workoutTemplate: {
               include: {
@@ -153,19 +195,38 @@ export const trainingPlanService = {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: [{ weekday: 'asc' }, { date: 'asc' }],
+        },
+        client: {
+          select: { id: true, name: true },
         },
       },
     });
 
     if (!plan) return null;
 
+    const todayKey = getCopenhagenDateKey();
+    const monday = startOfIsoWeek(todayKey);
+    const generatedDays = Array.from({ length: 7 }, (_, index) => {
+      const currentDate = addDays(monday, index);
+      const patternDay = plan.days.find(day => day.weekday === index);
+      if (!patternDay || !isInsidePlanWindow(plan, currentDate)) return null;
+
+      const { start, end } = dayBounds(currentDate);
+      const latestSession = patternDay.sessions.find(session => session.startedAt >= start && session.startedAt < end) ?? null;
+      const { sessions, ...day } = patternDay;
+
+      return {
+        ...day,
+        date: currentDate,
+        status: latestSession?.status === 'COMPLETED' ? 'COMPLETED' : day.status,
+        latestSession,
+      };
+    }).filter((day): day is NonNullable<typeof day> => day !== null);
+
     return {
       ...plan,
-      days: plan.days.map(({ sessions, ...day }) => ({
-        ...day,
-        latestSession: sessions[0] ?? null,
-      })),
+      days: generatedDays,
     };
   },
 
@@ -184,6 +245,7 @@ export const trainingPlanService = {
       data: input,
       include: {
         days: {
+          where: { weekday: { not: null } },
           include: {
             workoutTemplate: {
               include: {
@@ -194,7 +256,7 @@ export const trainingPlanService = {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: [{ weekday: 'asc' }, { date: 'asc' }],
         },
         client: {
           select: { id: true, name: true },
@@ -217,6 +279,7 @@ export const trainingPlanService = {
       },
       include: {
         days: {
+          where: { weekday: { not: null } },
           include: {
             workoutTemplate: {
               include: {
@@ -227,7 +290,7 @@ export const trainingPlanService = {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: [{ weekday: 'asc' }, { date: 'asc' }],
         },
       },
     });

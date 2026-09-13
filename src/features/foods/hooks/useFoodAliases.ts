@@ -9,7 +9,7 @@ export function useCreateFoodAlias() {
 
   const submit = async (payload: CreateFoodAliasPayload) => {
     const created = await createFoodAlias(payload);
-    await mutate((key: string) => key.startsWith('/api/foods'));
+    await mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/foods'));
     return created;
   };
 

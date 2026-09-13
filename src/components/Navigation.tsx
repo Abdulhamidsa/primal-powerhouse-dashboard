@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
 import {
   BarChart2,
@@ -199,31 +199,40 @@ const DesktopTopNavItem = React.memo(function DesktopTopNavItem({
 const MobileTabItem = React.memo(function MobileTabItem({
   item,
   active,
+  pending,
   unreadCount,
   tabRef,
+  onPrime,
 }: {
   item: NavItem;
   active: boolean;
+  pending: boolean;
   unreadCount: number;
   tabRef: (node: HTMLAnchorElement | null) => void;
+  onPrime: (href: string) => void;
 }) {
   const Icon = item.icon;
+  const visuallyActive = active || pending;
 
   return (
     <Link
       href={item.href}
       ref={tabRef}
+      prefetch
+      onPointerEnter={() => onPrime(item.href)}
+      onTouchStart={() => onPrime(item.href)}
+      onMouseDown={() => onPrime(item.href)}
       className={cn(
         'relative flex h-full w-full min-w-0 flex-col items-center justify-center rounded-[22px] p-2 text-center transition-[transform,color,opacity] duration-300 ease-out active:scale-[0.98]',
-        active ? 'text-foreground' : 'text-muted-foreground/85 hover:text-foreground',
+        visuallyActive ? 'text-foreground' : 'text-muted-foreground/85 hover:text-foreground',
       )}
     >
       <div
         className={cn(
           'relative z-10 flex items-center justify-center transition-[transform,color] duration-300 ease-out',
-          active ? 'text-primary' : 'text-current',
+          visuallyActive ? 'text-primary' : 'text-current',
         )}
-        style={{ transform: active ? 'translateY(-1px) scale(1.08)' : 'translateY(0) scale(1)' }}
+        style={{ transform: visuallyActive ? 'translateY(-1px) scale(1.08)' : 'translateY(0) scale(1)' }}
       >
         <Icon size={21} />
       </div>
@@ -237,12 +246,13 @@ const MobileTabItem = React.memo(function MobileTabItem({
       <span
         className={cn(
           'relative z-10 mt-1 w-full max-w-full truncate text-[9px] font-medium leading-none transition-[transform,color] duration-300 ease-out',
-          active ? 'text-primary' : 'text-current',
+          visuallyActive ? 'text-primary' : 'text-current',
         )}
-        style={{ transform: active ? 'translateY(-0.5px)' : 'translateY(0)' }}
+        style={{ transform: visuallyActive ? 'translateY(-0.5px)' : 'translateY(0)' }}
       >
         {item.mobileName ?? item.name}
       </span>
+      {pending && !active ? <span className="absolute top-2 h-1 w-1 rounded-full bg-primary" /> : null}
     </Link>
   );
 });
@@ -255,11 +265,13 @@ export default function Navigation({
   userType?: 'admin' | 'user';
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { summary: dashboardSummary } = useUserDashboardSummary(userType === 'user');
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
   const mobileTabRefs = useRef(new Map<string, HTMLAnchorElement | null>());
@@ -274,18 +286,34 @@ export default function Navigation({
   useEffect(() => {
     setAccountMenuOpen(false);
     setChatDrawerOpen(false);
+    setPendingHref(null);
   }, [pathname]);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (userType !== 'user') return;
+    const timeoutId = window.setTimeout(() => {
+      userNavItems.forEach(item => router.prefetch(item.href));
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [router, userType]);
+
+  const primeRoute = (href: string) => {
+    if (href === pathname) return;
+    setPendingHref(href);
+    router.prefetch(href);
+  };
+
   useLayoutEffect(() => {
     if (userType !== 'user') return;
 
     const updateIndicator = () => {
       const nav = mobileNavRef.current;
-      const activeItem = navItems.find(item => isActivePath(pathname, item.href));
+      const activeItem = navItems.find(item => item.href === pendingHref) ?? navItems.find(item => isActivePath(pathname, item.href));
       const activeLink = activeItem ? mobileTabRefs.current.get(activeItem.href) : null;
 
       if (!nav || !activeLink) return;
@@ -330,7 +358,7 @@ export default function Navigation({
       observer.disconnect();
       window.removeEventListener('resize', updateIndicator);
     };
-  }, [navItems, pathname, userType]);
+  }, [navItems, pathname, pendingHref, userType]);
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -492,6 +520,7 @@ export default function Navigation({
         </div>
       ) : null}
       <main
+        data-app-scroll-main
         className={cn(
           'w-full flex-1 min-h-0 overflow-y-auto pb-28 lg:pb-0',
           isChatRoute ? 'overflow-hidden lg:px-6 lg:py-6' : '',
@@ -542,7 +571,9 @@ export default function Navigation({
                 key={item.href}
                 item={item}
                 active={isActivePath(pathname, item.href)}
+                pending={pendingHref === item.href}
                 unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
+                onPrime={primeRoute}
                 tabRef={node => {
                   mobileTabRefs.current.set(item.href, node);
                 }}
