@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { ArrowRight, CheckCircle2, Flame, Moon, Sun } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ClipboardCheck, Dumbbell, Flame, MessageCircle, Moon, Salad, Sun } from 'lucide-react';
 import { UserPageHero } from '@/components/UserPageHero';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
@@ -15,6 +15,67 @@ function TodayBadge({ streakCount }: { streakCount: number }) {
       <Flame size={12} className="text-primary" />
       {streakCount} day streak
     </span>
+  );
+}
+
+function DashboardStatusCard({
+  title,
+  description,
+  href,
+  icon,
+  state,
+  action,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ReactNode;
+  state: 'done' | 'pending' | 'progress';
+  action: string;
+}) {
+  const isDone = state === 'done';
+
+  return (
+    <Link
+      href={href}
+      className="group relative overflow-hidden rounded-[26px] border p-4 shadow-sm transition-transform active:scale-[0.99]"
+      style={{
+        background: 'var(--color-surface)',
+        borderColor: isDone ? 'color-mix(in srgb, var(--color-accent) 34%, var(--color-border))' : 'var(--color-border)',
+      }}
+    >
+      <div aria-hidden="true" className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent)]/30 to-transparent" />
+      <div className="flex items-start gap-3">
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+          style={{
+            background: isDone ? 'var(--color-accent-translucent)' : 'var(--color-bg-alt)',
+            color: isDone ? 'var(--color-accent)' : 'var(--color-text-muted)',
+          }}
+        >
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold tracking-tight text-[var(--color-text)]">{title}</span>
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+              style={{
+                background: isDone ? 'var(--color-accent-translucent)' : 'var(--color-bg-alt)',
+                color: isDone ? 'var(--color-accent)' : 'var(--color-text-muted)',
+              }}
+            >
+              {isDone ? 'Done' : state === 'progress' ? 'Active' : 'Due'}
+            </span>
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-[var(--color-text-muted)]">{description}</span>
+          <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-accent)]">
+            {action}
+            <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </span>
+      </div>
+    </Link>
   );
 }
 
@@ -33,7 +94,9 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
   const coachMessage = summary.user.motivationalMessage;
   const isCheckInComplete = summary.dailyCheckIn.isComplete;
   const isMealsComplete = todayMission.mealProgress.total > 0 && todayMission.mealProgress.percentage === 100;
-  const primaryAction = summary.nextAction;
+  const hasMeals = todayMission.mealProgress.total > 0;
+  const isWorkoutDone = summary.dailyCheckIn.trainingStatus === 'DONE';
+  const isWorkoutInProgress = Boolean(summary.training.activeSessionId);
   const showCoachNote = Boolean(coachMessage || summary.unreadTotal > 0);
 
   return (
@@ -52,29 +115,53 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
         <div className="flex items-center justify-between gap-3">
           <TodayBadge streakCount={summary.streakCount} />
         </div>
-        <div className="mt-4 border-t border-[var(--color-border)]/70 pt-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today&apos;s focus</p>
-              <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-foreground">{todayMission.headline}</h2>
-              <p className="mt-1 text-sm leading-5 text-muted-foreground">{todayMission.description}</p>
-            </div>
-            <span className="shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-              {todayMission.badgeLabel}
-            </span>
-          </div>
-
-          <Link href={primaryAction.href} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform active:scale-[0.99]">
-            <span className="truncate">{primaryAction.title}</span>
-            <ArrowRight size={16} />
-          </Link>
-        </div>
       </UserPageHero>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        <DashboardStatusCard
+          title="Check-ins"
+          description={isCheckInComplete ? 'Daily check-in is complete.' : 'Energy, hunger, sleep, meals, and training are due.'}
+          href="/user/check-ins"
+          icon={<ClipboardCheck size={18} />}
+          state={isCheckInComplete ? 'done' : 'pending'}
+          action={isCheckInComplete ? 'Review' : 'Finish'}
+        />
+        <DashboardStatusCard
+          title="Workout"
+          description={
+            isWorkoutDone
+              ? 'Today’s training is marked done.'
+              : isWorkoutInProgress
+                ? 'Workout is in progress.'
+                : summary.training.activePlanName
+                  ? `${summary.training.activePlanName} is ready.`
+                  : 'Open your training plan.'
+          }
+          href="/user/training"
+          icon={<Dumbbell size={18} />}
+          state={isWorkoutDone ? 'done' : isWorkoutInProgress ? 'progress' : 'pending'}
+          action={isWorkoutInProgress ? 'Continue' : isWorkoutDone ? 'Review' : 'Open'}
+        />
+        <DashboardStatusCard
+          title="Meals"
+          description={
+            isMealsComplete
+              ? `${todayMission.mealProgress.completed}/${todayMission.mealProgress.total} meals done.`
+              : hasMeals
+                ? `${todayMission.mealProgress.completed}/${todayMission.mealProgress.total} meals done.`
+                : 'Choose your meals for today.'
+          }
+          href="/user/my-plan"
+          icon={<Salad size={18} />}
+          state={isMealsComplete ? 'done' : hasMeals && todayMission.mealProgress.completed > 0 ? 'progress' : 'pending'}
+          action={isMealsComplete ? 'Review' : hasMeals ? 'Continue' : 'Choose'}
+        />
+      </section>
 
       {showCoachNote ? <section className="rounded-[26px] border px-4 py-3.5 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: 'var(--color-accent-translucent)', color: 'var(--color-accent)' }}>
-            <CheckCircle2 size={15} />
+            {summary.unreadTotal > 0 ? <MessageCircle size={15} /> : <CheckCircle2 size={15} />}
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach note</p>

@@ -28,7 +28,7 @@ function buildAction(summary: SummarySource, action: Omit<DashboardAction, 'isPe
             ? summary.featureVisibility.nutritionTrackingEnabled &&
               !(summary.adherence.completion.totalSelectedCount > 0 &&
                 summary.adherence.completion.completedCount === summary.adherence.completion.totalSelectedCount)
-: action.kind === 'training'
+            : action.kind === 'training'
               ? summary.featureVisibility.workoutTrackingEnabled && Boolean(summary.training.activeSessionId)
               : summary.unreadTotal > 0,
   };
@@ -123,14 +123,12 @@ export function deriveUserDashboardSnapshot(summary: SummarySource): UserDashboa
 
   const nextAction =
     pendingAttention[0] ??
-    actions.find(action => action.kind === 'meals') ??
-    actions.find(action => action.kind === 'training') ??
-    actions.find(action => action.kind === 'messages') ?? {
-      key: 'training',
-      kind: 'training',
-      title: 'Open training',
-      description: 'Browse your workout plan and keep the routine moving.',
-      href: '/user/training',
+    actions.find(action => action.kind === 'messages' && action.isPending) ?? {
+      key: 'review-today',
+      kind: 'messages',
+      title: 'Review today',
+      description: 'Everything important is handled. Review your day whenever you want.',
+      href: '/user/dashboard',
       isPending: false,
     };
 
