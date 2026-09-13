@@ -1,21 +1,19 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { ChevronDown, Scale } from 'lucide-react';
-import { useState } from 'react';
+import Link from 'next/link';
+import { Activity, ArrowRight, ChevronDown, Scale } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useSWRConfig } from 'swr';
-import { PageHeader } from '@/components/PageHeader';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { UserPageHero, type UserPageHeroStatusItem } from '@/components/UserPageHero';
 import { DailyCheckInCard } from '@/features/daily-checkin/components/DailyCheckInCard';
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
-
-const WeeklyCheckInCard = dynamic(
-  () => import('@/features/weekly-checkin/components/WeeklyCheckInCard.lazy.tsx').then(mod => mod.default),
-  {
-    ssr: false,
-    loading: () => <div className="h-24 animate-pulse rounded-[26px] bg-[var(--color-surface)]" />,
-  },
-);
+import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
+import { useDailyCheckInToday } from '@/features/daily-checkin/hooks/useDailyCheckIn';
+import { useDailyNutritionToday } from '@/features/daily-nutrition/hooks/useDailyNutrition';
+import { useDailyTrainingToday } from '@/features/daily-training/hooks/useDailyTraining';
+import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
 
 const DailyCheckInInsightsCard = dynamic(
   () => import('@/features/daily-checkin/components/DailyCheckInInsightsCard.lazy.tsx').then(mod => mod.default),
@@ -28,9 +26,44 @@ const DailyCheckInInsightsCard = dynamic(
 export default function UserCheckInsPage() {
   const { mutate } = useSWRConfig();
   const { visibility } = useClientSelfFeatureVisibility();
+  const { entry: dailyEntry } = useDailyCheckInToday();
+  const { entry: nutritionEntry } = useDailyNutritionToday();
+  const { entry: trainingEntry } = useDailyTrainingToday();
+  const { status: weeklyStatus, checkIn: weeklyCheckIn } = useWeeklyCheckInCurrentWeek();
   const [showWeightProgress, setShowWeightProgress] = useState(false);
   const dailyEnabled = visibility?.dailyCheckinsEnabled;
   const weeklyEnabled = visibility?.weeklyCheckinsEnabled;
+  const dailyCompletion = useMemo(() => {
+    const input = {
+      energy: dailyEntry?.energy ?? null,
+      hunger: dailyEntry?.hunger ?? null,
+      sleep: dailyEntry?.sleep ?? null,
+      nutritionStatus: nutritionEntry?.status ?? null,
+      trainingStatus: trainingEntry?.status ?? null,
+    };
+    const pct = calculateCompletionPercentage(input);
+    const remaining = 5 - getCompletionCount(input);
+    return { pct, remaining, isComplete: pct === 100 };
+  }, [dailyEntry?.energy, dailyEntry?.hunger, dailyEntry?.sleep, nutritionEntry?.status, trainingEntry?.status]);
+  const heroStatusItems = useMemo<UserPageHeroStatusItem[]>(() => {
+    const items: UserPageHeroStatusItem[] = [];
+    if (dailyEnabled) {
+      items.push({
+        label: 'Daily',
+        value: dailyCompletion.isComplete ? '5/5 complete' : `${dailyCompletion.remaining} left`,
+        tone: dailyCompletion.isComplete ? 'good' : 'warn',
+      });
+    }
+    if (weeklyEnabled) {
+      items.push({
+        label: 'Weekly',
+        value: weeklyStatus === 'overdue' ? 'Overdue' : weeklyStatus === 'due' ? 'Due' : 'Completed',
+        tone: weeklyStatus === 'completed' ? 'good' : weeklyStatus === 'overdue' ? 'danger' : 'warn',
+      });
+    }
+    return items;
+  }, [dailyCompletion.isComplete, dailyCompletion.remaining, dailyEnabled, weeklyEnabled, weeklyStatus]);
+  const weeklyActionLabel = weeklyStatus === 'completed' ? 'Edit weekly' : 'Start weekly';
   const refreshCheckIns = async () => {
     await Promise.all([
       mutate('/api/client/feature-visibility'),
@@ -43,7 +76,12 @@ export default function UserCheckInsPage() {
     return (
       <div className="px-4 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] pt-4 md:px-5">
         <div className="mx-auto w-full max-w-3xl space-y-4">
-          <PageHeader title="Check-Ins" description="Share your progress with your coach." />
+          <UserPageHero
+            eyebrow="Daily rhythm"
+            title="Check-Ins"
+            description="Share your progress with your coach."
+            icon={<Activity size={17} />}
+          />
           <div
             className="rounded-[28px] border p-5 shadow-sm"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
@@ -61,15 +99,27 @@ export default function UserCheckInsPage() {
     <PullToRefresh onRefresh={refreshCheckIns}>
       <div className="px-4 pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))] pt-4 md:px-5">
         <div className="mx-auto w-full max-w-3xl space-y-5">
-          <div className="px-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
-              Daily rhythm
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--color-text)]">Check-Ins</h1>
-            <p className="mt-2 max-w-md text-sm leading-6 text-[var(--color-text-muted)]">
-              Share how you are doing so your coach can guide your next step.
-            </p>
-          </div>
+          <UserPageHero
+            eyebrow="Daily rhythm"
+            title="Check-Ins"
+            description="Share how you are doing so your coach can guide your next step."
+            icon={<Activity size={17} />}
+            statusItems={heroStatusItems}
+          >
+            {weeklyEnabled ? (
+              <Link
+                href="/user/check-in"
+                className={`inline-flex min-h-11 items-center justify-between gap-3 rounded-full px-4 py-2.5 text-sm font-semibold transition-transform active:scale-[0.99] ${
+                  weeklyCheckIn
+                    ? 'border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text)]'
+                    : 'bg-[var(--color-accent)] text-white'
+                }`}
+              >
+                <span>{weeklyActionLabel}</span>
+                <ArrowRight size={15} />
+              </Link>
+            ) : null}
+          </UserPageHero>
 
         {dailyEnabled ? (
           <section className="space-y-3">
@@ -78,16 +128,6 @@ export default function UserCheckInsPage() {
               <p className="text-xs text-[var(--color-text-muted)]">A quick update about how your day is going.</p>
             </div>
             <DailyCheckInCard />
-          </section>
-        ) : null}
-
-        {weeklyEnabled ? (
-          <section className="space-y-3">
-            <div className="px-1">
-              <p className="text-sm font-semibold text-[var(--color-text)]">Weekly Review</p>
-              <p className="text-xs text-[var(--color-text-muted)]">A fuller reflection when your coach needs the weekly picture.</p>
-            </div>
-            <WeeklyCheckInCard />
           </section>
         ) : null}
 

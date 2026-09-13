@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, CircleAlert, Plus, X } from 'lucide-react';
-import { PageHeader } from '@/components/PageHeader';
+import { AlertCircle, CircleAlert, Plus, Salad, X } from 'lucide-react';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { UserPageHero } from '@/components/UserPageHero';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
@@ -240,6 +240,7 @@ export default function UserMyPlanPage() {
       items: selectedByType[type],
     }));
   }, [selectedByType]);
+  const selectedMealCount = useMemo(() => orderedSections.reduce((sum, section) => sum + section.items.length, 0), [orderedSections]);
 
   const completedAtByKey = useMemo(() => {
     const map = new Map<string, string>();
@@ -251,6 +252,7 @@ export default function UserMyPlanPage() {
 
     return map;
   }, [adherenceSummary?.completions]);
+  const completedMealCount = completedAtByKey.size;
 
   const swapOptions = useMemo(() => {
     if (!swapState || !optionsByType) return [];
@@ -338,7 +340,16 @@ export default function UserMyPlanPage() {
     <PullToRefresh onRefresh={refresh} disabled={Boolean(swapState || pendingSwap || helpOpen)}>
       <div className="px-4 pb-6 pt-4 md:px-6">
       <div className="mx-auto max-w-6xl space-y-4 pb-6 md:space-y-5">
-        <PageHeader title="Meal Plan" description="Choose your meals for today and mark them done after eating.">
+        <UserPageHero
+          eyebrow="Plan"
+          title="Meal Plan"
+          description="Choose your meals for today and mark them done after eating."
+          icon={<Salad size={17} />}
+          statusItems={[
+            { label: 'Selected', value: `${selectedMealCount}`, tone: selectedMealCount ? 'good' : 'warn' },
+            { label: 'Completed', value: `${completedMealCount}`, tone: completedMealCount ? 'good' : 'neutral' },
+          ]}
+        >
           <button
             type="button"
             onClick={() => setHelpOpen(true)}
@@ -348,7 +359,7 @@ export default function UserMyPlanPage() {
             <CircleAlert size={15} />
             How it works
           </button>
-        </PageHeader>
+        </UserPageHero>
 
         {loading ? <SkeletonMealGrid /> : null}
 

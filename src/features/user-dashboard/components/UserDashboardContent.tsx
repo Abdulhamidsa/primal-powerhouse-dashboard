@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { ArrowRight, CheckCircle2, Flame, Moon, Sun } from 'lucide-react';
+import { UserPageHero } from '@/components/UserPageHero';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
 
@@ -48,25 +49,20 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
 
   return (
     <div className="space-y-3 md:space-y-4">
-      <section className="relative overflow-hidden rounded-[30px] border p-5 shadow-sm backdrop-blur-xl sm:p-6" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
-
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              {greeting.icon}
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">Today</p>
-            </div>
-            <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight tracking-tight text-foreground">
-              {greeting.text}, {firstName}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">One clear step at a time.</p>
-          </div>
-
+      <UserPageHero
+        eyebrow="Today"
+        title={`${greeting.text}, ${firstName}`}
+        description="One clear step at a time."
+        icon={greeting.icon}
+        statusItems={[
+          { label: 'Meals', value: `${todayMission.mealProgress.percentage}%`, tone: isMealsComplete ? 'good' : 'neutral' },
+          { label: 'Check-in', value: isCheckInComplete ? 'Complete' : 'Due', tone: isCheckInComplete ? 'good' : 'warn' },
+        ]}
+      >
+        <div className="flex items-center justify-between gap-3">
           <TodayBadge streakCount={summary.streakCount} />
         </div>
-
-        <div className="mt-5 border-t border-border/70 pt-4">
+        <div className="mt-4 border-t border-[var(--color-border)]/70 pt-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today&apos;s focus</p>
@@ -83,7 +79,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
             <ArrowRight size={16} />
           </Link>
         </div>
-      </section>
+      </UserPageHero>
 
       <section className="rounded-[26px] border px-4 py-4 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-center justify-between gap-3">

@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, ChevronDown, Dumbbell, Play } from 'lucide-react';
-import { PageHeader } from '@/components/PageHeader';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { UserPageHero } from '@/components/UserPageHero';
 import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
 import { useTrainingPlan } from '@/features/training/hooks/useTrainingPlan';
 import WorkoutPlansSection from '@/features/workout-session/components/WorkoutPlansSection';
@@ -32,7 +32,24 @@ export default function UserTrainingPage() {
     <PullToRefresh onRefresh={refreshTraining}>
       <div className="px-4 pb-8 pt-4 md:px-6">
         <div className="mx-auto w-full max-w-4xl space-y-4 md:space-y-5">
-        <PageHeader title="Training" description="Choose a workout plan, then start or continue your next session." />
+        <UserPageHero
+          eyebrow="Training"
+          title="Train with focus"
+          description="See today’s workout, continue a session, or review your weekly plan."
+          icon={<Dumbbell size={17} />}
+          statusItems={[
+            {
+              label: 'Plan',
+              value: plan ? 'Active' : trainingPlanLoading ? 'Loading' : 'Legacy',
+              tone: plan ? 'good' : 'neutral',
+            },
+            {
+              label: 'Videos',
+              value: `${assignments.length} assigned`,
+              tone: assignments.length ? 'neutral' : 'warn',
+            },
+          ]}
+        />
 
         {trainingPlanLoading ? <div className="h-56 animate-pulse rounded-[30px] border border-border bg-card/70" /> : null}
         {plan ? <TrainingDashboard /> : !trainingPlanLoading ? <section className="rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>

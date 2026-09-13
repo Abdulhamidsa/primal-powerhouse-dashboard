@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { Check, Clipboard, RefreshCcw, Share2, ShoppingBag } from 'lucide-react';
+import { Check, RefreshCcw, Share2, ShoppingBag } from 'lucide-react';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { UserPageHero } from '@/components/UserPageHero';
 import { Button } from '@/components/ui/button';
 import { getUserMealSelection, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
 import { useGenerateShoppingList } from '@/features/meals/hooks/useGenerateShoppingList';
@@ -191,54 +192,17 @@ export default function ShoppingListPage() {
     <PullToRefresh onRefresh={refreshShoppingList}>
       <div className="min-h-screen bg-background pb-20">
         <div className="mx-auto w-full max-w-xl px-4 pb-10 pt-4">
-        <section className="rounded-[32px] border border-border bg-card p-4 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <ShoppingBag size={18} />
-              </div>
-              <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Shopping List
-              </p>
-              <h1 className="mt-1 text-[26px] font-semibold tracking-tight text-foreground">Everything in one place</h1>
-              <p className="mt-2 max-w-[38ch] text-sm leading-6 text-muted-foreground">
-                Ingredients, spices, and meal notes pulled from your selected plan.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-end gap-2">
-              <button
-                type="button"
-                onClick={() => void shareList()}
-                disabled={!hasItems}
-                className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-muted-foreground transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-40"
-                aria-label="Share shopping list"
-                title="Share list"
-              >
-                <Share2 size={15} />
-              </button>
-              <button
-                type="button"
-                onClick={() => void copyAsText()}
-                disabled={!hasItems}
-                className="rounded-full px-3 py-1 text-[11px] font-semibold text-muted-foreground underline-offset-2 hover:text-foreground disabled:opacity-40"
-                title={copiedLabel}
-              >
-                Copy text
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground">
-              {checkedCount} / {totalCount || 0} checked
-            </span>
-            <span className="rounded-full inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-xs font-medium text-muted-foreground">
-              {completionPct}% complete
-            </span>
-            {/* <span className="rounded-full inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-xs font-medium text-primary">
-              {progress}% complete
-            </span> */}
+        <UserPageHero
+          eyebrow="Shopping List"
+          title="Everything in one place"
+          description="Ingredients, spices, and meal notes pulled from your selected plan."
+          icon={<ShoppingBag size={17} />}
+          statusItems={[
+            { label: 'Checked', value: `${checkedCount}/${totalCount || 0}`, tone: checkedCount ? 'good' : 'neutral' },
+            { label: 'Complete', value: `${completionPct}%`, tone: completionPct === 100 ? 'good' : 'neutral' },
+          ]}
+        >
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -250,6 +214,26 @@ export default function ShoppingListPage() {
               <RefreshCcw size={12} className={isPageLoading ? 'animate-spin' : ''} />
               Refresh
             </Button>
+            <button
+              type="button"
+              onClick={() => void shareList()}
+              disabled={!hasItems}
+              className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Share shopping list"
+              title="Share list"
+            >
+              <Share2 size={13} />
+              Share
+            </button>
+            <button
+              type="button"
+              onClick={() => void copyAsText()}
+              disabled={!hasItems}
+              className="inline-flex min-h-8 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
+              title={copiedLabel}
+            >
+              Copy text
+            </button>
           </div>
 
           {copied ? (
@@ -263,7 +247,7 @@ export default function ShoppingListPage() {
               Shopping list shared.
             </div>
           ) : null}
-        </section>
+        </UserPageHero>
 
         {error && !isPageLoading ? (
           <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
