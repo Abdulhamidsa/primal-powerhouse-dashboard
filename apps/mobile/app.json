@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Primal Powerhouse",
+    "slug": "primal-powerhouse",
+    "scheme": "primal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose photos to share with your coach.",
+          "cameraPermission": "Take progress photos and videos for your coach.",
+          "microphonePermission": "Record messages for your coach."
+        }
+      ],
+      "expo-audio",
+      "expo-video",
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

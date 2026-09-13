@@ -33,7 +33,7 @@ export interface ExerciseWithCoach extends Exercise {
 
 export interface WorkoutTemplateWithExercises extends WorkoutTemplate {
   exercises: WorkoutTemplateExerciseWithExercise[];
-  coach: {
+  coach?: {
     id: string;
     name: string;
   };

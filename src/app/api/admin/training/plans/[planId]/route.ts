@@ -6,7 +6,7 @@ import { updateClientTrainingPlanSchema } from '@/features/training/schemas/plan
 type RouteContext = { params: Promise<{ planId: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { planId } = await params;
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { planId } = await params;

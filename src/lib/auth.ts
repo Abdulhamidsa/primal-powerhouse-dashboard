@@ -4,7 +4,8 @@ import bcrypt from 'bcryptjs';
 import type { NextRequest, NextResponse } from 'next/server';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+import { getJwtSecret } from '@/lib/security/jwt-secret';
+import { prisma } from '@/lib/prisma';
 const TOKEN_EXPIRY = '30d';
 
 export const AUTH_COOKIE_NAME = 'auth-token';
@@ -15,6 +16,9 @@ export interface AuthTokenPayload {
   userId: string;
   email: string;
   type: 'client' | 'admin';
+  sid?: string;
+  authenticatedAt?: number;
+  issuedAtMs?: number;
   iat?: number;
   exp?: number;
 }
@@ -47,12 +51,14 @@ export class AuthService {
   static generateToken(payload: AuthTokenPayload): string {
     const { userId, email, type } = payload;
 
-    return jwt.sign({ userId, email, type }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+    return jwt.sign({ userId, email, type, issuedAtMs: Date.now(), authenticatedAt: payload.authenticatedAt ?? Math.floor(Date.now() / 1000) }, getJwtSecret(), { algorithm: 'HS256', expiresIn: TOKEN_EXPIRY });
   }
 
   static verifyToken(token: string): AuthTokenPayload | null {
     try {
-      return jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
+      const payload = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] }) as AuthTokenPayload;
+      if (!payload || typeof payload.userId !== 'string' || !['client', 'admin'].includes(payload.type) || payload.sid) return null;
+      return payload;
     } catch (error) {
       console.error('Token verification failed:', safeErrorMessage(error));
       return null;
@@ -80,10 +86,30 @@ export class AuthService {
     return this.getTokenFromRequest(request);
   }
 
-  static validateRequestAuth(request: NextRequest, role?: 'admin' | 'client'): AuthTokenPayload | null {
-    const token = this.getTokenFromRequestForRole(request, role);
+  static async validateRequestAuth(request: NextRequest, role?: 'admin' | 'client'): Promise<AuthTokenPayload | null> {
+    const authorization = request.headers.get('authorization');
+    const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+    const token = bearer ?? this.getTokenFromRequestForRole(request, role);
     if (!token) return null;
-    return this.verifyToken(token);
+    let payload: AuthTokenPayload | null;
+    if (bearer) {
+      try { payload = jwt.verify(bearer, getJwtSecret(), { algorithms: ['HS256'], audience: 'primal-mobile' }) as AuthTokenPayload; }
+      catch { return null; }
+      if (!payload.sid || payload.type !== 'client') return null;
+      const session = await prisma.mobileSession.findUnique({ where: { id: payload.sid } });
+      if (!session || session.clientId !== payload.userId || session.revokedAt || session.expiresAt <= new Date()) return null;
+      payload.authenticatedAt = Math.floor(session.authenticatedAt.getTime() / 1000);
+    } else {
+      payload = this.verifyToken(token);
+      if (payload?.sid) return null;
+    }
+    if (!payload || (role && payload.type !== role)) return null;
+    if (payload.type === 'client') {
+      const client = await prisma.client.findUnique({ where: { id: payload.userId }, select: { status: true, authInvalidBefore: true, deactivatedAt: true } });
+      if (!client || client.status === 'ARCHIVED' || client.status === 'INACTIVE' || client.deactivatedAt) return null;
+      if (!bearer && client.authInvalidBefore && (payload.issuedAtMs ?? (payload.iat ?? 0) * 1000) <= client.authInvalidBefore.getTime()) return null;
+    }
+    return payload;
   }
 
   /**
@@ -159,11 +185,11 @@ export class AuthService {
 /**
  * Middleware helper for API routes
  */
-export function requireAuth(
+export async function requireAuth(
   request: NextRequest,
   role?: 'admin' | 'client'
-): { error?: string; user?: AuthTokenPayload } {
-  const user = AuthService.validateRequestAuth(request, role);
+): Promise<{ error?: string; user?: AuthTokenPayload }> {
+  const user = await AuthService.validateRequestAuth(request, role);
   if (!user) return { error: 'Unauthorized' };
   if (role && user.type !== role) return { error: 'Unauthorized' };
   return { user };

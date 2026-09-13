@@ -7,7 +7,7 @@ const ACTION_NAME = 'WORKOUT_SESSION_REVIEWED';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { error, user } = requireAuth(request, 'admin');
+    const { error, user } = await requireAuth(request, 'admin');
     if (error || !user || user.type !== 'admin') {
       return jsonWithCache({ error: 'Not authorized' }, { status: 401 });
     }

@@ -7,6 +7,27 @@ import type {
 } from '../schemas/session.schemas';
 import type { TrainingSessionWithExercises } from '../types/index';
 
+function sessionMatchesTemplate(session: any, template: any) {
+  const sessionExercises = session.exercises ?? [];
+  const templateExercises = template.exercises ?? [];
+
+  if (session.workoutTemplateId !== template.id) return false;
+  if (sessionExercises.length !== templateExercises.length) return false;
+
+  return templateExercises.every((templateExercise: any, index: number) => {
+    const sessionExercise = sessionExercises[index];
+    if (!sessionExercise) return false;
+
+    return (
+      sessionExercise.exerciseId === templateExercise.exerciseId &&
+      sessionExercise.order === templateExercise.order &&
+      sessionExercise.plannedSets === templateExercise.sets &&
+      sessionExercise.plannedReps === templateExercise.reps &&
+      sessionExercise.plannedRestSeconds === templateExercise.restSeconds
+    );
+  });
+}
+
 /**
  * Training Session Service
  * Handles workout session creation (with snapshot logic), execution, and completion
@@ -50,19 +71,23 @@ export const trainingSessionService = {
       throw new Error('Unauthorized');
     }
 
-    if (planDay.status === 'COMPLETED') {
-      throw new Error('This workout day is already completed');
-    }
-
     const todayKey = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Europe/Copenhagen',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     }).format(new Date());
-    const planDayKey = planDay.date.toISOString().slice(0, 10);
-    if (planDayKey > todayKey) {
+    const todayDate = new Date(`${todayKey}T12:00:00.000Z`);
+    const todayDay = todayDate.getUTCDay();
+    const todayWeekday = todayDay === 0 ? 6 : todayDay - 1;
+    if (planDay.weekday !== null && planDay.weekday !== todayWeekday) {
       throw new Error('This workout is not available yet');
+    }
+    if (planDay.weekday === null) {
+      const planDayKey = planDay.date.toISOString().slice(0, 10);
+      if (planDayKey > todayKey) {
+        throw new Error('This workout is not available yet');
+      }
     }
 
     // If it's a REST day or no template, cannot start
@@ -74,7 +99,15 @@ export const trainingSessionService = {
 
     const result = await (prisma as any).$transaction(async (tx: any) => {
       const existingSession = await tx.trainingSession.findFirst({
-        where: { planDayId: input.planDayId, clientId, status: 'IN_PROGRESS' },
+        where: {
+          planDayId: input.planDayId,
+          clientId,
+          status: 'IN_PROGRESS',
+          startedAt: {
+            gte: new Date(`${todayKey}T00:00:00.000Z`),
+            lt: new Date(new Date(`${todayKey}T00:00:00.000Z`).getTime() + 86400000),
+          },
+        },
         include: {
           exercises: {
             include: { sets: { orderBy: { setNumber: 'asc' } }, exercise: true },
@@ -90,7 +123,14 @@ export const trainingSessionService = {
         },
       });
 
-      if (existingSession) return existingSession;
+      if (existingSession && sessionMatchesTemplate(existingSession, template)) return existingSession;
+
+      if (existingSession) {
+        await tx.trainingSession.update({
+          where: { id: existingSession.id },
+          data: { status: 'ABANDONED' },
+        });
+      }
 
       // 1. Abandon any existing IN_PROGRESS sessions for this client
       await tx.trainingSession.updateMany({
@@ -231,6 +271,10 @@ export const trainingSessionService = {
       throw new Error('Session is not in progress');
     }
 
+    if (!session.exercises.some(exercise => exercise.sets.some(set => set.id === setId))) {
+      throw new Error('Set not found in this session');
+    }
+
     return prisma.trainingSessionSet.update({
       where: { id: setId },
       data: input,
@@ -254,11 +298,14 @@ export const trainingSessionService = {
         data: {
           status: input.status,
           completedAt: input.status === 'COMPLETED' ? new Date() : null,
+          perceivedDifficulty: input.perceivedDifficulty,
+          overallFeedback: input.overallFeedback,
+          caloriesBurned: input.caloriesBurned,
         },
       });
 
-      // Update plan day status if session completed
-      if (input.status === 'COMPLETED') {
+      // Legacy dated plan days use status directly. Weekly pattern days derive status from sessions.
+      if (input.status === 'COMPLETED' && session.planDay.weekday === null) {
         await tx.trainingPlanDay.update({
           where: { id: session.planDay.id },
           data: { status: 'COMPLETED' },
@@ -339,6 +386,10 @@ export const trainingSessionService = {
 
     if (!planDay) {
       throw new Error('Plan day not found');
+    }
+
+    if (planDay.weekday !== null) {
+      return planDay;
     }
 
     const skipped = await prisma.trainingPlanDay.update({

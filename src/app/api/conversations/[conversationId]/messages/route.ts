@@ -148,7 +148,7 @@ function normalizeIncomingPayload(payload: unknown): unknown {
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ conversationId: string }> }) {
-  const auth = requireApiAuth(request);
+  const auth = await requireApiAuth(request);
   if (!auth.ok) return auth.res;
 
   const actor = await resolveActor(auth.user);
@@ -226,7 +226,7 @@ function buildBodyStorage(
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ conversationId: string }> }) {
-  const auth = requireApiAuth(request);
+  const auth = await requireApiAuth(request);
   if (!auth.ok) return auth.res;
 
   const actor = await resolveActor(auth.user);
@@ -268,6 +268,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const created = await (prisma as any).message.create({
     data: {
       id: messageId,
+      clientTempId: parsed.data.clientTempId ?? null,
       conversationId,
       senderId: actor.userId,
       senderRole: getSenderRole(actor),
@@ -275,7 +276,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       bodyEncrypted: storedBody.bodyEncrypted,
       attachmentsJson: parsed.data.attachments?.length ? JSON.stringify(parsed.data.attachments) : null,
     },
+  }).catch(async (error: { code?: string }) => {
+    if (error.code !== 'P2002' || !parsed.data.clientTempId) throw error;
+    const existing = await prisma.message.findUnique({ where: { conversationId_senderId_clientTempId: { conversationId, senderId: actor.userId, clientTempId: parsed.data.clientTempId } } });
+    if (!existing) throw error;
+    return existing;
   });
+  if (created.id !== messageId) return NextResponse.json(toApiMessage(created), { status: 200 });
 
   await (prisma as any).conversation.update({
     where: { id: conversationId },

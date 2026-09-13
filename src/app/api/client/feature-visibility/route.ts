@@ -6,7 +6,7 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireApiAuth(request, 'client');
+    const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
 
     const clientId = auth.user.userId;

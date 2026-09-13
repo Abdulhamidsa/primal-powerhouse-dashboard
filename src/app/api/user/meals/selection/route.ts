@@ -12,7 +12,7 @@ import { saveMealSelectionSchema } from '@/features/meals/schemas/mealSelection.
 
 export async function GET(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request, 'client');
+    const { error, user } = await requireAuth(request, 'client');
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { error, user } = requireAuth(request, 'client');
+    const { error, user } = await requireAuth(request, 'client');
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }

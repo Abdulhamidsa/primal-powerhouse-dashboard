@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
   const startedAt = performance.now();
 
   try {
-    const { error, user } = requireAuth(request, 'client');
+    const { error, user } = await requireAuth(request, 'client');
+    const authenticatedAt = performance.now();
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     const response = jsonWithCache(parsed.data);
     const duration = Math.round(performance.now() - startedAt);
-    response.headers.set('Server-Timing', `dashboard-summary;dur=${duration}`);
+    response.headers.set('Server-Timing', `auth;dur=${Math.round(authenticatedAt - startedAt)}, summary;dur=${Math.round(performance.now() - authenticatedAt)}, total;dur=${duration}`);
     console.info('[USER_DASHBOARD_SUMMARY_GET]', { userId: user.userId, durationMs: duration });
     return response;
   } catch (error) {

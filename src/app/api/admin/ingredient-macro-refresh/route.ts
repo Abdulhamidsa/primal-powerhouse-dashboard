@@ -10,7 +10,7 @@ function toDbScope(scope: 'all' | 'templates_only'): 'ALL' | 'TEMPLATES_ONLY' {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const payloadRaw = await request.json().catch(() => null);

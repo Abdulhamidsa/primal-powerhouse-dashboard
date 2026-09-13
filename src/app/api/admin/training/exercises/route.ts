@@ -4,7 +4,7 @@ import { exerciseService } from '@/features/training/services';
 import { createExerciseSchema } from '@/features/training/schemas/exercise.schemas';
 
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const searchParams = request.nextUrl.searchParams;
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const body = await request.json();

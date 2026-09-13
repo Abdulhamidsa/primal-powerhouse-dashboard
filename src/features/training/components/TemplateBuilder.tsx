@@ -3,13 +3,32 @@
 import { useState } from 'react';
 import { useCoachExercises } from '../hooks/useCoachExercises';
 import { useCoachTemplates } from '../hooks/useCoachTemplates';
+import { useExerciseDbExercises } from '@/features/exercises/hooks/useExerciseDbExercises';
 import { createWorkoutTemplateSchema } from '../schemas/template.schemas';
 import { difficultyLevelEnum } from '../enums/training.enums';
 import type { TemplateExerciseInput, CreateWorkoutTemplateInput } from '../schemas/template.schemas';
-import type { WorkoutTemplate } from '@prisma/client';
+import type { WorkoutTemplateWithExercises } from '../types';
+import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
+
+type ExercisePickerOption =
+  | { key: string; source: 'local'; id: string; name: string }
+  | { key: string; source: 'catalog'; id: string; name: string; exercise: ExerciseDbExercise };
 
 export function TemplateBuilder() {
-  const { exercises } = useCoachExercises();
+  const { exercises, importExerciseDbExercise } = useCoachExercises();
+  const [exerciseSearch, setExerciseSearch] = useState('');
+  const {
+    exercises: catalogExercises,
+    metadata: catalogMetadata,
+    isLoading: catalogLoading,
+    error: catalogError,
+  } = useExerciseDbExercises({
+    offset: 0,
+    limit: 25,
+    query: exerciseSearch,
+    sortBy: 'name',
+    sortOrder: 'asc',
+  });
   const {
     templates,
     isLoading: templatesLoading,
@@ -32,11 +51,12 @@ export function TemplateBuilder() {
     exercises: [],
   });
 
-  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
+  const [selectedExerciseKey, setSelectedExerciseKey] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [isAddingExercise, setIsAddingExercise] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleOpenForm = (template?: WorkoutTemplate) => {
+  const handleOpenForm = (template?: WorkoutTemplateWithExercises) => {
     if (template) {
       setEditingId(template.id);
       setFormData({
@@ -44,7 +64,16 @@ export function TemplateBuilder() {
         description: template.description ?? undefined,
         goal: template.goal ?? undefined,
         difficulty: template.difficulty ?? undefined,
-        exercises: [],
+        exercises: template.exercises.map((templateExercise, index) => ({
+          exerciseId: templateExercise.exerciseId,
+          order: templateExercise.order ?? index,
+          sets: templateExercise.sets,
+          reps: templateExercise.reps,
+          restSeconds: templateExercise.restSeconds,
+          targetRpe: templateExercise.targetRpe,
+          targetTempo: templateExercise.targetTempo,
+          notes: templateExercise.notes,
+        })),
       });
     } else {
       setEditingId(null);
@@ -55,39 +84,72 @@ export function TemplateBuilder() {
     }
     setShowForm(true);
     setError(null);
+    setExerciseSearch('');
+    setSelectedExerciseKey('');
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingId(null);
     setFormData({ name: '', exercises: [] });
-    setSelectedExerciseId('');
+    setSelectedExerciseKey('');
+    setExerciseSearch('');
     setError(null);
   };
 
-  const handleAddExercise = () => {
-    if (!selectedExerciseId) {
+  const handleAddExercise = async () => {
+    if (!selectedExerciseKey) {
       setError('Please select an exercise');
       return;
     }
 
-    const exercise = exercises?.find(e => e.id === selectedExerciseId);
-    if (!exercise) return;
+    setIsAddingExercise(true);
+    try {
+      const selectedOption = pickerOptions.find(option => option.key === selectedExerciseKey);
+      if (!selectedOption) {
+        setError('Please select an exercise');
+        return;
+      }
 
-    const newExercise: TemplateExerciseInput = {
-      exerciseId: selectedExerciseId,
-      order: formData.exercises.length,
-      sets: 3,
-      reps: 8,
-      restSeconds: 120,
-    };
+      let exerciseId = selectedOption.id;
 
-    setFormData({
-      ...formData,
-      exercises: [...formData.exercises, newExercise],
-    });
-    setSelectedExerciseId('');
-    setError(null);
+      if (selectedOption.source === 'catalog') {
+        const imported = await importExerciseDbExercise({
+          exerciseId: selectedOption.exercise.exerciseId,
+          name: selectedOption.exercise.name,
+          gifUrl: selectedOption.exercise.gifUrl || null,
+          imageUrl: selectedOption.exercise.imageUrl || selectedOption.exercise.gifUrl || null,
+          videoUrl: selectedOption.exercise.videoUrl || null,
+          targetMuscles: selectedOption.exercise.targetMuscles ?? [],
+          bodyParts: selectedOption.exercise.bodyParts ?? [],
+          equipments: selectedOption.exercise.equipments ?? [],
+          secondaryMuscles: selectedOption.exercise.secondaryMuscles ?? [],
+          instructions: selectedOption.exercise.instructions ?? [],
+          overview: selectedOption.exercise.overview || null,
+        });
+        exerciseId = imported.id;
+      }
+
+      const newExercise: TemplateExerciseInput = {
+        exerciseId,
+        order: formData.exercises.length,
+        sets: 3,
+        reps: 8,
+        restSeconds: 120,
+      };
+
+      setFormData({
+        ...formData,
+        exercises: [...formData.exercises, newExercise],
+      });
+      setSelectedExerciseKey('');
+      setExerciseSearch('');
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add exercise');
+    } finally {
+      setIsAddingExercise(false);
+    }
   };
 
   const handleRemoveExercise = (index: number) => {
@@ -142,6 +204,25 @@ export function TemplateBuilder() {
   };
 
   const getExerciseName = (id: string) => exercises?.find(e => e.id === id)?.name ?? 'Unknown';
+  const localPickerOptions: ExercisePickerOption[] = (exercises ?? [])
+    .filter(exercise => exercise.name.toLowerCase().includes(exerciseSearch.trim().toLowerCase()))
+    .slice(0, 20)
+    .map(exercise => ({ key: `local:${exercise.id}`, source: 'local', id: exercise.id, name: exercise.name }));
+  const localOptionNames = new Set(localPickerOptions.map(option => option.name.toLowerCase()));
+  const catalogPickerOptions: ExercisePickerOption[] = catalogExercises
+    .filter(exercise => !localOptionNames.has(exercise.name.toLowerCase()))
+    .slice(0, 25)
+    .map(exercise => ({
+      key: `catalog:${exercise.exerciseId}`,
+      source: 'catalog',
+      id: exercise.exerciseId,
+      name: exercise.name,
+      exercise,
+    }));
+  const catalogTotal = catalogMetadata
+    ? ('total' in catalogMetadata ? catalogMetadata.total : catalogMetadata.totalExercises)
+    : null;
+  const pickerOptions = [...localPickerOptions, ...catalogPickerOptions];
   const difficultyOptions = difficultyLevelEnum.options;
 
   return (
@@ -224,26 +305,65 @@ export function TemplateBuilder() {
                 <h3 className="font-semibold mb-3">Exercises</h3>
 
                 {/* Exercise Selector */}
-                <div className="flex gap-2 mb-4">
-                  <select
-                    value={selectedExerciseId}
-                    onChange={e => setSelectedExerciseId(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select an exercise to add</option>
-                    {exercises?.map(ex => (
-                      <option key={ex.id} value={ex.id}>
-                        {ex.name}
+                <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Find exercise</label>
+                  <input
+                    type="search"
+                    value={exerciseSearch}
+                    onChange={e => {
+                      setExerciseSearch(e.target.value);
+                      setSelectedExerciseKey('');
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Search all exercises by name"
+                  />
+                  <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
+                    <select
+                      value={selectedExerciseKey}
+                      onChange={e => setSelectedExerciseKey(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">
+                        {exerciseSearch ? 'Select a matching exercise' : 'Select an exercise to add'}
                       </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleAddExercise}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Add
-                  </button>
+                      {localPickerOptions.length > 0 ? (
+                        <optgroup label="Your Training Library">
+                          {localPickerOptions.map(option => (
+                            <option key={option.key} value={option.key}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ) : null}
+                      {catalogPickerOptions.length > 0 ? (
+                        <optgroup label="ExerciseDB Catalog">
+                          {catalogPickerOptions.map(option => (
+                            <option key={option.key} value={option.key}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ) : null}
+                      {catalogLoading ? (
+                        <option value="" disabled>
+                          Loading catalog exercises...
+                        </option>
+                      ) : null}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => void handleAddExercise()}
+                      disabled={isAddingExercise}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                    >
+                      {isAddingExercise ? 'Adding...' : 'Add'}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Showing {localPickerOptions.length} local and {catalogPickerOptions.length} catalog exercises
+                    {catalogTotal ? ` (${catalogTotal} catalog matches)` : ''}.
+                    {catalogError ? ` Catalog error: ${catalogError}` : ''}
+                  </p>
                 </div>
 
                 {/* Exercise List */}
@@ -298,6 +418,16 @@ export function TemplateBuilder() {
                                 Remove
                               </button>
                             </div>
+                            <div className="mt-2">
+                              <label className="block text-xs text-gray-600 mb-1">Coach note</label>
+                              <textarea
+                                value={ex.notes ?? ''}
+                                onChange={e => handleUpdateExercise(idx, { notes: e.target.value || null })}
+                                rows={2}
+                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                placeholder="Optional cue, setup note, or coaching focus"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -349,6 +479,26 @@ export function TemplateBuilder() {
                 <h3 className="font-semibold text-lg">{template.name}</h3>
                 {template.description && <p className="text-gray-600 text-sm mt-1">{template.description}</p>}
                 {template.goal && <p className="text-gray-500 text-sm">Goal: {template.goal}</p>}
+                <p className="mt-2 text-sm text-gray-600">
+                  {template.exercises.length} exercise{template.exercises.length === 1 ? '' : 's'}
+                </p>
+                {template.exercises.length > 0 ? (
+                  <ol className="mt-2 space-y-1 text-sm text-gray-700">
+                    {template.exercises.slice(0, 4).map((templateExercise, index) => (
+                      <li key={templateExercise.id} className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 truncate">
+                          {index + 1}. {templateExercise.exercise?.name ?? getExerciseName(templateExercise.exerciseId)}
+                        </span>
+                        <span className="shrink-0 text-xs text-gray-500">
+                          {templateExercise.sets}x{templateExercise.reps} · {templateExercise.restSeconds}s
+                        </span>
+                      </li>
+                    ))}
+                    {template.exercises.length > 4 ? (
+                      <li className="text-xs text-gray-500">+{template.exercises.length - 4} more</li>
+                    ) : null}
+                  </ol>
+                ) : null}
                 {template.difficulty && (
                   <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded font-medium mt-2">
                     {template.difficulty.replace(/_/g, ' ')}

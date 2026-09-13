@@ -1,8 +1,10 @@
 import { prisma } from '@/lib/prisma';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import type {
   CreateTrainingPlanDayInput,
   UpdateTrainingPlanDayInput,
   BulkCreateTrainingPlanDaysInput,
+  WeeklyTrainingPatternInput,
 } from '../schemas/day.schemas';
 
 /**
@@ -11,6 +13,108 @@ import type {
  */
 
 export const trainingPlanDayService = {
+  async saveWeeklyPattern(coachId: string, input: WeeklyTrainingPatternInput) {
+    const plan = await prisma.clientTrainingPlan.findFirst({
+      where: {
+        id: input.planId,
+        coachId,
+      },
+    });
+
+    if (!plan) {
+      throw new Error('Plan not found or unauthorized');
+    }
+
+    const weekdays = new Set(input.days.map(day => day.weekday));
+    if (weekdays.size !== 7) {
+      throw new Error('Weekly pattern must contain each weekday exactly once');
+    }
+
+    const saved = await (prisma as any).$transaction(async (tx: any) => {
+      const result = [];
+
+      for (const day of input.days) {
+        if (day.type === 'WORKOUT' && !day.workoutTemplateId) {
+          throw new Error('Choose a workout template for workout days');
+        }
+
+        if (day.type === 'WORKOUT' && day.workoutTemplateId) {
+          const template = await tx.workoutTemplate.findFirst({
+            where: {
+              id: day.workoutTemplateId,
+              coachId,
+            },
+          });
+
+          if (!template) {
+            throw new Error(`Template not found: ${day.workoutTemplateId}`);
+          }
+        }
+
+        const existing = await tx.trainingPlanDay.findFirst({
+          where: {
+            planId: input.planId,
+            weekday: day.weekday,
+          },
+          orderBy: [{ date: 'desc' }, { updatedAt: 'desc' }],
+        });
+
+        const date = new Date(plan.startDate);
+        date.setHours(12, 0, 0, 0);
+        date.setDate(date.getDate() + day.weekday);
+
+        const data = {
+          weekday: day.weekday,
+          type: day.type,
+          workoutTemplateId: day.type === 'WORKOUT' ? day.workoutTemplateId ?? null : null,
+          title: day.title ?? null,
+          note: day.note ?? null,
+          status: 'PENDING',
+        };
+
+        const savedDay = existing
+          ? await tx.trainingPlanDay.update({
+              where: { id: existing.id },
+              data,
+              include: {
+                workoutTemplate: {
+                  include: {
+                    exercises: {
+                      include: { exercise: true },
+                      orderBy: { order: 'asc' },
+                    },
+                  },
+                },
+              },
+            })
+          : await tx.trainingPlanDay.create({
+              data: {
+                ...data,
+                planId: input.planId,
+                date,
+              },
+              include: {
+                workoutTemplate: {
+                  include: {
+                    exercises: {
+                      include: { exercise: true },
+                      orderBy: { order: 'asc' },
+                    },
+                  },
+                },
+              },
+            });
+
+        result.push(savedDay);
+      }
+
+      return result.sort((a, b) => (a.weekday ?? 0) - (b.weekday ?? 0));
+    });
+
+    invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+    return saved;
+  },
+
   /**
    * Create a single plan day (with unique constraint enforcement)
    */
@@ -55,7 +159,7 @@ export const trainingPlanDayService = {
       }
     }
 
-    return prisma.trainingPlanDay.create({
+    const created = await prisma.trainingPlanDay.create({
       data: {
         planId: input.planId,
         date: input.date,
@@ -76,12 +180,27 @@ export const trainingPlanDayService = {
         },
       },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+    return created;
   },
 
   /**
    * Bulk create plan days (for calendar/week layouts)
    */
   async bulkCreatePlanDays(coachId: string, input: BulkCreateTrainingPlanDaysInput) {
+    if (input.days.every(day => typeof day.weekday === 'number')) {
+      return this.saveWeeklyPattern(coachId, {
+        planId: input.planId,
+        days: input.days.map(day => ({
+          weekday: day.weekday as number,
+          type: day.type,
+          workoutTemplateId: day.workoutTemplateId,
+          title: day.title,
+          note: day.note,
+        })),
+      });
+    }
+
     // Verify coach owns the plan
     const plan = await prisma.clientTrainingPlan.findFirst({
       where: {
@@ -94,7 +213,7 @@ export const trainingPlanDayService = {
       throw new Error('Plan not found or unauthorized');
     }
 
-    return (prisma as any).$transaction(async (tx: any) => {
+    const created = await (prisma as any).$transaction(async (tx: any) => {
       const created = [];
 
       for (const day of input.days) {
@@ -130,8 +249,11 @@ export const trainingPlanDayService = {
           data: {
             planId: input.planId,
             date: day.date,
+            weekday: day.weekday ?? null,
             type: day.type,
             workoutTemplateId: day.workoutTemplateId ?? null,
+            title: day.title ?? null,
+            note: day.note ?? null,
             status: 'PENDING',
           },
         });
@@ -141,6 +263,8 @@ export const trainingPlanDayService = {
 
       return created;
     });
+    invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+    return created;
   },
 
   /**
@@ -153,6 +277,7 @@ export const trainingPlanDayService = {
         plan: { coachId },
       },
       include: {
+        plan: { select: { clientId: true } },
         workoutTemplate: {
           include: {
             exercises: {
@@ -201,7 +326,7 @@ export const trainingPlanDayService = {
       throw new Error('Plan day not found or unauthorized');
     }
 
-    return prisma.trainingPlanDay.update({
+    const updated = await prisma.trainingPlanDay.update({
       where: { id: dayId },
       data: input,
       include: {
@@ -215,6 +340,8 @@ export const trainingPlanDayService = {
         },
       },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: day.plan.clientId });
+    return updated;
   },
 
   /**
@@ -239,6 +366,7 @@ export const trainingPlanDayService = {
     await prisma.trainingPlanDay.delete({
       where: { id: dayId },
     });
+    invalidateUserDashboardSummaryCaches({ clientId: day.plan.clientId });
 
     return true;
   },

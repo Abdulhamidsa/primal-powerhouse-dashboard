@@ -5,7 +5,7 @@ import { trainingSessionService } from '@/features/training/services';
 type RouteContext = { params: Promise<{ planDayId: string }> };
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const { planDayId } = await params;

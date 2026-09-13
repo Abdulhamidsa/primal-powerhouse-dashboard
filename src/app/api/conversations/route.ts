@@ -49,7 +49,7 @@ async function getUnreadCountsByConversation(
 }
 
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request);
+  const auth = await requireApiAuth(request);
   if (!auth.ok) return auth.res;
 
   const actor = await resolveActor(auth.user);
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const actor = await resolveActor(auth.user);

@@ -66,6 +66,9 @@ model User {
 }
 
 model Client {
+  authInvalidBefore DateTime?
+  mobileSessions MobileSession[]
+
   id                            String         @id @default(cuid())
   name                          String
   email                         String         @unique
@@ -243,6 +246,7 @@ model NotificationDeliveryLog {
 }
 
 model Message {
+  clientTempId    String?
   id              String            @id @default(cuid())
   conversationId  String
   senderId        String
@@ -256,6 +260,7 @@ model Message {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+  @@unique([conversationId, senderId, clientTempId])
   @@map("messages")
 }
 
@@ -1365,6 +1370,7 @@ model ClientTrainingPlan {
 model TrainingPlanDay {
   id   String          @id @default(cuid())
   date DateTime
+  weekday Int?
   type TrainingDayType @default(WORKOUT)
 
   workoutTemplateId String?
@@ -1384,6 +1390,7 @@ model TrainingPlanDay {
   sessions TrainingSession[]
 
   @@unique([planId, date])
+  @@index([planId, weekday])
   @@index([planId, date])
   @@index([date])
   @@index([status])
@@ -1503,4 +1510,36 @@ model RestTimer {
   createdAt DateTime @default(now())
 
   @@map("rest_timers")
+}
+
+model MobileSession {
+  id String @id @default(cuid())
+  clientId String
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  refreshHash String @unique
+  authenticatedAt DateTime
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  devices MobilePushDevice[]
+  @@index([clientId])
+}
+
+model MobilePushDevice {
+  id String @id @default(cuid())
+  sessionId String
+  session MobileSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  token String @unique
+  updatedAt DateTime @updatedAt
+}
+
+model MobilePushDelivery {
+  id String @id @default(cuid())
+  messageId String
+  deviceToken String
+  receiptId String?
+  status String @default("PENDING")
+  createdAt DateTime @default(now())
+  @@unique([messageId, deviceToken])
+  @@index([status, createdAt])
 }

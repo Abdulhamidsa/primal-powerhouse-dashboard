@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowRight, ChevronDown, Dumbbell, Play } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
 import { useTrainingPlan } from '@/features/training/hooks/useTrainingPlan';
 import WorkoutPlansSection from '@/features/workout-session/components/WorkoutPlansSection';
@@ -20,13 +21,17 @@ const UserTrainingAssignments = dynamic(
 
 export default function UserTrainingPage() {
   const [showVideos, setShowVideos] = useState(false);
-  const { plan, isLoading: trainingPlanLoading } = useTrainingPlan();
-  const { assignments } = useUserWorkoutAssignments();
+  const { plan, isLoading: trainingPlanLoading, refresh: refreshTrainingPlan } = useTrainingPlan();
+  const { assignments, mutate: refreshAssignments } = useUserWorkoutAssignments();
   const nextWorkout = assignments[0] ?? null;
+  const refreshTraining = async () => {
+    await Promise.all([refreshTrainingPlan(), refreshAssignments()]);
+  };
 
   return (
-    <div className="px-4 pb-8 pt-4 md:px-6">
-      <div className="mx-auto w-full max-w-4xl space-y-4 md:space-y-5">
+    <PullToRefresh onRefresh={refreshTraining}>
+      <div className="px-4 pb-8 pt-4 md:px-6">
+        <div className="mx-auto w-full max-w-4xl space-y-4 md:space-y-5">
         <PageHeader title="Training" description="Choose a workout plan, then start or continue your next session." />
 
         {trainingPlanLoading ? <div className="h-56 animate-pulse rounded-[30px] border border-border bg-card/70" /> : null}
@@ -83,7 +88,8 @@ export default function UserTrainingPage() {
 
           {showVideos ? <div className="border-t border-border/70 p-4"><UserTrainingAssignments /></div> : null}
         </section>
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

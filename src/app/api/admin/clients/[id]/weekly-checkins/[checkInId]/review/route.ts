@@ -7,7 +7,7 @@ const ACTION_NAME = 'WEEKLY_CHECKIN_REVIEWED';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string; checkInId: string }> }) {
   try {
-    const { error, user } = requireAuth(request, 'admin');
+    const { error, user } = await requireAuth(request, 'admin');
     if (error || !user || user.type !== 'admin') {
       return jsonWithCache({ error: 'Not authorized' }, { status: 401 });
     }

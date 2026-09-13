@@ -15,7 +15,7 @@ function parseFailedErrors(value: string | null): Array<{ mealId: string; reason
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ jobId: string }> }) {
   try {
-    const auth = requireApiAuth(request, 'admin');
+    const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
     const { jobId } = await params;

@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const requestedRole =
       requestedRoleHeader === 'admin' || requestedRoleHeader === 'client' ? requestedRoleHeader : undefined;
 
-    const { user, error } = requireAuth(request, requestedRole);
+    const { user, error } = await requireAuth(request, requestedRole);
 
     if (error || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       userId: user.userId,
       email: user.email,
       type: user.type,
+      authenticatedAt: user.authenticatedAt ?? user.iat,
     } as const;
 
     const response = NextResponse.json({

@@ -56,8 +56,8 @@ export function useAdminWorkoutSessionActions(clientId: string) {
 
   const refreshRelated = async () => {
     await mutate(buildAdminClientWorkoutSessionsKey(clientId));
-    await mutate((key: string) =>
-      key.startsWith(`/api/admin/clients/${encodeURIComponent(clientId)}/workout-sessions/`),
+    await mutate((key: unknown) =>
+      typeof key === 'string' && key.startsWith(`/api/admin/clients/${encodeURIComponent(clientId)}/workout-sessions/`),
     );
   };
 

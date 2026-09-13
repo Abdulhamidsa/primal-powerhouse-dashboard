@@ -44,6 +44,7 @@ export type TrainingTemplateDTO = {
 export type TrainingPlanDayDTO = {
   id: string;
   date: string;
+  weekday: number | null;
   type: TrainingDayType;
   title: string | null;
   note: string | null;

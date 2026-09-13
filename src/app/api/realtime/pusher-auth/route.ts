@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Realtime service is not configured.' }, { status: 503 });
   }
 
-  const auth = requireApiAuth(request);
+  const auth = await requireApiAuth(request);
   if (!auth.ok) return auth.res;
 
   const actor = await resolveActor(auth.user);

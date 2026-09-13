@@ -355,3 +355,25 @@ all .md files except README.md
 
 job-queue.ts
 rate-limiter.ts
+
+# Native workspace and reproducible deployment artifacts
+!apps/mobile/package.json
+!apps/mobile/app.json
+!apps/mobile/eas.json
+!apps/mobile/tsconfig.json
+!packages/contracts/package.json
+!Dockerfile
+!.dockerignore
+!prisma/migrations/
+prisma/migrations/*
+!prisma/migrations/*/
+!prisma/migrations/*/migration.sql
+!prisma/migrations/migration_lock.toml
+!src/features/mobile-auth/**/*.test.ts
+!apps/mobile/src/**/*.test.ts
+!scripts/*.test.cjs
+!docs/mobile-parity.md
+!docs/mobile-development.md
+!docs/hetzner-mobile-backend.md
+.env.mobile-test.local
+.cache/

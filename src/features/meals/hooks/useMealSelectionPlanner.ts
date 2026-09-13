@@ -275,6 +275,7 @@ export function useMealSelectionPlanner(enabled = true) {
     hasRequiredSlots,
     hasChanges,
     isSaving,
+    refresh: () => summarySWR.mutate(undefined, { revalidate: true }),
     selectOption,
     selectOptionAndSave,
     isSelected,

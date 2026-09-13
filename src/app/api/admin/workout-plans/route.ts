@@ -7,7 +7,7 @@ import { CACHE_TAGS, coachWorkoutPlansTag, invalidateWorkoutCaches } from '@/lib
 import { createWorkoutPlanSchema } from '@/features/workout-plans/schemas/workoutPlan.schemas';
 
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const plans = await unstable_cache(
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const body = await request.json();

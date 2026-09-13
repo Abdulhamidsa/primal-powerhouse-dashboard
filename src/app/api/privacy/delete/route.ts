@@ -15,10 +15,10 @@ function getClientIp(request: NextRequest): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const csrf = assertSameOrigin(request);
+    const csrf = await assertSameOrigin(request);
     if (!csrf.ok) return NextResponse.json({ error: csrf.message }, { status: 403 });
 
-    const auth = requireRecentClientAuth(request);
+    const auth = await requireRecentClientAuth(request);
     if (!auth.ok) return NextResponse.json({ error: auth.message }, { status: auth.status });
 
     const ip = getClientIp(request);
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
     const anonymizedEmail = `deleted+${auth.user.userId}@redacted.local`;
 
     await (prisma as any).$transaction([
+      prisma.mobileSession.updateMany({ where: { clientId: auth.user.userId }, data: { revokedAt: now } }),
       (prisma as any).client.update({
         where: { id: auth.user.userId },
         data: {
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
           consentMarketingNotifications: false,
           consentOptionalTracking: false,
           deactivatedAt: now,
+          authInvalidBefore: now,
           anonymizedAt: now,
           deletionScheduledFor: scheduledHardDeleteAt,
           status: 'INACTIVE',

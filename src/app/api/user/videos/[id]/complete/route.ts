@@ -3,14 +3,10 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { invalidateUserDashboardSummaryCaches, invalidateVideoCaches } from '@/lib/cache-tags';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    console.log('Mark video completed API called for assignment:', params.id);
-
-    // Use the existing auth system
-    const { error, user } = await requireAuth(request);
-
-    console.log('Auth result for video completion:', { error, user });
+    const { id } = await params;
+    const { error, user } = await requireAuth(request, 'client');
 
     if (error || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -19,7 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Verify the assignment belongs to the user and update it
     const updatedAssignment = await prisma.videoAssignment.updateMany({
       where: {
-        id: params.id,
+        id,
         clientId: user.userId,
       },
       data: {
@@ -32,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     const assignment = await prisma.videoAssignment.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, videoId: true, clientId: true },
     });
 

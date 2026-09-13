@@ -6,7 +6,7 @@ import { updateExerciseSchema } from '@/features/training/schemas/exercise.schem
 type RouteContext = { params: Promise<{ exerciseId: string }> };
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { exerciseId } = await params;
@@ -27,7 +27,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const { exerciseId } = await params;

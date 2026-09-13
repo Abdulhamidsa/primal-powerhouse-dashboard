@@ -13,9 +13,9 @@ type PatchBody = {
   mealPlanId?: string;
 };
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = (await request.json()) as PatchBody;
 
     const assignment = await prisma.mealAssignment.update({
@@ -45,9 +45,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const assignment = await prisma.mealAssignment.delete({ where: { id } });
 

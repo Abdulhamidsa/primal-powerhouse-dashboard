@@ -12,8 +12,8 @@ export type ApiAuthUser = {
   exp?: number;
 };
 
-export function requireApiAuth(request: NextRequest, role?: Role) {
-  const payload = AuthService.validateRequestAuth(request, role) as ApiAuthUser | null;
+export async function requireApiAuth(request: NextRequest, role?: Role) {
+  const payload = await AuthService.validateRequestAuth(request, role);
   if (!payload) {
     return { ok: false as const, res: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
   }

@@ -4,7 +4,9 @@ import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { CalendarCheck2, ChevronDown, ClipboardCheck, Scale } from 'lucide-react';
 import { useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { PageHeader } from '@/components/PageHeader';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { DailyCheckInCard } from '@/features/daily-checkin/components/DailyCheckInCard';
 import { useClientSelfFeatureVisibility } from '@/features/client-feature-visibility/hooks/useClientSelfFeatureVisibility';
 
@@ -25,10 +27,18 @@ const DailyCheckInInsightsCard = dynamic(
 );
 
 export default function UserCheckInsPage() {
+  const { mutate } = useSWRConfig();
   const { visibility } = useClientSelfFeatureVisibility();
   const [showWeightProgress, setShowWeightProgress] = useState(false);
   const dailyEnabled = visibility?.dailyCheckinsEnabled;
   const weeklyEnabled = visibility?.weeklyCheckinsEnabled;
+  const refreshCheckIns = async () => {
+    await Promise.all([
+      mutate('/api/client/feature-visibility'),
+      mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/user/daily-checkins')),
+      mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/user/weekly-checkins')),
+    ]);
+  };
 
   if (visibility && !dailyEnabled && !weeklyEnabled) {
     return (
@@ -49,8 +59,9 @@ export default function UserCheckInsPage() {
   }
 
   return (
-    <div className="px-4 pb-8 pt-4 md:px-5">
-      <div className="mx-auto w-full max-w-3xl space-y-4 md:space-y-5">
+    <PullToRefresh onRefresh={refreshCheckIns}>
+      <div className="px-4 pb-8 pt-4 md:px-5">
+        <div className="mx-auto w-full max-w-3xl space-y-4 md:space-y-5">
         <PageHeader title="Check-Ins" description="Share how you are doing so your coach can guide your next step." />
 
         {dailyEnabled ? (
@@ -100,8 +111,9 @@ export default function UserCheckInsPage() {
             ) : null}
           </section>
         ) : null}
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }
 

@@ -26,6 +26,10 @@ import type {
 } from '@/features/training/schemas/session.schemas';
 import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
 
+function isTrainingPlanKey(key: unknown) {
+  return typeof key === 'string' && key.startsWith('/api/user/training/plan');
+}
+
 export function useTrainingSession(sessionId?: string) {
   const key = sessionId ? `${TRAINING_SESSION_URL}/${encodeURIComponent(sessionId)}` : null;
   const { data, error, isLoading, isValidating, mutate } = useSWR<TrainingSessionDTO, ApiError>(key, () =>
@@ -79,7 +83,7 @@ export function useTrainingSessionActions() {
       const session = await startTrainingSession(input);
       await Promise.all([
         mutate(TRAINING_SESSION_URL),
-        mutate((key: string) => key.startsWith('/api/user/training/plan')),
+        mutate(isTrainingPlanKey),
         mutate(TRAINING_HISTORY_URL),
         mutate(USER_DASHBOARD_SUMMARY_URL),
       ]);
@@ -94,7 +98,7 @@ export function useTrainingSessionActions() {
       const session = await completeTrainingSession(sessionId, input);
       await Promise.all([
         mutate(`${TRAINING_SESSION_URL}/${encodeURIComponent(sessionId)}`),
-        mutate((key: string) => key.startsWith('/api/user/training/plan')),
+        mutate(isTrainingPlanKey),
         mutate(TRAINING_HISTORY_URL),
         mutate(USER_DASHBOARD_SUMMARY_URL),
       ]);
@@ -103,7 +107,7 @@ export function useTrainingSessionActions() {
     skipPlanDay: async (planDayId: string) => {
       const result = await skipTrainingPlanDay(planDayId);
       await Promise.all([
-        mutate((key: string) => key.startsWith('/api/user/training/plan')),
+        mutate(isTrainingPlanKey),
         mutate(USER_DASHBOARD_SUMMARY_URL),
       ]);
       return result;

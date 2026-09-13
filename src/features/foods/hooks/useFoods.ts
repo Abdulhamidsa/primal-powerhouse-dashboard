@@ -37,7 +37,7 @@ export function useCreateFood() {
 
   const submit = async (payload: CreateFoodPayload) => {
     const created = await createFood(payload);
-    await mutate((key: string) => key.startsWith('/api/foods'));
+    await mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/foods'));
     return created;
   };
 
@@ -50,7 +50,7 @@ export function useUpdateFood() {
   const submit = async (id: string, payload: UpdateFoodPayload) => {
     const updated = await updateFood(id, payload);
     await mutate(`/api/foods/catalog/${id}`);
-    await mutate((key: string) => key.startsWith('/api/foods'));
+    await mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/foods'));
     return updated;
   };
 

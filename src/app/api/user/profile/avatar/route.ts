@@ -7,13 +7,13 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const updateAvatarSchema = z
   .object({
-    avatar: z.string().trim().url().min(1),
+    avatar: z.string().trim().url().min(1).nullable(),
   })
   .strict();
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = requireApiAuth(request, 'client');
+    const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
 
     const body = await request.json();

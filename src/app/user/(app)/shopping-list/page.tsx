@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { Check, Clipboard, RefreshCcw, Share2, ShoppingBag } from 'lucide-react';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { getUserMealSelection, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
 import { useGenerateShoppingList } from '@/features/meals/hooks/useGenerateShoppingList';
@@ -70,9 +71,9 @@ export default function ShoppingListPage() {
     }));
   }, [selectionSWR.data]);
 
-  const handleGenerate = () => {
-    if (savedItems.length) {
-      void run({ items: savedItems });
+  const runFromItems = (items: typeof savedItems) => {
+    if (items.length) {
+      void run({ items });
       return;
     }
 
@@ -80,6 +81,21 @@ export default function ShoppingListPage() {
     if (draft.length) {
       void run({ items: draft });
     }
+  };
+
+  const handleGenerate = () => {
+    runFromItems(savedItems);
+  };
+
+  const refreshShoppingList = async () => {
+    const nextSelection = await selectionSWR.mutate();
+    const nextItems = (nextSelection?.selection?.items ?? []).map(item => ({
+      mealType: item.mealType,
+      slotIndex: item.slotIndex,
+      mealId: item.mealId,
+      sourceAssignmentId: item.sourceAssignmentId ?? null,
+    }));
+    runFromItems(nextItems);
   };
 
   useEffect(() => {
@@ -172,8 +188,9 @@ export default function ShoppingListPage() {
   const copiedLabel = copied ? 'Copied to clipboard' : 'Copy list';
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="mx-auto w-full max-w-xl px-4 pb-10 pt-4">
+    <PullToRefresh onRefresh={refreshShoppingList}>
+      <div className="min-h-screen bg-background pb-20">
+        <div className="mx-auto w-full max-w-xl px-4 pb-10 pt-4">
         <section className="rounded-[32px] border border-border bg-card p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -355,7 +372,8 @@ export default function ShoppingListPage() {
               </section>
             );
           })}
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

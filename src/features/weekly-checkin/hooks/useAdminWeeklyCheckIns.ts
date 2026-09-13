@@ -63,7 +63,7 @@ export function useAdminWeeklyCheckInActions(clientId: string) {
 
   const refreshRelated = async () => {
     await mutate(buildAdminClientWeeklyCheckInsKey(clientId));
-    await mutate((key: string) => key.startsWith('/api/admin/clients/weekly-checkins/statuses?clientIds='));
+    await mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/admin/clients/weekly-checkins/statuses?clientIds='));
   };
 
   const deleteCheckIn = async (checkInId: string) => {

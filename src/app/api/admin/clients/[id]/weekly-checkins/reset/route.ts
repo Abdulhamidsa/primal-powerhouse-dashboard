@@ -9,7 +9,7 @@ type ResetBody = {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { error, user } = requireAuth(request);
+    const { error, user } = await requireAuth(request);
     if (error || !user || user.type !== 'admin') {
       return jsonWithCache({ error: 'Not authorized' }, { status: 401 });
     }

@@ -4,7 +4,7 @@ import { trainingPlanService } from '@/features/training/services';
 import { createClientTrainingPlanSchema } from '@/features/training/schemas/plan.schemas';
 
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const clientId = request.nextUrl.searchParams.get('clientId') ?? undefined;
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = requireApiAuth(request, 'admin');
+  const auth = await requireApiAuth(request, 'admin');
   if (!auth.ok) return auth.res;
 
   const body = await request.json();

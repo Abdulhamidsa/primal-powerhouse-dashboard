@@ -4,9 +4,10 @@ import { useMotivationNotification } from '@/hooks/useMotivationNotification';
 import { UserDashboardContent } from '@/features/user-dashboard/components/UserDashboardContent';
 import { UserDashboardSkeleton } from '@/features/user-dashboard/components/UserDashboardSkeleton';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
+import { PullToRefresh } from '@/components/PullToRefresh';
 
 export default function UserDashboardPage() {
-  const { summary, error, isLoading } = useUserDashboardSummary();
+  const { summary, error, isLoading, refresh } = useUserDashboardSummary();
 
   useMotivationNotification(summary?.user.motivationalMessage ?? undefined);
 
@@ -32,10 +33,12 @@ export default function UserDashboardPage() {
   }
 
   return (
-    <div className="px-4 pb-6 pt-4 md:px-5">
-      <div className="mx-auto w-full max-w-2xl">
-        <UserDashboardContent summary={summary} />
+    <PullToRefresh onRefresh={refresh}>
+      <div className="px-4 pb-6 pt-4 md:px-5">
+        <div className="mx-auto w-full max-w-2xl">
+          <UserDashboardContent summary={summary} />
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

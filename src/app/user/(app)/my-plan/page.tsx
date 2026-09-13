@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, CircleAlert, Plus, X } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';
 import { useMealAdherenceToday } from '@/features/adherence/hooks/useMealAdherence';
@@ -167,6 +168,7 @@ export default function UserMyPlanPage() {
     isSnackFull,
     snackMax,
     isSaving,
+    refresh,
     selectOptionAndSave,
   } = useMealSelectionPlanner();
 
@@ -333,7 +335,8 @@ export default function UserMyPlanPage() {
   );
 
   return (
-    <div className="px-4 pb-6 pt-4 md:px-6">
+    <PullToRefresh onRefresh={refresh} disabled={Boolean(swapState || pendingSwap || helpOpen)}>
+      <div className="px-4 pb-6 pt-4 md:px-6">
       <div className="mx-auto max-w-6xl space-y-4 pb-6 md:space-y-5">
         <PageHeader title="Meal Plan" description="Choose your meals for today and mark them done after eating.">
           <button
@@ -558,6 +561,7 @@ export default function UserMyPlanPage() {
           onConfirm={() => void handleConfirmSwap()}
         />
       ) : null}
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }

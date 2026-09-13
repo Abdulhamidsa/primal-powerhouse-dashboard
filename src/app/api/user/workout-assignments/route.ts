@@ -7,7 +7,7 @@ import { requireApiAuth } from '@/lib/api-auth';
  * Returns all active workout plan assignments for the authenticated client.
  */
 export async function GET(request: NextRequest) {
-  const auth = requireApiAuth(request, 'client');
+  const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth.res;
 
   const clientId = auth.user.userId;
