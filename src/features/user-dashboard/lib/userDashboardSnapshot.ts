@@ -28,8 +28,8 @@ function buildAction(summary: SummarySource, action: Omit<DashboardAction, 'isPe
             ? summary.featureVisibility.nutritionTrackingEnabled &&
               !(summary.adherence.completion.totalSelectedCount > 0 &&
                 summary.adherence.completion.completedCount === summary.adherence.completion.totalSelectedCount)
-            : action.kind === 'training'
-              ? summary.featureVisibility.workoutTrackingEnabled && summary.training.activeAssignmentCount > 0
+: action.kind === 'training'
+              ? summary.featureVisibility.workoutTrackingEnabled && Boolean(summary.training.activeSessionId)
               : summary.unreadTotal > 0,
   };
 }
@@ -85,10 +85,7 @@ function buildActions(summary: SummarySource): DashboardAction[] {
       buildAction(summary, {
         key: 'training',
         kind: 'training',
-        title:
-          summary.training.activeSessionId || summary.training.activeAssignmentCount > 0
-            ? 'Continue workout'
-            : 'Open training',
+        title: summary.training.activeSessionId ? 'Continue workout' : 'Open training',
         description: summary.training.activePlanName
           ? `${summary.training.activePlanName} is ready for your next session.`
           : 'Browse your workout plan and keep momentum going.',
@@ -126,7 +123,9 @@ export function deriveUserDashboardSnapshot(summary: SummarySource): UserDashboa
 
   const nextAction =
     pendingAttention[0] ??
-    actions.find(action => action.kind === 'training') ?? {
+    actions.find(action => action.kind === 'meals') ??
+    actions.find(action => action.kind === 'training') ??
+    actions.find(action => action.kind === 'messages') ?? {
       key: 'training',
       kind: 'training',
       title: 'Open training',

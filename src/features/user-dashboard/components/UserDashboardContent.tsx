@@ -18,18 +18,6 @@ function TodayBadge({ streakCount }: { streakCount: number }) {
   );
 }
 
-function StatusItem({ label, value, complete }: { label: string; value: string; complete?: boolean }) {
-  return (
-    <div className="min-w-0 px-3 first:pl-0 last:pr-0 sm:px-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-      <div className="mt-1.5 flex items-center gap-1.5">
-        {complete !== undefined ? <span className={`h-1.5 w-1.5 rounded-full ${complete ? 'bg-emerald-500' : 'bg-primary'}`} /> : null}
-        <p className="truncate text-sm font-semibold text-foreground">{value}</p>
-      </div>
-    </div>
-  );
-}
-
 export function UserDashboardContent({ summary }: { summary: UserDashboardSummary }) {
   const greeting = useMemo(() => {
     const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
@@ -42,10 +30,11 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
 
   const { summary: todayMission } = useTodayMission(summary);
   const firstName = summary.user.name.split(' ')[0] || 'Member';
-  const coachMessage = summary.user.motivationalMessage || 'No coach note yet. Check back after your next review.';
+  const coachMessage = summary.user.motivationalMessage;
   const isCheckInComplete = summary.dailyCheckIn.isComplete;
   const isMealsComplete = todayMission.mealProgress.total > 0 && todayMission.mealProgress.percentage === 100;
   const primaryAction = summary.nextAction;
+  const showCoachNote = Boolean(coachMessage || summary.unreadTotal > 0);
 
   return (
     <div className="space-y-3 md:space-y-4">
@@ -57,6 +46,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
         statusItems={[
           { label: 'Meals', value: `${todayMission.mealProgress.percentage}%`, tone: isMealsComplete ? 'good' : 'neutral' },
           { label: 'Check-in', value: isCheckInComplete ? 'Complete' : 'Due', tone: isCheckInComplete ? 'good' : 'warn' },
+          { label: 'Coach', value: summary.unreadTotal > 0 ? `${summary.unreadTotal} unread` : 'All clear', tone: summary.unreadTotal > 0 ? 'warn' : 'good' },
         ]}
       >
         <div className="flex items-center justify-between gap-3">
@@ -81,38 +71,20 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
         </div>
       </UserPageHero>
 
-      <section className="rounded-[26px] border px-4 py-4 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Your progress</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">{summary.todayCompletionState.label}</p>
-          </div>
-          <span className="text-xs text-muted-foreground">{todayMission.mealProgress.percentage}% meals</span>
-        </div>
-
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--color-bg-alt)' }}>
-          <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, todayMission.mealProgress.percentage))}%` }} />
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 divide-x divide-border/70">
-          <StatusItem label="Meals" value={`${todayMission.mealProgress.completed}/${todayMission.mealProgress.total}`} complete={isMealsComplete} />
-          <StatusItem label="Check-in" value={isCheckInComplete ? 'Complete' : 'Due'} complete={isCheckInComplete} />
-          <StatusItem label="Coach" value={summary.unreadTotal > 0 ? `${summary.unreadTotal} unread` : 'All clear'} complete={summary.unreadTotal === 0} />
-        </div>
-      </section>
-
-      <section className="rounded-[26px] border px-4 py-3.5 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+      {showCoachNote ? <section className="rounded-[26px] border px-4 py-3.5 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: 'var(--color-accent-translucent)', color: 'var(--color-accent)' }}>
             <CheckCircle2 size={15} />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach note</p>
-            <p className="mt-1 text-sm leading-5 text-foreground">{coachMessage}</p>
+            <p className="mt-1 text-sm leading-5 text-foreground">
+              {coachMessage ?? 'Your coach sent a new message.'}
+            </p>
           </div>
           {summary.unreadTotal > 0 ? <Link href="/user/chat" className="ml-auto shrink-0 pt-1 text-xs font-semibold text-primary">Chat</Link> : null}
         </div>
-      </section>
+      </section> : null}
     </div>
   );
 }
