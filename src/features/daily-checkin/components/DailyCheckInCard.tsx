@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ComponentType } from 'react';
-import { CheckCircle2, ChevronDown, Dumbbell, Flame, Moon, PenLine, Salad, Utensils } from 'lucide-react';
+import { useEffect, useMemo, useState, type ComponentType, type CSSProperties } from 'react';
+import { CheckCircle2, Dumbbell, Flame, Moon, PenLine, Salad, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { DailyCompletionRing } from '@/features/daily-checkin/components/DailyCompletionRing';
 import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { useDailyCheckInToday, useUpsertDailyCheckIn } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { useDailyNutritionToday, useUpsertDailyNutrition } from '@/features/daily-nutrition/hooks/useDailyNutrition';
@@ -66,81 +64,81 @@ function SectionTitle({
   subtitle?: string;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted/40 text-foreground">
+    <div className="flex items-center gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-bg-alt)] text-[var(--color-text)]">
         <Icon size={16} />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold tracking-tight text-foreground">{title}</p>
-        {subtitle ? <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p> : null}
+        <p className="text-sm font-semibold tracking-tight text-[var(--color-text)]">{title}</p>
+        {subtitle ? <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{subtitle}</p> : null}
       </div>
     </div>
   );
 }
 
-function OptionGrid<T extends string>({
+function SegmentedControl<T extends string>({
   options,
   selectedValue,
   disabled,
   onSelect,
-  colsClassName,
 }: {
   options: Array<ChoiceOption<T>>;
   selectedValue: T | null | undefined;
   disabled: boolean;
   onSelect: (value: T) => void;
-  colsClassName: string;
 }) {
   return (
-    <div className={cn('grid gap-2 rounded-2xl border border-border bg-muted/20 p-2', colsClassName)}>
+    <div
+      className="grid grid-cols-[repeat(var(--option-count),minmax(0,1fr))] gap-1 rounded-[20px] bg-[var(--color-bg-alt)] p-1"
+      style={{ '--option-count': options.length } as CSSProperties}
+    >
       {options.map(option => {
         const selected = selectedValue === option.value;
 
         return (
-          <Button
+          <button
             key={option.value}
             type="button"
-            variant={selected ? 'default' : 'outline'}
             disabled={disabled}
             aria-pressed={selected}
             onClick={() => onSelect(option.value)}
             className={cn(
-              'h-12 rounded-2xl px-3 text-sm font-medium shadow-none transition-all active:scale-[0.98]',
-              selected ? 'border-primary bg-primary text-primary-foreground' : 'bg-background'
+              'min-h-11 rounded-2xl px-2 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-60',
+              selected
+                ? 'bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]'
             )}
           >
             {option.label}
-          </Button>
+          </button>
         );
       })}
     </div>
   );
 }
 
-function StatusPill({
-  label,
-  selected,
-  tone = 'neutral',
+function CheckInMetric<T extends string>({
+  icon,
+  title,
+  subtitle,
+  options,
+  selectedValue,
+  disabled,
+  onSelect,
 }: {
-  label: string;
-  selected: boolean;
-  tone?: 'neutral' | 'good' | 'warn';
+  icon: ComponentType<{ size?: number; className?: string }>;
+  title: string;
+  subtitle: string;
+  options: Array<ChoiceOption<T>>;
+  selectedValue: T | null | undefined;
+  disabled: boolean;
+  onSelect: (value: T) => void;
 }) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
-        selected
-          ? tone === 'good'
-            ? 'border-primary/20 bg-primary/10 text-primary'
-            : tone === 'warn'
-              ? 'border-amber-500/20 bg-amber-500/10 text-amber-700'
-              : 'border-border bg-muted/60 text-foreground'
-          : 'border-border bg-background text-muted-foreground'
-      )}
-    >
-      {label}
-    </span>
+    <section className="space-y-2.5 border-t border-[var(--color-border)]/60 py-3 first:border-t-0 first:pt-0">
+      <SectionTitle icon={icon} title={title} subtitle={subtitle} />
+      <SegmentedControl options={options} selectedValue={selectedValue} disabled={disabled} onSelect={onSelect} />
+    </section>
   );
 }
 
@@ -154,7 +152,6 @@ export function DailyCheckInCard() {
 
   const [savingField, setSavingField] = useState<SavingField>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteValue, setNoteValue] = useState('');
 
@@ -251,189 +248,150 @@ export function DailyCheckInCard() {
   }
 
   return (
-    <Card className="overflow-hidden rounded-[28px] border-border bg-card shadow-sm">
-      <CardContent className="p-0">
-        <button
-          type="button"
-          onClick={() => setIsExpanded(prev => !prev)}
-          className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left sm:px-5"
-          aria-expanded={isExpanded}
-          aria-label="Toggle daily check-in details"
-        >
-          <div className="min-w-0">
-            <p className="text-base font-semibold tracking-tight text-foreground">Today&apos;s Check-In</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {completionData.isComplete ? 'All done for today' : `${completionData.remaining} of 5 remaining`}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <DailyCompletionRing percentage={completionData.pct} size={58} strokeWidth={6} />
-            <ChevronDown
-              size={16}
-              className={cn('text-muted-foreground transition-transform duration-300', isExpanded && 'rotate-180')}
-            />
-          </div>
-        </button>
-
+    <div
+      className="overflow-hidden rounded-[28px] border shadow-sm"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
+      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
+        <div className="min-w-0">
+          <p className="text-base font-semibold tracking-tight text-[var(--color-text)]">Today</p>
+          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+            {completionData.isComplete ? 'All done today' : `${completionData.remaining} left`}
+          </p>
+        </div>
         <div
-          className={cn(
-            'grid transition-[grid-template-rows] duration-300 ease-out',
-            isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-          )}
+          className="rounded-full px-3 py-1.5 text-xs font-semibold"
+          style={{
+            background: completionData.isComplete ? 'var(--color-accent-translucent)' : 'var(--color-bg-alt)',
+            color: completionData.isComplete ? 'var(--color-accent)' : 'var(--color-text-muted)',
+          }}
         >
-          <div className="overflow-hidden">
-            <div className="border-t border-border/60 px-4 pb-3 pt-1 sm:px-5">
-              <div className="space-y-3">
-                <section className="rounded-2xl border border-border bg-muted/20 p-3">
-                  <SectionTitle
-                    icon={Flame}
-                    title="Energy"
-                    subtitle="How your day feels so far"
-                  />
-                  <div className="mt-2.5">
-                    <OptionGrid
-                      options={ENERGY_OPTIONS}
-                      selectedValue={entry?.energy}
-                      disabled={anyLoading || savingField === 'energy'}
-                      onSelect={value => void saveEnergy(value)}
-                      colsClassName="grid-cols-3"
-                    />
-                  </div>
-                </section>
+          {completionData.isComplete ? '5/5 complete' : `${completionData.pct}%`}
+        </div>
+      </div>
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3">
-                  <SectionTitle icon={Salad} title="Nutrition" subtitle="How closely today matched plan" />
-                  <div className="mt-2.5">
-                    <OptionGrid
-                      options={NUTRITION_OPTIONS}
-                      selectedValue={nutritionEntry?.status}
-                      disabled={anyLoading || savingField === 'nutrition'}
-                      onSelect={value => void saveNutrition(value)}
-                      colsClassName="grid-cols-3"
-                    />
-                  </div>
-                </section>
+      <div className="px-4 pb-3 sm:px-5">
+        <CheckInMetric
+          icon={Flame}
+          title="Energy"
+          subtitle="How your day feels so far"
+          options={ENERGY_OPTIONS}
+          selectedValue={entry?.energy}
+          disabled={anyLoading || savingField === 'energy'}
+          onSelect={value => void saveEnergy(value)}
+        />
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3">
-                  <SectionTitle icon={Dumbbell} title="Training" subtitle="Did you complete the session?" />
-                  <div className="mt-2.5">
-                    <OptionGrid
-                      options={TRAINING_OPTIONS}
-                      selectedValue={trainingEntry?.status}
-                      disabled={anyLoading || savingField === 'training'}
-                      onSelect={value => void saveTraining(value)}
-                      colsClassName="grid-cols-3"
-                    />
-                  </div>
-                </section>
+        <CheckInMetric
+          icon={Salad}
+          title="Nutrition"
+          subtitle="How closely today matched plan"
+          options={NUTRITION_OPTIONS}
+          selectedValue={nutritionEntry?.status}
+          disabled={anyLoading || savingField === 'nutrition'}
+          onSelect={value => void saveNutrition(value)}
+        />
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3">
-                  <SectionTitle icon={Utensils} title="Hunger" subtitle="How hungry you feel right now" />
-                  <div className="mt-2.5">
-                    <OptionGrid
-                      options={HUNGER_OPTIONS}
-                      selectedValue={entry?.hunger}
-                      disabled={anyLoading || savingField === 'hunger'}
-                      onSelect={value => void saveHunger(value)}
-                      colsClassName="grid-cols-3"
-                    />
-                  </div>
-                </section>
+        <CheckInMetric
+          icon={Dumbbell}
+          title="Training"
+          subtitle="Did you complete the session?"
+          options={TRAINING_OPTIONS}
+          selectedValue={trainingEntry?.status}
+          disabled={anyLoading || savingField === 'training'}
+          onSelect={value => void saveTraining(value)}
+        />
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3">
-                  <SectionTitle icon={Moon} title="Sleep" subtitle="How well you slept" />
-                  <div className="mt-2.5">
-                    <OptionGrid
-                      options={SLEEP_OPTIONS}
-                      selectedValue={entry?.sleep}
-                      disabled={anyLoading || savingField === 'sleep'}
-                      onSelect={value => void saveSleep(value)}
-                      colsClassName="grid-cols-2 sm:grid-cols-4"
-                    />
-                  </div>
-                </section>
+        <CheckInMetric
+          icon={Utensils}
+          title="Hunger"
+          subtitle="How hungry you feel right now"
+          options={HUNGER_OPTIONS}
+          selectedValue={entry?.hunger}
+          disabled={anyLoading || savingField === 'hunger'}
+          onSelect={value => void saveHunger(value)}
+        />
 
-                <section className="rounded-2xl border border-border bg-muted/20 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <SectionTitle
-                      icon={PenLine}
-                      title={noteOpen ? 'Note' : entry?.note ? 'Edit note' : 'Add note'}
-                      subtitle="Optional quick note for today"
-                    />
-                    {!noteOpen ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-9 rounded-full px-3 text-xs"
-                        onClick={() => setNoteOpen(true)}
-                      >
-                        {entry?.note ? 'Edit' : 'Add'}
-                      </Button>
-                    ) : null}
-                  </div>
+        <CheckInMetric
+          icon={Moon}
+          title="Sleep"
+          subtitle="How well you slept"
+          options={SLEEP_OPTIONS}
+          selectedValue={entry?.sleep}
+          disabled={anyLoading || savingField === 'sleep'}
+          onSelect={value => void saveSleep(value)}
+        />
 
-                  {noteOpen ? (
-                    <div className="mt-2.5 space-y-2.5">
-                      <textarea
-                        value={noteValue}
-                        onChange={e => setNoteValue(e.target.value)}
-                        maxLength={500}
-                        rows={4}
-                        placeholder="Anything else to note today..."
-                        className="min-h-[108px] w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                      />
+        <section className="border-t border-[var(--color-border)]/60 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <SectionTitle
+              icon={PenLine}
+              title={noteOpen ? 'Note' : entry?.note ? 'Edit note' : 'Add note'}
+              subtitle={entry?.note && !noteOpen ? entry.note : 'Optional quick note for today'}
+            />
+            {!noteOpen ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-full px-3 text-xs"
+                onClick={() => setNoteOpen(true)}
+              >
+                {entry?.note ? 'Edit' : 'Add'}
+              </Button>
+            ) : null}
+          </div>
 
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          disabled={savingField === 'note'}
-                          onClick={() => void saveNote()}
-                          className="h-10 rounded-full px-4"
-                        >
-                          Save note
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          disabled={savingField === 'note'}
-                          onClick={() => {
-                            setNoteOpen(false);
-                            setNoteValue(entry?.note ?? '');
-                          }}
-                          className="h-10 rounded-full px-4"
-                        >
-                          Cancel
-                        </Button>
-                        <span className="ml-auto text-[11px] text-muted-foreground">{noteValue.length}/500</span>
-                      </div>
-                    </div>
-                  ) : null}
-                </section>
+          {noteOpen ? (
+            <div className="mt-3 space-y-2.5">
+              <textarea
+                value={noteValue}
+                onChange={e => setNoteValue(e.target.value)}
+                maxLength={500}
+                rows={3}
+                placeholder="Anything else to note today..."
+                className="min-h-[92px] w-full resize-none rounded-[22px] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-translucent)]"
+              />
 
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-background px-3 py-2.5">
-                  {errorMessage ? (
-                    <p className="text-xs font-medium text-destructive">{errorMessage}</p>
-                  ) : completionData.isComplete ? (
-                    <p className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
-                      <CheckCircle2 size={14} />
-                      All done for today.
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">{completionData.pct}% completed</p>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <StatusPill label="Energy" selected={Boolean(entry?.energy)} tone="good" />
-                    <StatusPill label="Plan" selected={Boolean(nutritionEntry?.status)} tone="warn" />
-                  </div>
-                </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  disabled={savingField === 'note'}
+                  onClick={() => void saveNote()}
+                  className="h-10 rounded-full px-4"
+                >
+                  Save note
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={savingField === 'note'}
+                  onClick={() => {
+                    setNoteOpen(false);
+                    setNoteValue(entry?.note ?? '');
+                  }}
+                  className="h-10 rounded-full px-4"
+                >
+                  Cancel
+                </Button>
+                <span className="ml-auto text-[11px] text-[var(--color-text-muted)]">{noteValue.length}/500</span>
               </div>
             </div>
-          </div>
+          ) : null}
+        </section>
+
+        <div className="border-t border-[var(--color-border)]/60 pt-3">
+          {errorMessage ? (
+            <p className="text-xs font-medium text-destructive">{errorMessage}</p>
+          ) : completionData.isComplete ? (
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-accent)]">
+              <CheckCircle2 size={14} />
+              All done for today.
+            </p>
+          ) : (
+            <p className="text-xs text-[var(--color-text-muted)]">{completionData.remaining} items left to complete today.</p>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
