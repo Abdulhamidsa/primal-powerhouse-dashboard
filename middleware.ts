@@ -97,6 +97,16 @@ const isPwaAsset = (pathname: string) => {
   return false;
 };
 
+const isPublicUserAuthPath = (pathname: string) =>
+  [
+    '/user/login',
+    '/user/signup',
+    '/user/verify-email',
+    '/user/verify-required',
+    '/user/forgot-password',
+    '/user/reset-password',
+  ].includes(pathname);
+
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
@@ -156,7 +166,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // --- Protect /user/*
-  if (pathname.startsWith('/user') && pathname !== '/user/login') {
+  if (pathname.startsWith('/user') && !isPublicUserAuthPath(pathname)) {
     if (!isAuthenticated) {
       url.pathname = '/user/login';
       return NextResponse.redirect(url);

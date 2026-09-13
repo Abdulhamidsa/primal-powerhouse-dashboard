@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { getJwtSecret } from '@/lib/security/jwt-secret';
 import type { MobileTokenPair } from '../types/mobileAuth.types';
+import { requiresEmailVerification } from '@/lib/auth/client-verification';
 
 export const hashRefreshToken = (value: string) => createHash('sha256').update(value).digest('hex');
 const sessionExpiry = () => new Date(Date.now() + 30 * 86400_000);
@@ -20,8 +21,8 @@ export async function createMobileSession(user: { id: string; email: string; nam
 export async function rotateMobileSession(token: string): Promise<MobileTokenPair | null> {
   const refreshToken = randomBytes(48).toString('base64url');
   return prisma.$transaction(async tx => {
-    const session = await tx.mobileSession.findUnique({ where: { refreshHash: hashRefreshToken(token) }, include: { client: { select: { id: true, name: true, email: true, status: true, deactivatedAt: true } } } });
-    if (!session || session.revokedAt || session.expiresAt <= new Date() || session.client.status === 'ARCHIVED' || session.client.status === 'INACTIVE' || session.client.deactivatedAt) return null;
+    const session = await tx.mobileSession.findUnique({ where: { refreshHash: hashRefreshToken(token) }, include: { client: { select: { id: true, name: true, email: true, status: true, deactivatedAt: true, signupSource: true, emailVerifiedAt: true } } } });
+    if (!session || session.revokedAt || session.expiresAt <= new Date() || session.client.status === 'ARCHIVED' || session.client.status === 'INACTIVE' || session.client.deactivatedAt || requiresEmailVerification(session.client)) return null;
     const updated = await tx.mobileSession.updateMany({ where: { id: session.id, refreshHash: hashRefreshToken(token), revokedAt: null }, data: { refreshHash: hashRefreshToken(refreshToken) } });
     if (updated.count !== 1) return null;
     const { id, name, email } = session.client;

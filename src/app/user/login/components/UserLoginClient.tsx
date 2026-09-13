@@ -40,6 +40,10 @@ export default function UserLoginClient() {
       } catch {}
 
       if (!response.ok) {
+        if (data?.requiresVerification && data?.email) {
+          router.replace(`/user/verify-required?email=${encodeURIComponent(data.email)}`);
+          return;
+        }
         const errorMessage = data?.details ? `${data?.error}: ${data?.details}` : data?.error || 'Login failed';
         throw new Error(errorMessage);
       }
@@ -146,7 +150,7 @@ export default function UserLoginClient() {
                 Remember me
               </label>
 
-              <a href="#" className="text-sm text-primary hover:underline underline-offset-4">
+              <a href="/user/forgot-password" className="text-sm text-primary hover:underline underline-offset-4">
                 Forgot password?
               </a>
             </div>
@@ -165,11 +169,29 @@ export default function UserLoginClient() {
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
 
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            <a
+              href="/api/auth/google/start"
+              className="block w-full rounded-xl border border-border px-4 py-3 text-center text-base font-medium text-foreground hover:bg-muted transition"
+            >
+              Continue with Google
+            </a>
+
             <p className="text-center text-sm text-muted-foreground">By continuing, you agree to the app policies.</p>
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">Trouble signing in? Contact support.</p>
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          New here? <a href="/user/signup" className="text-primary hover:underline">Create a free account</a>
+        </p>
       </div>
     </div>
   );

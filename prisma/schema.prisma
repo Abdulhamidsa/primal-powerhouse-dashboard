@@ -123,6 +123,7 @@ model Client {
   programEnrollments       ProgramEnrollment[]
   emailVerificationTokens  EmailVerificationToken[]
   passwordResetTokens      PasswordResetToken[]
+  authIdentities           ClientAuthIdentity[]
   workouts                 Workout[]
   mealPlans                MealPlan[]
   videoAssignments         VideoAssignment[]
@@ -245,6 +246,24 @@ model PasswordResetToken {
   @@index([clientId])
   @@index([expiresAt])
   @@map("password_reset_tokens")
+}
+
+model ClientAuthIdentity {
+  id                String             @id @default(cuid())
+  clientId          String
+  provider          ClientAuthProvider
+  providerAccountId String
+  email             String?
+  emailVerified     Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([clientId])
+  @@index([provider, email])
+  @@map("client_auth_identities")
 }
 
 model ClientFeatureVisibility {
@@ -1055,6 +1074,10 @@ enum OnboardingExperienceLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+}
+
+enum ClientAuthProvider {
+  GOOGLE
 }
 
 enum ActivityLevel {

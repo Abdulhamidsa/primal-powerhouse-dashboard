@@ -6,6 +6,7 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 import { getJwtSecret } from '@/lib/security/jwt-secret';
 import { prisma } from '@/lib/prisma';
+import { requiresEmailVerification } from '@/lib/auth/client-verification';
 const TOKEN_EXPIRY = '30d';
 
 export const AUTH_COOKIE_NAME = 'auth-token';
@@ -105,8 +106,9 @@ export class AuthService {
     }
     if (!payload || (role && payload.type !== role)) return null;
     if (payload.type === 'client') {
-      const client = await prisma.client.findUnique({ where: { id: payload.userId }, select: { status: true, authInvalidBefore: true, deactivatedAt: true } });
+      const client = await prisma.client.findUnique({ where: { id: payload.userId }, select: { status: true, authInvalidBefore: true, deactivatedAt: true, signupSource: true, emailVerifiedAt: true } });
       if (!client || client.status === 'ARCHIVED' || client.status === 'INACTIVE' || client.deactivatedAt) return null;
+      if (requiresEmailVerification(client)) return null;
       if (!bearer && client.authInvalidBefore && (payload.issuedAtMs ?? (payload.iat ?? 0) * 1000) <= client.authInvalidBefore.getTime()) return null;
     }
     return payload;

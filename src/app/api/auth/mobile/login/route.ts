@@ -4,6 +4,7 @@ import { AuthService } from '@/lib/auth';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { mobileLoginSchema } from '@/features/mobile-auth/schemas/mobileAuth.schema';
 import { createMobileSession } from '@/features/mobile-auth/api/mobileSession.server';
+import { requiresEmailVerification } from '@/lib/auth/client-verification';
 
 export async function POST(request: NextRequest) {
   const input = mobileLoginSchema.safeParse(await request.json().catch(() => null));
@@ -11,5 +12,6 @@ export async function POST(request: NextRequest) {
   if (!rateLimit(`mobile-login:${input.data.email}`, 10, 60_000).allowed) return NextResponse.json({ error: 'Please wait before trying again.' }, { status: 429 });
   const user = await prisma.client.findUnique({ where: { email: input.data.email } });
   if (!user?.password || user.status === 'ARCHIVED' || user.status === 'INACTIVE' || user.deactivatedAt || !await AuthService.verifyPassword(input.data.password, user.password)) return NextResponse.json({ error: 'Invalid credentials or inactive account. Contact your coach.' }, { status: 401 });
+  if (requiresEmailVerification(user)) return NextResponse.json({ error: 'Please verify your email before continuing.' }, { status: 403 });
   return NextResponse.json(await createMobileSession({ id: user.id, name: user.name, email: user.email }), { headers: { 'Cache-Control': 'no-store' } });
 }

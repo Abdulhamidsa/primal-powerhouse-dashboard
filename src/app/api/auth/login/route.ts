@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
+import { requiresEmailVerification } from '@/lib/auth/client-verification';
+import { loginSchema } from '@/features/self-signup/schemas/auth.schema';
+import { rateLimit } from '@/lib/security/rate-limit';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
+
+function ip(request: NextRequest) {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, rememberMe } = await request.json();
+    const parsed = loginSchema.safeParse(await request.json().catch(() => null));
 
-    if (!email || !password) {
+    if (!parsed.success) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+    }
+    const { email, password, rememberMe } = parsed.data;
+
+    if (!rateLimit(`user-login:${email}:${ip(request)}`, 10, 60_000).allowed) {
+      return NextResponse.json({ error: 'Please wait before trying again.' }, { status: 429 });
     }
 
     const client = await prisma.client.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email },
       include: { coach: { select: { name: true, email: true } } },
     });
 
@@ -27,6 +40,17 @@ export async function POST(request: NextRequest) {
 
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+
+    if (requiresEmailVerification(client)) {
+      return NextResponse.json(
+        {
+          error: 'Please verify your email before continuing.',
+          requiresVerification: true,
+          email: client.email,
+        },
+        { status: 403 },
+      );
     }
 
     const response = NextResponse.json({
@@ -47,13 +71,14 @@ export async function POST(request: NextRequest) {
         type: 'client',
       },
       {
-        rememberMe,
+        rememberMe: Boolean(rememberMe),
+        requestHost: request.headers.get('host') ?? undefined,
       }
     );
 
     return response;
   } catch (error) {
-    console.error('[USER LOGIN] error:', error);
+    console.error('[USER LOGIN] error:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
