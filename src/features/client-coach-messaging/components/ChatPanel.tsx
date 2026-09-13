@@ -38,6 +38,26 @@ function clampSidebarWidth(nextWidth: number): number {
   return Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(nextWidth)));
 }
 
+function MessageSkeleton() {
+  return (
+    <div className="flex min-h-full flex-col justify-end gap-4 px-1 py-2">
+      {[0, 1, 2, 3, 4].map(index => {
+        const own = index % 2 === 1;
+        return (
+          <div key={index} className={`flex items-end gap-2 ${own ? 'justify-end' : 'justify-start'}`}>
+            {!own ? <div className="h-8 w-8 animate-pulse rounded-full bg-[var(--color-bg-alt)]" /> : null}
+            <div
+              className={`h-12 animate-pulse rounded-[24px] bg-[var(--color-surface)] ${own ? 'w-[48%]' : 'w-[68%]'}`}
+              style={{ border: '1px solid var(--color-border)' }}
+            />
+            {own ? <div className="h-8 w-8 animate-pulse rounded-full bg-[var(--color-bg-alt)]" /> : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ChatPanel({
   hideConversationList = false,
   disableUrlSync = false,
@@ -51,6 +71,7 @@ export function ChatPanel({
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
   const previousConversationIdRef = useRef<string | null>(null);
   const hasInitialScrolledSet = useRef<Set<string>>(new Set());
   const wasNearBottomRef = useRef(true);
@@ -171,6 +192,26 @@ export function ChatPanel({
     }
   }, [selectedConversationId, messages]);
 
+  useEffect(() => {
+    const viewport = messageViewportRef.current;
+    if (!viewport || !bottomRef.current) return;
+
+    const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+      bottomRef.current?.scrollIntoView({ block: 'end', behavior });
+    };
+
+    const id = window.requestAnimationFrame(() => scrollToBottom('auto'));
+    const observer = new ResizeObserver(() => {
+      if (wasNearBottomRef.current) scrollToBottom('auto');
+    });
+    observer.observe(viewport);
+
+    return () => {
+      window.cancelAnimationFrame(id);
+      observer.disconnect();
+    };
+  }, [selectedConversationId, messages.length]);
+
   const startDrag = (event: React.MouseEvent<HTMLDivElement>) => {
     if (hideConversationList) return;
     event.preventDefault();
@@ -196,7 +237,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[var(--color-surface)]">
       <div ref={containerRef} className="flex min-h-0 flex-1 flex-col md:flex-row">
         {!hideConversationList ? (
           <aside
@@ -282,18 +323,23 @@ export function ChatPanel({
 
         <section className="flex min-h-0 flex-1 flex-col">
           <div
-            className="flex items-center gap-3 border-b px-4 py-2.5"
-            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+            className="flex items-center gap-3 border-b px-4 py-3 backdrop-blur-xl"
+            style={{
+              borderColor: 'var(--color-border)',
+              background:
+                'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface) 88%, transparent))',
+              paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+            }}
           >
             {hideConversationList ? (
               <button
                 type="button"
                 onClick={() => router.back()}
                 aria-label="Back"
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--color-bg-alt)]"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--color-bg-alt)]"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={20} />
               </button>
             ) : null}
 
@@ -322,7 +368,7 @@ export function ChatPanel({
               )
             ) : (
               <p
-                className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+                className="text-[12px] font-semibold uppercase tracking-[0.18em]"
                 style={{ color: 'var(--color-text-muted)' }}
               >
                 Coach chat
@@ -333,22 +379,27 @@ export function ChatPanel({
           <div
             ref={messageViewportRef}
             className="flex-1 overflow-y-auto px-3 py-4 md:px-4"
-            style={{ background: 'var(--color-bg-alt)' }}
+            style={{
+              background:
+                'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 38%), var(--color-bg)',
+            }}
           >
             {isMessagesLoading ? (
-              <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                Loading messages...
-              </p>
+              <MessageSkeleton />
             ) : (
-              <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
+              <>
+                <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
+                <div ref={bottomRef} className="h-1" />
+              </>
             )}
           </div>
 
           <div
-            className="border-t"
+            className="border-t px-2 py-2"
             style={{
               borderColor: 'var(--color-border)',
-              background: 'var(--color-surface)',
+              background:
+                'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), var(--color-surface))',
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
           >

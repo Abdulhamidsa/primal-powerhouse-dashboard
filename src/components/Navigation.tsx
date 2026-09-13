@@ -478,7 +478,7 @@ export default function Navigation({
           </div>
         </div>
       </header>
-      {userType === 'user' ? (
+      {userType === 'user' && !isChatRoute ? (
         <div
           className="sticky top-0 z-20 border-b border-border/70 bg-card/70 px-4 pb-2 pt-3 backdrop-blur-xl lg:hidden"
           style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
@@ -522,8 +522,8 @@ export default function Navigation({
       <main
         data-app-scroll-main
         className={cn(
-          'w-full flex-1 min-h-0 overflow-y-auto pb-28 lg:pb-0',
-          isChatRoute ? 'overflow-hidden lg:px-6 lg:py-6' : '',
+          'w-full flex-1 min-h-0 overflow-y-auto',
+          isChatRoute ? 'overflow-hidden' : 'pb-28 lg:pb-0',
         )}
       >
         {children ?? (

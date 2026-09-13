@@ -98,14 +98,17 @@ export function MessageList({
 
   if (!messages.length) {
     return (
-      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-        No messages yet. Start the conversation.
-      </p>
+      <div className="flex min-h-full items-center justify-center px-6 text-center">
+        <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-5 py-6 shadow-sm backdrop-blur-xl">
+          <p className="text-sm font-semibold text-[var(--color-text)]">No messages yet</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">Start the conversation with your coach.</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-h-full flex-col justify-end gap-3">
       {messages.map((message, index) => {
         const ownMessage = isOwnMessage(pathname, message.senderRole);
         const sender = resolveSenderIdentity(message.senderRole, conversation);
@@ -136,21 +139,28 @@ export function MessageList({
               </div>
             ) : null}
 
-            <div className={`max-w-[82%] ${ownMessage ? 'items-end' : 'items-start'} flex flex-col`}>
+            <div className={`max-w-[78%] ${ownMessage ? 'items-end' : 'items-start'} flex flex-col`}>
               <article
-                className={`w-fit rounded-[22px] border px-3.5 py-2.5 shadow-sm ${ownMessage ? 'self-end' : 'self-start'}`}
+                className={`w-fit px-4 py-2.5 shadow-sm backdrop-blur-xl ${
+                  ownMessage
+                    ? 'self-end rounded-[24px] rounded-br-[9px]'
+                    : 'self-start rounded-[24px] rounded-bl-[9px]'
+                }`}
                 style={{
-                  borderColor: message.deliveryStatus === 'failed' ? 'var(--color-danger)' : 'var(--color-border)',
+                  border: `1px solid ${message.deliveryStatus === 'failed' ? 'var(--color-danger)' : 'var(--color-border)'}`,
                   background:
                     message.deliveryStatus === 'failed'
                       ? 'var(--color-danger-muted)'
                       : ownMessage
-                        ? 'color-mix(in srgb, var(--color-accent) 28%, var(--color-surface))'
-                        : 'var(--color-surface)',
+                        ? 'linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 70%, var(--color-surface)), color-mix(in srgb, var(--color-accent) 46%, var(--color-surface)))'
+                        : 'color-mix(in srgb, var(--color-surface) 92%, var(--color-bg))',
                 }}
               >
                 {message.body ? (
-                  <p className="text-sm whitespace-pre-wrap" style={{ color: 'var(--color-text)' }}>
+                  <p
+                    className="whitespace-pre-wrap text-[15px] leading-6"
+                    style={{ color: ownMessage ? 'var(--color-text-on-accent)' : 'var(--color-text)' }}
+                  >
                     {message.body}
                   </p>
                 ) : null}

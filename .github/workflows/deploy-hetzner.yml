@@ -1,0 +1,55 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: hetzner-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+          HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          ssh-keyscan -H "$HETZNER_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy application
+        env:
+          HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
+          HETZNER_USER: ${{ secrets.HETZNER_USER }}
+        run: |
+          ssh "$HETZNER_USER@$HETZNER_HOST" << 'EOF'
+            set -e
+
+            cd /var/www/primal-powerhouse-dashboard
+
+            git fetch origin
+            git reset --hard origin/main
+
+            pnpm install --frozen-lockfile
+            pnpm build
+
+            rm -rf .next/standalone/public
+            mkdir -p .next/standalone/.next
+            rm -rf .next/standalone/.next/static
+
+            cp -a public .next/standalone/public
+            cp -a .next/static .next/standalone/.next/static
+
+            pm2 restart primal-powerhouse
+            pm2 save
+          EOF

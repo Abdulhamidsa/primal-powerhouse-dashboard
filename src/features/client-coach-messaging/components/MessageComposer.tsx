@@ -302,15 +302,19 @@ export function MessageComposer({
       ) : null}
 
       <div
-        className="flex items-end gap-2 border px-3 py-2 shadow-sm"
+        className="flex items-end gap-2 rounded-[30px] border px-2.5 py-2 shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
         style={{
           borderColor: 'var(--color-border)',
-          background: 'var(--color-surface)',
+          background: 'color-mix(in srgb, var(--color-surface) 94%, var(--color-bg))',
         }}
       >
         <label
-          className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition"
-          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
+          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition active:scale-95"
+          style={{
+            borderColor: 'var(--color-border)',
+            background: 'var(--color-bg)',
+            color: 'var(--color-text-muted)',
+          }}
           aria-label="Add image or video"
           title="Add image or video"
         >
@@ -322,9 +326,10 @@ export function MessageComposer({
           type="button"
           onClick={recorder.startRecording}
           disabled={recorder.isRecording || videoRecorder.isRecording || isUploading || isSending}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border transition"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95"
           style={{
             borderColor: recorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-border)',
+            background: 'var(--color-bg)',
             color: recorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-text-muted)',
             opacity: recorder.isRecording || isUploading || isSending ? 0.5 : 1,
           }}
@@ -338,9 +343,10 @@ export function MessageComposer({
           type="button"
           onClick={videoRecorder.startRecording}
           disabled={videoRecorder.isRecording || recorder.isRecording || isUploading || isSending}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border transition"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95"
           style={{
             borderColor: videoRecorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-border)',
+            background: 'var(--color-bg)',
             color: videoRecorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-text-muted)',
             opacity: videoRecorder.isRecording || recorder.isRecording || isUploading || isSending ? 0.5 : 1,
           }}
@@ -354,7 +360,7 @@ export function MessageComposer({
           value={draft}
           onChange={event => setDraft(event.target.value)}
           rows={1}
-          className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm outline-none"
+          className="max-h-28 min-h-[44px] flex-1 resize-none bg-transparent px-1 py-2.5 text-[16px] leading-6 outline-none placeholder:text-[var(--color-text-muted)]"
           style={{ color: 'var(--color-text)' }}
           placeholder="Message your coach"
           onKeyDown={event => {
@@ -368,7 +374,7 @@ export function MessageComposer({
         <button
           type="submit"
           disabled={!canSend || isUploading || isSending}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full transition"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full transition active:scale-95"
           style={{
             background: 'var(--color-accent)',
             color: 'var(--color-text-on-accent)',
