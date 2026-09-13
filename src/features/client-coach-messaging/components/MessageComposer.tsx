@@ -1,7 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Camera, ImagePlus, Loader2, Mic, Paperclip, SendHorizontal, Square, Trash2, X } from 'lucide-react';
+import {
+  Camera,
+  FileUp,
+  ImagePlus,
+  Loader2,
+  Mic,
+  Paperclip,
+  Plus,
+  SendHorizontal,
+  Square,
+  Trash2,
+  Video,
+  X,
+} from 'lucide-react';
 import { useMessageUpload } from '@/features/client-coach-messaging/hooks/useMessageUpload';
 import { useVideoRecorder } from '@/features/client-coach-messaging/hooks/useVideoRecorder';
 import { useVoiceRecorder } from '@/features/client-coach-messaging/hooks/useVoiceRecorder';
@@ -25,9 +38,12 @@ export function MessageComposer({
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [voicePreviewUrl, setVoicePreviewUrl] = useState<string | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const liveVideoRef = useRef<HTMLVideoElement | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const captureInputRef = useRef<HTMLInputElement | null>(null);
   const { uploadFile, isUploading } = useMessageUpload();
   const recorder = useVoiceRecorder();
   const videoRecorder = useVideoRecorder();
@@ -95,6 +111,7 @@ export function MessageComposer({
       await uploadAndQueue(file);
     } finally {
       event.target.value = '';
+      setActionMenuOpen(false);
     }
   };
 
@@ -127,6 +144,7 @@ export function MessageComposer({
       const draftToSend = draft;
       setDraft('');
       setAttachments([]);
+      setActionMenuOpen(false);
       recorder.clearRecording();
       videoRecorder.clearRecording();
 
@@ -302,25 +320,85 @@ export function MessageComposer({
       ) : null}
 
       <div
-        className="flex items-end gap-2 rounded-[30px] border px-2.5 py-2 shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
+        className="relative flex items-end gap-2 rounded-[30px] border px-2.5 py-2 shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
         style={{
           borderColor: 'var(--color-border)',
           background: 'color-mix(in srgb, var(--color-surface) 94%, var(--color-bg))',
         }}
       >
-        <label
-          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition active:scale-95"
+        {actionMenuOpen ? (
+          <div
+            className="absolute bottom-[calc(100%+0.55rem)] left-2 z-30 w-64 overflow-hidden rounded-[26px] border shadow-[0_18px_55px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+            style={{
+              borderColor: 'var(--color-border)',
+              background: 'color-mix(in srgb, var(--color-surface) 96%, transparent)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => captureInputRef.current?.click()}
+              className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm font-medium transition-colors hover:bg-[var(--color-bg-alt)]"
+              style={{ color: 'var(--color-text)' }}
+            >
+              <Camera size={17} className="text-[var(--color-accent)]" />
+              Take photo or video
+            </button>
+            <button
+              type="button"
+              onClick={() => uploadInputRef.current?.click()}
+              className="flex min-h-12 w-full items-center gap-3 border-t px-4 text-left text-sm font-medium transition-colors hover:bg-[var(--color-bg-alt)]"
+              style={{ color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
+            >
+              <FileUp size={17} className="text-[var(--color-accent)]" />
+              Upload file
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActionMenuOpen(false);
+                videoRecorder.startRecording();
+              }}
+              disabled={videoRecorder.isRecording || recorder.isRecording || isUploading || isSending}
+              className="flex min-h-12 w-full items-center gap-3 border-t px-4 text-left text-sm font-medium transition-colors hover:bg-[var(--color-bg-alt)] disabled:opacity-50"
+              style={{ color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
+            >
+              <Video size={17} className="text-[var(--color-accent)]" />
+              Record video note
+            </button>
+          </div>
+        ) : null}
+
+        <input
+          ref={uploadInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          onChange={onPickFile}
+        />
+        <input
+          ref={captureInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*,video/*"
+          capture="environment"
+          onChange={onPickFile}
+        />
+
+        <button
+          type="button"
+          onClick={() => setActionMenuOpen(open => !open)}
+          disabled={isUploading || isSending}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95 disabled:opacity-50"
           style={{
-            borderColor: 'var(--color-border)',
-            background: 'var(--color-bg)',
-            color: 'var(--color-text-muted)',
+            borderColor: actionMenuOpen ? 'var(--color-accent)' : 'var(--color-border)',
+            background: actionMenuOpen ? 'color-mix(in srgb, var(--color-accent) 16%, var(--color-bg))' : 'var(--color-bg)',
+            color: actionMenuOpen ? 'var(--color-accent)' : 'var(--color-text-muted)',
           }}
-          aria-label="Add image or video"
-          title="Add image or video"
+          aria-label="Open message actions"
+          title="Open message actions"
         >
-          <Paperclip size={16} />
-          <input type="file" className="hidden" accept="image/*,video/*" onChange={onPickFile} />
-        </label>
+          <Plus size={18} className={actionMenuOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
+        </button>
 
         <button
           type="button"
@@ -337,23 +415,6 @@ export function MessageComposer({
           title="Record voice note"
         >
           <Mic size={16} />
-        </button>
-
-        <button
-          type="button"
-          onClick={videoRecorder.startRecording}
-          disabled={videoRecorder.isRecording || recorder.isRecording || isUploading || isSending}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95"
-          style={{
-            borderColor: videoRecorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-border)',
-            background: 'var(--color-bg)',
-            color: videoRecorder.recordedBlob ? 'var(--color-accent)' : 'var(--color-text-muted)',
-            opacity: videoRecorder.isRecording || recorder.isRecording || isUploading || isSending ? 0.5 : 1,
-          }}
-          aria-label="Record video note"
-          title="Record video note"
-        >
-          <Camera size={16} />
         </button>
 
         <textarea

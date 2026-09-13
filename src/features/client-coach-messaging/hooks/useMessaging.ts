@@ -127,6 +127,7 @@ export function useConversationMessages(conversationId: string | null) {
       // Realtime updates come from Pusher; polling can cause signed media URLs to rotate and appear as reloads.
       refreshInterval: 0,
       revalidateOnFocus: false,
+      keepPreviousData: true,
     },
   );
 

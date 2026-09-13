@@ -71,6 +71,7 @@ export function ChatPanel({
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
+  const messageContentRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const previousConversationIdRef = useRef<string | null>(null);
   const hasInitialScrolledSet = useRef<Set<string>>(new Set());
@@ -96,6 +97,7 @@ export function ChatPanel({
   } = useConversationMessages(selectedConversationId);
 
   useConversationPresence(selectedConversationId, pathname.startsWith('/user'));
+  const showMessageSkeleton = isConversationsLoading || (Boolean(selectedConversationId) && isMessagesLoading && messages.length === 0);
 
   useEffect(() => {
     if (hideConversationList || typeof window === 'undefined') return;
@@ -186,7 +188,7 @@ export function ChatPanel({
 
     if (messages.length > prevCount && (userJustSent || wasNearBottomRef.current)) {
       const id = window.requestAnimationFrame(() =>
-        viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' }),
+        bottomRef.current?.scrollIntoView({ block: 'end', behavior: userJustSent ? 'smooth' : 'auto' }),
       );
       return () => window.cancelAnimationFrame(id);
     }
@@ -194,7 +196,8 @@ export function ChatPanel({
 
   useEffect(() => {
     const viewport = messageViewportRef.current;
-    if (!viewport || !bottomRef.current) return;
+    const content = messageContentRef.current;
+    if (!viewport || !content || !bottomRef.current) return;
 
     const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
       bottomRef.current?.scrollIntoView({ block: 'end', behavior });
@@ -204,11 +207,17 @@ export function ChatPanel({
     const observer = new ResizeObserver(() => {
       if (wasNearBottomRef.current) scrollToBottom('auto');
     });
-    observer.observe(viewport);
+    observer.observe(content);
+
+    const mutationObserver = new MutationObserver(() => {
+      if (wasNearBottomRef.current) scrollToBottom('auto');
+    });
+    mutationObserver.observe(content, { childList: true, subtree: true });
 
     return () => {
       window.cancelAnimationFrame(id);
       observer.disconnect();
+      mutationObserver.disconnect();
     };
   }, [selectedConversationId, messages.length]);
 
@@ -378,29 +387,29 @@ export function ChatPanel({
 
           <div
             ref={messageViewportRef}
-            className="flex-1 overflow-y-auto px-3 py-4 md:px-4"
+            className="flex-1 overflow-y-auto px-3 pb-8 pt-4 md:px-4"
             style={{
               background:
                 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 38%), var(--color-bg)',
             }}
           >
-            {isMessagesLoading ? (
+            {showMessageSkeleton ? (
               <MessageSkeleton />
             ) : (
-              <>
+              <div ref={messageContentRef} className="min-h-full">
                 <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
-                <div ref={bottomRef} className="h-1" />
-              </>
+                <div ref={bottomRef} className="h-3" />
+              </div>
             )}
           </div>
 
           <div
-            className="border-t px-2 py-2"
+            className="border-t px-2 pt-2"
             style={{
               borderColor: 'var(--color-border)',
               background:
                 'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), var(--color-surface))',
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
             }}
           >
             <MessageComposer conversationId={selectedConversationId} onSendAction={sendMessage} />
