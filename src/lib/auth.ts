@@ -145,7 +145,7 @@ export class AuthService {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: options?.sameSite ?? 'strict' as const,
+      sameSite: (options?.sameSite ?? 'strict') as const,
       path: '/',
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
