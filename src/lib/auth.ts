@@ -136,6 +136,7 @@ export class AuthService {
     const rememberMe = Boolean(options?.rememberMe);
     const cookieDomain = options?.cookieDomain ?? process.env.COOKIE_DOMAIN;
     const requestHost = options?.requestHost ?? '';
+    const sameSite: 'strict' | 'lax' = options?.sameSite ?? 'strict';
 
     const isLocalhost = requestHost ? isLocalhostHost(requestHost) : false;
 
@@ -145,7 +146,7 @@ export class AuthService {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: (options?.sameSite ?? 'strict') as const,
+      sameSite,
       path: '/',
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),
