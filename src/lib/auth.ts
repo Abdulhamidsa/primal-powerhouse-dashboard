@@ -128,6 +128,7 @@ export class AuthService {
       rememberMe?: boolean;
       cookieDomain?: string;
       requestHost?: string; // pass request.headers.get('host')
+      sameSite?: 'strict' | 'lax';
     }
   ): void {
     const token = this.generateToken(payload);
@@ -144,7 +145,7 @@ export class AuthService {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict' as const,
+      sameSite: options?.sameSite ?? 'strict' as const,
       path: '/',
       maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
       ...(shouldSetDomain ? { domain: cookieDomain } : {}),

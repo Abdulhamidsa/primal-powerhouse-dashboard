@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     AuthService.setAuthCookieOnResponse(
       response,
       { userId: client.id, email: client.email, type: 'client' },
-      { rememberMe: true, requestHost: request.headers.get('host') ?? undefined },
+      { rememberMe: true, requestHost: request.headers.get('host') ?? undefined, sameSite: 'lax' },
     );
     return response;
   } catch (error) {
