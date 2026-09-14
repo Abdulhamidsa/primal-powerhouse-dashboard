@@ -113,6 +113,31 @@ export async function sendForgotPasswordEmail(emailInput: string) {
   return GENERIC_FORGOT_RESPONSE;
 }
 
+export async function sendAuthenticatedPasswordLink(clientId: string) {
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    select: { id: true, name: true, email: true },
+  });
+
+  if (!client) return false;
+
+  const rawToken = createRawToken();
+  const tokenHash = hashToken(rawToken);
+
+  await prisma.$transaction(async tx => {
+    await tx.passwordResetToken.updateMany({
+      where: { clientId: client.id, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+    await tx.passwordResetToken.create({
+      data: { clientId: client.id, tokenHash, expiresAt: hoursFromNow(RESET_TOKEN_HOURS) },
+    });
+  });
+
+  await sendPasswordResetEmail({ to: client.email, name: client.name, token: rawToken });
+  return true;
+}
+
 export async function resetPasswordWithToken(rawToken: string, passwordInput: string) {
   const tokenHash = hashToken(rawToken);
   const hashedPassword = await AuthService.hashPassword(passwordInput);
@@ -120,9 +145,9 @@ export async function resetPasswordWithToken(rawToken: string, passwordInput: st
   return prisma.$transaction(async tx => {
     const token = await tx.passwordResetToken.findUnique({
       where: { tokenHash },
-      include: { client: { select: { id: true, password: true } } },
+      include: { client: { select: { id: true } } },
     });
-    if (!token || token.usedAt || token.expiresAt <= new Date() || !token.client.password) return false;
+    if (!token || token.usedAt || token.expiresAt <= new Date()) return false;
 
     const invalidBefore = new Date();
     await tx.passwordResetToken.update({ where: { id: token.id }, data: { usedAt: invalidBefore } });

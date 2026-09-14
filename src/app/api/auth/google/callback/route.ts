@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/lib/auth';
-import { safeErrorMessage } from '@/lib/security/log-redaction';
+// import { safeErrorMessage } from '@/lib/security/log-redaction';
 import {
   GOOGLE_OAUTH_STATE_COOKIE,
   exchangeAndVerifyGoogleCode,

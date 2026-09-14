@@ -12,6 +12,7 @@ export type UserProfile = {
   height: number | null;
   currentWeight: number | null;
   targetWeight: number | null;
+  hasPassword: boolean;
   coach: UserProfileCoach | null;
 };
 
@@ -19,3 +20,7 @@ export type UserProfileResponse = {
   user: UserProfile;
 };
 
+export type PasswordLinkResponse = {
+  success: boolean;
+  message: string;
+};

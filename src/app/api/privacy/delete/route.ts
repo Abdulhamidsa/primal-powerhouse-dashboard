@@ -6,11 +6,28 @@ import { rateLimit } from '@/lib/security/rate-limit';
 import { logAuditEvent } from '@/lib/audit';
 import { privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { AuthService } from '@/lib/auth';
 
 const DEFAULT_GRACE_PERIOD_DAYS = Number(process.env.PRIVACY_DELETION_GRACE_DAYS ?? 30);
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+}
+
+function deletionRequestPayload(request: {
+  id: string;
+  status: string;
+  requestedAt: Date;
+  scheduledHardDeleteAt: Date;
+  gracePeriodDays: number;
+}) {
+  return {
+    id: request.id,
+    status: request.status,
+    requestedAt: request.requestedAt.toISOString(),
+    scheduledHardDeleteAt: request.scheduledHardDeleteAt.toISOString(),
+    gracePeriodDays: request.gracePeriodDays,
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -43,29 +60,38 @@ export async function POST(request: NextRequest) {
       orderBy: { requestedAt: 'desc' },
     });
 
-    if (existing) {
-      return NextResponse.json({
-        success: true,
-        request: {
-          id: existing.id,
-          status: existing.status,
-          requestedAt: existing.requestedAt.toISOString(),
-          scheduledHardDeleteAt: existing.scheduledHardDeleteAt.toISOString(),
-          gracePeriodDays: existing.gracePeriodDays,
-        },
-      });
+    const client = await prisma.client.findUnique({
+      where: { id: auth.user.userId },
+      select: {
+        deactivatedAt: true,
+        anonymizedAt: true,
+      },
+    });
+
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 });
     }
 
     const anonymizedEmail = `deleted+${auth.user.userId}@redacted.local`;
+    const effectiveScheduledHardDeleteAt = existing?.scheduledHardDeleteAt ?? scheduledHardDeleteAt;
+    const effectiveGracePeriodDays = existing?.gracePeriodDays ?? DEFAULT_GRACE_PERIOD_DAYS;
 
-    await (prisma as any).$transaction([
-      prisma.mobileSession.updateMany({ where: { clientId: auth.user.userId }, data: { revokedAt: now } }),
-      (prisma as any).client.update({
+    const deletionRequest = await (prisma as any).$transaction(async (tx: any) => {
+      await tx.mobileSession.updateMany({
+        where: { clientId: auth.user.userId },
+        data: { revokedAt: now },
+      });
+
+      await tx.clientAuthIdentity.deleteMany({ where: { clientId: auth.user.userId } });
+
+      await tx.client.update({
         where: { id: auth.user.userId },
         data: {
           name: 'Deleted User',
           email: anonymizedEmail,
+          password: null,
           phone: null,
+          avatar: null,
           phoneEncrypted: null,
           notes: null,
           notesEncrypted: null,
@@ -78,25 +104,40 @@ export async function POST(request: NextRequest) {
           consentAnalytics: false,
           consentMarketingNotifications: false,
           consentOptionalTracking: false,
-          deactivatedAt: now,
+          consentMessageNotifications: false,
+          deactivatedAt: client.deactivatedAt ?? now,
           authInvalidBefore: now,
-          anonymizedAt: now,
-          deletionScheduledFor: scheduledHardDeleteAt,
+          anonymizedAt: client.anonymizedAt ?? now,
+          deletionScheduledFor: effectiveScheduledHardDeleteAt,
           status: 'INACTIVE',
         },
-      }),
-      (prisma as any).deletionRequest.create({
+      });
+
+      if (existing) {
+        return tx.deletionRequest.update({
+          where: { id: existing.id },
+          data: {
+            status: 'ANONYMIZED',
+            scheduledHardDeleteAt: effectiveScheduledHardDeleteAt,
+            gracePeriodDays: effectiveGracePeriodDays,
+            anonymizedAt: existing.anonymizedAt ?? now,
+            ...(!existing.reason && parsed.data.reason ? { reason: parsed.data.reason } : {}),
+          },
+        });
+      }
+
+      return tx.deletionRequest.create({
         data: {
           clientId: auth.user.userId,
           status: 'ANONYMIZED',
           requestedAt: now,
-          gracePeriodDays: DEFAULT_GRACE_PERIOD_DAYS,
-          scheduledHardDeleteAt,
+          gracePeriodDays: effectiveGracePeriodDays,
+          scheduledHardDeleteAt: effectiveScheduledHardDeleteAt,
           anonymizedAt: now,
           reason: parsed.data.reason ?? null,
         },
-      }),
-    ]);
+      });
+    });
 
     await logAuditEvent({
       actorId: auth.user.userId,
@@ -105,26 +146,16 @@ export async function POST(request: NextRequest) {
       action: 'privacy.deletion.requested',
       ip,
       userAgent: request.headers.get('user-agent'),
-      metadata: { gracePeriodDays: DEFAULT_GRACE_PERIOD_DAYS },
+      metadata: { gracePeriodDays: effectiveGracePeriodDays, existingRequestId: existing?.id ?? null },
     });
 
     const response = NextResponse.json({
       success: true,
-      request: {
-        id: 'pending',
-        status: 'ANONYMIZED',
-        requestedAt: now.toISOString(),
-        scheduledHardDeleteAt: scheduledHardDeleteAt.toISOString(),
-        gracePeriodDays: DEFAULT_GRACE_PERIOD_DAYS,
-      },
+      request: deletionRequestPayload(deletionRequest),
     });
 
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 0,
+    AuthService.clearAuthCookieOnResponse(response, {
+      requestHost: request.headers.get('host') ?? undefined,
     });
 
     return response;

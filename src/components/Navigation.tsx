@@ -20,11 +20,17 @@ import {
   ShoppingBag,
   Handshake,
   Dumbbell,
+  KeyRound,
+  Bell,
+  LogOut,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDrawer.tsx';
 import { cn } from '@/lib/utils';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
+import { useUserLogout } from '@/features/user-profile/hooks/useUserProfile';
 
 const LazyChatDrawer = dynamic<{ open: boolean; onClose: () => void }>(() => Promise.resolve(ChatDrawer), {
   ssr: false,
@@ -143,10 +149,28 @@ const userNavItems: NavItem[] = [
 
 const userAccountMenuItems: NavItem[] = [
   {
-    name: 'Privacy',
+    name: 'Profile',
+    href: '/user/profile',
+    icon: User,
+    description: 'Account details',
+  },
+  {
+    name: 'Privacy & Data',
     href: '/user/privacy',
     icon: Shield,
     description: 'Privacy & data',
+  },
+  {
+    name: 'Account Security',
+    href: '/user/profile#account-security',
+    icon: KeyRound,
+    description: 'Password and login',
+  },
+  {
+    name: 'Notifications',
+    href: '/user/profile#notifications',
+    icon: Bell,
+    description: 'Message alerts',
   },
 ];
 
@@ -266,6 +290,7 @@ export default function Navigation({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useUserLogout();
   const { summary: dashboardSummary } = useUserDashboardSummary(userType === 'user');
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -366,6 +391,7 @@ export default function Navigation({
     const handlePointerDown = (event: MouseEvent | TouchEvent) => {
       if (!accountMenuRef.current) return;
       const target = event.target as Node;
+      if (target instanceof Element && target.closest('[data-mobile-account-sheet]')) return;
       if (!accountMenuRef.current.contains(target)) {
         setAccountMenuOpen(false);
       }
@@ -384,6 +410,11 @@ export default function Navigation({
 
   const handleLogoClick = (e: React.MouseEvent) => {
     if (pathname === dashboardPath) e.preventDefault();
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    window.location.href = '/user/login';
   };
 
   return (
@@ -483,8 +514,7 @@ export default function Navigation({
           className="sticky top-0 z-20 border-b border-border/70 bg-card/70 px-4 pb-2 pt-3 backdrop-blur-xl lg:hidden"
           style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
         >
-          <div className="mx-auto flex w-full max-w-xl items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Primal Power</p>
+          <div className="mx-auto flex w-full max-w-xl items-center justify-end">
 
             <div className="flex items-center gap-2">
               <Link
@@ -498,9 +528,10 @@ export default function Navigation({
                 ) : null}
               </Link>
 
-              <Link
-                href="/user/profile"
-                aria-label="Open profile"
+              <button
+                type="button"
+                onClick={() => setAccountMenuOpen(true)}
+                aria-label="Open account menu"
                 className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
               >
                 {safeUser?.avatar ? (
@@ -514,7 +545,97 @@ export default function Navigation({
                 ) : (
                   <User size={18} />
                 )}
-              </Link>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {userType === 'user' && accountMenuOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Account menu">
+          <button
+            type="button"
+            aria-label="Close account menu"
+            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+            onClick={() => setAccountMenuOpen(false)}
+          />
+
+          <div
+            data-mobile-account-sheet
+            className="absolute inset-x-0 bottom-0 rounded-t-[32px] border border-border/80 bg-card/95 px-4 pt-3 shadow-[0_-24px_70px_rgba(0,0,0,0.35)] backdrop-blur-2xl"
+            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+          >
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted-foreground/25" />
+
+            <div className="mx-auto max-w-xl">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border/80 bg-background/70">
+                  {safeUser?.avatar ? (
+                    <Image
+                      src={safeUser.avatar}
+                      alt={safeUser.name ?? 'Profile'}
+                      width={56}
+                      height={56}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User size={22} className="text-muted-foreground" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-base font-semibold text-foreground">{safeUser?.name ?? 'Your account'}</p>
+                  <p className="truncate text-sm text-muted-foreground">Manage your settings</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setAccountMenuOpen(false)}
+                  aria-label="Close"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-border/80 bg-background/60 text-muted-foreground"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="overflow-hidden rounded-3xl border border-border/70 bg-background/55">
+                {userAccountMenuItems.map((item, index) => {
+                  const Icon = item.icon;
+                  const active = isActivePath(pathname, item.href.split('#')[0]);
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setAccountMenuOpen(false)}
+                      className={cn(
+                        'flex min-h-[56px] items-center gap-3 px-4 py-3 transition-colors active:bg-muted/60',
+                        active ? 'text-foreground' : 'text-muted-foreground',
+                        index > 0 ? 'border-t border-border/60' : '',
+                      )}
+                    >
+                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/45 text-foreground">
+                        <Icon size={18} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-foreground">{item.name}</span>
+                        <span className="block text-xs text-muted-foreground">{item.description}</span>
+                      </span>
+                      <ChevronRight size={17} className="text-muted-foreground/70" />
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="mt-3 flex min-h-[56px] w-full items-center gap-3 rounded-3xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-left text-destructive transition-colors active:bg-destructive/10"
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-destructive/10">
+                  <LogOut size={18} />
+                </span>
+                <span className="flex-1 text-sm font-semibold">Sign out</span>
+              </button>
             </div>
           </div>
         </div>

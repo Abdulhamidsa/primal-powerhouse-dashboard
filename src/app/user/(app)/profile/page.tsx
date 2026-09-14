@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Bell, LogOut, Mail, Smartphone, User, Ruler, Cake, Scale, MessageSquare, Camera } from 'lucide-react';
+import Link from 'next/link';
+import { Bell, LogOut, Mail, Smartphone, User, Ruler, Cake, Scale, MessageSquare, Camera, Trash2, KeyRound, Shield, ChevronRight } from 'lucide-react';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
 import UpdateAppButton from '@/components/UpdateAppButton';
 import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
+import { privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
 import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
-import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
+import { useUserLogout, useUserPasswordLink, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 interface UserData {
   id: string;
@@ -23,17 +25,41 @@ interface UserData {
   currentWeight?: number | null;
   targetWeight?: number | null;
   avatar?: string | null;
+  hasPassword?: boolean;
 }
 
-function SettingsGroup({ title, children }: { title?: string; children: React.ReactNode }) {
+function SettingsGroup({ title, children, id }: { title?: string; children: React.ReactNode; id?: string }) {
   return (
-    <section className="space-y-2">
+    <section id={id} className="scroll-mt-24 space-y-2">
       {title ? (
         <p className="px-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
       ) : null}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card">{children}</div>
     </section>
+  );
+}
+
+function ActionRow({
+  icon,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-muted/50">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      {children}
+    </div>
   );
 }
 
@@ -116,7 +142,7 @@ function NotificationStatusPill({ label, tone = 'neutral' }: { label: string; to
 export default function UserProfilePage() {
   const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const { data: privacyData, isLoading: isPrivacyLoading } = usePrivacyCenter();
-  const { updateConsent } = usePrivacyActions();
+  const { updateConsent, requestDeletion } = usePrivacyActions();
   const {
     status: pushStatus,
     isLoading: isPushLoading,
@@ -132,11 +158,20 @@ export default function UserProfilePage() {
   } = usePushSubscription();
   const { user, error: profileError, isLoading } = useUserProfile();
   const { logout } = useUserLogout();
+  const {
+    sendPasswordLink,
+    loading: isSendingPasswordLink,
+    error: passwordLinkError,
+    result: passwordLinkResult,
+  } = useUserPasswordLink();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'basic'>('info');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+  const [isDeleteExpanded, setIsDeleteExpanded] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isRequestingDeletion, setIsRequestingDeletion] = useState(false);
   const [testFeedback, setTestFeedback] = useState<string | null>(null);
 
   useEffect(() => {
@@ -207,6 +242,30 @@ export default function UserProfilePage() {
     );
   };
 
+  const handleDeleteAccount = async () => {
+    const parsed = privacyDeleteRequestSchema.safeParse({ confirmText: deleteConfirmText, reason: undefined });
+    if (!parsed.success) {
+      window.alert('Type DELETE MY ACCOUNT to continue.');
+      return;
+    }
+
+    try {
+      setIsRequestingDeletion(true);
+      await requestDeletion(parsed.data);
+      setDeleteConfirmText('');
+      window.alert('Your account has been deactivated and deletion has been scheduled.');
+      window.location.href = '/user/login';
+    } finally {
+      setIsRequestingDeletion(false);
+    }
+  };
+
+  const handleSendPasswordLink = async () => {
+    try {
+      await sendPasswordLink();
+    } catch {}
+  };
+
   const notificationDescription =
     pushStatus === 'unsupported'
       ? 'This browser does not support push notifications.'
@@ -229,7 +288,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md px-4 pb-10">
+      <div className="mx-auto w-full max-w-md px-4 pb-12">
         {/* Full-bleed gradient header zone */}
         <div
           className="-mx-4 mb-6 px-4 pt-5 pb-6"
@@ -271,7 +330,7 @@ export default function UserProfilePage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-3 mb-6 px-1">
+        <div className="mb-6 flex gap-3 px-1">
           <button
             onClick={() => setActiveTab('info')}
             className={`flex-1 py-3 px-4 rounded-2xl font-medium transition-all ${
@@ -298,9 +357,47 @@ export default function UserProfilePage() {
           {/* User Info Tab */}
           {activeTab === 'info' && (
             <>
-              <SettingsGroup title="Account">
+              <SettingsGroup title="Account & security" id="account-security">
                 <StaticRow icon={<User className="h-4 w-4" />} label="Username" value={userData?.name ?? 'Loading…'} />
                 <StaticRow icon={<Mail className="h-4 w-4" />} label="Email" value={userData?.email ?? 'Loading…'} />
+                <div className="w-full">
+                  <ActionRow
+                    icon={<KeyRound className="h-4 w-4" />}
+                    title="Password"
+                    description={userData?.hasPassword ? 'Password configured' : 'No password configured'}
+                  >
+                    <button
+                      type="button"
+                      onClick={handleSendPasswordLink}
+                      disabled={isSendingPasswordLink}
+                      className="shrink-0 rounded-xl border border-border px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSendingPasswordLink ? 'Sending…' : userData?.hasPassword ? 'Change password' : 'Set password'}
+                    </button>
+                  </ActionRow>
+                  {passwordLinkResult?.message ? (
+                    <p className="-mt-1 px-16 pb-3 text-xs text-emerald-600">{passwordLinkResult.message}</p>
+                  ) : null}
+                  {passwordLinkError ? (
+                    <p className="-mt-1 px-16 pb-3 text-xs text-destructive">{passwordLinkError}</p>
+                  ) : null}
+
+                  <div className="ml-16 h-px bg-border/60" />
+                </div>
+                <Link
+                  href="/user/privacy"
+                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40 active:bg-muted/60"
+                >
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-muted/50">
+                    <Shield className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">Privacy & Data</p>
+                    <p className="text-xs text-muted-foreground">Export data, sessions, consent, and deletion</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+                <div className="ml-16 h-px bg-border/60" />
                 <div className="ml-16 h-px bg-transparent" />
               </SettingsGroup>
 
@@ -310,7 +407,7 @@ export default function UserProfilePage() {
                 onChangeAction={setThemePreference}
               />
 
-              <SettingsGroup title="Notifications">
+              <SettingsGroup title="Notifications" id="notifications">
                 <ToggleRow
                   icon={<Bell className="h-4 w-4" />}
                   label="Coach Messages"
@@ -449,6 +546,71 @@ export default function UserProfilePage() {
                 </div>
               </div>
             </button>
+            <div className="ml-16 h-px bg-border/60" />
+            <div className="px-4 py-3">
+              <div className="rounded-2xl bg-destructive/5 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-destructive/10 text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">Delete account</p>
+                    {privacyData?.activeDeletionRequest ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Requested {new Date(privacyData.activeDeletionRequest.requestedAt).toLocaleDateString()} ·
+                        scheduled deletion{' '}
+                        {new Date(privacyData.activeDeletionRequest.scheduledHardDeleteAt).toLocaleDateString()}
+                      </p>
+                    ) : (
+                      <>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Access is removed immediately, identifying info is anonymized, and full deletion is scheduled
+                          after the grace period. You can sign up again with the same email.
+                        </p>
+                        {!isDeleteExpanded ? (
+                          <button
+                            type="button"
+                            onClick={() => setIsDeleteExpanded(true)}
+                            className="mt-3 rounded-xl border border-destructive/30 px-3 py-2 text-xs font-semibold text-destructive"
+                          >
+                            Delete account
+                          </button>
+                        ) : (
+                          <div className="mt-3 space-y-3">
+                            <input
+                              value={deleteConfirmText}
+                              onChange={event => setDeleteConfirmText(event.target.value)}
+                              placeholder="Type DELETE MY ACCOUNT"
+                              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={handleDeleteAccount}
+                                disabled={isRequestingDeletion || deleteConfirmText !== 'DELETE MY ACCOUNT'}
+                                className="rounded-xl bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {isRequestingDeletion ? 'Deleting…' : 'Confirm deletion'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsDeleteExpanded(false);
+                                  setDeleteConfirmText('');
+                                }}
+                                className="rounded-xl border border-border px-3 py-2 text-xs font-semibold text-foreground"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="ml-16 h-px bg-border/60" />
             <button
               type="button"
