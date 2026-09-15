@@ -34,7 +34,7 @@ export default function UserDashboardPage() {
 
   return (
     <PullToRefresh onRefresh={refresh}>
-      <div className="px-4 pb-6 pt-4 md:px-5">
+      <div className="px-4 pb-6 md:px-5">
         <div className="mx-auto w-full max-w-2xl">
           <UserDashboardContent summary={summary} />
         </div>
