@@ -17,7 +17,11 @@ export function ResetPasswordForm() {
       <button disabled={loading || !token} className="w-full rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground disabled:opacity-60">
         {loading ? 'Resetting…' : 'Reset password'}
       </button>
-      <p className="text-center text-sm"><a href="/user/login" className="text-primary">Back to sign in</a></p>
+      <p className="text-center text-sm">
+        <a href={result?.sessionKept ? '/user/profile' : '/user/login'} className="text-primary">
+          {result?.sessionKept ? 'Back to profile' : 'Back to sign in'}
+        </a>
+      </p>
     </form>
   );
 }

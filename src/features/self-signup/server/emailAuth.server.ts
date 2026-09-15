@@ -145,7 +145,7 @@ export async function resetPasswordWithToken(rawToken: string, passwordInput: st
   return prisma.$transaction(async tx => {
     const token = await tx.passwordResetToken.findUnique({
       where: { tokenHash },
-      include: { client: { select: { id: true } } },
+      include: { client: { select: { id: true, email: true } } },
     });
     if (!token || token.usedAt || token.expiresAt <= new Date()) return false;
 
@@ -159,6 +159,10 @@ export async function resetPasswordWithToken(rawToken: string, passwordInput: st
       where: { clientId: token.client.id, revokedAt: null },
       data: { revokedAt: invalidBefore },
     });
-    return true;
+    return {
+      clientId: token.client.id,
+      email: token.client.email,
+      invalidBefore,
+    };
   });
 }

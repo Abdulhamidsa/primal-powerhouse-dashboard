@@ -2,10 +2,51 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Download, Trash2, LogOut } from 'lucide-react';
+import { Download, LogOut, Shield, Trash2 } from 'lucide-react';
+import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { privacyConsentSchema, privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
-import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
+
+function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <p className="px-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <div className="overflow-hidden rounded-3xl border border-border bg-card">{children}</div>
+    </section>
+  );
+}
+
+function SwitchRow({
+  label,
+  description,
+  checked,
+  disabled,
+  onToggle,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onToggle}
+      className="flex min-h-[60px] w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+      aria-pressed={checked}
+    >
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
+      </div>
+      <span className={`relative inline-flex h-7 w-12 shrink-0 rounded-full ${checked ? 'bg-accent' : 'bg-muted'}`}>
+        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      </span>
+    </button>
+  );
+}
 
 export function PrivacyDataCenter() {
   const router = useRouter();
@@ -16,16 +57,12 @@ export function PrivacyDataCenter() {
   const [isSavingConsent, setIsSavingConsent] = useState(false);
   const [isRequestingExport, setIsRequestingExport] = useState(false);
   const [isRequestingDeletion, setIsRequestingDeletion] = useState(false);
+  const [isDeleteExpanded, setIsDeleteExpanded] = useState(false);
   const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
   const [confirmText, setConfirmText] = useState('');
 
-  if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading privacy settings...</div>;
-  }
-
-  if (error || !data) {
-    return <div className="text-sm text-destructive">Failed to load privacy settings.</div>;
-  }
+  if (isLoading) return <div className="text-sm text-muted-foreground">Loading privacy settings…</div>;
+  if (error || !data) return <div className="text-sm text-destructive">Failed to load privacy settings.</div>;
 
   const latestJob = data.exportJobs[0] ?? null;
 
@@ -79,7 +116,7 @@ export function PrivacyDataCenter() {
       setIsRequestingDeletion(true);
       await requestDeletion(parsed.data);
       setConfirmText('');
-      window.alert('Deletion request created. Your account is now deactivated.');
+      window.alert('Your account has been deactivated and deletion has been scheduled.');
       router.push('/user/login');
     } finally {
       setIsRequestingDeletion(false);
@@ -98,141 +135,151 @@ export function PrivacyDataCenter() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Shield className="w-5 h-5 text-accent" />
-          <h2 className="text-lg font-semibold text-foreground">Consent Controls</h2>
-        </div>
+      <SettingsGroup title="Consent">
+        <SwitchRow
+          label="Analytics"
+          description="Help improve the app with product analytics."
+          checked={data.consents.analytics}
+          disabled={isSavingConsent}
+          onToggle={() => handleConsentToggle('analytics')}
+        />
+        <div className="ml-4 h-px bg-border/60" />
+        <SwitchRow
+          label="Marketing Notifications"
+          description="Receive optional product and promotion updates."
+          checked={data.consents.marketingNotifications}
+          disabled={isSavingConsent}
+          onToggle={() => handleConsentToggle('marketingNotifications')}
+        />
+        <div className="ml-4 h-px bg-border/60" />
+        <SwitchRow
+          label="Optional Tracking"
+          description="Allow optional personalization tracking."
+          checked={data.consents.optionalTracking}
+          disabled={isSavingConsent}
+          onToggle={() => handleConsentToggle('optionalTracking')}
+        />
+        <div className="ml-4 h-px bg-border/60" />
+        <SwitchRow
+          label="Message Push Notifications"
+          description={
+            pushStatus === 'denied'
+              ? 'Permission denied in browser or system settings.'
+              : pushStatus === 'unsupported'
+                ? 'Not supported by this browser.'
+                : 'Coach message alerts for this device.'
+          }
+          checked={data.consents.messageNotifications}
+          disabled={isSavingConsent || isPushLoading || pushStatus === 'unsupported' || pushStatus === 'denied'}
+          onToggle={() => handleConsentToggle('messageNotifications')}
+        />
+      </SettingsGroup>
 
-        <div className="space-y-3">
-          {[
-            { key: 'analytics' as const, label: 'Analytics' },
-            { key: 'marketingNotifications' as const, label: 'Marketing Notifications' },
-            { key: 'optionalTracking' as const, label: 'Optional Tracking' },
-          ].map(item => (
-            <label key={item.key} className="flex items-center justify-between gap-3">
-              <span className="text-sm text-foreground">{item.label}</span>
-              <button
-                type="button"
-                disabled={isSavingConsent}
-                onClick={() => handleConsentToggle(item.key)}
-                className={`h-7 w-12 rounded-full transition-colors ${
-                  data.consents[item.key] ? 'bg-accent' : 'bg-muted'
-                }`}
-              >
-                <span
-                  className={`block h-5 w-5 rounded-full bg-white transition-transform ${
-                    data.consents[item.key] ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </label>
-          ))}
-
-          <label className="flex items-center justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-sm text-foreground">Message Push Notifications</span>
-              {pushStatus === 'unsupported' && (
-                <span className="text-xs text-muted-foreground">Not supported by your browser</span>
-              )}
-              {pushStatus === 'denied' && (
-                <span className="text-xs text-destructive">Permission denied — enable in browser settings</span>
-              )}
-            </div>
-            <button
-              type="button"
-              disabled={isSavingConsent || isPushLoading || pushStatus === 'unsupported' || pushStatus === 'denied'}
-              onClick={() => handleConsentToggle('messageNotifications')}
-              className={`h-7 w-12 rounded-full transition-colors ${
-                data.consents.messageNotifications ? 'bg-accent' : 'bg-muted'
-              } disabled:opacity-50`}
-            >
-              <span
-                className={`block h-5 w-5 rounded-full bg-white transition-transform ${
-                  data.consents.messageNotifications ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </label>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Download className="w-5 h-5 text-accent" />
-          <h2 className="text-lg font-semibold text-foreground">Export My Data</h2>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-4">
-          Download your personal data archive (JSON + CSV) with an expiring secure link.
-        </p>
-
-        {latestJob ? (
-          <p className="text-xs text-muted-foreground mb-3">
-            Last export: {new Date(latestJob.requestedAt).toLocaleString()} · {latestJob.status}
-          </p>
-        ) : null}
-
+      <SettingsGroup title="Data">
         <button
           type="button"
           onClick={handleExport}
           disabled={isRequestingExport}
-          className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium"
+          className="flex min-h-[68px] w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isRequestingExport ? 'Preparing export...' : 'Create Export'}
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/50">
+            <Download className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">Export My Data</p>
+            <p className="text-xs text-muted-foreground">
+              {latestJob
+                ? `Last export: ${new Date(latestJob.requestedAt).toLocaleDateString()} · ${latestJob.status}`
+                : 'Download your personal data archive.'}
+            </p>
+          </div>
+          <span className="rounded-full bg-muted/50 px-3 py-1 text-xs font-semibold text-muted-foreground">
+            {isRequestingExport ? 'Preparing…' : 'Create'}
+          </span>
         </button>
-      </section>
+      </SettingsGroup>
 
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <LogOut className="w-5 h-5 text-accent" />
-          <h2 className="text-lg font-semibold text-foreground">Active Session</h2>
-        </div>
-        <p className="text-sm text-muted-foreground mb-3">Current signed-in session detected.</p>
+      <SettingsGroup title="Sessions">
         <button
           type="button"
           onClick={handleLogoutAll}
           disabled={isLoggingOutAll}
-          className="px-4 py-2 rounded-lg border border-border text-sm font-medium"
+          className="flex min-h-[64px] w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isLoggingOutAll ? 'Signing out...' : 'Logout All Sessions'}
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/50">
+            <LogOut className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">Logout All Sessions</p>
+            <p className="text-xs text-muted-foreground">Sign out everywhere and revoke active sessions.</p>
+          </div>
         </button>
-      </section>
+      </SettingsGroup>
 
-      <section className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Trash2 className="w-5 h-5 text-destructive" />
-          <h2 className="text-lg font-semibold text-foreground">Request Account Deletion</h2>
+      <SettingsGroup title="Danger zone">
+        <div className="px-4 py-4">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+              <Trash2 className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">Delete Account</p>
+              {data.activeDeletionRequest ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Requested {new Date(data.activeDeletionRequest.requestedAt).toLocaleDateString()} · scheduled deletion{' '}
+                  {new Date(data.activeDeletionRequest.scheduledHardDeleteAt).toLocaleDateString()}
+                </p>
+              ) : (
+                <>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Access is removed immediately, identifying info is anonymized, and deletion is scheduled after the
+                    grace period. Your email can be used again for signup.
+                  </p>
+
+                  {!isDeleteExpanded ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteExpanded(true)}
+                      className="mt-3 rounded-2xl border border-destructive/30 px-3 py-2 text-xs font-semibold text-destructive"
+                    >
+                      Delete account
+                    </button>
+                  ) : (
+                    <div className="mt-3 space-y-3">
+                      <input
+                        value={confirmText}
+                        onChange={event => setConfirmText(event.target.value)}
+                        placeholder="Type DELETE MY ACCOUNT"
+                        className="w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleDeleteRequest}
+                          disabled={isRequestingDeletion || confirmText !== 'DELETE MY ACCOUNT'}
+                          className="rounded-2xl bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isRequestingDeletion ? 'Deleting…' : 'Confirm deletion'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsDeleteExpanded(false);
+                            setConfirmText('');
+                          }}
+                          className="rounded-2xl border border-border px-3 py-2 text-xs font-semibold text-foreground"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </div>
-
-        <p className="text-sm text-muted-foreground mb-2">
-          Your account is deactivated immediately and scheduled for hard deletion after the grace period.
-        </p>
-
-        {data.activeDeletionRequest ? (
-          <p className="text-xs text-muted-foreground mb-3">
-            Deletion requested on {new Date(data.activeDeletionRequest.requestedAt).toLocaleString()} · scheduled hard
-            delete: {new Date(data.activeDeletionRequest.scheduledHardDeleteAt).toLocaleDateString()}
-          </p>
-        ) : (
-          <>
-            <input
-              value={confirmText}
-              onChange={event => setConfirmText(event.target.value)}
-              placeholder="Type DELETE MY ACCOUNT"
-              className="w-full mb-3 rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <button
-              type="button"
-              onClick={handleDeleteRequest}
-              disabled={isRequestingDeletion}
-              className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium"
-            >
-              {isRequestingDeletion ? 'Submitting...' : 'Request Deletion'}
-            </button>
-          </>
-        )}
-      </section>
+      </SettingsGroup>
     </div>
   );
 }

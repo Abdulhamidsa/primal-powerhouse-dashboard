@@ -162,13 +162,13 @@ const userAccountMenuItems: NavItem[] = [
   },
   {
     name: 'Account Security',
-    href: '/user/profile#account-security',
+    href: '/user/settings/security',
     icon: KeyRound,
     description: 'Password and login',
   },
   {
     name: 'Notifications',
-    href: '/user/profile#notifications',
+    href: '/user/settings/notifications',
     icon: Bell,
     description: 'Message alerts',
   },

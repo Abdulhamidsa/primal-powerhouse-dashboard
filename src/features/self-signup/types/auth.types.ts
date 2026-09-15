@@ -8,4 +8,6 @@ export type AuthActionResponse = {
 export type SignupResponse = AuthActionResponse;
 export type VerifyEmailResponse = AuthActionResponse;
 export type ForgotPasswordResponse = AuthActionResponse;
-export type ResetPasswordResponse = AuthActionResponse;
+export type ResetPasswordResponse = AuthActionResponse & {
+  sessionKept?: boolean;
+};
