@@ -241,6 +241,14 @@ export default function UserMyPlanPage() {
     }));
   }, [selectedByType]);
   const selectedMealCount = useMemo(() => orderedSections.reduce((sum, section) => sum + section.items.length, 0), [orderedSections]);
+  const priorityMealKeys = useMemo(() => {
+    return new Set(
+      orderedSections
+        .flatMap(section => section.items)
+        .slice(0, 2)
+        .map(item => `${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`)
+    );
+  }, [orderedSections]);
 
   const completedAtByKey = useMemo(() => {
     const map = new Map<string, string>();
@@ -406,7 +414,9 @@ export default function UserMyPlanPage() {
                         ingredientsSource={item.meal.ingredients}
                         instructionsSource={item.meal.instructions}
                         description={item.meal.description ?? undefined}
-                        imagePriority
+                        imagePriority={priorityMealKeys.has(
+                          `${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`
+                        )}
                         metaItems={[
                           (item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0) > 0
                             ? `${(item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0)} min total`
@@ -451,7 +461,6 @@ export default function UserMyPlanPage() {
                   ingredientsSource={item.side.ingredients}
                   instructionsSource={item.side.instructions}
                   helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
-                  imagePriority
                   metaItems={[
                     item.side.foodOrigin ?? null,
                     item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,

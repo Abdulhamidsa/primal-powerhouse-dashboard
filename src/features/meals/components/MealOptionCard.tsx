@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { CheckCircle2, Clock3, PlusCircle } from 'lucide-react';
 import type { MealOption } from '@/features/meals/types/mealSelection.types';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
@@ -26,6 +27,7 @@ export function MealOptionCard({
     option.meal.category?.trim() ? option.meal.category : null,
     option.meal.difficulty?.trim() ? option.meal.difficulty : null,
   ].filter((item): item is string => Boolean(item));
+  const image = getMealImageDelivery(option.meal.imageUrl?.trim() ? option.meal.imageUrl : fallbackImage, 'card');
 
   return (
     <article
@@ -51,11 +53,12 @@ export function MealOptionCard({
     >
       <div className="relative h-36 w-full text-left">
         <Image
-          src={option.meal.imageUrl?.trim() ? option.meal.imageUrl : fallbackImage}
+          src={image.src}
           alt={option.meal.name}
           fill
           className="object-cover"
           priority={imagePriority}
+          unoptimized={image.unoptimized}
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />

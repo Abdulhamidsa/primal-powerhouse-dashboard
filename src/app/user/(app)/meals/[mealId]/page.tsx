@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ArrowLeft, Clock, Sparkles, Users, Wheat, Flame } from 'lucide-react';
 import { useMealDetail } from '@/features/meals/hooks/useMealDetail';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 export default function MealDetailPage() {
   const params = useParams();
@@ -24,6 +25,7 @@ export default function MealDetailPage() {
 
   const fallback = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=60';
   const imageSrc = meal?.imageUrl?.trim() ? meal.imageUrl : fallback;
+  const image = getMealImageDelivery(imageSrc, 'detail');
 
   const totalTime = useMemo(() => {
     if (!meal) return 0;
@@ -94,12 +96,13 @@ export default function MealDetailPage() {
           {/* Hero image */}
           <div className="relative h-60 w-full md:h-72">
             <Image
-              src={imageSrc}
+              src={image.src}
               alt={meal.name}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 900px"
               priority={false}
+              unoptimized={image.unoptimized}
             />
 
             {/* Overlay */}

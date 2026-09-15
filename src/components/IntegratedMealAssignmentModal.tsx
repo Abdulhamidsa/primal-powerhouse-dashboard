@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Meal, Client } from '@/types/meal';
 import { DataService } from '@/services/dataService';
 import { clientApi } from '@/lib/client-api';
 import { MealAssignmentService } from '@/services/mealAssignmentService';
 import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
 import type { SideItem } from '@/features/sides/types/side.types';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 import {
   X,
   Search,
@@ -37,6 +39,23 @@ const daysOfWeek = [
   { value: 5, label: 'Friday' },
   { value: 6, label: 'Saturday' },
 ];
+
+function OptimizedSideThumbnail({ src, alt }: { src: string; alt: string }) {
+  const image = getMealImageDelivery(src, 'thumbnail');
+
+  return (
+    <span className="relative block w-10 h-10 overflow-hidden rounded shrink-0">
+      <Image
+        src={image.src}
+        alt={alt}
+        fill
+        className="object-cover"
+        sizes="40px"
+        unoptimized={image.unoptimized}
+      />
+    </span>
+  );
+}
 
 // Meal types with icons
 const mealTypes = [
@@ -1468,12 +1487,7 @@ export default function IntegratedMealAssignmentModal({
             onClick={() => setSidePickerSlot(isOpen ? null : slotKey)}
           >
             {currentSide.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={currentSide.imageUrl}
-                alt={currentSide.name}
-                className="w-10 h-10 rounded object-cover shrink-0"
-              />
+              <OptimizedSideThumbnail src={currentSide.imageUrl} alt={currentSide.name} />
             ) : (
               <div
                 className="w-10 h-10 rounded flex items-center justify-center shrink-0"
@@ -1559,8 +1573,7 @@ export default function IntegratedMealAssignmentModal({
                     }}
                   >
                     {side.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={side.imageUrl} alt={side.name} className="w-10 h-10 rounded object-cover shrink-0" />
+                      <OptimizedSideThumbnail src={side.imageUrl} alt={side.name} />
                     ) : (
                       <div
                         className="w-10 h-10 rounded flex items-center justify-center shrink-0"
@@ -2256,13 +2269,18 @@ export default function IntegratedMealAssignmentModal({
                       {/* Display image from either images array or imageUrl field */}
                       {(() => {
                         const imageSource = meal.images?.[0] || meal.imageUrl;
+                        const image = imageSource ? getMealImageDelivery(imageSource, 'card') : null;
                         return imageSource ? (
-                          <div
-                            className="h-40 bg-cover bg-center"
-                            style={{
-                              backgroundImage: `url(${imageSource})`,
-                            }}
-                          />
+                          <div className="relative h-40 overflow-hidden">
+                            <Image
+                              src={image?.src ?? imageSource}
+                              alt={meal.name}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, 33vw"
+                              unoptimized={image?.unoptimized}
+                            />
+                          </div>
                         ) : null;
                       })()}
                       <div className="p-4">

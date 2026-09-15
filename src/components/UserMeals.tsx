@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Utensils } from 'lucide-react';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 interface Meal {
   id: string;
@@ -39,6 +40,21 @@ interface MealPlan {
   endDate?: string;
   isActive: boolean;
   mealAssignments: MealAssignment[];
+}
+
+function OptimizedMealImage({ src, alt }: { src: string; alt: string }) {
+  const image = getMealImageDelivery(src, 'card');
+
+  return (
+    <Image
+      src={image.src}
+      alt={alt}
+      fill
+      className="object-cover hover:scale-110 transition-transform duration-300"
+      unoptimized={image.unoptimized}
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+    />
+  );
 }
 
 interface UserMealsProps {
@@ -201,12 +217,7 @@ export default function UserMeals({ userId }: UserMealsProps) {
                         {/* Image Container */}
                         <div className="relative w-full h-40 bg-zinc-900 overflow-hidden">
                           {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
-                            <Image
-                              src={meal.imageUrl}
-                              alt={meal.name}
-                              fill
-                              className="object-cover hover:scale-110 transition-transform duration-300"
-                            />
+                            <OptimizedMealImage src={meal.imageUrl} alt={meal.name} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-900">
                               <svg

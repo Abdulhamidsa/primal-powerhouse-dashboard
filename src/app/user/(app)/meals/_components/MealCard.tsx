@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { ChefHat, Clock, Users } from 'lucide-react';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 export function MealCard({
   assignment,
@@ -30,6 +31,7 @@ export function MealCard({
   const fallback = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
   const imageSrc = assignment.meal.imageUrl?.trim() ? assignment.meal.imageUrl : fallback;
+  const image = getMealImageDelivery(imageSrc, 'card');
 
   const subtitleLeft = `${getDayName(assignment.dayOfWeek)} • ${assignment.mealPlan.name}`;
   const subtitleRight = assignment.scheduledTime ? assignment.scheduledTime : null;
@@ -48,12 +50,13 @@ export function MealCard({
     >
       <div className="relative h-44 w-full">
         <Image
-          src={imageSrc}
+          src={image.src}
           alt={assignment.meal.name}
           fill
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           priority={false}
+          unoptimized={image.unoptimized}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
         <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-2xl bg-black/35 backdrop-blur">

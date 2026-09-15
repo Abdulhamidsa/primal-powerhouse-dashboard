@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Check, CheckCircle2, Clock3, Flame, RefreshCcw, Wheat, X } from 'lucide-react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
@@ -45,6 +46,7 @@ export function PlanSelectedMealCard({
   const ingredients = useMemo(() => normalizeMealTextList(ingredientsSource), [ingredientsSource]);
   const instructions = useMemo(() => normalizeMealTextList(instructionsSource), [instructionsSource]);
   const visibleMetaItems = useMemo(() => (metaItems ?? []).filter(Boolean), [metaItems]);
+  const cardImage = getMealImageDelivery(imageUrl?.trim() ? imageUrl : fallbackImage, 'card');
 
   const completionTimeLabel = useMemo(() => {
     if (!completedAt) return null;
@@ -86,11 +88,12 @@ export function PlanSelectedMealCard({
       >
         <div className="relative h-32 w-full">
           <Image
-            src={imageUrl?.trim() ? imageUrl : fallbackImage}
+            src={cardImage.src}
             alt={name}
             fill
             className="object-cover"
             priority={imagePriority}
+            unoptimized={cardImage.unoptimized}
             sizes="(max-width: 768px) 100vw, 50vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
@@ -211,6 +214,7 @@ function MealDetailModal({
   }, []);
 
   const [activeTab, setActiveTab] = useState<PlanSelectedMealCardTabKey>('ingredients');
+  const detailImage = getMealImageDelivery(imageUrl?.trim() ? imageUrl : fallbackImage, 'detail');
 
   return (
     <div
@@ -225,10 +229,11 @@ function MealDetailModal({
         {/* Hero image — full width */}
         <div className="relative h-48 w-full shrink-0">
           <Image
-            src={imageUrl?.trim() ? imageUrl : fallbackImage}
+            src={detailImage.src}
             alt={name}
             fill
             className="object-cover"
+            unoptimized={detailImage.unoptimized}
             sizes="(max-width: 768px) 100vw, 384px"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />

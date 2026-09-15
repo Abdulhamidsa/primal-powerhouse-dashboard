@@ -8,6 +8,7 @@ import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
 import type { MealOption, MealTypeKey, SideProgramOption } from '@/features/meals/types/mealSelection.types';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
@@ -56,6 +57,12 @@ export default function ProgramMealTypePage() {
     if (!mealType || !optionsByType) return [];
     return optionsByType[mealType] ?? [];
   }, [mealType, optionsByType]);
+  const previewMealImage = previewMeal
+    ? getMealImageDelivery(previewMeal.imageUrl?.trim() ? previewMeal.imageUrl : fallbackImage, 'detail')
+    : null;
+  const previewSideImage = previewSide
+    ? getMealImageDelivery(previewSide.imageUrl?.trim() ? previewSide.imageUrl : fallbackImage, 'detail')
+    : null;
 
   if (!mealType && !isSidesPage) {
     return (
@@ -184,10 +191,11 @@ export default function ProgramMealTypePage() {
           >
             <div className="relative h-52 w-full">
               <Image
-                src={previewMeal.imageUrl?.trim() ? previewMeal.imageUrl : fallbackImage}
+                src={previewMealImage?.src ?? fallbackImage}
                 alt={previewMeal.name}
                 fill
                 className="object-cover"
+                unoptimized={previewMealImage?.unoptimized}
                 sizes="(max-width: 768px) 100vw, 560px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
@@ -267,10 +275,11 @@ export default function ProgramMealTypePage() {
           >
             <div className="relative h-52 w-full">
               <Image
-                src={previewSide.imageUrl?.trim() ? previewSide.imageUrl : fallbackImage}
+                src={previewSideImage?.src ?? fallbackImage}
                 alt={previewSide.name}
                 fill
                 className="object-cover"
+                unoptimized={previewSideImage?.unoptimized}
                 sizes="(max-width: 768px) 100vw, 560px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
@@ -348,6 +357,8 @@ function SideOptionCard({
   onSelect: () => void;
   onPreview?: () => void;
 }) {
+  const image = getMealImageDelivery(option.side.imageUrl?.trim() ? option.side.imageUrl : fallbackImage, 'card');
+
   return (
     <article
       className={[
@@ -364,10 +375,11 @@ function SideOptionCard({
         className="relative h-36 w-full text-left disabled:cursor-default"
       >
         <Image
-          src={option.side.imageUrl?.trim() ? option.side.imageUrl : fallbackImage}
+          src={image.src}
           alt={option.side.name}
           fill
           className="object-cover"
+          unoptimized={image.unoptimized}
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />

@@ -7,6 +7,22 @@ import EditMealModal from '../EditMealModal';
 import { MealPlanRecalculationModal } from '@/features/meal-plan-recalculation/components/MealPlanRecalculationModal';
 import { SlotTargetCalculatorModal } from '@/features/slot-target-calculator/components/SlotTargetCalculatorModal';
 import type { MealPortionDelta } from '@/features/meal-plan-recalculation/types/mealPlanRecalculation.types';
+import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
+
+function OptimizedMealImage({ src, alt }: { src: string; alt: string }) {
+  const image = getMealImageDelivery(src, 'card');
+
+  return (
+    <Image
+      src={image.src}
+      alt={alt}
+      fill
+      className="object-cover hover:scale-110 transition-transform duration-300"
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      unoptimized={image.unoptimized}
+    />
+  );
+}
 
 export function MealsTab({
   assignments,
@@ -249,13 +265,7 @@ export function MealsTab({
                         {/* Image */}
                         <div className="relative w-full h-48 overflow-hidden" style={{ background: 'var(--color-bg)' }}>
                           {side.imageUrl ? (
-                            <Image
-                              src={side.imageUrl}
-                              alt={side.name}
-                              fill
-                              className="object-cover hover:scale-110 transition-transform duration-300"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            />
+                            <OptimizedMealImage src={side.imageUrl} alt={side.name} />
                           ) : (
                             <div
                               className="w-full h-full flex items-center justify-center"
@@ -346,13 +356,7 @@ export function MealsTab({
                         {'imageUrl' in a.meal &&
                         typeof a.meal.imageUrl === 'string' &&
                         a.meal.imageUrl.trim() !== '' ? (
-                          <Image
-                            src={a.meal.imageUrl as string}
-                            alt={a.meal.name}
-                            fill
-                            className="object-cover hover:scale-110 transition-transform duration-300"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          />
+                          <OptimizedMealImage src={a.meal.imageUrl as string} alt={a.meal.name} />
                         ) : (
                           <div
                             className="w-full h-full flex items-center justify-center"
