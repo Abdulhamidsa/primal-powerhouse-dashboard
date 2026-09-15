@@ -8,6 +8,27 @@ import { canAccessConversation, getRequestIpAddress, resolveActor } from '@/lib/
 
 export const runtime = 'nodejs';
 
+type UploadedFileLike = {
+  arrayBuffer: () => Promise<ArrayBuffer>;
+  type: string;
+  size: number;
+  name?: string;
+};
+
+function isUploadedFileLike(value: unknown): value is UploadedFileLike {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      typeof (value as { arrayBuffer?: unknown }).arrayBuffer === 'function' &&
+      typeof (value as { type?: unknown }).type === 'string' &&
+      typeof (value as { size?: unknown }).size === 'number'
+  );
+}
+
+function getUploadedFileName(file: UploadedFileLike): string {
+  return typeof file.name === 'string' && file.name.trim() ? file.name : `upload-${Date.now()}`;
+}
+
 function toResourceType(kind: 'image' | 'video' | 'audio'): 'image' | 'video' {
   if (kind === 'image') return 'image';
   return 'video';
@@ -90,7 +111,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const formData = await request.formData();
   const file = formData.get('file');
 
-  if (!(file instanceof File)) {
+  if (!isUploadedFileLike(file)) {
     return NextResponse.json({ error: 'No media file was provided.' }, { status: 400 });
   }
 
@@ -101,11 +122,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const arrayBuffer = await file.arrayBuffer();
   const fileBuffer = Buffer.from(arrayBuffer);
+  const originalFilename = getUploadedFileName(file);
 
   const uploadResult = await uploadBuffer(fileBuffer, {
     folder: `conversations/${conversationId}`,
     resourceType: toResourceType(validation.type),
-    originalFilename: file.name,
+    originalFilename,
   });
 
   const attachment = {

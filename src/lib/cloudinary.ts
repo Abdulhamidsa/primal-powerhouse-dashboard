@@ -214,7 +214,12 @@ export function shouldUsePrivateChatMediaDelivery(): boolean {
   return setting.toLowerCase() !== 'false';
 }
 
-export function validateChatMediaFile(file: File): {
+type ChatMediaFileLike = {
+  type: string;
+  size: number;
+};
+
+export function validateChatMediaFile(file: ChatMediaFileLike): {
   valid: boolean;
   type?: 'image' | 'video' | 'audio';
   error?: string;

@@ -59,8 +59,7 @@ export async function POST(request: NextRequest) {
     const publicId = formData.get('publicId') as string | null;
     const tags = formData.get('tags') as string | null;
 
-    // Validate the file. Weekly check-in images are allowed to be larger,
-    // then compressed/resized via Cloudinary transformation before storage.
+    // Validate the file. Weekly check-in images are allowed to be larger.
     const validation = validateChatMediaFile(file);
     const isWeeklyCheckInImage = isWeeklyCheckInFolder(folder) && isImageFile(file);
     const isWeeklyCheckInOversizeImage = isWeeklyCheckInImage && validation.error === 'Image size exceeds 10MB limit.';
@@ -85,10 +84,6 @@ export async function POST(request: NextRequest) {
 
     if (tags) {
       cloudinaryFormData.append('tags', tags);
-    }
-
-    if (isWeeklyCheckInImage && !isGifImage(file)) {
-      cloudinaryFormData.append('transformation', 'c_limit,w_2200,q_auto:good,f_auto');
     }
 
     // GIFs can go through the image upload endpoint, videos need the video endpoint.
