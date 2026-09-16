@@ -29,7 +29,7 @@ export default function UserTrainingPage() {
   };
 
   return (
-    <PullToRefresh onRefresh={refreshTraining}>
+    <PullToRefresh onRefreshAction={refreshTraining}>
       <div className="px-4 pb-8 pt-4 md:px-6">
         <div className="mx-auto w-full max-w-4xl space-y-4 md:space-y-5">
         <UserPageHero
