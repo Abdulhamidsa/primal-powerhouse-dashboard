@@ -189,7 +189,7 @@ export default function ShoppingListPage() {
   const copiedLabel = copied ? 'Copied to clipboard' : 'Copy list';
 
   return (
-    <PullToRefresh onRefresh={refreshShoppingList}>
+    <PullToRefresh onRefreshAction={refreshShoppingList}>
       <div className="min-h-screen bg-background pb-20">
         <div className="mx-auto w-full max-w-xl px-4 pb-10 pt-4">
         <UserPageHero
