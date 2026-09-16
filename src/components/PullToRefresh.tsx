@@ -21,11 +21,11 @@ function getScrollContainer() {
 
 export function PullToRefresh({
   children,
-  onRefresh,
+  onRefreshAction,
   disabled = false,
 }: {
   children: ReactNode;
-  onRefresh: () => Promise<unknown> | unknown;
+  onRefreshAction: () => Promise<unknown> | unknown;
   disabled?: boolean;
 }) {
   const startYRef = useRef<number | null>(null);
@@ -76,7 +76,7 @@ export function PullToRefresh({
 
     setRefreshing(true);
     try {
-      await onRefresh();
+      await onRefreshAction();
     } finally {
       window.setTimeout(() => setRefreshing(false), 220);
     }
@@ -92,9 +92,8 @@ export function PullToRefresh({
     >
       <div
         aria-hidden={!visible}
-        className="pointer-events-none sticky top-0 z-20 flex justify-center transition-opacity duration-200"
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center transition-opacity duration-200"
         style={{
-          height: visible ? 0 : undefined,
           opacity: visible ? 1 : 0,
           transform: `translateY(${refreshing ? 14 : Math.max(0, pullDistance - 52)}px)`,
         }}
