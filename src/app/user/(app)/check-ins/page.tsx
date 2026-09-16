@@ -96,7 +96,7 @@ export default function UserCheckInsPage() {
   }
 
   return (
-    <PullToRefresh onRefresh={refreshCheckIns}>
+    <PullToRefresh onRefreshAction={refreshCheckIns}>
       <div className="px-4 pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))] pt-4 md:px-5">
         <div className="mx-auto w-full max-w-3xl space-y-5">
           <UserPageHero
