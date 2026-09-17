@@ -1,7 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageSquare, Activity, Clock3, ArrowRight, CheckCircle2, ShieldAlert, Gauge, Sparkles } from 'lucide-react';
+import type { ReactNode } from 'react';
+import {
+  Activity,
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Gauge,
+  MessageSquare,
+  ShieldAlert,
+  Sparkles,
+  Users,
+} from 'lucide-react';
+import { AdminPage, AdminPageHeader, AdminPanel, AdminPanelHeader } from '@/features/admin-shell/components/AdminPage';
 import type {
   AdminCommandCenterResponse,
   CommandCenterAction,
@@ -21,45 +33,26 @@ interface AdminCommandCenterViewProps {
 }
 
 function severityLabel(severity: CommandCenterSeverity): string {
-  if (severity === 'critical') return 'Needs Attention';
-  if (severity === 'warning') return 'At Risk';
+  if (severity === 'critical') return 'Needs attention';
+  if (severity === 'warning') return 'At risk';
   return 'Watch';
 }
 
 function severityTone(severity: CommandCenterSeverity): {
+  text: string;
+  bg: string;
   border: string;
-  background: string;
-  badgeBg: string;
-  badgeText: string;
-  accent: string;
+  dot: string;
 } {
   if (severity === 'critical') {
-    return {
-      border: 'rgba(239, 68, 68, 0.45)',
-      background: 'rgba(239, 68, 68, 0.10)',
-      badgeBg: 'rgba(239, 68, 68, 0.18)',
-      badgeText: '#fca5a5',
-      accent: '#f87171',
-    };
+    return { text: 'text-red-200', bg: 'bg-red-500/10', border: 'border-red-400/30', dot: 'bg-red-400' };
   }
 
   if (severity === 'warning') {
-    return {
-      border: 'rgba(245, 158, 11, 0.42)',
-      background: 'rgba(245, 158, 11, 0.10)',
-      badgeBg: 'rgba(245, 158, 11, 0.18)',
-      badgeText: '#fcd34d',
-      accent: '#f59e0b',
-    };
+    return { text: 'text-amber-200', bg: 'bg-amber-500/10', border: 'border-amber-400/30', dot: 'bg-amber-400' };
   }
 
-  return {
-    border: 'rgba(148, 163, 184, 0.35)',
-    background: 'rgba(148, 163, 184, 0.10)',
-    badgeBg: 'rgba(148, 163, 184, 0.18)',
-    badgeText: '#cbd5e1',
-    accent: '#94a3b8',
-  };
+  return { text: 'text-slate-200', bg: 'bg-slate-400/10', border: 'border-slate-300/20', dot: 'bg-slate-300' };
 }
 
 function relativeTimeLabel(value: string): string {
@@ -80,20 +73,77 @@ function actionByKind(actions: CommandCenterAction[], kind: CommandCenterAction[
   return actions.find(action => action.kind === kind) ?? null;
 }
 
+function MetricCard({
+  label,
+  value,
+  helper,
+  icon,
+  tone = 'neutral',
+}: {
+  label: string;
+  value: string | number;
+  helper: string;
+  icon: ReactNode;
+  tone?: 'neutral' | 'danger' | 'accent' | 'success';
+}) {
+  const toneClass =
+    tone === 'danger'
+      ? 'border-red-400/25 bg-red-500/10 text-red-100'
+      : tone === 'success'
+        ? 'border-emerald-400/25 bg-emerald-500/10 text-emerald-100'
+        : tone === 'accent'
+          ? 'border-[var(--color-accent)]/30 bg-[var(--color-accent-translucent)] text-foreground'
+          : 'border-white/10 bg-white/[0.035] text-foreground';
+
+  return (
+    <div className={`rounded-[22px] border p-4 ${toneClass}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{value}</p>
+        </div>
+        <div className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-black/15 text-[var(--color-accent)]">
+          {icon}
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">{helper}</p>
+    </div>
+  );
+}
+
 function IssueChip({ issue }: { issue: CommandCenterIssue }) {
   const tone = severityTone(issue.severity);
 
   return (
-    <div
-      className="rounded-md border px-2.5 py-1.5 text-xs transition-colors duration-200"
-      style={{
-        borderColor: tone.border,
-        background: tone.background,
-        color: 'var(--color-text)',
-      }}
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] ${tone.border} ${tone.bg} ${tone.text}`}
     >
-      <span className="font-medium">{issue.title}</span>
-    </div>
+      <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+      {issue.title}
+    </span>
+  );
+}
+
+function ActionLink({
+  href,
+  children,
+  muted = false,
+}: {
+  href: string;
+  children: ReactNode;
+  muted?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        muted
+          ? 'inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground'
+          : 'inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90'
+      }
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -117,134 +167,71 @@ function AttentionRow({
   const openClientAction = actionByKind(item.actions, 'open_client');
   const tone = severityTone(item.severity);
 
-  const secondaryButtonClass =
-    'inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-all duration-200 hover:translate-y-[-1px]';
-  const primaryButtonClass =
-    'inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition-all duration-200 hover:translate-y-[-1px]';
-
   return (
-    <div
-      className="rounded-xl border p-4 space-y-3 transition-all duration-200 hover:shadow-lg"
-      style={{
-        borderColor: tone.border,
-        background: `linear-gradient(180deg, rgba(20,20,20,0.98) 0%, ${tone.background} 100%)`,
-      }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1.5">
-          <p
-            className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"
-            style={{
-              background: tone.badgeBg,
-              color: tone.badgeText,
-            }}
-          >
-            {severityLabel(item.severity)}
-          </p>
-          <h3 className="text-base font-semibold leading-tight" style={{ color: 'var(--color-text)' }}>
-            {item.clientName}
-          </h3>
-          <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-            {item.title}
-          </p>
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {item.detail}
-          </p>
+    <article className={`rounded-2xl border ${tone.border} ${tone.bg} p-4 transition-colors hover:bg-white/[0.045]`}>
+      <div className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone.text}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+              {severityLabel(item.severity)}
+            </span>
+            <span className="text-xs text-muted-foreground">{relativeTimeLabel(item.occurredAt)}</span>
+            <span className="text-xs text-muted-foreground">
+              {item.issueCount} issue{item.issueCount === 1 ? '' : 's'}
+            </span>
+          </div>
+
+          <div className="mt-2">
+            <h3 className="text-base font-semibold text-foreground">{item.clientName}</h3>
+            <p className="mt-1 text-sm font-medium text-foreground/90">{item.title}</p>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">{item.detail}</p>
+          </div>
+
+          {item.issues.length ? (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {item.issues.slice(0, 4).map(issue => (
+                <IssueChip key={issue.id} issue={issue} />
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        <div className="text-right">
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {relativeTimeLabel(item.occurredAt)}
-          </p>
-          <p className="text-[11px] mt-1" style={{ color: tone.badgeText }}>
-            {item.issueCount} issue{item.issueCount === 1 ? '' : 's'}
-          </p>
+        <div className="flex flex-wrap gap-2 xl:max-w-[360px] xl:justify-end">
+          {quickMessageAction ? (
+            <button
+              type="button"
+              onClick={() =>
+                onQuickMessage(item.clientId, quickMessageAction.messageTemplate || quickReplyTemplate[item.severity])
+              }
+              disabled={busyItemId === item.clientId}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              <MessageSquare size={13} /> Message
+            </button>
+          ) : null}
+
+          {reviewedAction?.checkInId ? (
+            <button
+              type="button"
+              onClick={() => onMarkReviewed(item.clientId, reviewedAction.checkInId as string)}
+              disabled={busyItemId === reviewedAction.checkInId}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.04] disabled:opacity-60"
+            >
+              <CheckCircle2 size={13} /> Reviewed
+            </button>
+          ) : null}
+
+          {assignMealAction?.href ? <ActionLink href={assignMealAction.href} muted>Meal</ActionLink> : null}
+          {assignWorkoutAction?.href ? <ActionLink href={assignWorkoutAction.href} muted>Workout</ActionLink> : null}
+          {openClientAction?.href ? (
+            <ActionLink href={openClientAction.href} muted>
+              Open <ArrowRight size={12} />
+            </ActionLink>
+          ) : null}
         </div>
       </div>
-
-      <div className="flex flex-wrap gap-2">
-        {item.issues.slice(0, 4).map(issue => (
-          <IssueChip key={issue.id} issue={issue} />
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {quickMessageAction ? (
-          <button
-            type="button"
-            onClick={() =>
-              onQuickMessage(item.clientId, quickMessageAction.messageTemplate || quickReplyTemplate[item.severity])
-            }
-            disabled={busyItemId === item.clientId}
-            className={primaryButtonClass}
-            style={{
-              background: 'var(--color-accent)',
-              color: 'var(--color-text-on-accent)',
-            }}
-          >
-            <MessageSquare size={14} /> Quick Message
-          </button>
-        ) : null}
-
-        {reviewedAction?.checkInId ? (
-          <button
-            type="button"
-            onClick={() => onMarkReviewed(item.clientId, reviewedAction.checkInId as string)}
-            disabled={busyItemId === reviewedAction.checkInId}
-            className={secondaryButtonClass}
-            style={{
-              borderColor: 'var(--color-border)',
-              background: 'rgba(255,255,255,0.03)',
-              color: 'var(--color-text)',
-            }}
-          >
-            <CheckCircle2 size={14} /> Mark Reviewed
-          </button>
-        ) : null}
-
-        {assignMealAction?.href ? (
-          <Link
-            href={assignMealAction.href}
-            className={secondaryButtonClass}
-            style={{
-              borderColor: 'var(--color-border)',
-              background: 'rgba(255,255,255,0.02)',
-              color: 'var(--color-text)',
-            }}
-          >
-            Assign Meal
-          </Link>
-        ) : null}
-
-        {assignWorkoutAction?.href ? (
-          <Link
-            href={assignWorkoutAction.href}
-            className={secondaryButtonClass}
-            style={{
-              borderColor: 'var(--color-border)',
-              background: 'rgba(255,255,255,0.02)',
-              color: 'var(--color-text)',
-            }}
-          >
-            Assign Workout
-          </Link>
-        ) : null}
-
-        {openClientAction?.href ? (
-          <Link
-            href={openClientAction.href}
-            className={secondaryButtonClass}
-            style={{
-              borderColor: tone.border,
-              background: 'transparent',
-              color: tone.badgeText,
-            }}
-          >
-            Open Client <ArrowRight size={14} />
-          </Link>
-        ) : null}
-      </div>
-    </div>
+    </article>
   );
 }
 
@@ -252,23 +239,33 @@ function RecentChangeRow({ change }: { change: CommandCenterRecentChange }) {
   const openClientAction = actionByKind(change.actions, 'open_client');
 
   return (
-    <div className="border rounded-lg p-3" style={{ borderColor: 'var(--color-border)' }}>
-      <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-        {change.clientName}
-      </p>
-      <p className="text-sm" style={{ color: 'var(--color-text)' }}>
-        {change.text}
-      </p>
-      <div className="flex items-center justify-between mt-2">
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          {relativeTimeLabel(change.occurredAt)}
-        </span>
+    <div className="grid gap-3 border-b border-white/10 px-5 py-3 last:border-b-0 sm:grid-cols-[1fr_auto] sm:items-center">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-medium text-foreground">{change.clientName}</p>
+          <span className="rounded-full border border-white/10 bg-white/[0.035] px-2 py-0.5 text-[11px] capitalize text-muted-foreground">
+            {change.category.replace('_', ' ')}
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{change.text}</p>
+      </div>
+      <div className="flex items-center gap-3 sm:justify-end">
+        <span className="text-xs text-muted-foreground">{relativeTimeLabel(change.occurredAt)}</span>
         {openClientAction?.href ? (
-          <Link href={openClientAction.href} className="text-xs" style={{ color: 'var(--color-accent)' }}>
+          <Link href={openClientAction.href} className="text-xs font-medium text-[var(--color-accent)] hover:underline">
             Open
           </Link>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function EmptyPanel({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="m-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.025] p-5">
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
@@ -284,171 +281,144 @@ export function AdminCommandCenterView({
   const critical = data.attention.find(group => group.severity === 'critical');
   const warning = data.attention.find(group => group.severity === 'warning');
   const watch = data.attention.find(group => group.severity === 'watch');
-  const attentionCount = (critical?.items.length ?? 0) + (warning?.items.length ?? 0) + (watch?.items.length ?? 0);
+  const attentionItems = [...(critical?.items ?? []), ...(warning?.items ?? []), ...(watch?.items ?? [])];
+  const attentionCount = attentionItems.length;
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-2 pb-1">
-        <h1 className="text-3xl font-bold text-foreground">Coach Command Center</h1>
-        <p className="text-muted-foreground max-w-3xl">
-          Prioritize attention, clear risks, and execute today&apos;s actions before context-switching.
-        </p>
-      </header>
+    <AdminPage>
+      <AdminPageHeader
+        eyebrow="Coach operations"
+        title="Command Center"
+        description="Prioritize clients, clear risks, and handle the highest-leverage actions without jumping between pages."
+        actions={
+          <Link
+            href="/admin/clients"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
+          >
+            <Users size={15} />
+            Open clients
+          </Link>
+        }
+      />
 
       {actionError ? (
-        <div
-          className="rounded-xl border p-3 text-sm"
-          style={{
-            borderColor: 'rgba(239,68,68,0.45)',
-            background: 'rgba(239,68,68,0.1)',
-            color: '#fca5a5',
-          }}
-        >
+        <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
           {actionError}
         </div>
       ) : null}
 
-      <section className="grid grid-cols-1 xl:grid-cols-[1.4fr_1fr] gap-6">
-        <div className="space-y-6">
-          <div
-            className="rounded-2xl border p-5 space-y-5"
-            style={{
-              borderColor: attentionCount ? 'rgba(239,68,68,0.42)' : 'var(--color-border)',
-              background:
-                attentionCount > 0
-                  ? 'linear-gradient(180deg, rgba(17,17,17,0.98) 0%, rgba(239,68,68,0.06) 100%)'
-                  : 'linear-gradient(180deg, rgba(17,17,17,0.98) 0%, rgba(148,163,184,0.05) 100%)',
-            }}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <ShieldAlert size={16} className="text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">Attention Queue</h2>
-              </div>
-              <span
-                className="text-xs rounded-full px-2.5 py-1 font-semibold"
-                style={{
-                  background: attentionCount > 0 ? 'rgba(239,68,68,0.18)' : 'rgba(148,163,184,0.16)',
-                  color: attentionCount > 0 ? '#fca5a5' : '#cbd5e1',
-                }}
-              >
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Attention"
+          value={data.compactMetrics.clientsNeedingAttention}
+          helper={attentionCount ? `${attentionCount} queue item${attentionCount === 1 ? '' : 's'}` : 'Queue clear'}
+          icon={<ShieldAlert size={18} />}
+          tone={data.compactMetrics.clientsNeedingAttention > 0 ? 'danger' : 'success'}
+        />
+        <MetricCard
+          label="Replies"
+          value={data.compactMetrics.quickRepliesPending}
+          helper="Coach messages to send"
+          icon={<MessageSquare size={18} />}
+          tone="accent"
+        />
+        <MetricCard
+          label="Sessions"
+          value={data.compactMetrics.sessionsToday}
+          helper="Training activity today"
+          icon={<Activity size={18} />}
+        />
+        <MetricCard
+          label="Last refresh"
+          value={relativeTimeLabel(data.generatedAt)}
+          helper="Command center snapshot"
+          icon={<Gauge size={18} />}
+        />
+      </section>
+
+      <section className="grid gap-5 2xl:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
+        <AdminPanel className="overflow-hidden">
+          <AdminPanelHeader
+            icon={<ShieldAlert size={17} />}
+            title="Needs attention"
+            description="The highest-priority client situations, ordered by severity."
+            meta={
+              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-muted-foreground">
                 {attentionCount} active
               </span>
+            }
+          />
+
+          {attentionItems.length ? (
+            <div className="space-y-3 p-5">
+              {attentionItems.map(item => (
+                <AttentionRow
+                  key={item.id}
+                  item={item}
+                  busyItemId={busyItemId}
+                  onQuickMessage={onQuickMessage}
+                  onMarkReviewed={onMarkReviewed}
+                  quickReplyTemplate={quickReplyTemplate}
+                />
+              ))}
             </div>
+          ) : (
+            <EmptyPanel
+              title="Queue is clear"
+              description="No urgent clients right now. Use the free space to review recent changes or proactively message watch clients."
+            />
+          )}
+        </AdminPanel>
 
-            {critical?.items.length ? (
-              <div className="space-y-3 pt-1">
-                <p className="text-xs uppercase tracking-wide" style={{ color: '#fca5a5' }}>
-                  Needs Attention
-                </p>
-                {critical.items.map(item => (
-                  <AttentionRow
-                    key={item.id}
-                    item={item}
-                    busyItemId={busyItemId}
-                    onQuickMessage={onQuickMessage}
-                    onMarkReviewed={onMarkReviewed}
-                    quickReplyTemplate={quickReplyTemplate}
-                  />
-                ))}
-              </div>
-            ) : null}
-
-            {warning?.items.length ? (
-              <div className="space-y-3 pt-1">
-                <p className="text-xs uppercase tracking-wide" style={{ color: '#fcd34d' }}>
-                  At Risk
-                </p>
-                {warning.items.map(item => (
-                  <AttentionRow
-                    key={item.id}
-                    item={item}
-                    busyItemId={busyItemId}
-                    onQuickMessage={onQuickMessage}
-                    onMarkReviewed={onMarkReviewed}
-                    quickReplyTemplate={quickReplyTemplate}
-                  />
-                ))}
-              </div>
-            ) : null}
-
-            {watch?.items.length ? (
-              <div className="space-y-3 pt-1">
-                <p className="text-xs uppercase tracking-wide" style={{ color: '#cbd5e1' }}>
-                  Watch
-                </p>
-                {watch.items.map(item => (
-                  <AttentionRow
-                    key={item.id}
-                    item={item}
-                    busyItemId={busyItemId}
-                    onQuickMessage={onQuickMessage}
-                    onMarkReviewed={onMarkReviewed}
-                    quickReplyTemplate={quickReplyTemplate}
-                  />
-                ))}
-              </div>
-            ) : null}
-
-            {!critical?.items.length && !warning?.items.length && !watch?.items.length ? (
-              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'rgba(148,163,184,0.06)' }}>
-                <p className="text-sm text-foreground font-medium">Queue is clear</p>
-                <p className="text-xs mt-1 text-muted-foreground">
-                  No urgent clients right now. Use this window to proactively message clients in watch status.
-                </p>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div
-            className="rounded-2xl border p-5 space-y-4"
-            style={{ borderColor: 'var(--color-border)', background: 'rgba(20,20,20,0.95)' }}
-          >
-            <div className="flex items-center gap-2">
-              <Clock3 size={16} className="text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Today Actions</h2>
-            </div>
+        <div className="grid gap-5">
+          <AdminPanel className="overflow-hidden">
+            <AdminPanelHeader
+              icon={<Clock3 size={17} />}
+              title="Today actions"
+              description="Small tasks that keep clients moving."
+              meta={
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  {data.todayActions.length}
+                </span>
+              }
+            />
 
             {data.todayActions.length ? (
-              <div className="space-y-3">
+              <div className="divide-y divide-white/10">
                 {data.todayActions.map(action => {
                   const quickMessageAction = actionByKind(action.actions, 'quick_message');
                   const openClientAction = actionByKind(action.actions, 'open_client');
 
                   return (
-                    <div
-                      key={action.id}
-                      className="border rounded-xl p-3.5 transition-all duration-200 hover:translate-y-[-1px]"
-                      style={{ borderColor: 'var(--color-border)', background: 'rgba(255,255,255,0.02)' }}
-                    >
-                      <p className="text-sm font-semibold text-foreground">{action.clientName}</p>
-                      <p className="text-sm text-foreground mt-0.5">{action.title}</p>
-                      <p className="text-xs text-muted-foreground">{action.detail}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                    <div key={action.id} className="px-5 py-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{action.clientName}</p>
+                          <p className="mt-1 text-sm text-foreground/90">{action.title}</p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
+                        </div>
+                        <span className="shrink-0 text-xs text-muted-foreground">{relativeTimeLabel(action.dueAt)}</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
                         {quickMessageAction ? (
                           <button
                             type="button"
-                            onClick={() => onQuickMessage(action.clientId, quickMessageAction.messageTemplate || 'Quick check-in from your coach.')}
+                            onClick={() =>
+                              onQuickMessage(
+                                action.clientId,
+                                quickMessageAction.messageTemplate || 'Quick check-in from your coach.',
+                              )
+                            }
                             disabled={busyItemId === action.clientId}
-                            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-all duration-200 hover:translate-y-[-1px]"
-                            style={{
-                              background: 'var(--color-accent)',
-                              color: 'var(--color-text-on-accent)',
-                            }}
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
                           >
                             <MessageSquare size={13} /> Message
                           </button>
                         ) : null}
                         {openClientAction?.href ? (
-                          <Link
-                            href={openClientAction.href}
-                            className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-all duration-200 hover:translate-y-[-1px]"
-                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
-                          >
+                          <ActionLink href={openClientAction.href} muted>
                             Open <ArrowRight size={12} />
-                          </Link>
+                          </ActionLink>
                         ) : null}
                       </div>
                     </div>
@@ -456,106 +426,60 @@ export function AdminCommandCenterView({
                 })}
               </div>
             ) : (
-              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'rgba(148,163,184,0.06)' }}>
-                <p className="text-sm font-medium text-foreground">No pending actions</p>
-                <p className="text-xs mt-1 text-muted-foreground">
-                  Action queue is clear. Review watch clients to stay ahead before risk increases.
-                </p>
-              </div>
+              <EmptyPanel title="No pending actions" description="Everything that needed a coach action today is clear." />
             )}
-          </div>
+          </AdminPanel>
 
-          <div
-            className="rounded-2xl border p-5 space-y-4"
-            style={{ borderColor: 'var(--color-border)', background: 'rgba(20,20,20,0.95)' }}
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Momentum</h2>
-            </div>
+          <AdminPanel className="overflow-hidden">
+            <AdminPanelHeader icon={<Sparkles size={17} />} title="Momentum" description="Positive signals worth reinforcing." />
+
             {data.momentum.length ? (
-              <div className="space-y-3">
+              <div className="divide-y divide-white/10">
                 {data.momentum.map(item => (
-                  <div
-                    key={item.id}
-                    className="border rounded-xl p-3.5 transition-all duration-200 hover:translate-y-[-1px]"
-                    style={{
-                      borderColor: 'rgba(34,197,94,0.35)',
-                      background: 'rgba(34,197,94,0.10)',
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-2">
+                  <div key={item.id} className="px-5 py-4">
+                    <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-foreground">{item.clientName}</p>
-                      <span className="text-[11px] rounded-full px-2 py-0.5" style={{ background: 'rgba(34,197,94,0.2)', color: '#86efac' }}>
-                        On Track
+                      <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-200">
+                        On track
                       </span>
                     </div>
-                    <p className="text-sm text-foreground">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.detail}</p>
+                    <p className="mt-1 text-sm text-foreground/90">{item.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'rgba(148,163,184,0.06)' }}>
-                <p className="text-sm font-medium text-foreground">Momentum will appear here</p>
-                <p className="text-xs mt-1 text-muted-foreground">
-                  As clients complete workouts and logs, positive progress signals will surface in this lane.
-                </p>
-              </div>
+              <EmptyPanel
+                title="No momentum signals yet"
+                description="Workout completions, check-ins, and nutrition wins will appear here."
+              />
             )}
-          </div>
+          </AdminPanel>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-6">
-        <div
-          className="rounded-2xl border p-5 space-y-4"
-          style={{ borderColor: 'var(--color-border)', background: 'rgba(20,20,20,0.95)' }}
-        >
-          <div className="flex items-center gap-2">
-            <Activity size={16} className="text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Recent Changes</h2>
-          </div>
-          {data.recentChanges.length ? (
-            <div className="space-y-3">
-              {data.recentChanges.map(change => (
-                <RecentChangeRow key={change.id} change={change} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'rgba(148,163,184,0.06)' }}>
-              <p className="text-sm font-medium text-foreground">No recent updates</p>
-              <p className="text-xs mt-1 text-muted-foreground">
-                New messages, check-ins, workouts, and nutrition logs will appear here in real time.
-              </p>
-            </div>
-          )}
-        </div>
+      <AdminPanel className="overflow-hidden">
+        <AdminPanelHeader
+          icon={<Activity size={17} />}
+          title="Recent changes"
+          description="Latest messages, check-ins, nutrition updates, and training activity."
+          meta={
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              {data.recentChanges.length}
+            </span>
+          }
+        />
 
-        <div
-          className="rounded-2xl border p-5 space-y-4"
-          style={{ borderColor: 'var(--color-border)', background: 'rgba(20,20,20,0.95)' }}
-        >
-          <div className="flex items-center gap-2">
-            <Gauge size={16} className="text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Operational Snapshot</h2>
+        {data.recentChanges.length ? (
+          <div>
+            {data.recentChanges.map(change => (
+              <RecentChangeRow key={change.id} change={change} />
+            ))}
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)' }}>
-              <span className="text-muted-foreground">Clients Needing Attention</span>
-              <span className="text-foreground font-semibold">{data.compactMetrics.clientsNeedingAttention}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)' }}>
-              <span className="text-muted-foreground">Replies Pending</span>
-              <span className="text-foreground font-semibold">{data.compactMetrics.quickRepliesPending}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)' }}>
-              <span className="text-muted-foreground">Sessions Today</span>
-              <span className="text-foreground font-semibold">{data.compactMetrics.sessionsToday}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+        ) : (
+          <EmptyPanel title="No recent updates" description="Client activity will appear here as it comes in." />
+        )}
+      </AdminPanel>
+    </AdminPage>
   );
 }

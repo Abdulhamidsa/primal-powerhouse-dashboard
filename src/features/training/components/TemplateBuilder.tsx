@@ -226,12 +226,15 @@ export function TemplateBuilder() {
   const difficultyOptions = difficultyLevelEnum.options;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Workout Templates</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-foreground">Workout Templates</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Build reusable workouts from your exercise library and catalog imports.</p>
+        </div>
         <button
           onClick={() => handleOpenForm()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="rounded-xl bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
         >
           Create Template
         </button>
@@ -239,33 +242,33 @@ export function TemplateBuilder() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold sticky top-0 bg-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-4xl space-y-4 overflow-y-auto rounded-[28px] border border-white/10 bg-[var(--color-surface)] p-6 shadow-2xl">
+            <h2 className="sticky top-0 bg-[var(--color-surface)] py-1 text-xl font-semibold text-foreground">
               {editingId ? 'Edit Template' : 'Create Template'}
             </h2>
 
-            {error && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Template Name *</label>
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Template Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-[var(--color-accent)]"
                   placeholder="e.g., Upper Body Strength"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Description</label>
                 <textarea
                   value={formData.description ?? ''}
                   onChange={e => setFormData({ ...formData, description: e.target.value || undefined })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-[var(--color-accent)]"
                   placeholder="Optional description"
                   rows={2}
                 />
@@ -273,22 +276,22 @@ export function TemplateBuilder() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Goal</label>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Goal</label>
                   <input
                     type="text"
                     value={formData.goal ?? ''}
                     onChange={e => setFormData({ ...formData, goal: e.target.value || undefined })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-[var(--color-accent)]"
                     placeholder="e.g., Hypertrophy"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Difficulty</label>
                   <select
                     value={formData.difficulty ?? ''}
                     onChange={e => setFormData({ ...formData, difficulty: e.target.value || undefined })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)]"
                   >
                     <option value="">Select difficulty</option>
                     {difficultyOptions.map(diff => (
@@ -305,8 +308,8 @@ export function TemplateBuilder() {
                 <h3 className="font-semibold mb-3">Exercises</h3>
 
                 {/* Exercise Selector */}
-                <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Find exercise</label>
+                <div className="mb-4 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Find exercise</label>
                   <input
                     type="search"
                     value={exerciseSearch}
@@ -314,14 +317,14 @@ export function TemplateBuilder() {
                       setExerciseSearch(e.target.value);
                       setSelectedExerciseKey('');
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-[var(--color-accent)]"
                     placeholder="Search all exercises by name"
                   />
                   <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
                     <select
                       value={selectedExerciseKey}
                       onChange={e => setSelectedExerciseKey(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)]"
                     >
                       <option value="">
                         {exerciseSearch ? 'Select a matching exercise' : 'Select an exercise to add'}
@@ -354,12 +357,12 @@ export function TemplateBuilder() {
                       type="button"
                       onClick={() => void handleAddExercise()}
                       disabled={isAddingExercise}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                      className="rounded-xl bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {isAddingExercise ? 'Adding...' : 'Add'}
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Showing {localPickerOptions.length} local and {catalogPickerOptions.length} catalog exercises
                     {catalogTotal ? ` (${catalogTotal} catalog matches)` : ''}.
                     {catalogError ? ` Catalog error: ${catalogError}` : ''}
@@ -369,62 +372,62 @@ export function TemplateBuilder() {
                 {/* Exercise List */}
                 <div className="space-y-2">
                   {formData.exercises.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No exercises added yet</p>
+                    <p className="text-sm text-muted-foreground">No exercises added yet</p>
                   ) : (
                     formData.exercises.map((ex, idx) => (
-                      <div key={idx} className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+                      <div key={idx} className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-medium">{getExerciseName(ex.exerciseId)}</p>
                             <div className="grid grid-cols-4 gap-2 mt-2">
                               <div>
-                                <label className="block text-xs text-gray-600 mb-1">Sets</label>
+                                <label className="mb-1 block text-xs text-muted-foreground">Sets</label>
                                 <input
                                   type="number"
                                   min="1"
                                   max="20"
                                   value={ex.sets}
                                   onChange={e => handleUpdateExercise(idx, { sets: parseInt(e.target.value) })}
-                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                  className="w-full rounded-lg border border-white/10 bg-[var(--color-bg)] px-2 py-1 text-sm text-foreground"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs text-gray-600 mb-1">Reps</label>
+                                <label className="mb-1 block text-xs text-muted-foreground">Reps</label>
                                 <input
                                   type="number"
                                   min="1"
                                   max="100"
                                   value={ex.reps}
                                   onChange={e => handleUpdateExercise(idx, { reps: parseInt(e.target.value) })}
-                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                  className="w-full rounded-lg border border-white/10 bg-[var(--color-bg)] px-2 py-1 text-sm text-foreground"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs text-gray-600 mb-1">Rest (s)</label>
+                                <label className="mb-1 block text-xs text-muted-foreground">Rest (s)</label>
                                 <input
                                   type="number"
                                   min="0"
                                   max="600"
                                   value={ex.restSeconds}
                                   onChange={e => handleUpdateExercise(idx, { restSeconds: parseInt(e.target.value) })}
-                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                  className="w-full rounded-lg border border-white/10 bg-[var(--color-bg)] px-2 py-1 text-sm text-foreground"
                                 />
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveExercise(idx)}
-                                className="px-2 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200 transition-colors h-fit mt-5"
+                                className="mt-5 h-fit rounded-lg border border-red-400/25 bg-red-500/10 px-2 py-1 text-sm text-red-100 transition-colors hover:bg-red-500/15"
                               >
                                 Remove
                               </button>
                             </div>
                             <div className="mt-2">
-                              <label className="block text-xs text-gray-600 mb-1">Coach note</label>
+                              <label className="mb-1 block text-xs text-muted-foreground">Coach note</label>
                               <textarea
                                 value={ex.notes ?? ''}
                                 onChange={e => handleUpdateExercise(idx, { notes: e.target.value || null })}
                                 rows={2}
-                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                className="w-full rounded-lg border border-white/10 bg-[var(--color-bg)] px-2 py-1 text-sm text-foreground placeholder:text-muted-foreground"
                                 placeholder="Optional cue, setup note, or coaching focus"
                               />
                             </div>
@@ -440,14 +443,14 @@ export function TemplateBuilder() {
                 <button
                   type="button"
                   onClick={handleCloseForm}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 rounded-xl border border-white/10 px-4 py-2 text-foreground transition-colors hover:bg-white/[0.05]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || formData.exercises.length === 0}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 rounded-xl bg-[var(--color-accent)] px-4 py-2 font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
                 </button>
@@ -459,12 +462,12 @@ export function TemplateBuilder() {
 
       {/* Templates List */}
       <div className="space-y-3">
-        {templatesLoading && <p className="text-gray-600">Loading templates...</p>}
+        {templatesLoading && <p className="text-muted-foreground">Loading templates...</p>}
         {templatesError && (
-          <div className="p-4 bg-red-100 text-red-700 rounded-lg">Error loading templates. Please try again.</div>
+          <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-red-100">Error loading templates. Please try again.</div>
         )}
         {templates && templates.length === 0 && (
-          <div className="p-4 bg-gray-100 text-gray-600 rounded-lg text-center">
+          <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-muted-foreground">
             No templates created yet. Create one to get started!
           </div>
         )}
@@ -472,35 +475,35 @@ export function TemplateBuilder() {
         {templates?.map(template => (
           <div
             key={template.id}
-            className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+            className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition-colors hover:border-white/20"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="font-semibold text-lg">{template.name}</h3>
-                {template.description && <p className="text-gray-600 text-sm mt-1">{template.description}</p>}
-                {template.goal && <p className="text-gray-500 text-sm">Goal: {template.goal}</p>}
-                <p className="mt-2 text-sm text-gray-600">
+                <h3 className="text-lg font-semibold text-foreground">{template.name}</h3>
+                {template.description && <p className="mt-1 text-sm text-muted-foreground">{template.description}</p>}
+                {template.goal && <p className="text-sm text-muted-foreground">Goal: {template.goal}</p>}
+                <p className="mt-2 text-sm text-muted-foreground">
                   {template.exercises.length} exercise{template.exercises.length === 1 ? '' : 's'}
                 </p>
                 {template.exercises.length > 0 ? (
-                  <ol className="mt-2 space-y-1 text-sm text-gray-700">
+                  <ol className="mt-2 space-y-1 text-sm text-foreground">
                     {template.exercises.slice(0, 4).map((templateExercise, index) => (
                       <li key={templateExercise.id} className="flex items-center justify-between gap-3">
                         <span className="min-w-0 truncate">
                           {index + 1}. {templateExercise.exercise?.name ?? getExerciseName(templateExercise.exerciseId)}
                         </span>
-                        <span className="shrink-0 text-xs text-gray-500">
+                        <span className="shrink-0 text-xs text-muted-foreground">
                           {templateExercise.sets}x{templateExercise.reps} · {templateExercise.restSeconds}s
                         </span>
                       </li>
                     ))}
                     {template.exercises.length > 4 ? (
-                      <li className="text-xs text-gray-500">+{template.exercises.length - 4} more</li>
+                      <li className="text-xs text-muted-foreground">+{template.exercises.length - 4} more</li>
                     ) : null}
                   </ol>
                 ) : null}
                 {template.difficulty && (
-                  <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded font-medium mt-2">
+                  <span className="mt-2 inline-block rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent-translucent)] px-2 py-1 text-xs font-semibold text-[var(--color-accent)]">
                     {template.difficulty.replace(/_/g, ' ')}
                   </span>
                 )}
@@ -508,13 +511,13 @@ export function TemplateBuilder() {
               <div className="flex gap-2 ml-4">
                 <button
                   onClick={() => handleOpenForm(template)}
-                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm font-medium transition-colors"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(template.id)}
-                  className="px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm font-medium transition-colors"
+                  className="rounded-xl border border-red-400/25 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-100 transition-colors hover:bg-red-500/15"
                 >
                   Delete
                 </button>

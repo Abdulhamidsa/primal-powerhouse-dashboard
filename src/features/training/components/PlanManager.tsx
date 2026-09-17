@@ -117,12 +117,15 @@ export function PlanManager() {
   const statusOptions = planStatusEnum.options;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Training Plans</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-foreground">Client Training Plans</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Create the active date windows that weekly patterns repeat inside.</p>
+        </div>
         <button
           onClick={() => handleOpenForm()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="rounded-xl bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
         >
           Create Plan
         </button>
@@ -130,32 +133,32 @@ export function PlanManager() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6 space-y-4">
-            <h2 className="text-xl font-bold">{editingId ? 'Edit Training Plan' : 'Create Training Plan'}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl space-y-4 rounded-[28px] border border-white/10 bg-[var(--color-surface)] p-6 shadow-2xl">
+            <h2 className="text-xl font-semibold text-foreground">{editingId ? 'Edit Training Plan' : 'Create Training Plan'}</h2>
 
-            {error && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plan name *</label>
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Plan name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)]"
                   placeholder="e.g., Strength Block A"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client *</label>
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Client *</label>
                 <select
                   disabled={!!editingId || isClientsLoading}
                   required
                   value={formData.clientId}
                   onChange={e => setFormData({ ...formData, clientId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)] disabled:opacity-50"
                 >
                   <option value="">{isClientsLoading ? 'Loading clients...' : 'Select a client'}</option>
                   {clients.map(client => (
@@ -165,45 +168,45 @@ export function PlanManager() {
                   ))}
                 </select>
                 {clientsError ? (
-                  <p className="mt-1 text-xs text-red-600">Unable to load clients. Please refresh the page.</p>
+                  <p className="mt-1 text-xs text-red-200">Unable to load clients. Please refresh the page.</p>
                 ) : null}
                 {!isClientsLoading && clients.length === 0 ? (
-                  <p className="mt-1 text-xs text-gray-500">No clients found.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">No clients found.</p>
                 ) : null}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Start Date *</label>
                   <input
                     type="date"
                     disabled={!!editingId}
                     required
                     value={formData.startDate}
                     onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)] disabled:opacity-50"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">End Date *</label>
                   <input
                     type="date"
                     required
                     value={formData.endDate}
                     onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)]"
                   />
                 </div>
               </div>
 
               {editingId && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Status</label>
                   <select
                     value={formData.status ?? ''}
                     onChange={e => setFormData({ ...formData, status: e.target.value || undefined })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-foreground outline-none focus:border-[var(--color-accent)]"
                   >
                     <option value="">Select status</option>
                     {statusOptions.map(status => (
@@ -219,14 +222,14 @@ export function PlanManager() {
                 <button
                   type="button"
                   onClick={handleCloseForm}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 rounded-xl border border-white/10 px-4 py-2 text-foreground transition-colors hover:bg-white/[0.05]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 rounded-xl bg-[var(--color-accent)] px-4 py-2 font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
                 </button>
@@ -238,12 +241,12 @@ export function PlanManager() {
 
       {/* Plans List */}
       <div className="space-y-3">
-        {isLoading && <p className="text-gray-600">Loading plans...</p>}
+        {isLoading && <p className="text-muted-foreground">Loading plans...</p>}
         {isError && (
-          <div className="p-4 bg-red-100 text-red-700 rounded-lg">Error loading plans. Please try again.</div>
+          <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-red-100">Error loading plans. Please try again.</div>
         )}
         {plans && plans.length === 0 && (
-          <div className="p-4 bg-gray-100 text-gray-600 rounded-lg text-center">
+          <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-muted-foreground">
             No training plans created yet. Create one to get started!
           </div>
         )}
@@ -251,19 +254,19 @@ export function PlanManager() {
         {plans?.map(plan => (
           <div
             key={plan.id}
-            className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all"
+            className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] transition-colors hover:border-white/20"
           >
             <div
-              className="p-4 cursor-pointer flex items-center justify-between"
+              className="flex cursor-pointer items-center justify-between p-4"
               onClick={() => setExpandedPlan(expandedPlan === plan.id ? null : plan.id)}
             >
               <div className="flex-1">
-                <h3 className="font-semibold text-lg">{plan.name}</h3>
-                <p className="text-gray-600 text-sm">Client: {plan.clientId}</p>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
+                <p className="text-sm text-muted-foreground">Client: {plan.clientId}</p>
+                <p className="text-sm text-muted-foreground">
                   {formatDate(plan.startDate)} - {formatDate(plan.endDate ?? undefined)}
                 </p>
-                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-medium mt-2">
+                <span className="mt-2 inline-block rounded-full border border-[var(--color-accent)]/30 bg-[var(--color-accent-translucent)] px-2 py-1 text-xs font-semibold text-[var(--color-accent)]">
                   {plan.status?.replace(/_/g, ' ')}
                 </span>
               </div>
@@ -273,7 +276,7 @@ export function PlanManager() {
                     e.stopPropagation();
                     handleOpenForm(plan);
                   }}
-                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm font-medium transition-colors"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
                 >
                   Edit
                 </button>
@@ -282,8 +285,8 @@ export function PlanManager() {
 
             {/* Days Preview */}
             {expandedPlan === plan.id && (
-              <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-2">
-                <p className="text-sm text-gray-600 font-medium">
+              <div className="space-y-2 border-t border-white/10 bg-black/10 p-4">
+                <p className="text-sm font-medium text-muted-foreground">
                   Plan days will be managed in the day assignment view
                 </p>
               </div>

@@ -132,25 +132,25 @@ export function PlanAssignmentManager() {
   const workoutCount = week.filter(day => day.type === 'WORKOUT').length;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Weekly Training Pattern</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-foreground">Weekly Training Pattern</h1>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
             Pick a client plan, then assign workout templates to Monday through Sunday. The pattern repeats while the plan is active.
           </p>
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+        <aside className="space-y-4 rounded-[24px] border border-white/10 bg-white/[0.035] p-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Training plan</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Training plan</label>
             <select
               value={selectedPlanId}
               onChange={e => handleSelectPlan(e.target.value)}
               disabled={plansLoading}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="h-11 w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 text-sm text-foreground outline-none focus:border-[var(--color-accent)] disabled:opacity-60"
             >
               <option value="">{plansLoading ? 'Loading plans...' : 'Select a plan'}</option>
               {plansWithDetails.map(plan => (
@@ -162,54 +162,71 @@ export function PlanAssignmentManager() {
           </div>
 
           {selectedPlan ? (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 space-y-1">
-              <p className="font-semibold text-gray-900">{selectedPlan.name}</p>
-              <p>Client: {selectedPlan.client?.name ?? selectedPlan.clientId}</p>
+            <div className="space-y-2 rounded-2xl border border-white/10 bg-black/10 p-3 text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">{selectedPlan.name}</p>
+              <p>Client: <span className="text-foreground">{selectedPlan.client?.name ?? selectedPlan.clientId}</span></p>
               <p>
                 Active: {formatDisplayDate(selectedPlan.startDate)}
                 {selectedPlan.endDate ? ` - ${formatDisplayDate(selectedPlan.endDate)}` : ''}
               </p>
               <p>Status: {selectedPlan.status}</p>
-              <p>Weekly workouts: {workoutCount}</p>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                  <p className="text-[11px] text-muted-foreground">Workouts</p>
+                  <p className="text-lg font-semibold text-foreground">{workoutCount}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                  <p className="text-[11px] text-muted-foreground">Rest days</p>
+                  <p className="text-lg font-semibold text-foreground">{7 - workoutCount}</p>
+                </div>
+              </div>
             </div>
           ) : null}
 
-          {plansError ? <p className="text-sm text-red-600">Failed to load training plans.</p> : null}
-          {templatesError ? <p className="text-sm text-red-600">Failed to load workout templates.</p> : null}
+          {plansError ? <p className="text-sm text-red-200">Failed to load training plans.</p> : null}
+          {templatesError ? <p className="text-sm text-red-200">Failed to load workout templates.</p> : null}
         </aside>
 
-        <section className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+        <section className="space-y-4 rounded-[24px] border border-white/10 bg-white/[0.025] p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold">Monday to Sunday</h2>
-              <p className="text-sm text-gray-500">Changes apply to future workouts. Completed sessions stay in history.</p>
+              <h2 className="text-xl font-semibold text-foreground">Monday to Sunday</h2>
+              <p className="text-sm text-muted-foreground">Changes apply to future workouts. Completed sessions stay in history.</p>
             </div>
             <button
               type="button"
               onClick={handleSaveWeek}
               disabled={isSubmitting || !selectedPlanId || week.some(day => day.type === 'WORKOUT' && !day.workoutTemplateId)}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : 'Save weekly pattern'}
             </button>
           </div>
 
-          {error ? <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div> : null}
+          {error ? <div className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">{error}</div> : null}
 
           {!selectedPlan ? (
-            <div className="rounded-lg border border-dashed border-gray-300 p-6 text-sm text-gray-500">
+            <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-muted-foreground">
               Choose a training plan to configure its weekly pattern.
             </div>
           ) : (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {week.map(day => (
-                <div key={day.weekday} className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+                <div
+                  key={day.weekday}
+                  className={[
+                    'space-y-3 rounded-2xl border p-4',
+                    day.type === 'WORKOUT'
+                      ? 'border-[var(--color-accent)]/35 bg-[var(--color-accent-translucent)]'
+                      : 'border-white/10 bg-white/[0.035]',
+                  ].join(' ')}
+                >
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-semibold text-gray-900">{weekdays[day.weekday]}</h3>
+                    <h3 className="font-semibold text-foreground">{weekdays[day.weekday]}</h3>
                     <select
                       value={day.type}
                       onChange={event => updateWeekday(day.weekday, { type: event.target.value as WeekdayFormState['type'] })}
-                      className="rounded-md border border-gray-300 px-2 py-1.5 text-xs"
+                      className="rounded-lg border border-white/10 bg-[var(--color-bg)] px-2 py-1.5 text-xs text-foreground"
                     >
                       <option value="WORKOUT">Workout</option>
                       <option value="REST">Rest</option>
@@ -220,7 +237,7 @@ export function PlanAssignmentManager() {
                     value={day.workoutTemplateId}
                     onChange={event => updateWeekday(day.weekday, { workoutTemplateId: event.target.value })}
                     disabled={day.type !== 'WORKOUT' || templatesLoading}
-                    className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm disabled:bg-gray-100"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-sm text-foreground disabled:opacity-50"
                   >
                     <option value="">{templatesLoading ? 'Loading templates...' : day.type === 'REST' ? 'Recovery day' : 'Choose template'}</option>
                     {selectedPlanTemplateOptions.map(template => (
@@ -235,7 +252,7 @@ export function PlanAssignmentManager() {
                     value={day.title}
                     onChange={event => updateWeekday(day.weekday, { title: event.target.value })}
                     placeholder="Optional title"
-                    className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
                   />
 
                   <textarea
@@ -243,7 +260,7 @@ export function PlanAssignmentManager() {
                     onChange={event => updateWeekday(day.weekday, { note: event.target.value })}
                     placeholder={day.type === 'REST' ? 'Optional recovery note' : 'Optional coaching note'}
                     rows={3}
-                    className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
+                    className="w-full rounded-xl border border-white/10 bg-[var(--color-bg)] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               ))}

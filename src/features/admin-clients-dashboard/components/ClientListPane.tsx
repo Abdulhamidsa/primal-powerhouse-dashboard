@@ -23,11 +23,13 @@ export function ClientListPane({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-        <div className="flex items-center justify-between gap-3 mb-3">
+      <div className="border-b border-white/10 p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Users size={16} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+            <span className="grid h-8 w-8 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-muted-foreground">
+              <Users size={15} />
+            </span>
+            <h2 className="text-sm font-semibold text-foreground">
               Clients
             </h2>
           </div>
@@ -36,29 +38,26 @@ export function ClientListPane({
             <button
               type="button"
               onClick={onAddClientAction}
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-              style={{
-                background: 'var(--color-accent)',
-                color: 'var(--color-text)',
-              }}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
             >
-              <Plus size={16} />
-              Add Client
+              <Plus size={14} />
+              Add
             </button>
           )}
         </div>
 
-        <div className="flex rounded-lg overflow-hidden border mb-3" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="mb-3 flex overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-1">
           {(['active', 'archived'] as const).map(mode => (
             <button
               key={mode}
               type="button"
               onClick={() => onViewModeChangeAction(mode)}
-              className="flex-1 py-1.5 text-xs font-medium transition-colors capitalize"
-              style={{
-                background: viewMode === mode ? 'var(--color-accent)' : 'var(--color-bg-alt)',
-                color: viewMode === mode ? 'var(--color-text)' : 'var(--color-text-muted)',
-              }}
+              className={[
+                'flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition-colors',
+                viewMode === mode
+                  ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]'
+                  : 'text-muted-foreground hover:text-foreground',
+              ].join(' ')}
             >
               {mode}
             </button>
@@ -66,26 +65,17 @@ export function ClientListPane({
         </div>
 
         <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: 'var(--color-text-muted)' }}
-          />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={event => onSearchChangeAction(event.target.value)}
             placeholder="Search clients"
-            className="w-full rounded-lg border pl-9 pr-3 py-2 text-sm"
-            style={{
-              borderColor: 'var(--color-border)',
-              background: 'var(--color-bg-alt)',
-              color: 'var(--color-text)',
-            }}
+            className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-[var(--color-accent)]"
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 space-y-1.5 overflow-y-auto p-2">
         {clients.map(client => {
           const isSelected = client.id === selectedClientId;
 
@@ -94,16 +84,16 @@ export function ClientListPane({
               key={client.id}
               type="button"
               onClick={() => onSelectClientAction(client.id)}
-              className="w-full text-left rounded-xl border p-3 transition-colors"
-              style={{
-                borderColor: isSelected ? 'var(--color-accent)' : 'var(--color-border)',
-                background: isSelected ? 'var(--color-accent-muted)' : 'var(--color-surface)',
-              }}
+              className={[
+                'w-full rounded-2xl border p-3 text-left transition-colors',
+                isSelected
+                  ? 'border-[var(--color-accent)]/45 bg-[var(--color-accent-translucent)]'
+                  : 'border-transparent bg-white/[0.025] hover:border-white/10 hover:bg-white/[0.045]',
+              ].join(' ')}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="relative w-10 h-10 rounded-full overflow-hidden border"
-                  style={{ borderColor: 'var(--color-border)' }}
+                  className="relative h-10 w-10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]"
                 >
                   <Image
                     src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
@@ -113,21 +103,28 @@ export function ClientListPane({
                     className="object-cover"
                   />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">
                     {client.name}
                   </p>
-                  {/* <p className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="truncate text-xs text-muted-foreground">
                     {client.email}
-                  </p> */}
+                  </p>
                 </div>
+                <span
+                  className={[
+                    'h-2 w-2 shrink-0 rounded-full',
+                    client.status === 'ACTIVE' ? 'bg-emerald-400' : client.status === 'ARCHIVED' ? 'bg-slate-500' : 'bg-amber-400',
+                  ].join(' ')}
+                  aria-label={client.status}
+                />
               </div>
             </button>
           );
         })}
 
         {clients.length === 0 ? (
-          <p className="text-sm p-3" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="p-3 text-sm text-muted-foreground">
             No clients found.
           </p>
         ) : null}

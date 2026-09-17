@@ -11,6 +11,7 @@ export function ClientNotesPane({
   onDraftChangeAction,
   onBackAction,
   onAddNoteAction,
+  showBackButton = true,
 }: {
   clientName: string;
   entries: ClientNoteEntry[];
@@ -20,6 +21,7 @@ export function ClientNotesPane({
   onDraftChangeAction: (value: string) => void;
   onBackAction: () => void;
   onAddNoteAction: () => Promise<void>;
+  showBackButton?: boolean;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -36,15 +38,17 @@ export function ClientNotesPane({
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-        <button
-          type="button"
-          onClick={onBackAction}
-          className="inline-flex items-center gap-2 text-xs mb-3"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          <ArrowLeft size={14} />
-          Back to clients
-        </button>
+        {showBackButton ? (
+          <button
+            type="button"
+            onClick={onBackAction}
+            className="inline-flex items-center gap-2 text-xs mb-3"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            <ArrowLeft size={14} />
+            Back to clients
+          </button>
+        ) : null}
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
           {clientName} Notes
         </h2>

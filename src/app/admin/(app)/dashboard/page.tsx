@@ -2,6 +2,7 @@
 
 import { AdminCommandCenterView } from '@/features/admin-command-center/components/AdminCommandCenterView';
 import { useAdminCommandCenter } from '@/features/admin-command-center/hooks/useAdminCommandCenter';
+import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
 
 export default function AdminDashboard() {
   const { data, error, isLoading, busyItemId, actionError, quickReplyTemplate, quickMessage, markReviewed } =
@@ -9,26 +10,43 @@ export default function AdminDashboard() {
 
   if (isLoading && !data) {
     return (
-      <div className="space-y-4">
-        <div className="card-base p-6 animate-pulse">
-          <div className="h-5 w-56 rounded bg-muted/50 mb-3" />
-          <div className="h-4 w-80 rounded bg-muted/50" />
+      <AdminPage>
+        <div className="animate-pulse rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-5">
+          <div className="h-3 w-36 rounded-full bg-white/10" />
+          <div className="mt-4 h-8 w-64 rounded-xl bg-white/10" />
+          <div className="mt-3 h-4 w-full max-w-2xl rounded-full bg-white/10" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="card-base h-64 animate-pulse bg-muted/20" />
-          <div className="card-base h-64 animate-pulse bg-muted/20" />
-          <div className="card-base h-64 animate-pulse bg-muted/20" />
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-36 animate-pulse rounded-[22px] border border-white/10 bg-white/[0.035]" />
+          ))}
         </div>
-      </div>
+
+        <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
+          <div className="h-[520px] animate-pulse rounded-[24px] border border-white/10 bg-white/[0.035]" />
+          <div className="grid gap-5">
+            <div className="h-64 animate-pulse rounded-[24px] border border-white/10 bg-white/[0.035]" />
+            <div className="h-64 animate-pulse rounded-[24px] border border-white/10 bg-white/[0.035]" />
+          </div>
+        </div>
+      </AdminPage>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="card-base p-6 space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground">Coach Command Center</h1>
-        <p className="text-sm text-muted-foreground">Unable to load command center right now. Please refresh.</p>
-      </div>
+      <AdminPage>
+        <AdminPageHeader
+          eyebrow="Coach operations"
+          title="Command Center"
+          description="Prioritize clients, clear risks, and handle the highest-leverage actions without jumping between pages."
+        />
+        <AdminPanel className="p-6">
+          <h2 className="text-lg font-semibold text-foreground">Unable to load dashboard</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Please refresh and try again.</p>
+        </AdminPanel>
+      </AdminPage>
     );
   }
 

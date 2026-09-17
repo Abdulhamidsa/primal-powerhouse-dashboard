@@ -1,9 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSWRConfig } from 'swr';
-import { MessageSquare, Search, Users, X } from 'lucide-react';
+import {
+  Archive,
+  Calculator,
+  ClipboardList,
+  Dumbbell,
+  Mail,
+  MessageSquare,
+  NotebookText,
+  Search,
+  Settings2,
+  Undo2,
+  UserPen,
+  Users,
+  X,
+} from 'lucide-react';
 import AssignContentModal from '@/components/AssignContentModal';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import NewAddClientModal from '@/components/NewAddClientModal';
@@ -39,7 +54,7 @@ import {
 } from '@/features/client-feature-visibility/api/clientFeatureVisibility.api';
 import { ClientListPane } from '@/features/admin-clients-dashboard/components/ClientListPane';
 import { ClientNotesPane } from '@/features/admin-clients-dashboard/components/ClientNotesPane';
-import { ClientChatPane } from '@/features/client-coach-messaging/components/ClientChatPane';
+import { ClientScopedChatPanel } from '@/features/client-coach-messaging/components/ClientScopedChatPanel';
 import { ClientDetailTabs } from '@/features/admin-clients-dashboard/components/ClientDetailTabs';
 import { SummaryTabContent } from '@/features/admin-clients-dashboard/components/SummaryTabContent';
 import { NutritionTabContent } from '@/features/admin-clients-dashboard/components/NutritionTabContent';
@@ -47,18 +62,13 @@ import { AssignmentsTabContent } from '@/features/admin-clients-dashboard/compon
 import { CheckInsTabContent } from '@/features/admin-clients-dashboard/components/CheckInsTabContent';
 import TrainingTabContent from '@/features/admin-clients-dashboard/components/TrainingTabContent';
 import { ClientFeatureVisibilityTab } from '@/features/client-feature-visibility/components/ClientFeatureVisibilityTab';
+import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
-import type {
-  DashboardTabKey,
-  LeftPaneMode,
-} from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import type { AdminClientDetail, DashboardTabKey } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import { getWorkoutPlans } from '@/features/workout-plans/api/workoutPlan.api';
 import { getAdminClientWorkoutSessions } from '@/features/workout-session/api/adminWorkoutSession.api';
 import { httpClient } from '@/lib/http/client';
 
-const DASHBOARD_PANE_WIDTH_STORAGE_KEY = 'admin-clients-left-pane-width';
-const DASHBOARD_PANE_MIN = 320;
-const DASHBOARD_PANE_MAX = 620;
 const DASHBOARD_TAB_ORDER: DashboardTabKey[] = [
   'summary',
   'nutrition',
@@ -68,8 +78,111 @@ const DASHBOARD_TAB_ORDER: DashboardTabKey[] = [
   'feature-visibility',
 ];
 
-function clampDashboardPaneWidth(nextWidth: number): number {
-  return Math.min(DASHBOARD_PANE_MAX, Math.max(DASHBOARD_PANE_MIN, Math.round(nextWidth)));
+type CoachRailTab = 'chat' | 'notes' | 'actions';
+
+function ClientStatusPill({ status }: { status: string }) {
+  const isActive = status === 'ACTIVE';
+  const isArchived = status === 'ARCHIVED';
+
+  return (
+    <span
+      className={[
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
+        isActive
+          ? 'border-emerald-400/25 bg-emerald-500/10 text-emerald-200'
+          : isArchived
+            ? 'border-slate-300/15 bg-slate-400/10 text-slate-300'
+            : 'border-amber-400/25 bg-amber-500/10 text-amber-200',
+      ].join(' ')}
+    >
+      <span className={['h-1.5 w-1.5 rounded-full', isActive ? 'bg-emerald-400' : isArchived ? 'bg-slate-400' : 'bg-amber-400'].join(' ')} />
+      {status}
+    </span>
+  );
+}
+
+function ClientMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 truncate text-sm font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function ClientCommandHeader({
+  client,
+  summaryWeightKg,
+  onEditProfileAction,
+  onArchiveClientAction,
+  onOpenHealthMetricsAction,
+}: {
+  client: AdminClientDetail;
+  summaryWeightKg: number | null;
+  onEditProfileAction: () => void;
+  onArchiveClientAction: () => void;
+  onOpenHealthMetricsAction: () => void;
+}) {
+  return (
+    <div className="border-b border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] p-5">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04]">
+            <Image
+              src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
+              alt={client.name}
+              fill
+              sizes="64px"
+              className="object-cover"
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate text-2xl font-semibold tracking-[-0.03em] text-foreground">{client.name}</h2>
+              <ClientStatusPill status={client.status} />
+            </div>
+            <p className="mt-1 flex items-center gap-2 truncate text-sm text-muted-foreground">
+              <Mail size={14} />
+              {client.email}
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <ClientMetric label="Current weight" value={summaryWeightKg == null ? 'N/A' : `${summaryWeightKg} kg`} />
+              <ClientMetric label="Target weight" value={client.targetWeight == null ? 'N/A' : `${client.targetWeight} kg`} />
+              <ClientMetric label="Calories" value={client.goalCalories == null ? 'N/A' : `${client.goalCalories} kcal`} />
+              <ClientMetric label="Sessions" value={`${client.sessionsCompleted ?? 0}`} />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onEditProfileAction}
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
+          >
+            <UserPen size={15} />
+            Edit profile
+          </button>
+          <button
+            type="button"
+            onClick={onOpenHealthMetricsAction}
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
+          >
+            <Calculator size={15} />
+            Health metrics
+          </button>
+          <button
+            type="button"
+            onClick={onArchiveClientAction}
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+          >
+            {client.status === 'ARCHIVED' ? <Undo2 size={15} /> : <Archive size={15} />}
+            {client.status === 'ARCHIVED' ? 'Restore' : 'Archive'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ClientsPage() {
@@ -77,7 +190,6 @@ export default function ClientsPage() {
   const searchParams = useSearchParams();
   const { mutate: globalMutate } = useSWRConfig();
   const [isTabTransitionPending, startTabTransition] = useTransition();
-  const layoutRef = useRef<HTMLElement | null>(null);
   const leftPaneRef = useRef<HTMLElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const preloadedTabsRef = useRef<{ clientId: string | null; tabs: Set<DashboardTabKey> }>({
@@ -85,11 +197,9 @@ export default function ClientsPage() {
     tabs: new Set(),
   });
 
-  const [leftPaneMode, setLeftPaneMode] = useState<LeftPaneMode>('list');
-  const [leftPaneWidth, setLeftPaneWidth] = useState<number | null>(null);
-  const [isResizingPane, setIsResizingPane] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTabKey>('summary');
+  const [activeRailTab, setActiveRailTab] = useState<CoachRailTab>('chat');
   const [mountedTabs, setMountedTabs] = useState<DashboardTabKey[]>(['summary']);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
@@ -97,7 +207,6 @@ export default function ClientsPage() {
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
   const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
-  const [isClientFocusMode, setIsClientFocusMode] = useState(false);
   const [showChangeUserDrawer, setShowChangeUserDrawer] = useState(false);
   const [changeUserSearch, setChangeUserSearch] = useState('');
 
@@ -335,8 +444,7 @@ export default function ClientsPage() {
 
   const handleSelectClient = (clientId: string) => {
     setSelectedClientId(clientId);
-    setIsClientFocusMode(true);
-    setLeftPaneMode('chat');
+    setActiveRailTab('chat');
     setShowChangeUserDrawer(false);
 
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -350,19 +458,8 @@ export default function ClientsPage() {
     }
   };
 
-  const handleBackToList = () => {
-    setIsClientFocusMode(false);
-    setShowChangeUserDrawer(false);
-    setChangeUserSearch('');
-    setLeftPaneMode('list');
-  };
-
-  const handleOpenNotes = () => {
-    setLeftPaneMode('notes');
-  };
-
   const handleBackToChat = () => {
-    setLeftPaneMode('chat');
+    setActiveRailTab('chat');
   };
 
   const handleRemoveVideoAssignment = async (assignmentId: string) => {
@@ -409,52 +506,6 @@ export default function ClientsPage() {
 
   const handleResetCheckIns = async () => {
     await resetAll();
-  };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const stored = window.localStorage.getItem(DASHBOARD_PANE_WIDTH_STORAGE_KEY);
-    if (stored) {
-      const parsed = Number(stored);
-      if (Number.isFinite(parsed)) {
-        setLeftPaneWidth(clampDashboardPaneWidth(parsed));
-        return;
-      }
-    }
-
-    const initial = layoutRef.current?.clientWidth;
-    if (initial) {
-      setLeftPaneWidth(clampDashboardPaneWidth(initial * 0.35));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!leftPaneWidth || typeof window === 'undefined') return;
-    window.localStorage.setItem(DASHBOARD_PANE_WIDTH_STORAGE_KEY, String(leftPaneWidth));
-  }, [leftPaneWidth]);
-
-  const startPaneResize = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault();
-
-    const baseWidth = leftPaneWidth ?? clampDashboardPaneWidth((layoutRef.current?.clientWidth ?? 1000) * 0.35);
-    const startX = event.clientX;
-
-    setIsResizingPane(true);
-
-    const onMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX;
-      setLeftPaneWidth(clampDashboardPaneWidth(baseWidth + delta));
-    };
-
-    const onUp = () => {
-      setIsResizingPane(false);
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
   };
 
   const renderDashboardTabContent = (tab: DashboardTabKey) => {
@@ -529,168 +580,96 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="px-4 py-4 sm:px-6 lg:px-4 lg:py-2 space-y-4 h-full">
-      <header className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text)' }}>
-            Clients Dashboard
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Select a client to review their profile, progress, and notes.
-          </p>
-        </div>
-      </header>
+    <AdminPage className="max-w-none gap-5">
+      <AdminPageHeader
+        eyebrow="Client operations"
+        title="Clients Workbench"
+        description="Review client progress, handle coaching tasks, and keep chat and notes close while you work."
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowAddClientModal(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
+          >
+            <Users size={15} />
+            Add client
+          </button>
+        }
+      />
 
-      <section ref={layoutRef} className="flex min-h-0 flex-col gap-4 lg:h-fit lg:flex-row lg:gap-0">
-        <aside
-          ref={leftPaneRef}
-          className={`shrink-0 border lg:min-w-[320px] lg:max-w-[520px] lg:w-[var(--clients-left-pane-width)] ${
-            isClientFocusMode
-              ? 'max-h-[42vh] overflow-hidden lg:max-h-none lg:h-full'
-              : 'max-h-[46vh] overflow-hidden lg:max-h-none lg:h-full'
-          }`}
-          style={{
-            borderColor: 'var(--color-border)',
-            background: 'var(--color-surface)',
-            ['--clients-left-pane-width' as string]: leftPaneWidth ? `${leftPaneWidth}px` : undefined,
-          }}
-        >
-          {isClientsLoading ? (
-            <div
-              className="h-full flex items-center justify-center text-sm"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              Loading clients...
-            </div>
-          ) : clientsError ? (
-            <div className="h-full p-4 space-y-3">
-              <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
-                Failed to load clients.
-              </p>
-              <button
-                type="button"
-                onClick={refreshClients}
-                className="rounded-lg px-3 py-2 text-sm"
-                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
-              >
-                Retry
-              </button>
-            </div>
-          ) : !isClientFocusMode || leftPaneMode === 'list' || !client ? (
-            <ClientListPane
-              clients={filteredClients}
-              selectedClientId={selectedClientId}
-              search={search}
-              viewMode={viewMode}
-              onAddClientAction={() => setShowAddClientModal(true)}
-              onSearchChangeAction={setSearch}
-              onSelectClientAction={handleSelectClient}
-              onViewModeChangeAction={setViewMode}
-            />
-          ) : leftPaneMode === 'chat' ? (
-            <ClientChatPane
-              clientId={client.id}
-              clientName={client.name}
-              onBackAction={handleBackToList}
-              onOpenNotesAction={handleOpenNotes}
-              showBackButton={!isClientFocusMode}
-            />
-          ) : (
-            <ClientNotesPane
-              clientName={client.name}
-              entries={entries}
-              draft={draft}
-              error={noteError}
-              isSaving={isSavingNote}
-              onDraftChangeAction={setDraft}
-              onBackAction={handleBackToChat}
-              onAddNoteAction={addNote}
-            />
-          )}
-        </aside>
-
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Resize clients side panel"
-          onMouseDown={startPaneResize}
-          className={`hidden lg:block w-1 cursor-col-resize ${isResizingPane ? 'bg-[var(--color-accent)]' : 'bg-transparent'}`}
-        />
-
-        <main
-          ref={detailPanelRef}
-          className="min-h-[56vh] flex-1 overflow-hidden border flex flex-col lg:min-h-0"
-          style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
-        >
-          {isClientLoading ? (
-            <div
-              className="h-full flex items-center justify-center text-sm"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              Select a client to load details.
-            </div>
-          ) : selectedClientError ? (
-            <div className="h-full p-4 space-y-3">
-              <p className="text-sm" style={{ color: 'var(--color-danger)' }}>
-                Failed to load selected client.
-              </p>
-              <button
-                type="button"
-                onClick={refreshClient}
-                className="rounded-lg px-3 py-2 text-sm"
-                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
-              >
-                Retry
-              </button>
-            </div>
-          ) : client ? (
-            <>
-              <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                      {client.name}
-                    </h2>
-                    <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                      {client.email}
-                    </p>
-                  </div>
-                  <span
-                    className="px-2.5 py-1 rounded-full text-xs font-medium"
-                    style={{
-                      background: client.status === 'ACTIVE' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
-                      color: client.status === 'ACTIVE' ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                    }}
-                  >
-                    {client.status}
-                  </span>
-                </div>
+      <section className="grid min-h-[calc(100dvh-220px)] gap-4 xl:grid-cols-[320px_minmax(0,1fr)_360px] 2xl:grid-cols-[360px_minmax(0,1fr)_400px]">
+        <AdminPanel className="min-h-[360px] overflow-hidden xl:sticky xl:top-4 xl:h-[calc(100dvh-170px)]">
+          <aside ref={leftPaneRef} className="h-full">
+            {isClientsLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading clients...</div>
+            ) : clientsError ? (
+              <div className="h-full space-y-3 p-4">
+                <p className="text-sm text-red-200">Failed to load clients.</p>
+                <button
+                  type="button"
+                  onClick={refreshClients}
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-foreground"
+                >
+                  Retry
+                </button>
               </div>
+            ) : (
+              <ClientListPane
+                clients={filteredClients}
+                selectedClientId={selectedClientId}
+                search={search}
+                viewMode={viewMode}
+                onAddClientAction={() => setShowAddClientModal(true)}
+                onSearchChangeAction={setSearch}
+                onSelectClientAction={handleSelectClient}
+                onViewModeChangeAction={setViewMode}
+              />
+            )}
+          </aside>
+        </AdminPanel>
 
-              <div className="px-4 py-3">
-                <ClientDetailTabs
-                  activeTab={activeTab}
-                  onTabChangeAction={tab => {
-                    startTabTransition(() => {
-                      setActiveTab(tab);
-                    });
-                  }}
-                  onTabPrefetchAction={prefetchDashboardTab}
-                  actions={
-                    isClientFocusMode ? (
+        <AdminPanel className="min-h-[640px] overflow-hidden" >
+          <main ref={detailPanelRef} className="flex h-full min-h-0 flex-col">
+            {isClientLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                Select a client to load details.
+              </div>
+            ) : selectedClientError ? (
+              <div className="h-full space-y-3 p-5">
+                <p className="text-sm text-red-200">Failed to load selected client.</p>
+                <button
+                  type="button"
+                  onClick={refreshClient}
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-foreground"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : client ? (
+              <>
+                <ClientCommandHeader
+                  client={client}
+                  summaryWeightKg={summaryWeightKg}
+                  onEditProfileAction={() => setShowProfileEditModal(true)}
+                  onArchiveClientAction={handleArchiveClient}
+                  onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}
+                />
+
+                <div className="border-b border-white/10 px-5 py-3">
+                  <ClientDetailTabs
+                    activeTab={activeTab}
+                    onTabChangeAction={tab => {
+                      startTabTransition(() => {
+                        setActiveTab(tab);
+                      });
+                    }}
+                    onTabPrefetchAction={prefetchDashboardTab}
+                    actions={
                       <>
                         <button
                           type="button"
-                          onClick={() => {
-                            setLeftPaneMode('chat');
-                            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-                              window.requestAnimationFrame(() => {
-                                leftPaneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              });
-                            }
-                          }}
-                          className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium"
-                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                          onClick={() => setActiveRailTab('chat')}
+                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
                           <MessageSquare size={14} />
                           Chat
@@ -698,56 +677,148 @@ export default function ClientsPage() {
                         <button
                           type="button"
                           onClick={() => setShowChangeUserDrawer(true)}
-                          className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium"
-                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
                           <Search size={14} />
-                          Change User
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleBackToList}
-                          className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium"
-                          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
-                        >
-                          <X size={14} />
-                          Back to List
+                          Change client
                         </button>
                       </>
-                    ) : undefined
-                  }
-                />
+                    }
+                  />
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-5" aria-busy={isTabTransitionPending}>
+                  {DASHBOARD_TAB_ORDER.filter(tab => mountedTabs.includes(tab)).map(tab => {
+                    const isActive = tab === activeTab;
+
+                    return (
+                      <div key={tab} hidden={!isActive} aria-hidden={!isActive} className={isActive ? '' : 'pointer-events-none'}>
+                        {renderDashboardTabContent(tab)}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                <div className="space-y-2 text-center">
+                  <Users size={22} className="mx-auto" />
+                  <p>Select a client to view details.</p>
+                </div>
+              </div>
+            )}
+          </main>
+        </AdminPanel>
+
+        <AdminPanel className="min-h-[520px] overflow-hidden xl:sticky xl:top-4 xl:h-[calc(100dvh-170px)]">
+          {client ? (
+            <aside className="flex h-full min-h-0 flex-col">
+              <div className="border-b border-white/10 p-3">
+                <div className="grid grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
+                  {[
+                    { key: 'chat' as const, label: 'Chat', icon: MessageSquare },
+                    { key: 'notes' as const, label: 'Notes', icon: NotebookText },
+                    { key: 'actions' as const, label: 'Actions', icon: Settings2 },
+                  ].map(item => {
+                    const Icon = item.icon;
+                    const active = activeRailTab === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setActiveRailTab(item.key)}
+                        className={[
+                          'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-semibold transition-colors',
+                          active
+                            ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]'
+                            : 'text-muted-foreground hover:text-foreground',
+                        ].join(' ')}
+                      >
+                        <Icon size={13} />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 pb-4" aria-busy={isTabTransitionPending}>
-                {DASHBOARD_TAB_ORDER.filter(tab => mountedTabs.includes(tab)).map(tab => {
-                  const isActive = tab === activeTab;
-
-                  return (
-                    <div
-                      key={tab}
-                      hidden={!isActive}
-                      aria-hidden={!isActive}
-                      className={isActive ? '' : 'pointer-events-none'}
+              <div className="min-h-0 flex-1">
+                {activeRailTab === 'chat' ? (
+                  <ClientScopedChatPanel clientId={client.id} />
+                ) : activeRailTab === 'notes' ? (
+                  <ClientNotesPane
+                    clientName={client.name}
+                    entries={entries}
+                    draft={draft}
+                    error={noteError}
+                    isSaving={isSavingNote}
+                    onDraftChangeAction={setDraft}
+                    onBackAction={handleBackToChat}
+                    onAddNoteAction={addNote}
+                    showBackButton={false}
+                  />
+                ) : (
+                  <div className="space-y-3 p-4">
+                    <p className="text-sm font-semibold text-foreground">Quick actions</p>
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Common actions for {client.name}. These use the existing modals and refresh behavior.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAssignModalType('meals');
+                        setShowAssignModal(true);
+                      }}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
                     >
-                      {renderDashboardTabContent(tab)}
-                    </div>
-                  );
-                })}
+                      <ClipboardList size={16} className="text-[var(--color-accent)]" />
+                      Assign meals
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAssignModalType('videos');
+                        setShowAssignModal(true);
+                      }}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                    >
+                      <Dumbbell size={16} className="text-[var(--color-accent)]" />
+                      Assign videos
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowProfileEditModal(true)}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                    >
+                      <UserPen size={16} className="text-[var(--color-accent)]" />
+                      Edit profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowHealthMetricsModal(true)}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                    >
+                      <Calculator size={16} className="text-[var(--color-accent)]" />
+                      Update health metrics
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleArchiveClient}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
+                    >
+                      {client.status === 'ARCHIVED' ? <Undo2 size={16} /> : <Archive size={16} />}
+                      {client.status === 'ARCHIVED' ? 'Restore client' : 'Archive client'}
+                    </button>
+                  </div>
+                )}
               </div>
-            </>
+            </aside>
           ) : (
-            <div
-              className="h-full flex items-center justify-center text-sm"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              <div className="text-center space-y-2">
-                <Users size={20} className="mx-auto" />
-                <p>Select a client to view details.</p>
-              </div>
+            <div className="flex h-full items-center justify-center p-5 text-center text-sm text-muted-foreground">
+              Select a client to open chat, notes, and quick actions.
             </div>
           )}
-        </main>
+        </AdminPanel>
       </section>
 
       {client ? (
@@ -776,7 +847,6 @@ export default function ClientsPage() {
         isOpen={showAddClientModal}
         onCloseAction={() => setShowAddClientModal(false)}
         onClientAddedAction={async () => {
-          setLeftPaneMode('list');
           await refreshClients();
         }}
       />
@@ -886,6 +956,6 @@ export default function ClientsPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </AdminPage>
   );
 }
