@@ -13,9 +13,11 @@ export function useUserDashboardSummary(enabled = true) {
     getUserDashboardSummary,
     {
       keepPreviousData: true,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      revalidateIfStale: false,
+      revalidateOnMount: true,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      revalidateIfStale: true,
+      dedupingInterval: 2_000,
     },
   );
 

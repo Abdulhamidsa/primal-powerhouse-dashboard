@@ -345,7 +345,7 @@ export default function UserMyPlanPage() {
   );
 
   return (
-    <PullToRefresh onRefresh={refresh} disabled={Boolean(swapState || pendingSwap || helpOpen)}>
+    <PullToRefresh onRefreshAction={refresh} disabled={Boolean(swapState || pendingSwap || helpOpen)}>
       <div className="px-4 pb-6 pt-4 md:px-6">
       <div className="mx-auto max-w-6xl space-y-4 pb-6 md:space-y-5">
         <UserPageHero

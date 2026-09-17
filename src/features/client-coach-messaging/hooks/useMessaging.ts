@@ -12,7 +12,7 @@ import {
   sendConversationMessage,
 } from '@/features/client-coach-messaging/api/messaging.api';
 import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
-import { getPusherClient } from '@/lib/realtime/pusher-client';
+import { getPusherClient, hasPusherClientConfig } from '@/lib/realtime/pusher-client';
 import { toConversationChannel } from '@/lib/realtime/channels';
 import type {
   ChatMessage,
@@ -22,6 +22,8 @@ import type {
   CreateConversationPayload,
   MessageAttachment,
 } from '@/features/client-coach-messaging/types/messaging.types';
+
+const CHAT_POLL_INTERVAL_MS = 8_000;
 
 function dedupeMessagesById(messages: ChatMessage[]): ChatMessage[] {
   const byId = new Map<string, ChatMessage>();
@@ -83,7 +85,11 @@ function updateConversationListPreview(
 }
 
 export function useConversations(enabled = true) {
-  const { data, error, isLoading, mutate } = useSWR(enabled ? buildConversationsUrl() : null, listConversations);
+  const { data, error, isLoading, mutate } = useSWR(enabled ? buildConversationsUrl() : null, listConversations, {
+    refreshInterval: hasPusherClientConfig() ? 0 : CHAT_POLL_INTERVAL_MS,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  });
 
   return {
     conversations: data?.items ?? [],
@@ -125,8 +131,9 @@ export function useConversationMessages(conversationId: string | null) {
     () => listConversationMessages(conversationId as string),
     {
       // Realtime updates come from Pusher; polling can cause signed media URLs to rotate and appear as reloads.
-      refreshInterval: 0,
-      revalidateOnFocus: false,
+      refreshInterval: hasPusherClientConfig() ? 0 : CHAT_POLL_INTERVAL_MS,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
       keepPreviousData: true,
     },
   );
