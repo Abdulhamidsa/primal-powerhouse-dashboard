@@ -10,6 +10,42 @@ import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exerci
 import type { Exercise } from '@prisma/client';
 import Image from 'next/image';
 
+function ExerciseMediaThumb({ exercise }: { exercise: Exercise }) {
+  const videoUrl = exercise.videoUrl?.trim();
+  const imageUrl = exercise.imageUrl?.trim();
+
+  if (videoUrl) {
+    return (
+      <video
+        src={videoUrl}
+        className="h-20 w-28 rounded-2xl border border-white/10 bg-black object-cover"
+        muted
+        playsInline
+        preload="metadata"
+      />
+    );
+  }
+
+  if (imageUrl) {
+    return (
+      // GIFs should stay animated, so use a regular img instead of Next optimization.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt={`${exercise.name} demo`}
+        className="h-20 w-28 rounded-2xl border border-white/10 bg-black object-cover"
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div className="grid h-20 w-28 place-items-center rounded-2xl border border-dashed border-white/10 bg-white/[0.025] text-[11px] text-muted-foreground">
+      No demo
+    </div>
+  );
+}
+
 export function ExerciseLibrary() {
   const [filters, setFilters] = useState<{
     muscleGroup?: string;
@@ -379,8 +415,9 @@ export function ExerciseLibrary() {
             key={exercise.id}
             className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition-colors hover:border-white/20"
           >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <ExerciseMediaThumb exercise={exercise} />
+              <div className="min-w-0 flex-1">
                 <h3 className="text-lg font-semibold text-foreground">{exercise.name}</h3>
                 {exercise.description && <p className="mt-1 text-sm text-muted-foreground">{exercise.description}</p>}
                 <div className="flex flex-wrap gap-2 mt-3">

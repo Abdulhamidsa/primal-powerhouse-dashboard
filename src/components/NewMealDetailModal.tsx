@@ -68,7 +68,7 @@ export default function NewMealDetailModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onCloseAction}>
-        <DialogContent className="max-h-[92vh] max-w-4xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] p-0 text-[var(--color-text)] sm:max-w-[760px]">
+        <DialogContent className="max-h-[92vh] max-w-4xl overflow-hidden rounded-[30px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)] sm:max-w-[820px]">
           <div className="flex max-h-[92vh] flex-col overflow-hidden">
             <div className="relative shrink-0">
               {meal.images && meal.images.length > 0 && meal.images[0] && meal.images[0].trim() !== '' ? (
@@ -131,7 +131,7 @@ export default function NewMealDetailModal({
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                <div className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.14)] sm:p-5">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                     <div className="shrink-0">
                       <p className="text-xs text-[var(--color-text-muted)]">Calories</p>
@@ -139,22 +139,22 @@ export default function NewMealDetailModal({
                     </div>
 
                     <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-3xl">
-                      <div className="rounded-xl bg-[var(--color-surface)] px-4 py-3 text-center">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center">
                         <p className="text-xs text-[var(--color-text-muted)]">Protein</p>
                         <p className="text-lg font-semibold text-emerald-400">{meal.protein}g</p>
                       </div>
 
-                      <div className="rounded-xl bg-[var(--color-surface)] px-4 py-3 text-center">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center">
                         <p className="text-xs text-[var(--color-text-muted)]">Carbs</p>
                         <p className="text-lg font-semibold text-amber-300">{meal.carbs}g</p>
                       </div>
 
-                      <div className="rounded-xl bg-[var(--color-surface)] px-4 py-3 text-center">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center">
                         <p className="text-xs text-[var(--color-text-muted)]">Fat</p>
                         <p className="text-lg font-semibold text-sky-400">{meal.fat}g</p>
                       </div>
 
-                      <div className="rounded-xl bg-[var(--color-surface)] px-4 py-3 text-center">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center">
                         <p className="text-xs text-[var(--color-text-muted)]">Fiber</p>
                         <p className="text-lg font-semibold text-green-400">{meal.fiber}g</p>
                       </div>
@@ -163,7 +163,7 @@ export default function NewMealDetailModal({
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                  <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
                       <Utensils className="h-5 w-5 text-[var(--color-accent)]" />
                       <h2 className="text-lg font-semibold text-[var(--color-text)]">Ingredients</h2>
@@ -173,7 +173,7 @@ export default function NewMealDetailModal({
                       {meal.ingredients.map((ingredient, index) => (
                         <li
                           key={index}
-                          className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
+                            className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
                         >
                           <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-sm font-medium text-[var(--color-accent)]">
                             {index + 1}
@@ -189,7 +189,7 @@ export default function NewMealDetailModal({
                     </ul>
                   </section>
 
-                  <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                  <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
                       <Clock className="h-5 w-5 text-[var(--color-accent)]" />
                       <h2 className="text-lg font-semibold text-[var(--color-text)]">Instructions</h2>
@@ -199,7 +199,7 @@ export default function NewMealDetailModal({
                       {meal.instructions.map((instruction, index) => (
                         <li
                           key={index}
-                          className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+                          className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
                         >
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-sm font-medium text-[var(--color-text-on-accent)]">
                             {index + 1}
@@ -215,14 +215,14 @@ export default function NewMealDetailModal({
                 </div>
 
                 {meal.tags.length > 0 && (
-                  <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 sm:p-5">
+                  <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <h3 className="mb-3 text-base font-semibold text-[var(--color-text)]">Tags</h3>
 
                     <div className="flex flex-wrap gap-2">
                       {meal.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-sm text-[var(--color-text-muted)]"
+                          className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-sm text-muted-foreground"
                         >
                           #{tag}
                         </span>

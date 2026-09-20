@@ -389,16 +389,18 @@ export function useMessagingSelection(conversations: ConversationSummary[], pref
       return;
     }
 
-    if (preferredConversationId && sorted.some(item => item.id === preferredConversationId)) {
-      if (selectedConversationId !== preferredConversationId) {
-        setSelectedConversationId(preferredConversationId);
-      }
+    const selectedStillExists = Boolean(selectedConversationId && sorted.some(item => item.id === selectedConversationId));
+
+    if (selectedStillExists) {
       return;
     }
 
-    if (!selectedConversationId || !sorted.some(item => item.id === selectedConversationId)) {
-      setSelectedConversationId(sorted[0].id);
+    if (preferredConversationId && sorted.some(item => item.id === preferredConversationId)) {
+      setSelectedConversationId(preferredConversationId);
+      return;
     }
+
+    setSelectedConversationId(sorted[0].id);
   }, [preferredConversationId, selectedConversationId, sorted]);
 
   return {

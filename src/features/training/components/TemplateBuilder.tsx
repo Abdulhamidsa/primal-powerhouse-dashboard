@@ -9,10 +9,71 @@ import { difficultyLevelEnum } from '../enums/training.enums';
 import type { TemplateExerciseInput, CreateWorkoutTemplateInput } from '../schemas/template.schemas';
 import type { WorkoutTemplateWithExercises } from '../types';
 import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
+import type { Exercise } from '@prisma/client';
 
 type ExercisePickerOption =
-  | { key: string; source: 'local'; id: string; name: string }
+  | { key: string; source: 'local'; id: string; name: string; exercise: Exercise }
   | { key: string; source: 'catalog'; id: string; name: string; exercise: ExerciseDbExercise };
+
+function getOptionMedia(option: ExercisePickerOption | null): { videoUrl: string | null; imageUrl: string | null } {
+  if (!option) return { videoUrl: null, imageUrl: null };
+  if (option.source === 'local') {
+    return {
+      videoUrl: option.exercise.videoUrl?.trim() || null,
+      imageUrl: option.exercise.imageUrl?.trim() || null,
+    };
+  }
+
+  return {
+    videoUrl: option.exercise.videoUrl?.trim() || null,
+    imageUrl: option.exercise.imageUrl?.trim() || option.exercise.gifUrl?.trim() || null,
+  };
+}
+
+function ExerciseMediaPreview({
+  name,
+  videoUrl,
+  imageUrl,
+  compact = false,
+}: {
+  name: string;
+  videoUrl: string | null;
+  imageUrl: string | null;
+  compact?: boolean;
+}) {
+  const sizeClass = compact ? 'h-14 w-20' : 'h-32 w-full';
+
+  if (videoUrl) {
+    return (
+      <video
+        src={videoUrl}
+        className={`${sizeClass} rounded-2xl border border-white/10 bg-black object-cover`}
+        muted
+        playsInline
+        preload="metadata"
+      />
+    );
+  }
+
+  if (imageUrl) {
+    return (
+      // GIFs should remain animated in the admin picker.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt={`${name} demo`}
+        className={`${sizeClass} rounded-2xl border border-white/10 bg-black object-cover`}
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div className={`${sizeClass} grid place-items-center rounded-2xl border border-dashed border-white/10 bg-white/[0.025] text-[11px] text-muted-foreground`}>
+      No demo
+    </div>
+  );
+}
 
 export function TemplateBuilder() {
   const { exercises, importExerciseDbExercise } = useCoachExercises();
@@ -204,10 +265,11 @@ export function TemplateBuilder() {
   };
 
   const getExerciseName = (id: string) => exercises?.find(e => e.id === id)?.name ?? 'Unknown';
+  const getExerciseById = (id: string) => exercises?.find(e => e.id === id) ?? null;
   const localPickerOptions: ExercisePickerOption[] = (exercises ?? [])
     .filter(exercise => exercise.name.toLowerCase().includes(exerciseSearch.trim().toLowerCase()))
     .slice(0, 20)
-    .map(exercise => ({ key: `local:${exercise.id}`, source: 'local', id: exercise.id, name: exercise.name }));
+    .map(exercise => ({ key: `local:${exercise.id}`, source: 'local', id: exercise.id, name: exercise.name, exercise }));
   const localOptionNames = new Set(localPickerOptions.map(option => option.name.toLowerCase()));
   const catalogPickerOptions: ExercisePickerOption[] = catalogExercises
     .filter(exercise => !localOptionNames.has(exercise.name.toLowerCase()))
@@ -223,6 +285,8 @@ export function TemplateBuilder() {
     ? ('total' in catalogMetadata ? catalogMetadata.total : catalogMetadata.totalExercises)
     : null;
   const pickerOptions = [...localPickerOptions, ...catalogPickerOptions];
+  const selectedPickerOption = pickerOptions.find(option => option.key === selectedExerciseKey) ?? null;
+  const selectedPickerMedia = getOptionMedia(selectedPickerOption);
   const difficultyOptions = difficultyLevelEnum.options;
 
   return (
@@ -367,6 +431,26 @@ export function TemplateBuilder() {
                     {catalogTotal ? ` (${catalogTotal} catalog matches)` : ''}.
                     {catalogError ? ` Catalog error: ${catalogError}` : ''}
                   </p>
+                  {selectedPickerOption ? (
+                    <div className="mt-3 grid gap-3 rounded-2xl border border-white/10 bg-black/10 p-3 md:grid-cols-[180px_minmax(0,1fr)]">
+                      <ExerciseMediaPreview
+                        name={selectedPickerOption.name}
+                        videoUrl={selectedPickerMedia.videoUrl}
+                        imageUrl={selectedPickerMedia.imageUrl}
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground">{selectedPickerOption.name}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                          {selectedPickerOption.source === 'local' ? 'Training library' : 'ExerciseDB catalog'}
+                        </p>
+                        {selectedPickerOption.source === 'catalog' && selectedPickerOption.exercise.instructions?.length ? (
+                          <p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">
+                            {selectedPickerOption.exercise.instructions.slice(0, 2).join(' ')}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Exercise List */}
@@ -377,8 +461,15 @@ export function TemplateBuilder() {
                     formData.exercises.map((ex, idx) => (
                       <div key={idx} className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="font-medium">{getExerciseName(ex.exerciseId)}</p>
+                          <div className="flex flex-1 gap-3">
+                            <ExerciseMediaPreview
+                              name={getExerciseName(ex.exerciseId)}
+                              videoUrl={getExerciseById(ex.exerciseId)?.videoUrl?.trim() || null}
+                              imageUrl={getExerciseById(ex.exerciseId)?.imageUrl?.trim() || null}
+                              compact
+                            />
+                            <div className="min-w-0 flex-1">
+                            <p className="font-medium text-foreground">{getExerciseName(ex.exerciseId)}</p>
                             <div className="grid grid-cols-4 gap-2 mt-2">
                               <div>
                                 <label className="mb-1 block text-xs text-muted-foreground">Sets</label>
@@ -430,6 +521,7 @@ export function TemplateBuilder() {
                                 className="w-full rounded-lg border border-white/10 bg-[var(--color-bg)] px-2 py-1 text-sm text-foreground placeholder:text-muted-foreground"
                                 placeholder="Optional cue, setup note, or coaching focus"
                               />
+                            </div>
                             </div>
                           </div>
                         </div>

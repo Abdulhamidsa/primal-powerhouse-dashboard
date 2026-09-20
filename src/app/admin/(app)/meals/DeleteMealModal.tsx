@@ -1,4 +1,5 @@
 import React from 'react';
+import { Trash2, X } from 'lucide-react';
 
 type DeleteMealModalProps = {
   isOpen: boolean;
@@ -13,17 +14,44 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 rounded-2xl max-w-sm w-full p-6 border border-zinc-700">
-        <h2 className="text-2xl font-bold text-zinc-100 mb-4">Delete Meal?</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4 backdrop-blur-md">
+      <div className="w-full max-w-md overflow-hidden rounded-[28px] border border-red-500/20 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+        <div className="border-b border-white/10 px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-red-500/25 bg-red-500/10 text-red-300">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-red-300">Danger zone</p>
+                <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Delete meal?</h2>
+              </div>
+            </div>
 
-        <p className="text-zinc-400 mb-6">Are you sure you want to delete this meal? This action cannot be undone.</p>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={deleting}
+              aria-label="Close"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
 
-        <div className="flex gap-4">
+        <div className="px-6 py-5">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Are you sure you want to delete this meal? This action cannot be undone and the meal will no longer be
+            available from this library.
+          </p>
+        </div>
+
+        <div className="flex gap-3 border-t border-white/10 bg-white/[0.025] px-6 py-5">
           <button
             onClick={onCancel}
             disabled={deleting}
-            className="flex-1 px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
           </button>
@@ -31,29 +59,16 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
           <button
             onClick={onConfirm}
             disabled={deleting}
-            className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-red-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(239,68,68,0.18)] transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {deleting ? (
               <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 Deleting...
               </>
             ) : (
               <>
-                <svg
-                  className="w-4 h-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
+                <Trash2 className="h-4 w-4" />
                 Delete
               </>
             )}

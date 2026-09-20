@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { ChevronDown, Copy, Sparkles } from 'lucide-react';
+import { ChevronDown, Copy, Sparkles, Wand2, X } from 'lucide-react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
 import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 import { useGenerateMealTemplate } from '@/features/meals/hooks/useGenerateMealTemplate';
@@ -706,25 +706,33 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 bg-black/72 backdrop-blur-md">
       <div className="flex min-h-full items-center justify-center p-2 sm:p-6">
-        <div className="modal-content w-full max-w-5xl rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl">
-          <div className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-4 backdrop-blur sm:px-6">
+        <div className="modal-content max-h-[92vh] w-full max-w-5xl rounded-[30px] border border-white/10 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+          <div className="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/92 px-4 py-4 backdrop-blur-xl sm:px-6">
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-foreground">Build Meal</h2>
-                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                  Create a meal or side template from your ingredients database.
-                </p>
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
+                  <Wand2 size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+                    Template builder
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Build Meal</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Create a meal or side template from your ingredients database.
+                  </p>
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={onCloseAction}
                 aria-label="Close"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
               >
-                <span className="text-xl leading-none">&times;</span>
+                <X size={18} />
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Utensils, Flame, BarChart3, Filter } from 'lucide-react';
+import { BarChart3, ChefHat, Filter, Flame, Leaf } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 
 type Meal = {
@@ -9,22 +9,30 @@ type Meal = {
 
 type StatsOverviewProps = {
   meals: Meal[];
+  sidesCount: number;
   filteredMealsCount: number;
   loading: boolean;
 };
 
-export const StatsOverview = ({ meals, filteredMealsCount, loading }: StatsOverviewProps) => {
-  const totalMeals = meals.length;
+export const StatsOverview = ({ meals, sidesCount, filteredMealsCount, loading }: StatsOverviewProps) => {
+  const totalItems = meals.length;
 
-  const avgCalories = totalMeals > 0 ? Math.round(meals.reduce((sum, meal) => sum + meal.calories, 0) / totalMeals) : 0;
+  const avgCalories =
+    totalItems > 0 ? Math.round(meals.reduce((sum, meal) => sum + (Number(meal.calories) || 0), 0) / totalItems) : 0;
 
-  const avgProtein = totalMeals > 0 ? Math.round(meals.reduce((sum, meal) => sum + meal.protein, 0) / totalMeals) : 0;
+  const avgProtein =
+    totalItems > 0 ? Math.round(meals.reduce((sum, meal) => sum + (Number(meal.protein) || 0), 0) / totalItems) : 0;
 
   const stats = [
     {
-      title: 'Total Meals',
-      value: loading ? '...' : totalMeals,
-      icon: Utensils,
+      title: 'Library items',
+      value: loading ? '...' : totalItems,
+      icon: ChefHat,
+    },
+    {
+      title: 'Sides',
+      value: loading ? '...' : sidesCount,
+      icon: Leaf,
     },
     {
       title: 'Avg Calories',
@@ -44,15 +52,8 @@ export const StatsOverview = ({ meals, filteredMealsCount, loading }: StatsOverv
   ];
 
   return (
-    <section className="mb-8">
-      <div className="mb-4 space-y-1">
-        <h2 className="text-foreground">Overview</h2>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          A quick summary of your meal library and current filter results.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <section>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map(stat => (
           <StatsCard key={stat.title} title={stat.title} value={stat.value} icon={stat.icon} />
         ))}

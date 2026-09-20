@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Mail, Phone, CreditCard, FileText, Wand2 } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, FileText, Wand2, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAddClientLead } from '@/features/client-leads/hooks/useAddClientLead';
 import { addClientLeadSchema } from '@/features/client-leads/schemas/clientLead.schemas';
@@ -80,24 +80,31 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-lg p-0 overflow-hidden"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+        className="max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
       >
-        <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-              Add New Lead
-            </DialogTitle>
-            <DialogDescription style={{ color: 'var(--color-text-muted)' }}>
-              Track a new prospect in your pipeline.
-            </DialogDescription>
-          </DialogHeader>
+        <div className="border-b border-white/10 px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">Add New Lead</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                Track a new prospect in your pipeline.
+              </DialogDescription>
+            </DialogHeader>
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Close"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <User size={14} />
                 Full Name *
@@ -107,16 +114,11 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               type="text"
               value={formData.name}
               onChange={e => handleChange('name', e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm"
-              style={{
-                background: 'var(--color-bg-alt)',
-                color: 'var(--color-text)',
-                borderColor: errors.name ? 'var(--color-accent)' : 'var(--color-border)',
-              }}
+              className={`w-full rounded-2xl border bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none focus:border-[var(--color-accent)]/45 ${errors.name ? 'border-red-500/60' : 'border-white/10'}`}
               placeholder="John Smith"
             />
             {errors.name && (
-              <p className="text-xs mt-1" style={{ color: 'var(--color-accent)' }}>
+              <p className="mt-1 text-xs text-red-300">
                 {errors.name}
               </p>
             )}
@@ -124,7 +126,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Mail size={14} />
                 Email Address
@@ -136,12 +138,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
                 type="email"
                 value={formData.email}
                 onChange={e => handleChange('email', e.target.value)}
-                className="flex-1 px-3 py-2.5 rounded-lg border text-sm"
-                style={{
-                  background: 'var(--color-bg-alt)',
-                  color: 'var(--color-text)',
-                  borderColor: errors.email ? 'var(--color-accent)' : 'var(--color-border)',
-                }}
+                className={`min-w-0 flex-1 rounded-2xl border bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none focus:border-[var(--color-accent)]/45 ${errors.email ? 'border-red-500/60' : 'border-white/10'}`}
                 placeholder="john@example.com"
               />
               <button
@@ -149,20 +146,19 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
                 onClick={handleGenerateEmail}
                 disabled={formData.name.trim().length < 2}
                 title="Generate @primalpowerhouse.com email from name"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 whitespace-nowrap"
-                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:opacity-40"
               >
                 <Wand2 size={13} />
                 Generate
               </button>
             </div>
             {errors.email && (
-              <p className="text-xs mt-1" style={{ color: 'var(--color-accent)' }}>
+              <p className="mt-1 text-xs text-red-300">
                 {errors.email}
               </p>
             )}
             {formData.email.includes('@primalpowerhouse.com') && (
-              <p className="text-xs mt-1 opacity-60" style={{ color: 'var(--color-text-muted)' }}>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Server will verify uniqueness and adjust if needed.
               </p>
             )}
@@ -170,7 +166,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Phone size={14} />
                 Phone
@@ -181,19 +177,14 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               type="tel"
               value={formData.phone}
               onChange={e => handleChange('phone', e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm"
-              style={{
-                background: 'var(--color-bg-alt)',
-                color: 'var(--color-text)',
-                borderColor: 'var(--color-border)',
-              }}
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none focus:border-[var(--color-accent)]/45"
               placeholder="+1 555 123 4567"
             />
           </div>
 
           {/* Subscription Type */}
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <CreditCard size={14} />
                 Subscription Type
@@ -203,19 +194,14 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               type="text"
               value={formData.subscriptionType}
               onChange={e => handleChange('subscriptionType', e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm"
-              style={{
-                background: 'var(--color-bg-alt)',
-                color: 'var(--color-text)',
-                borderColor: 'var(--color-border)',
-              }}
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none focus:border-[var(--color-accent)]/45"
               placeholder="e.g. 3-month coaching, Online plan"
             />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+            <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <FileText size={14} />
                 Notes
@@ -225,34 +211,23 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               value={formData.notes}
               onChange={e => handleChange('notes', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm resize-none"
-              style={{
-                background: 'var(--color-bg-alt)',
-                color: 'var(--color-text)',
-                borderColor: 'var(--color-border)',
-              }}
+              className="w-full resize-none rounded-2xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none focus:border-[var(--color-accent)]/45"
               placeholder="Any relevant notes about this lead..."
             />
           </div>
 
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-3 border-t border-white/10 pt-5">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-              style={{
-                background: 'var(--color-bg-alt)',
-                color: 'var(--color-text-muted)',
-                border: '1px solid var(--color-border)',
-              }}
+              className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
-              style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+              className="flex-1 rounded-2xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               {isLoading ? 'Adding...' : 'Add Lead'}
             </button>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import NextImage from 'next/image';
-import { ChevronDown, ChevronUp, Copy, Sparkles } from 'lucide-react';
+import { ChefHat, ChevronDown, ChevronUp, Copy, Sparkles, X } from 'lucide-react';
 import { DataService } from '@/services/dataService';
 import ImageUpload from '@/components/ImageUpload';
 import IngredientSearch from '@/components/IngredientSearch';
@@ -700,37 +700,53 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-zinc-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-zinc-100">Edit Meal</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-3 backdrop-blur-md sm:p-6">
+      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-white/10 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+        <div className="sticky top-0 z-30 border-b border-white/10 bg-zinc-950/92 px-6 py-5 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
+                <ChefHat size={20} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+                  Meal editor
+                </p>
+                <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Edit Meal</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Update recipe details, nutrition, ingredients, and image.
+                </p>
+              </div>
+            </div>
             <button
               onClick={() => {
                 onCloseAction();
                 resetForm();
               }}
-              className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+              aria-label="Close"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
             >
-              <span className="text-2xl text-zinc-400">&times;</span>
+              <X size={18} />
             </button>
           </div>
         </div>
 
         {fetchingMeal ? (
-          <div className="p-12 flex items-center justify-center">
+          <div className="flex min-h-[360px] items-center justify-center p-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-zinc-400">Loading meal data...</p>
+              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-[var(--color-accent)]" />
+              <p className="text-sm text-muted-foreground">Loading meal data...</p>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="max-h-[calc(92vh-92px)] space-y-6 overflow-y-auto px-6 pt-6">
             {errors.general && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{errors.general}</div>
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                {errors.general}
+              </div>
             )}
 
-            <div className="sticky top-0 z-20 rounded-xl border border-zinc-700 bg-zinc-900/95 p-3 shadow-lg backdrop-blur">
+            <div className="sticky top-0 z-20 rounded-[22px] border border-white/10 bg-zinc-950/92 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.24)] backdrop-blur-xl">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-zinc-300">Live Totals</p>
@@ -743,34 +759,34 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
 
               <div className="mt-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-2 text-center">
                     <p className="text-[10px] text-zinc-400">kcal</p>
                     <p className="text-sm font-semibold text-zinc-100">{totalsPreview.calories}</p>
                     <p className="text-[10px] text-zinc-500">{perServingPreview.calories}/serv</p>
                   </div>
-                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-2 text-center">
                     <p className="text-[10px] text-zinc-400">Protein</p>
                     <p className="text-sm font-semibold text-zinc-100">{totalsPreview.protein}g</p>
                     <p className="text-[10px] text-zinc-500">{perServingPreview.protein}g/serv</p>
                   </div>
-                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-2 text-center">
                     <p className="text-[10px] text-zinc-400">Carbs</p>
                     <p className="text-sm font-semibold text-zinc-100">{totalsPreview.carbs}g</p>
                     <p className="text-[10px] text-zinc-500">{perServingPreview.carbs}g/serv</p>
                   </div>
-                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-2 text-center">
                     <p className="text-[10px] text-zinc-400">Fat</p>
                     <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fat}g</p>
                     <p className="text-[10px] text-zinc-500">{perServingPreview.fat}g/serv</p>
                   </div>
-                  <div className="rounded-lg bg-zinc-800 px-2 py-2 text-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-2 py-2 text-center">
                     <p className="text-[10px] text-zinc-400">Fiber</p>
                     <p className="text-sm font-semibold text-zinc-100">{totalsPreview.fiber}g</p>
                     <p className="text-[10px] text-zinc-500">{perServingPreview.fiber}g/serv</p>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-300">Scale ingredients</p>
@@ -1298,21 +1314,21 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             </div>
 
             {/* Form Actions */}
-            <div className="flex gap-4 pt-6 border-t border-zinc-700">
+            <div className="sticky bottom-0 -mx-6 flex gap-3 border-t border-white/10 bg-zinc-950/92 px-6 py-5 backdrop-blur-xl">
               <button
                 type="button"
                 onClick={() => {
                   onCloseAction();
                   resetForm();
                 }}
-                className="flex-1 px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors font-medium"
+                className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] shadow-[0_16px_36px_rgba(0,0,0,0.24)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? 'Updating...' : 'Update Meal'}
               </button>
