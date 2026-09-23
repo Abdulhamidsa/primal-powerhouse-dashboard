@@ -5,6 +5,7 @@ import { requireApiAuth } from '@/lib/api-auth';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { createClientSchema } from '@/features/client-creation/schemas/clientCreation.schema';
+import { ClientStatus } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,12 +45,12 @@ export async function GET(request: NextRequest) {
     const legacyArchived = searchParams.get('archived') === 'true';
     const requestedStatus = searchParams.get('status');
     const includeCounts = searchParams.get('includeCounts') === 'true';
-    const status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' = legacyArchived
-      ? 'ARCHIVED'
+    const status: ClientStatus = legacyArchived
+      ? ClientStatus.ARCHIVED
       : requestedStatus && ['ACTIVE', 'INACTIVE', 'ARCHIVED'].includes(requestedStatus)
-        ? (requestedStatus as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED')
-        : 'ACTIVE';
-    const statusFilter = status === 'INACTIVE' ? { in: ['INACTIVE', 'PAUSED'] } : status;
+        ? (requestedStatus as ClientStatus)
+        : ClientStatus.ACTIVE;
+    const statusFilter = status === ClientStatus.INACTIVE ? { in: [ClientStatus.INACTIVE, ClientStatus.PAUSED] } : status;
     const starterClientId = process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim();
     const clients = await prisma.client.findMany({
       where: {
