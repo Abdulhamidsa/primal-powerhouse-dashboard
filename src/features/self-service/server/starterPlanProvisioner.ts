@@ -23,7 +23,10 @@ function ensureSelfService(client: { accessMode: string | null }) {
 
 async function withClientLock<T>(clientId: string, kind: string, work: (tx: any) => Promise<T>): Promise<T> {
   return prisma.$transaction(async tx => {
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`self-service:${kind}:${clientId}`}))`;
+    // pg_advisory_xact_lock returns PostgreSQL's `void` type. Selecting it
+    // directly makes Prisma try to deserialize a void column, so project the
+    // lock call through a scalar-only outer query instead.
+    await tx.$queryRaw`SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtext(${`self-service:${kind}:${clientId}`}))) AS lock_acquired`;
     return work(tx);
   }, { isolationLevel: 'Serializable', maxWait: 5000, timeout: 20000 });
 }
