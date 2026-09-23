@@ -2,11 +2,15 @@ import { httpClient } from '@/lib/http/client';
 import type {
   AdminClientListItem,
   AdminClientDetail,
+  AdminClientStatus,
+  AdminClientsListResponse,
 } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import type { VideoAssignment } from '@/types/video';
 
-export function buildClientsListUrl(archived = false): string {
-  return archived ? '/api/clients?archived=true' : '/api/clients';
+export function buildClientsListUrl(status: AdminClientStatus = 'ACTIVE', includeCounts = false): string {
+  const searchParams = new URLSearchParams({ status });
+  if (includeCounts) searchParams.set('includeCounts', 'true');
+  return `/api/clients?${searchParams.toString()}`;
 }
 
 export function buildClientDetailUrl(clientId: string): string {
@@ -30,8 +34,15 @@ export function buildMealAssignmentUrl(assignmentId: string): string {
   return `/api/meal-assignments/${encodeURIComponent(assignmentId)}`;
 }
 
-export async function getAdminClientsList(): Promise<AdminClientListItem[]> {
-  return httpClient.get<AdminClientListItem[]>(buildClientsListUrl());
+export async function getAdminClientsList(status: AdminClientStatus = 'ACTIVE'): Promise<AdminClientListItem[]> {
+  return httpClient.get<AdminClientListItem[]>(buildClientsListUrl(status));
+}
+
+export async function requestAdminClientDeletion(
+  clientId: string,
+  confirmation: 'DELETE',
+): Promise<{ success: true; request: { id: string; status: string; scheduledHardDeleteAt: string } }> {
+  return httpClient.post(`/api/admin/clients/${encodeURIComponent(clientId)}/privacy-delete`, { confirmation });
 }
 
 export async function getAdminClientDetail(clientId: string): Promise<AdminClientDetail> {

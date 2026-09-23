@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import { Plus, Search, Users } from 'lucide-react';
-import type { AdminClientListItem } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import type { AdminClientListItem, AdminClientStatus } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export function ClientListPane({
   clients,
   selectedClientId,
   search,
   viewMode,
+  counts,
   onAddClientAction,
   onSearchChangeAction,
   onSelectClientAction,
@@ -15,11 +16,12 @@ export function ClientListPane({
   clients: AdminClientListItem[];
   selectedClientId: string | null;
   search: string;
-  viewMode: 'active' | 'archived';
+  viewMode: AdminClientStatus;
+  counts: Record<AdminClientStatus, number>;
   onAddClientAction: () => void;
   onSearchChangeAction: (value: string) => void;
   onSelectClientAction: (clientId: string) => void;
-  onViewModeChangeAction: (mode: 'active' | 'archived') => void;
+  onViewModeChangeAction: (mode: AdminClientStatus) => void;
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -33,11 +35,11 @@ export function ClientListPane({
             <h2 className="text-sm font-semibold text-foreground">
               Clients
             </h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">{clients.length} {viewMode} clients</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{clients.length} {viewMode.toLowerCase()} clients</p>
             </div>
           </div>
 
-          {viewMode === 'active' && (
+          {viewMode === 'ACTIVE' && (
             <button
               type="button"
               onClick={onAddClientAction}
@@ -49,20 +51,21 @@ export function ClientListPane({
           )}
         </div>
 
-        <div className="mb-3 flex overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-1">
-          {(['active', 'archived'] as const).map(mode => (
+        <div className="mb-3 grid grid-cols-3 overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-1">
+          {(['ACTIVE', 'INACTIVE', 'ARCHIVED'] as const).map(mode => (
             <button
               key={mode}
               type="button"
               onClick={() => onViewModeChangeAction(mode)}
               className={[
-                'flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition-colors',
+                'rounded-lg py-2 text-[11px] font-semibold transition-colors',
                 viewMode === mode
                   ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]'
                   : 'text-muted-foreground hover:text-foreground',
               ].join(' ')}
             >
-              {mode}
+              <span className="block">{mode === 'ACTIVE' ? 'Active' : mode === 'INACTIVE' ? 'Inactive' : 'Archived'}</span>
+              <span className="mt-0.5 block text-[10px] opacity-70">{counts[mode]}</span>
             </button>
           ))}
         </div>
@@ -117,6 +120,11 @@ export function ClientListPane({
                   <p className="truncate text-xs text-muted-foreground">
                     {client.email}
                   </p>
+                  {client.status === 'INACTIVE' && client.deletionScheduledFor ? (
+                    <p className="truncate text-[10px] text-amber-200/80">
+                      Deletion scheduled {new Date(client.deletionScheduledFor).toLocaleDateString()}
+                    </p>
+                  ) : null}
                 </div>
                 {client.isSystemTemplate ? (
                   <span className="shrink-0 rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">

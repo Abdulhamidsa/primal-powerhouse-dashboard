@@ -18,6 +18,15 @@ export type AdminClientListItem = {
   currentWeight: number | null;
   targetWeight: number | null;
   updatedAt: string;
+  deletionScheduledFor?: string | null;
+  deactivatedAt?: string | null;
+};
+
+export type AdminClientStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+
+export type AdminClientsListResponse = {
+  clients: AdminClientListItem[];
+  counts: Record<AdminClientStatus, number>;
 };
 
 export type AdminClientDetail = {
@@ -42,6 +51,8 @@ export type AdminClientDetail = {
   goalCalories: number | null;
   goalMacros: string | null;
   motivationalMessage: string | null;
+  deletionScheduledFor?: string | null;
+  deactivatedAt?: string | null;
 };
 
 export type ClientNoteEntry = {

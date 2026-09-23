@@ -41,11 +41,19 @@ export async function GET(request: NextRequest) {
       userId = defaultCoach.id;
     }
 
-    const showArchived = searchParams.get('archived') === 'true';
+    const legacyArchived = searchParams.get('archived') === 'true';
+    const requestedStatus = searchParams.get('status');
+    const includeCounts = searchParams.get('includeCounts') === 'true';
+    const status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' = legacyArchived
+      ? 'ARCHIVED'
+      : requestedStatus && ['ACTIVE', 'INACTIVE', 'ARCHIVED'].includes(requestedStatus)
+        ? (requestedStatus as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED')
+        : 'ACTIVE';
+    const statusFilter = status === 'INACTIVE' ? { in: ['INACTIVE', 'PAUSED'] } : status;
     const starterClientId = process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim();
     const clients = await prisma.client.findMany({
       where: {
-        ...(showArchived ? { status: 'ARCHIVED' } : { status: { not: 'ARCHIVED' } }),
+        status: statusFilter,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -58,6 +66,19 @@ export async function GET(request: NextRequest) {
       goals: client.goals ? JSON.parse(client.goals) : [],
       progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
     }));
+
+    if (includeCounts) {
+      const groupedCounts = await prisma.client.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      });
+      const counts = { ACTIVE: 0, INACTIVE: 0, ARCHIVED: 0 };
+      for (const group of groupedCounts) {
+        if (group.status === 'PAUSED') counts.INACTIVE += group._count._all;
+        else if (group.status in counts) counts[group.status as keyof typeof counts] += group._count._all;
+      }
+      return jsonWithCache({ clients: parsedClients, counts });
+    }
 
     return jsonWithCache(parsedClients);
   } catch (error) {

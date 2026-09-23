@@ -39,6 +39,7 @@ import {
   unarchiveClient,
   updateClientAccessMode,
   buildClientVideoAssignmentsUrl,
+  requestAdminClientDeletion,
 } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
 import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
@@ -149,6 +150,11 @@ function ClientCommandHeader({
               <Mail size={14} />
               {client.email}
             </p>
+            {client.status === 'INACTIVE' && client.deletionScheduledFor ? (
+              <p className="mt-2 text-xs text-amber-200/80">
+                Access removed · deletion scheduled {new Date(client.deletionScheduledFor).toLocaleDateString()}
+              </p>
+            ) : null}
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               <ClientMetric label="Current weight" value={summaryWeightKg == null ? 'N/A' : `${summaryWeightKg} kg`} />
               <ClientMetric label="Target weight" value={client.targetWeight == null ? 'N/A' : `${client.targetWeight} kg`} />
@@ -159,7 +165,7 @@ function ClientCommandHeader({
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
-        {!client.isSystemTemplate ? <button
+         {!client.isSystemTemplate && client.status === 'ACTIVE' ? <button
             type="button"
             onClick={onEditProfileAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
@@ -167,7 +173,7 @@ function ClientCommandHeader({
             <UserPen size={15} />
             Edit profile
           </button> : null}
-          {!client.isSystemTemplate ? <button
+           {!client.isSystemTemplate && client.status === 'ACTIVE' ? <button
             type="button"
             onClick={onOpenHealthMetricsAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
@@ -175,7 +181,7 @@ function ClientCommandHeader({
             <Calculator size={15} />
             Health metrics
           </button> : null}
-          {!client.isSystemTemplate ? <button
+           {!client.isSystemTemplate && client.status !== 'INACTIVE' ? <button
             type="button"
             onClick={onArchiveClientAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
@@ -224,6 +230,10 @@ export default function ClientsPage() {
   const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
   const [showChangeUserDrawer, setShowChangeUserDrawer] = useState(false);
   const [showCommunicationDrawer, setShowCommunicationDrawer] = useState(false);
+  const [showDeleteClientDialog, setShowDeleteClientDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleteClientError, setDeleteClientError] = useState<string | null>(null);
+  const [isDeletingClient, setIsDeletingClient] = useState(false);
   const [changeUserSearch, setChangeUserSearch] = useState('');
 
   const {
@@ -232,6 +242,7 @@ export default function ClientsPage() {
     setSearch,
     viewMode,
     setViewMode,
+    counts: clientCounts,
     isLoading: isClientsLoading,
     error: clientsError,
     refresh: refreshClients,
@@ -478,6 +489,25 @@ export default function ClientsPage() {
     }
   };
 
+  const handleDeleteClient = async () => {
+    if (!selectedClientId || !client || deleteConfirmation !== 'DELETE') return;
+    setIsDeletingClient(true);
+    setDeleteClientError(null);
+
+    try {
+      await requestAdminClientDeletion(selectedClientId, 'DELETE');
+      setShowDeleteClientDialog(false);
+      setDeleteConfirmation('');
+      setShowCommunicationDrawer(false);
+      await refreshClients();
+      setSelectedClientId(null);
+    } catch (error) {
+      setDeleteClientError(error instanceof Error ? error.message : 'Failed to delete client.');
+    } finally {
+      setIsDeletingClient(false);
+    }
+  };
+
   const handleAccessModeChange = async (mode: 'SELF_SERVICE' | 'COACHING') => {
     if (!selectedClientId || !client || client.accessMode === mode) return;
     try {
@@ -573,8 +603,8 @@ export default function ClientsPage() {
         eyebrow="Client operations"
         title="Clients Workbench"
         description="Review client progress, handle coaching tasks, and keep chat and notes close while you work."
-        actions={
-          <button
+         actions={
+           <button
             type="button"
             onClick={() => setShowAddClientModal(true)}
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
@@ -607,6 +637,7 @@ export default function ClientsPage() {
                 selectedClientId={selectedClientId}
                 search={search}
                 viewMode={viewMode}
+                counts={clientCounts}
                 onAddClientAction={() => setShowAddClientModal(true)}
                 onSearchChangeAction={setSearch}
                 onSelectClientAction={handleSelectClient}
@@ -767,6 +798,7 @@ export default function ClientsPage() {
                     <p className="text-xs leading-5 text-muted-foreground">
                       Common actions for {client.name}. These use the existing modals and refresh behavior.
                     </p>
+                    {client.status === 'ACTIVE' ? <>
                     <button
                       type="button"
                       onClick={() => {
@@ -805,14 +837,29 @@ export default function ClientsPage() {
                       <Calculator size={16} className="text-[var(--color-accent)]" />
                       Update health metrics
                     </button>
-                    <button
+                    </> : null}
+                    {client.status !== 'INACTIVE' ? <button
                       type="button"
                       onClick={handleArchiveClient}
                       className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
                     >
                       {client.status === 'ARCHIVED' ? <Undo2 size={16} /> : <Archive size={16} />}
                       {client.status === 'ARCHIVED' ? 'Restore client' : 'Archive client'}
-                    </button>
+                    </button> : null}
+                     {client.status === 'ACTIVE' ? (
+                       <button
+                         type="button"
+                         onClick={() => {
+                           setDeleteClientError(null);
+                           setDeleteConfirmation('');
+                           setShowDeleteClientDialog(true);
+                         }}
+                         className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.04] px-3 py-3 text-left text-sm text-red-200 transition-colors hover:bg-red-500/[0.09]"
+                       >
+                         <Archive size={16} />
+                         Delete client
+                       </button>
+                     ) : null}
                   </div>
                 )}
               </div>
@@ -952,6 +999,46 @@ export default function ClientsPage() {
                   </p>
                 ) : null}
               </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {client && showDeleteClientDialog ? (
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-client-title">
+          <div className="w-full max-w-md rounded-3xl border border-red-400/20 bg-[rgba(22,16,18,0.98)] p-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">Danger zone</p>
+                <h2 id="delete-client-title" className="mt-2 text-xl font-semibold text-foreground">Delete {client.name}?</h2>
+              </div>
+              <button type="button" aria-label="Close delete dialog" onClick={() => setShowDeleteClientDialog(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X size={17} /></button>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              This immediately removes access and anonymizes the client. Permanent deletion will be scheduled using the existing privacy grace period.
+            </p>
+            <label className="mt-5 block text-xs font-semibold text-foreground" htmlFor="delete-client-confirmation">
+              Type DELETE to confirm
+            </label>
+            <input
+              id="delete-client-confirmation"
+              autoFocus
+              value={deleteConfirmation}
+              onChange={event => setDeleteConfirmation(event.target.value)}
+              placeholder="DELETE"
+              className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-foreground outline-none focus:border-red-300/60"
+            />
+            {deleteClientError ? <p className="mt-3 text-sm text-red-300">{deleteClientError}</p> : null}
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setShowDeleteClientDialog(false)} className="rounded-xl border border-white/10 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">Cancel</button>
+              <button
+                type="button"
+                onClick={handleDeleteClient}
+                disabled={isDeletingClient || deleteConfirmation !== 'DELETE'}
+                className="rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isDeletingClient ? 'Deleting…' : 'Delete client'}
+              </button>
             </div>
           </div>
         </div>

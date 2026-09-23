@@ -5,19 +5,19 @@ import useSWR from 'swr';
 import type { ApiError } from '@/lib/fetcher';
 import { httpClient } from '@/lib/http/client';
 import { buildClientsListUrl } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
-import type { AdminClientListItem } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import type { AdminClientListItem, AdminClientStatus, AdminClientsListResponse } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export function useAdminClientsList() {
   const [search, setSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'active' | 'archived'>('active');
+  const [viewMode, setViewMode] = useState<AdminClientStatus>('ACTIVE');
   const deferredSearch = useDeferredValue(search);
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<AdminClientListItem[], ApiError>(
-    buildClientsListUrl(viewMode === 'archived'),
-    (url: string) => httpClient.get<AdminClientListItem[]>(url),
+  const { data: response, error, isLoading, isValidating, mutate } = useSWR<AdminClientsListResponse, ApiError>(
+    buildClientsListUrl(viewMode, true),
+    (url: string) => httpClient.get<AdminClientsListResponse>(url),
   );
 
-  const clients = useMemo(() => data ?? [], [data]);
+  const clients = useMemo(() => response?.clients ?? [], [response]);
 
   const filteredClients = useMemo(() => {
     const normalized = deferredSearch.trim().toLowerCase();
@@ -34,6 +34,7 @@ export function useAdminClientsList() {
     search,
     setSearch,
     viewMode,
+    counts: response?.counts ?? { ACTIVE: 0, INACTIVE: 0, ARCHIVED: 0 },
     setViewMode,
     error,
     isLoading,

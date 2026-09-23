@@ -30,7 +30,6 @@ export default function UserCheckInsPage() {
   const router = useRouter();
   const { user, isLoading: profileLoading } = useUserProfile();
   useEffect(() => { if (!profileLoading && user?.accessMode === 'SELF_SERVICE') router.replace('/user/dashboard'); }, [profileLoading, router, user?.accessMode]);
-  if (user?.accessMode === 'SELF_SERVICE') return null;
   const { mutate } = useSWRConfig();
   const { visibility } = useClientSelfFeatureVisibility();
   const { entry: dailyEntry } = useDailyCheckInToday();
@@ -78,6 +77,8 @@ export default function UserCheckInsPage() {
       mutate((key: unknown) => typeof key === 'string' && key.startsWith('/api/user/weekly-checkins')),
     ]);
   };
+
+  if (user?.accessMode === 'SELF_SERVICE') return null;
 
   if (visibility && !dailyEnabled && !weeklyEnabled) {
     return (
