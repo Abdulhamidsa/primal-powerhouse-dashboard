@@ -14,6 +14,7 @@ import {
   NotebookText,
   Search,
   Settings2,
+  Trash2,
   Undo2,
   UserPen,
   Users,
@@ -856,7 +857,7 @@ export default function ClientsPage() {
                          }}
                          className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.04] px-3 py-3 text-left text-sm text-red-200 transition-colors hover:bg-red-500/[0.09]"
                        >
-                         <Archive size={16} />
+                         <Trash2 size={16} />
                          Delete client
                        </button>
                      ) : null}
