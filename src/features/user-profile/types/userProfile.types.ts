@@ -13,6 +13,7 @@ export type UserProfile = {
   currentWeight: number | null;
   targetWeight: number | null;
   hasPassword: boolean;
+  accessMode: 'SELF_SERVICE' | 'COACHING';
   coach: UserProfileCoach | null;
 };
 

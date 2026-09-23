@@ -9,6 +9,7 @@ import {
 } from '@/features/meals/utils/mealSelection.server';
 import { computeSelectionTotals, macroDelta } from '@/features/meals/utils/mealSelection';
 import { saveMealSelectionSchema } from '@/features/meals/schemas/mealSelection.schema';
+import { StarterPlanSetupError } from '@/features/self-service/server/starterPlanProvisioner';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest) {
       hasSavedSelection: Boolean(selectionSet),
     });
   } catch (error) {
+    if (error instanceof StarterPlanSetupError) return jsonWithCache({ error: error.message }, { status: 503 });
     console.error('[USER_MEALS_SELECTION_GET] Failed:', error);
     return jsonWithCache({ error: 'Failed to load meal selection' }, { status: 500 });
   }
@@ -158,6 +160,7 @@ export async function PUT(request: NextRequest) {
       delta: macroDelta(selectedTotals, comparisonTotals),
     });
   } catch (error) {
+    if (error instanceof StarterPlanSetupError) return jsonWithCache({ error: error.message }, { status: 503 });
     console.error('[USER_MEALS_SELECTION_PUT] Failed:', error);
     return jsonWithCache({ error: 'Failed to save meal selection' }, { status: 500 });
   }

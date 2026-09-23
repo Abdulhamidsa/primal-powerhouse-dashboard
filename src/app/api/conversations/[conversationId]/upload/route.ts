@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { shouldUsePrivateChatMediaDelivery, validateChatMediaFile } from '@/lib/cloudinary';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { canAccessConversation, getRequestIpAddress, resolveActor } from '@/lib/chat/conversation';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 
 export const runtime = 'nodejs';
 
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!actor) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (actor.type === 'client' && !(await clientHasCoachingAccess(actor.clientId))) return coachingAccessDeniedResponse();
 
   const { conversationId } = await params;
   const conversation = await (prisma as any).conversation.findUnique({

@@ -62,6 +62,13 @@ export async function unarchiveClient(clientId: string): Promise<AdminClientDeta
   return httpClient.put<AdminClientDetail>(buildClientDetailUrl(clientId), { status: 'ACTIVE' });
 }
 
+export async function updateClientAccessMode(
+  clientId: string,
+  accessMode: 'SELF_SERVICE' | 'COACHING',
+): Promise<AdminClientDetail> {
+  return httpClient.put<AdminClientDetail>(buildClientDetailUrl(clientId), { accessMode });
+}
+
 export async function setClientMotivationalMessage(
   clientId: string,
   motivationalMessage: string,

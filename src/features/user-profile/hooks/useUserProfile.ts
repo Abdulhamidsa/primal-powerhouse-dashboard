@@ -11,9 +11,10 @@ import {
 } from '@/features/user-profile/api/userProfile.api';
 import type { PasswordLinkResponse, UserProfileResponse } from '@/features/user-profile/types/userProfile.types';
 
-export function useUserProfile() {
+export function useUserProfile(options: { enabled?: boolean } = {}) {
+  const enabled = options.enabled ?? true;
   const { data, error, isLoading, isValidating, mutate } = useSWR<UserProfileResponse, ApiError>(
-    USER_PROFILE_ME_URL,
+    enabled ? USER_PROFILE_ME_URL : null,
     getUserProfile,
     {
       keepPreviousData: true,

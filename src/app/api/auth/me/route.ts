@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         currentWeight: client.currentWeight,
         targetWeight: client.targetWeight,
         hasPassword: Boolean(client.password),
+        accessMode: client.accessMode,
         coach: client.coach,
       },
     });

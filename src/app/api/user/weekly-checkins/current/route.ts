@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
@@ -129,6 +130,7 @@ export async function GET(request: NextRequest) {
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!(await clientHasCoachingAccess(user.userId))) return coachingAccessDeniedResponse();
 
     const parsedQuery = weekStartSearchSchema.safeParse({
       weekStartDate: request.nextUrl.searchParams.get('weekStartDate') ?? '',
@@ -184,6 +186,7 @@ export async function PUT(request: NextRequest) {
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!(await clientHasCoachingAccess(user.userId))) return coachingAccessDeniedResponse();
 
     const json = await request.json();
     const parsed = weeklyCheckInUpsertSchema.safeParse(json);

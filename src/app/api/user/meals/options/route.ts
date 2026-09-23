@@ -4,6 +4,7 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 import {
   loadMealSelectionContext,
 } from '@/features/meals/utils/mealSelection.server';
+import { StarterPlanSetupError } from '@/features/self-service/server/starterPlanProvisioner';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof StarterPlanSetupError) return jsonWithCache({ error: error.message }, { status: 503 });
     console.error('[USER_MEALS_OPTIONS_GET] Failed:', error);
     return jsonWithCache({ error: 'Failed to load meal options' }, { status: 500 });
   }

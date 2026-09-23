@@ -12,6 +12,8 @@ export type AdminClientListItem = {
   email: string;
   avatar: string | null;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | string;
+  accessMode: 'SELF_SERVICE' | 'COACHING';
+  isSystemTemplate?: boolean;
   notes: string | null;
   currentWeight: number | null;
   targetWeight: number | null;
@@ -25,6 +27,8 @@ export type AdminClientDetail = {
   phone: string | null;
   avatar: string | null;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | string;
+  accessMode: 'SELF_SERVICE' | 'COACHING';
+  isSystemTemplate?: boolean;
   age: number | null;
   gender: 'MALE' | 'FEMALE' | null;
   activityLevel: string | null;

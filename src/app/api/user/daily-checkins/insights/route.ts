@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 import {
   averageWeight,
   buildSupportiveInsight,
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!(await clientHasCoachingAccess(user.userId))) return coachingAccessDeniedResponse();
 
     const recentDateKeys = getRecentDateKeys(HISTORY_DAYS);
     const oldestDateStart = parseDateKeyLocal(recentDateKeys[recentDateKeys.length - 1]);

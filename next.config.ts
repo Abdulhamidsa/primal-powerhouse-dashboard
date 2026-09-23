@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'www.exercisedb.dev' },
       { protocol: 'https', hostname: 'static.exercisedb.dev' },
       { protocol: 'https', hostname: 'cdn.exercisedb.dev' },
+      { protocol: 'https', hostname: 'example.com' },
     ],
     formats: ['image/webp', 'image/avif'],
   },

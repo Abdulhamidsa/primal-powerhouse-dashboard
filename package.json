@@ -17,6 +17,8 @@
     "db:foods:import:dev": "dotenv -e .env.dev -- node scripts/import-food-patch.js",
     "db:foods:import:prod": "dotenv -e .env.prod -- node scripts/import-food-patch.js",
     "privacy:cleanup": "node scripts/privacy-cleanup.js",
+    "setup:self-service-starter:dev": "dotenv -e .env.dev -- node scripts/finalize-self-service-starter.cjs",
+    "setup:self-service-starter:prod": "dotenv -e .env.prod -- node scripts/finalize-self-service-starter.cjs",
     "postinstall": "pnpm prisma:generate:safe",
     "prebuild": "pnpm prisma:generate:safe",
     "build": "next build",

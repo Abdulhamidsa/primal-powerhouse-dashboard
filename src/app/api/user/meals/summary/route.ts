@@ -5,6 +5,7 @@ import { loadMealSelectionContext, hydrateSelectionAgainstOptions } from '@/feat
 import { computeSelectionTotals, macroDelta } from '@/features/meals/utils/mealSelection';
 import { prisma } from '@/lib/prisma';
 import { mealPlanSummarySchema } from '@/features/meals/schemas/mealPlanSummary.schema';
+import { StarterPlanSetupError } from '@/features/self-service/server/starterPlanProvisioner';
 
 export async function GET(request: NextRequest) {
   const startedAt = performance.now();
@@ -67,6 +68,7 @@ export async function GET(request: NextRequest) {
     console.info('[USER_MEAL_PLAN_SUMMARY_GET]', { userId: user.userId, durationMs: duration });
     return response;
   } catch (error) {
+    if (error instanceof StarterPlanSetupError) return jsonWithCache({ error: error.message }, { status: 503 });
     console.error('[USER_MEAL_PLAN_SUMMARY_GET] Failed:', error);
     return jsonWithCache({ error: 'Failed to load meal plan summary' }, { status: 500 });
   }

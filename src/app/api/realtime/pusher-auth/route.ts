@@ -3,6 +3,7 @@ import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { canAccessConversation, resolveActor } from '@/lib/chat/conversation';
 import { getPusherServer, hasPusherServerConfig } from '@/lib/realtime/pusher-server';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 
 function getConversationIdFromChannel(channelName: string): string | null {
   const match = channelName.match(/^private-conversation-(.+)$/);
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
   if (!actor) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (actor.type === 'client' && !(await clientHasCoachingAccess(actor.clientId))) return coachingAccessDeniedResponse();
 
   const formData = await request.formData();
   const socketId = String(formData.get('socket_id') ?? '');

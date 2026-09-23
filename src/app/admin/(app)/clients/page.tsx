@@ -37,6 +37,7 @@ import {
   deleteMealAssignment,
   getClientVideoAssignments,
   unarchiveClient,
+  updateClientAccessMode,
   buildClientVideoAssignmentsUrl,
 } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
@@ -116,12 +117,14 @@ function ClientCommandHeader({
   onEditProfileAction,
   onArchiveClientAction,
   onOpenHealthMetricsAction,
+  onAccessModeChangeAction,
 }: {
   client: AdminClientDetail;
   summaryWeightKg: number | null;
   onEditProfileAction: () => void;
   onArchiveClientAction: () => void;
   onOpenHealthMetricsAction: () => void;
+  onAccessModeChangeAction: (mode: 'SELF_SERVICE' | 'COACHING') => void;
 }) {
   return (
     <div className="border-b border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] p-5">
@@ -140,6 +143,7 @@ function ClientCommandHeader({
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="truncate text-2xl font-semibold tracking-[-0.03em] text-foreground">{client.name}</h2>
               <ClientStatusPill status={client.status} />
+              {client.isSystemTemplate ? <span className="rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">System template</span> : null}
             </div>
             <p className="mt-1 flex items-center gap-2 truncate text-sm text-muted-foreground">
               <Mail size={14} />
@@ -155,32 +159,43 @@ function ClientCommandHeader({
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
-          <button
+        {!client.isSystemTemplate ? <button
             type="button"
             onClick={onEditProfileAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
           >
             <UserPen size={15} />
             Edit profile
-          </button>
-          <button
+          </button> : null}
+          {!client.isSystemTemplate ? <button
             type="button"
             onClick={onOpenHealthMetricsAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
           >
             <Calculator size={15} />
             Health metrics
-          </button>
-          <button
+          </button> : null}
+          {!client.isSystemTemplate ? <button
             type="button"
             onClick={onArchiveClientAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
           >
             {client.status === 'ARCHIVED' ? <Undo2 size={15} /> : <Archive size={15} />}
             {client.status === 'ARCHIVED' ? 'Restore' : 'Archive'}
-          </button>
+          </button> : null}
         </div>
       </div>
+      {!client.isSystemTemplate ? <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-3">
+        <span className="text-xs font-medium text-muted-foreground">Access mode</span>
+        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+          {(['COACHING', 'SELF_SERVICE'] as const).map(mode => (
+            <button key={mode} type="button" onClick={() => onAccessModeChangeAction(mode)}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${client.accessMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              {mode === 'COACHING' ? 'Coaching' : 'Self-service'}
+            </button>
+          ))}
+        </div>
+      </div> : <p className="mt-4 border-t border-white/10 pt-3 text-xs text-violet-200/80">Template source is protected from login, activation, archive, and deletion.</p>}
     </div>
   );
 }
@@ -208,6 +223,7 @@ export default function ClientsPage() {
   const [showHealthMetricsModal, setShowHealthMetricsModal] = useState(false);
   const [healthMetricsResults, setHealthMetricsResults] = useState<HealthMetricsOutput | null>(null);
   const [showChangeUserDrawer, setShowChangeUserDrawer] = useState(false);
+  const [showCommunicationDrawer, setShowCommunicationDrawer] = useState(false);
   const [changeUserSearch, setChangeUserSearch] = useState('');
 
   const {
@@ -250,22 +266,24 @@ export default function ClientsPage() {
     error: noteError,
   } = useClientNotes(selectedClientId, client?.notes ?? selectedClientFromList?.notes ?? null, 'Coach');
 
-  const { meals: mealAssignments, activeMealPlan, refresh: refreshMeals } = useClientMeals(selectedClientId);
+  const { meals: mealAssignments, activeMealPlan, refresh: refreshMeals } = useClientMeals(
+    activeTab === 'nutrition' || activeTab === 'assignments' ? selectedClientId : null,
+  );
 
   const { assignments: videoAssignments, refresh: refreshVideoAssignments } =
-    useClientVideoAssignments(selectedClientId);
+    useClientVideoAssignments(activeTab === 'assignments' ? selectedClientId : null);
   const { removeAssignment: removeVideoAssignment } = useClientVideoAssignmentActions(selectedClientId);
 
   const {
     data: weeklyCheckIns,
     isLoading: isWeeklyCheckInsLoading,
     error: weeklyCheckInsError,
-  } = useAdminClientWeeklyCheckIns(selectedClientId ?? '');
+  } = useAdminClientWeeklyCheckIns(activeTab === 'check-ins' ? selectedClientId ?? '' : '');
   const {
     data: dailyCheckIns,
     isLoading: isDailyCheckInsLoading,
     error: dailyCheckInsError,
-  } = useAdminClientDailyCheckIns(selectedClientId ?? '');
+  } = useAdminClientDailyCheckIns(activeTab === 'check-ins' ? selectedClientId ?? '' : '');
 
   const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(selectedClientId ?? '');
   const { markReviewed: markDailyReviewed } = useAdminDailyCheckInActions(selectedClientId ?? '');
@@ -312,46 +330,6 @@ export default function ClientsPage() {
     setShowHealthMetricsModal(false);
     setHealthMetricsResults(null);
   }, [selectedClientId]);
-
-  useEffect(() => {
-    if (!selectedClientId) return;
-
-    const timeoutId = window.setTimeout(() => {
-      void Promise.allSettled([
-        globalMutate(buildClientVideoAssignmentsUrl(selectedClientId), getClientVideoAssignments(selectedClientId), {
-          revalidate: false,
-          populateCache: true,
-        }),
-        globalMutate(
-          `/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`,
-          httpClient.get(`/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`),
-          { revalidate: false, populateCache: true },
-        ),
-        globalMutate(
-          `/api/admin/clients/${encodeURIComponent(selectedClientId)}/weekly-checkins`,
-          getAdminClientWeeklyCheckIns(selectedClientId),
-          { revalidate: false, populateCache: true },
-        ),
-        globalMutate(
-          `/api/admin/clients/${encodeURIComponent(selectedClientId)}/daily-checkins`,
-          getAdminClientDailyCheckIns(selectedClientId),
-          { revalidate: false, populateCache: true },
-        ),
-        globalMutate(
-          `/api/admin/clients/${encodeURIComponent(selectedClientId)}/workout-sessions`,
-          getAdminClientWorkoutSessions(selectedClientId),
-          { revalidate: false, populateCache: true },
-        ),
-        globalMutate('/api/admin/workout-plans', getWorkoutPlans(), { revalidate: false, populateCache: true }),
-        globalMutate(buildClientFeatureVisibilityUrl(selectedClientId), getClientFeatureVisibility(selectedClientId), {
-          revalidate: false,
-          populateCache: true,
-        }),
-      ]);
-    }, 150);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [globalMutate, selectedClientId]);
 
   const prefetchDashboardTab = (tab: DashboardTabKey) => {
     if (!selectedClientId) return;
@@ -500,6 +478,16 @@ export default function ClientsPage() {
     }
   };
 
+  const handleAccessModeChange = async (mode: 'SELF_SERVICE' | 'COACHING') => {
+    if (!selectedClientId || !client || client.accessMode === mode) return;
+    try {
+      await updateClientAccessMode(selectedClientId, mode);
+      await Promise.all([refreshClient(), refreshClients()]);
+    } catch {
+      window.alert('Failed to update access mode.');
+    }
+  };
+
   const handleDeleteCheckIn = async (checkInId: string) => {
     await deleteCheckIn(checkInId);
   };
@@ -597,8 +585,8 @@ export default function ClientsPage() {
         }
       />
 
-      <section className="grid min-h-[calc(100dvh-220px)] gap-4 xl:grid-cols-[320px_minmax(0,1fr)_360px] 2xl:grid-cols-[360px_minmax(0,1fr)_400px]">
-        <AdminPanel className="min-h-[360px] overflow-hidden xl:sticky xl:top-4 xl:h-[calc(100dvh-170px)]">
+      <section className="grid min-h-[calc(100dvh-220px)] gap-5 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)] 2xl:grid-cols-[340px_minmax(0,1fr)]">
+        <AdminPanel className="min-h-[420px] overflow-hidden lg:sticky lg:top-4 lg:h-[calc(100dvh-170px)]">
           <aside ref={leftPaneRef} className="h-full">
             {isClientsLoading ? (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading clients...</div>
@@ -628,7 +616,7 @@ export default function ClientsPage() {
           </aside>
         </AdminPanel>
 
-        <AdminPanel className="min-h-[640px] overflow-hidden" >
+        <AdminPanel className="min-h-[640px] overflow-hidden">
           <main ref={detailPanelRef} className="flex h-full min-h-0 flex-col">
             {isClientLoading ? (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -653,6 +641,7 @@ export default function ClientsPage() {
                   onEditProfileAction={() => setShowProfileEditModal(true)}
                   onArchiveClientAction={handleArchiveClient}
                   onOpenHealthMetricsAction={() => setShowHealthMetricsModal(true)}
+                  onAccessModeChangeAction={handleAccessModeChange}
                 />
 
                 <div className="border-b border-white/10 px-5 py-3">
@@ -666,14 +655,30 @@ export default function ClientsPage() {
                     onTabPrefetchAction={prefetchDashboardTab}
                     actions={
                       <>
-                        <button
+                        {!client.isSystemTemplate ? <button
                           type="button"
-                          onClick={() => setActiveRailTab('chat')}
+                          onClick={() => { setActiveRailTab('chat'); setShowCommunicationDrawer(true); }}
                           className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
                           <MessageSquare size={14} />
                           Chat
-                        </button>
+                        </button> : null}
+                        {!client.isSystemTemplate ? <button
+                          type="button"
+                          onClick={() => { setActiveRailTab('notes'); setShowCommunicationDrawer(true); }}
+                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+                        >
+                          <NotebookText size={14} />
+                          Notes
+                        </button> : null}
+                        {!client.isSystemTemplate ? <button
+                          type="button"
+                          onClick={() => { setActiveRailTab('actions'); setShowCommunicationDrawer(true); }}
+                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+                        >
+                          <Settings2 size={14} />
+                          Actions
+                        </button> : null}
                         <button
                           type="button"
                           onClick={() => setShowChangeUserDrawer(true)}
@@ -688,15 +693,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-5" aria-busy={isTabTransitionPending}>
-                  {DASHBOARD_TAB_ORDER.filter(tab => mountedTabs.includes(tab)).map(tab => {
-                    const isActive = tab === activeTab;
-
-                    return (
-                      <div key={tab} hidden={!isActive} aria-hidden={!isActive} className={isActive ? '' : 'pointer-events-none'}>
-                        {renderDashboardTabContent(tab)}
-                      </div>
-                    );
-                  })}
+                  {renderDashboardTabContent(activeTab)}
                 </div>
               </>
             ) : (
@@ -710,10 +707,17 @@ export default function ClientsPage() {
           </main>
         </AdminPanel>
 
-        <AdminPanel className="min-h-[520px] overflow-hidden xl:sticky xl:top-4 xl:h-[calc(100dvh-170px)]">
-          {client ? (
-            <aside className="flex h-full min-h-0 flex-col">
+        {client && showCommunicationDrawer && !client.isSystemTemplate ? (
+          <div className="fixed inset-0 z-40 bg-black/60 lg:bg-black/30" onClick={() => setShowCommunicationDrawer(false)}>
+            <aside className="absolute right-0 top-0 flex h-full w-full max-w-[440px] min-h-0 flex-col border-l border-white/10 bg-[rgba(16,16,18,0.98)] shadow-2xl" onClick={event => event.stopPropagation()}>
               <div className="border-b border-white/10 p-3">
+                <div className="mb-3 flex items-center justify-between px-1">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Coach workspace</p>
+                    <p className="text-xs text-muted-foreground">{client.name}</p>
+                  </div>
+                  <button type="button" aria-label="Close coach workspace" onClick={() => setShowCommunicationDrawer(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X size={17} /></button>
+                </div>
                 <div className="grid grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
                   {[
                     { key: 'chat' as const, label: 'Chat', icon: MessageSquare },
@@ -726,7 +730,7 @@ export default function ClientsPage() {
                       <button
                         key={item.key}
                         type="button"
-                        onClick={() => setActiveRailTab(item.key)}
+                          onClick={() => setActiveRailTab(item.key)}
                         className={[
                           'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-semibold transition-colors',
                           active
@@ -813,12 +817,8 @@ export default function ClientsPage() {
                 )}
               </div>
             </aside>
-          ) : (
-            <div className="flex h-full items-center justify-center p-5 text-center text-sm text-muted-foreground">
-              Select a client to open chat, notes, and quick actions.
-            </div>
-          )}
-        </AdminPanel>
+          </div>
+        ) : null}
       </section>
 
       {client ? (

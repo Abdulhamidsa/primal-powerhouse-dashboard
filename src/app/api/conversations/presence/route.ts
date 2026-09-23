@@ -8,6 +8,7 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { conversationPresenceSchema } from '@/features/client-coach-messaging/schemas/presence.schema';
 import { getRequestIpAddress } from '@/lib/chat/conversation';
 import { hasFreshConversationPresence } from '@/lib/chat/conversation-presence';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 
 function isPresenceTableUnavailable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? '');
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest) {
 
     const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
+  if (!(await clientHasCoachingAccess(auth.user.userId))) return coachingAccessDeniedResponse();
 
     const limiter = rateLimit(`chat-presence:${auth.user.userId}:${getRequestIpAddress(request)}`, 180, 60_000);
     if (!limiter.allowed) return jsonWithCache({ error: 'Too many requests' }, { status: 429 });

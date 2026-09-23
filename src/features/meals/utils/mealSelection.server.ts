@@ -8,6 +8,7 @@ import {
   type MealTypeKey,
   type UserSelectionItem,
 } from '@/features/meals/utils/mealSelection';
+import { ensureStarterMealPlan } from '@/features/self-service/server/starterPlanProvisioner';
 
 type ClientWithAssignments = {
   goalCalories?: number | null;
@@ -186,6 +187,7 @@ export function buildBaselineFromOptions(optionsByType: Record<MealTypeKey, Meal
 }
 
 export async function loadMealSelectionContext(clientId: string) {
+  await ensureStarterMealPlan(clientId);
   const client = (await prisma.client.findUnique({
     where: { id: clientId },
     select: {

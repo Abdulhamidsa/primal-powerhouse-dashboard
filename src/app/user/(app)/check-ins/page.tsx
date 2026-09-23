@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Activity, ArrowRight, ChevronDown, Scale } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useSWRConfig } from 'swr';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero, type UserPageHeroStatusItem } from '@/components/UserPageHero';
@@ -14,6 +16,7 @@ import { useDailyCheckInToday } from '@/features/daily-checkin/hooks/useDailyChe
 import { useDailyNutritionToday } from '@/features/daily-nutrition/hooks/useDailyNutrition';
 import { useDailyTrainingToday } from '@/features/daily-training/hooks/useDailyTraining';
 import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
+import { useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 const DailyCheckInInsightsCard = dynamic(
   () => import('@/features/daily-checkin/components/DailyCheckInInsightsCard.lazy.tsx').then(mod => mod.default),
@@ -24,6 +27,10 @@ const DailyCheckInInsightsCard = dynamic(
 );
 
 export default function UserCheckInsPage() {
+  const router = useRouter();
+  const { user, isLoading: profileLoading } = useUserProfile();
+  useEffect(() => { if (!profileLoading && user?.accessMode === 'SELF_SERVICE') router.replace('/user/dashboard'); }, [profileLoading, router, user?.accessMode]);
+  if (user?.accessMode === 'SELF_SERVICE') return null;
   const { mutate } = useSWRConfig();
   const { visibility } = useClientSelfFeatureVisibility();
   const { entry: dailyEntry } = useDailyCheckInToday();

@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { serializeDailyCheckIn } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { dayDateKeySchema, dailyCheckInUpsertSchema } from '@/features/daily-checkin/schemas/dailyCheckIn.schema';
 import { getTodayDateKeyLocal, parseDateKeyUtc } from '@/features/daily-checkin/utils/date';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!(await clientHasCoachingAccess(user.userId))) return coachingAccessDeniedResponse();
 
     const maybeDateKey = request.nextUrl.searchParams.get('dayDate') ?? getTodayDateKeyLocal();
     const parsedDateKey = dayDateKeySchema.safeParse(maybeDateKey);
@@ -90,6 +92,7 @@ export async function PUT(request: NextRequest) {
     if (error || !user) {
       return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!(await clientHasCoachingAccess(user.userId))) return coachingAccessDeniedResponse();
 
     const parsed = dailyCheckInUpsertSchema.safeParse(await request.json());
     if (!parsed.success) {

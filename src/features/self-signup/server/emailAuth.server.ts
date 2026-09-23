@@ -24,6 +24,7 @@ export async function createSelfSignupClient(input: { name: string; email: strin
         name: input.name.trim(),
         email,
         password,
+        accessMode: 'SELF_SERVICE',
         coachId,
         serviceTier: 'FREE_PROGRAM',
         signupSource: 'SELF_SIGNUP',

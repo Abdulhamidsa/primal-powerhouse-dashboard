@@ -76,6 +76,7 @@ model Client {
   name                          String
   email                         String             @unique
   password                      String?
+  accessMode                    ClientAccessMode  @default(COACHING)
   serviceTier                   ClientServiceTier  @default(COACHING)
   signupSource                  ClientSignupSource @default(ADMIN_CREATED)
   emailVerifiedAt               DateTime?
@@ -1048,6 +1049,11 @@ enum ClientStatus {
 enum ClientServiceTier {
   FREE_PROGRAM
   SELF_GUIDED_PAID
+  COACHING
+}
+
+enum ClientAccessMode {
+  SELF_SERVICE
   COACHING
 }
 

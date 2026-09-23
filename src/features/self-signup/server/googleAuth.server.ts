@@ -120,6 +120,7 @@ export async function findOrCreateGoogleClient(input: { providerAccountId: strin
         name: input.name,
         email: input.email,
         password: null,
+        accessMode: 'SELF_SERVICE',
         coachId,
         serviceTier: 'FREE_PROGRAM',
         signupSource: 'SELF_SIGNUP',

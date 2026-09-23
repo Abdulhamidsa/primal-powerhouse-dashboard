@@ -8,6 +8,7 @@ import {
   resolveActor,
 } from '@/lib/chat/conversation';
 import { createConversationSchema } from '@/features/client-coach-messaging/schemas/message.schema';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 
 function parseDate(value: Date | null | undefined): string | null {
   return value ? value.toISOString() : null;
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
   if (!actor) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (actor.type === 'client' && !(await clientHasCoachingAccess(actor.clientId))) return coachingAccessDeniedResponse();
 
   const where =
     actor.type === 'client'

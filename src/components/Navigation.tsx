@@ -30,7 +30,7 @@ import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDra
 import { cn } from '@/lib/utils';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
-import { useUserLogout } from '@/features/user-profile/hooks/useUserProfile';
+import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 const LazyChatDrawer = dynamic<{ open: boolean; onClose: () => void }>(() => Promise.resolve(ChatDrawer), {
   ssr: false,
@@ -145,6 +145,16 @@ const userNavItems: NavItem[] = [
     icon: ShoppingBag,
     description: 'Groceries and prep',
   },
+];
+
+const selfServiceNavItems: NavItem[] = [
+  userNavItems[0],
+  { name: 'Meal Plan', mobileName: 'Plan', href: '/user/my-plan', icon: CalendarCheck2, description: 'Your starter meal plan' },
+  { name: 'Training Plan', mobileName: 'Train', href: '/user/training', icon: Activity, description: 'Your starter training plan' },
+  userNavItems[4],
+  { name: 'Learn / Method', mobileName: 'Learn', href: '/user/learn', icon: Flame, description: 'Guides and method' },
+  { name: 'Profile', mobileName: 'Profile', href: '/user/profile', icon: User, description: 'Progress and account' },
+  { name: 'Upgrade', mobileName: 'Upgrade', href: '/user/upgrade', icon: Handshake, description: 'Explore coaching' },
 ];
 
 const userAccountMenuItems: NavItem[] = [
@@ -291,6 +301,7 @@ export default function Navigation({
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useUserLogout();
+  const { user: profileUser } = useUserProfile({ enabled: userType === 'user' });
   const { summary: dashboardSummary } = useUserDashboardSummary(userType === 'user');
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -303,10 +314,14 @@ export default function Navigation({
   const [mobileIndicator, setMobileIndicator] = useState({ x: 0, width: 0, ready: false });
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
-  const navItems = useMemo(() => (userType === 'admin' ? adminNavItems : userNavItems), [userType]);
+  const navItems = useMemo(
+    () => userType === 'admin' ? adminNavItems : profileUser?.accessMode === 'SELF_SERVICE' ? selfServiceNavItems : userNavItems,
+    [profileUser?.accessMode, userType],
+  );
   const safeNavItems = navItems;
   const safeUnreadTotal = dashboardSummary?.unreadTotal ?? 0;
   const safeUser = isMounted ? (dashboardSummary?.user ?? null) : null;
+  const isSelfService = userType === 'user' && profileUser?.accessMode === 'SELF_SERVICE';
 
   useEffect(() => {
     setAccountMenuOpen(false);
@@ -453,7 +468,7 @@ export default function Navigation({
           <div className="flex items-center gap-3">
             {userType === 'user' ? (
               <>
-                <button
+                {!isSelfService ? <button
                   type="button"
                   onClick={() => setChatDrawerOpen(true)}
                   aria-label="Open chat"
@@ -465,7 +480,7 @@ export default function Navigation({
                       {safeUnreadTotal}
                     </span>
                   ) : null}
-                </button>
+                </button> : null}
 
                 <div ref={accountMenuRef} className="relative">
                   <button
@@ -517,7 +532,7 @@ export default function Navigation({
           <div className="mx-auto flex w-full max-w-xl items-center justify-end">
 
             <div className="flex items-center gap-2">
-              <Link
+              {!isSelfService ? <Link
                 href="/user/chat"
                 aria-label="Open chat"
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
@@ -526,7 +541,7 @@ export default function Navigation({
                 {safeUnreadTotal > 0 ? (
                   <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
                 ) : null}
-              </Link>
+              </Link> : null}
 
               <button
                 type="button"

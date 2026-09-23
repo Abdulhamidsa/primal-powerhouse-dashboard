@@ -14,6 +14,7 @@ import {
 } from '@/lib/chat/conversation';
 import { buildConversationDeepLink, hasFreshConversationPresence } from '@/lib/chat/conversation-presence';
 import { sendMessageSchema } from '@/features/client-coach-messaging/schemas/message.schema';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 import {
   getPusherServer,
   hasPusherServerConfig,
@@ -155,6 +156,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!actor) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (actor.type === 'client' && !(await clientHasCoachingAccess(actor.clientId))) return coachingAccessDeniedResponse();
 
   const { conversationId } = await params;
 

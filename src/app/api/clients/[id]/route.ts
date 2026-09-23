@@ -45,6 +45,7 @@ const adminClientUpdateSchema = z
     targetWeight: z.number().finite().min(20).max(350).nullable().optional(),
     notes: z.string().max(10000).nullable().optional(),
     status: z.enum(['ACTIVE', 'INACTIVE', 'PAUSED', 'ARCHIVED']).optional(),
+    accessMode: z.enum(['SELF_SERVICE', 'COACHING']).optional(),
   })
   .strict()
   .refine(value => Object.keys(value).length > 0, {
@@ -73,6 +74,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       console.error(`API: Client not found with ID: ${id}`);
       return NextResponse.json({ error: `Client not found with ID: ${id}` }, { status: 404 });
     }
+    const starterClientId = process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim();
 
     // Parse JSON fields
     try {
@@ -116,6 +118,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
       const clientData = {
         ...client,
+        isSystemTemplate: Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
         phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${client.id}:phone`),
         notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${client.id}:notes`),
         motivationalMessage: decryptWithPlaintextFallback(
@@ -181,7 +184,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const existingClient = await prisma.client.findUnique({
       where: { id },
-      select: { id: true, coachId: true },
+      select: { id: true, email: true, coachId: true },
     });
 
     if (!existingClient) {
@@ -190,6 +193,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (actor.role === 'COACH' && existingClient.coachId !== actor.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const isSystemTemplate = Boolean(
+      (process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim() && id === process.env.SELF_SERVICE_STARTER_CLIENT_ID.trim()) ||
+        existingClient.email === 'starter-template@primal.local',
+    );
+    if (isSystemTemplate && (parsed.data.status !== undefined || parsed.data.accessMode !== undefined)) {
+      return NextResponse.json({ error: 'System template status and access mode are fixed.' }, { status: 400 });
     }
 
     const updateData = {
@@ -203,6 +214,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       notes: parsed.data.notes,
       notesEncrypted: parsed.data.notes !== undefined ? null : undefined,
       status: parsed.data.status,
+      accessMode: parsed.data.accessMode,
     };
 
     const client = await (prisma as any).client.update({
@@ -220,6 +232,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const clientData = {
       ...client,
+      isSystemTemplate: Boolean((process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim() && client.id === process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim()) || client.email === 'starter-template@primal.local'),
       phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${id}:phone`),
       notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${id}:notes`),
       motivationalMessage: decryptWithPlaintextFallback(
@@ -245,6 +258,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!auth.ok) return auth.res;
 
     const { id } = await params;
+
+    const protectedClient = await prisma.client.findUnique({ where: { id }, select: { email: true } });
+    if (protectedClient && ((process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim() && id === process.env.SELF_SERVICE_STARTER_CLIENT_ID.trim()) || protectedClient.email === 'starter-template@primal.local')) {
+      return NextResponse.json({ error: 'System template clients cannot be deleted.' }, { status: 400 });
+    }
 
     // First, delete related records
     await (prisma as any).workout.deleteMany({

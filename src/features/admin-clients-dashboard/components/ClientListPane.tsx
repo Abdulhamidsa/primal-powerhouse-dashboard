@@ -23,15 +23,18 @@ export function ClientListPane({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-white/10 p-4">
+      <div className="border-b border-white/10 p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-muted-foreground">
               <Users size={15} />
             </span>
+            <div>
             <h2 className="text-sm font-semibold text-foreground">
               Clients
             </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{clients.length} {viewMode} clients</p>
+            </div>
           </div>
 
           {viewMode === 'active' && (
@@ -75,8 +78,8 @@ export function ClientListPane({
         </div>
       </div>
 
-      <div className="flex-1 space-y-1.5 overflow-y-auto p-2">
-        {clients.map(client => {
+      <div className="flex-1 space-y-2 overflow-y-auto p-3">
+        {[...clients.filter(client => client.isSystemTemplate), ...clients.filter(client => !client.isSystemTemplate)].map(client => {
           const isSelected = client.id === selectedClientId;
 
           return (
@@ -85,22 +88,26 @@ export function ClientListPane({
               type="button"
               onClick={() => onSelectClientAction(client.id)}
               className={[
-                'w-full rounded-2xl border p-3 text-left transition-colors',
+                'relative w-full rounded-2xl border p-3.5 text-left transition-colors',
                 isSelected
-                  ? 'border-[var(--color-accent)]/45 bg-[var(--color-accent-translucent)]'
+                  ? 'border-[var(--color-accent)]/45 bg-[var(--color-accent-translucent)] before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-[var(--color-accent)]'
                   : 'border-transparent bg-white/[0.025] hover:border-white/10 hover:bg-white/[0.045]',
               ].join(' ')}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="relative h-10 w-10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]"
+                  className="relative h-11 w-11 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]"
                 >
+                  <span className="absolute inset-0 grid place-items-center text-sm font-semibold text-muted-foreground">
+                    {client.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()}
+                  </span>
                   <Image
                     src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
                     alt={client.name}
                     fill
-                    sizes="40px"
+                    sizes="44px"
                     className="object-cover"
+                    onError={event => { event.currentTarget.style.display = 'none'; }}
                   />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -111,13 +118,17 @@ export function ClientListPane({
                     {client.email}
                   </p>
                 </div>
-                <span
+                {client.isSystemTemplate ? (
+                  <span className="shrink-0 rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">
+                    System template
+                  </span>
+                ) : <span
                   className={[
-                    'h-2 w-2 shrink-0 rounded-full',
+                    'shrink-0 rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide',
                     client.status === 'ACTIVE' ? 'bg-emerald-400' : client.status === 'ARCHIVED' ? 'bg-slate-500' : 'bg-amber-400',
                   ].join(' ')}
                   aria-label={client.status}
-                />
+                >{client.status === 'ACTIVE' ? 'Active' : client.status === 'ARCHIVED' ? 'Archived' : 'Inactive'}</span>}
               </div>
             </button>
           );

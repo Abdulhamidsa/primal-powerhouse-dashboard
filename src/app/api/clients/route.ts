@@ -42,16 +42,18 @@ export async function GET(request: NextRequest) {
     }
 
     const showArchived = searchParams.get('archived') === 'true';
+    const starterClientId = process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim();
     const clients = await prisma.client.findMany({
-      where: showArchived
-        ? { status: 'ARCHIVED' }
-        : { status: { not: 'ARCHIVED' } },
+      where: {
+        ...(showArchived ? { status: 'ARCHIVED' } : { status: { not: 'ARCHIVED' } }),
+      },
       orderBy: { createdAt: 'desc' },
     });
 
     // Parse JSON fields
     const parsedClients = clients.map(client => ({
       ...client,
+      isSystemTemplate: Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
       dietaryRestrictions: client.dietaryRestrictions ? JSON.parse(client.dietaryRestrictions) : [],
       goals: client.goals ? JSON.parse(client.goals) : [],
       progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
@@ -120,6 +122,7 @@ export async function POST(request: NextRequest) {
       gender: clientData.gender || null,
       activityLevel: clientData.activityLevel || null,
       password: hashedPassword,
+      accessMode: 'COACHING' as const,
       notes: clientData.notes || null,
       sessionsCompleted: sessionsCompleted || 0,
       coachId: userId,
