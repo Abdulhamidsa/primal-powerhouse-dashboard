@@ -8,7 +8,9 @@ import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { Button } from '@/components/ui/button';
 import { getUserMealSelection, USER_MEAL_SELECTION_URL } from '@/features/meals/api/mealSelection.api';
+import { getSavedShoppingList, USER_SHOPPING_LIST_URL } from '@/features/meals/api/shoppingList.api';
 import { useGenerateShoppingList } from '@/features/meals/hooks/useGenerateShoppingList';
+import { useOfflineStatus } from '@/features/offline/components/OfflineProvider';
 import { loadShoppingListDraft } from '@/features/meals/utils/shoppingListStorage';
 import type { ShoppingListEntry } from '@/features/meals/types/shoppingList.types';
 
@@ -56,12 +58,18 @@ function ShoppingListSkeleton() {
 
 export default function ShoppingListPage() {
   const router = useRouter();
+  const { isOffline } = useOfflineStatus();
   const { run, isLoading, error, data } = useGenerateShoppingList();
   const [checkedById, setCheckedById] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
 
   const selectionSWR = useSWR(USER_MEAL_SELECTION_URL, getUserMealSelection);
+  const savedShoppingListSWR = useSWR(USER_SHOPPING_LIST_URL, getSavedShoppingList, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const displayedData = isOffline ? savedShoppingListSWR.data ?? data : data ?? savedShoppingListSWR.data;
 
   const savedItems = useMemo(() => {
     return (selectionSWR.data?.selection?.items ?? []).map(item => ({
@@ -73,6 +81,7 @@ export default function ShoppingListPage() {
   }, [selectionSWR.data]);
 
   const runFromItems = (items: typeof savedItems) => {
+    if (isOffline) return;
     if (items.length) {
       void run({ items });
       return;
@@ -100,14 +109,15 @@ export default function ShoppingListPage() {
   };
 
   useEffect(() => {
+    if (isOffline) return;
     if (!selectionSWR.data) return;
     handleGenerate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectionSWR.data]);
+  }, [isOffline, selectionSWR.data]);
 
   useEffect(() => {
-    if (!data?.selectionFingerprint) return;
-    const key = getChecklistStorageKey(data.selectionFingerprint);
+    if (!displayedData?.selectionFingerprint) return;
+    const key = getChecklistStorageKey(displayedData.selectionFingerprint);
     const saved = window.localStorage.getItem(key);
     if (!saved) {
       setCheckedById({});
@@ -119,13 +129,13 @@ export default function ShoppingListPage() {
     } catch {
       setCheckedById({});
     }
-  }, [data?.selectionFingerprint]);
+  }, [displayedData?.selectionFingerprint]);
 
   useEffect(() => {
-    if (!data?.selectionFingerprint) return;
-    const key = getChecklistStorageKey(data.selectionFingerprint);
+    if (!displayedData?.selectionFingerprint) return;
+    const key = getChecklistStorageKey(displayedData.selectionFingerprint);
     window.localStorage.setItem(key, JSON.stringify(checkedById));
-  }, [checkedById, data?.selectionFingerprint]);
+  }, [checkedById, displayedData?.selectionFingerprint]);
 
   useEffect(() => {
     if (!copied) return;
@@ -139,13 +149,13 @@ export default function ShoppingListPage() {
     return () => window.clearTimeout(timeoutId);
   }, [shared]);
 
-  const allItems = useMemo(() => (data?.sections ?? []).flatMap(s => s.items), [data]);
+  const allItems = useMemo(() => (displayedData?.sections ?? []).flatMap(s => s.items), [displayedData]);
   const totalCount = allItems.length;
   const checkedCount = useMemo(() => Object.values(checkedById).filter(Boolean).length, [checkedById]);
   // const progress = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
-  const hasItems = !!data && data.sections.some(s => s.items.length > 0);
-  const isPageLoading = isLoading || selectionSWR.isLoading;
+  const hasItems = !!displayedData && displayedData.sections.some(s => s.items.length > 0);
+  const isPageLoading = isOffline ? !displayedData && savedShoppingListSWR.isLoading : isLoading || selectionSWR.isLoading;
   const completionPct = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const toggleItem = (id: string) => setCheckedById(prev => ({ ...prev, [id]: !prev[id] }));
@@ -160,19 +170,19 @@ export default function ShoppingListPage() {
     });
 
   const copyAsText = async () => {
-    if (!data?.sections.length) return;
+    if (!displayedData?.sections.length) return;
 
     try {
-      const text = buildCopyText(data.sections);
+      const text = buildCopyText(displayedData.sections);
       await navigator.clipboard.writeText(text);
       setCopied(true);
     } catch {}
   };
 
   const shareList = async () => {
-    if (!data?.sections.length) return;
+    if (!displayedData?.sections.length) return;
 
-    const text = buildCopyText(data.sections);
+    const text = buildCopyText(displayedData.sections);
     const title = 'My Primal Power shopping list';
 
     try {
@@ -277,7 +287,7 @@ export default function ShoppingListPage() {
         ) : null}
 
         {!isPageLoading &&
-          data?.sections.map(section => {
+          displayedData?.sections.map(section => {
             if (section.items.length === 0) return null;
             const sectionChecked = section.items.filter(item => checkedById[item.id]).length;
             const allSectionChecked = sectionChecked === section.items.length;

@@ -9,6 +9,8 @@ export interface TrainingVideo {
   thumbnailUrl?: string;
   videoUrl: string;
   muscleGroups?: string;
+  instructions?: string[];
+  equipment?: string[];
 }
 
 export interface TrainingVideoAssignment {
@@ -16,6 +18,7 @@ export interface TrainingVideoAssignment {
   assignedDate: string;
   scheduledTime?: string;
   isCompleted: boolean;
+  notes?: string;
   video: TrainingVideo;
 }
 

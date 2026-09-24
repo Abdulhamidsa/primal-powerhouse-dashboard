@@ -1,50 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
-
-interface Video {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  difficulty: string;
-  tags: string[];
-  thumbnailUrl?: string;
-  videoUrl: string;
-}
-
-interface VideoAssignment {
-  id: string;
-  assignedDate: Date;
-  isCompleted: boolean;
-  video: Video;
-}
+import { useUserTraining } from '@/features/training/hooks/useUserTraining';
 
 export default function UserVideosPage() {
-  const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { assignments: videoAssignments, isLoading: loading } = useUserTraining();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
-
-  useEffect(() => {
-    fetchUserVideos();
-  }, []);
-
-  const fetchUserVideos = async () => {
-    try {
-      const response = await fetch('/api/user/videos');
-      if (response.ok) {
-        const data = await response.json();
-        setVideoAssignments(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user videos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredAssignments = videoAssignments.filter(assignment => {
     if (filter === 'completed') return assignment.isCompleted;

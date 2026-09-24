@@ -10,6 +10,7 @@ import {
   logoutUser,
 } from '@/features/user-profile/api/userProfile.api';
 import type { PasswordLinkResponse, UserProfileResponse } from '@/features/user-profile/types/userProfile.types';
+import { OFFLINE_METADATA_KEY } from '@/features/offline/lib/offlinePolicy';
 
 export function useUserProfile(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
@@ -37,9 +38,17 @@ export function useUserLogout() {
   const { mutate } = useSWRConfig();
 
   const logout = async () => {
-    await logoutUser();
+    try {
+      await logoutUser();
+    } catch (error) {
+      // The server session cannot be revoked without a connection, but the
+      // installed app must still remove its private offline snapshot.
+      if (!(error && typeof error === 'object' && 'code' in error && error.code === 'OFFLINE')) throw error;
+    }
     await mutate(USER_PROFILE_ME_URL, null, false);
     localStorage.removeItem('userType');
+    localStorage.removeItem(OFFLINE_METADATA_KEY);
+    navigator.serviceWorker?.controller?.postMessage({ type: 'OFFLINE_CLEAR_USER' });
   };
 
   return { logout };

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { prisma } from '@/lib/prisma';
 import { generateShoppingListSchema } from '@/features/meals/schemas/shoppingList.schema';
 import {
   hydrateSelectionAgainstOptions,
@@ -22,6 +23,28 @@ type ParsedIngredient = {
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
+/** Returns a cacheable shopping list for the user's saved meal selection. */
+export async function GET(request: NextRequest) {
+  try {
+    const { error, user } = await requireAuth(request, 'client');
+    if (error || !user) return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
+
+    const selectionSet = await (prisma as any).userMealSelectionSet.findUnique({
+      where: { clientId: user.userId },
+      include: { items: { orderBy: [{ mealType: 'asc' }, { slotIndex: 'asc' }] } },
+    });
+
+    if (!selectionSet?.items?.length) {
+      return jsonWithCache({ generatedAt: new Date().toISOString(), selectionFingerprint: '', sections: [] });
+    }
+
+    return buildShoppingList(user.userId, selectionSet.items);
+  } catch (err) {
+    console.error('[USER_SHOPPING_LIST_GET] Failed:', err);
+    return jsonWithCache({ error: 'Failed to load shopping list' }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { error, user } = await requireAuth(request, 'client');
@@ -37,14 +60,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const optionsByType = await getClientCoachAssignedMealOptions(user.userId);
+    return buildShoppingList(user.userId, parsed.data.items);
+  } catch (err) {
+    console.error('[USER_SHOPPING_LIST_POST] Failed:', err);
+    return jsonWithCache({ error: 'Failed to generate shopping list' }, { status: 500 });
+  }
+}
+
+async function buildShoppingList(
+  clientId: string,
+  selectionItems: Array<{ mealType: string; slotIndex: number; mealId: string; sourceAssignmentId?: string | null; sourceMealAssignmentId?: string | null }>,
+) {
+    const optionsByType = await getClientCoachAssignedMealOptions(clientId);
     const hydratedItems = hydrateSelectionAgainstOptions(
       optionsByType,
-      parsed.data.items.map(item => ({
-        mealType: item.mealType,
+      selectionItems.map(item => ({
+        mealType: item.mealType as any,
         slotIndex: item.slotIndex,
         mealId: item.mealId,
-        sourceMealAssignmentId: item.sourceAssignmentId ?? null,
+        sourceMealAssignmentId: item.sourceAssignmentId ?? item.sourceMealAssignmentId ?? null,
       })),
     );
 
@@ -82,13 +116,9 @@ export async function POST(request: NextRequest) {
 
     return jsonWithCache({
       generatedAt: new Date().toISOString(),
-      selectionFingerprint: buildSelectionFingerprint(parsed.data.items),
+      selectionFingerprint: buildSelectionFingerprint(selectionItems),
       sections: buildSections(categorized, spices),
     });
-  } catch (err) {
-    console.error('[USER_SHOPPING_LIST_POST] Failed:', err);
-    return jsonWithCache({ error: 'Failed to generate shopping list' }, { status: 500 });
-  }
 }
 
 // ─── Ingredient parsing ───────────────────────────────────────────────────────

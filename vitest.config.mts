@@ -9,6 +9,7 @@ export default defineConfig({
       'src/features/user-dashboard/lib/*.test.ts',
       'src/features/learn/**/*.test.ts',
       'src/features/coaching-interest/**/*.test.ts',
+      'src/features/offline/**/*.test.ts',
     ],
   },
 });

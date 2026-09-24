@@ -1,336 +1,117 @@
 const IS_DEV = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
-
-const APP_CACHE_PREFIX = 'primal-powerhouse';
-const RAW_APP_VERSION = '__BUILD_HASH__';
-const APP_VERSION = RAW_APP_VERSION !== '__BUILD_HASH__' ? RAW_APP_VERSION : 'v1';
-
-const STATIC_CACHE_NAME = `${APP_CACHE_PREFIX}-static-${APP_VERSION}`;
-const PAGE_CACHE_NAME = `${APP_CACHE_PREFIX}-pages-${APP_VERSION}`;
-
-const PRECACHE_URLS = [
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-512-maskable.png',
-  '/favicon.ico',
-  '/offline.html',
+const PREFIX = 'primal-powerhouse';
+const APP_VERSION = 'v2';
+const DATA_VERSION = 'v1';
+const META_CACHE = `${PREFIX}-offline-meta-v1`;
+const STATIC_CACHE = `${PREFIX}-static-${APP_VERSION}`;
+const PAGE_PREFIX = `${PREFIX}-pages-${APP_VERSION}-`;
+const RSC_PREFIX = `${PREFIX}-rsc-${APP_VERSION}-`;
+const DATA_PREFIX = `${PREFIX}-user-data-${DATA_VERSION}-`;
+const ACTIVE_USER_KEY = '/__primal_offline__/active-user';
+const PRECACHE_URLS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-512-maskable.png', '/favicon.ico', '/offline.html'];
+const CORE_ROUTES = ['/user/dashboard', '/user/my-plan', '/user/check-ins', '/user/training', '/user/shopping-list', '/user/profile', '/user/learn'];
+const API_PATTERNS = [
+  /^\/api\/auth\/me$/, /^\/api\/user\/dashboard\/summary$/, /^\/api\/user\/meals\/(summary|selection|options|shopping-list)$/,
+  /^\/api\/user\/training\/plan(?:\/day)?$/, /^\/api\/user\/workout-assignments$/, /^\/api\/user\/videos(?:\/[^/]+)?$/,
+  /^\/api\/user\/(daily-checkins\/current|daily-checkins\/insights|daily-nutrition\/current|daily-training\/current|weekly-checkins\/current|adherence\/current)$/,
+  /^\/api\/meals\/[^/]+$/,
 ];
 
-const STATIC_FILE_EXTENSIONS = new Set([
-  '.png',
-  '.jpg',
-  '.jpeg',
-  '.webp',
-  '.svg',
-  '.gif',
-  '.ico',
-  '.woff',
-  '.woff2',
-  '.ttf',
-  '.eot',
-  '.json',
-]);
+const sameOrigin = request => new URL(request.url).origin === self.location.origin;
+const userApi = request => API_PATTERNS.some(pattern => pattern.test(new URL(request.url).pathname));
+const userRoute = request => new URL(request.url).pathname.startsWith('/user/');
+const rscRequest = request => request.headers.get('RSC') === '1' || new URL(request.url).searchParams.has('_rsc');
+const navigation = request => request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
+const asset = request => { const path = new URL(request.url).pathname; return path.startsWith('/_next/') || /\.(?:png|jpe?g|webp|svg|gif|ico|woff2?|ttf|eot|css|js)$/i.test(path); };
+const dataCache = userId => `${DATA_PREFIX}${encodeURIComponent(userId)}`;
+const pageCache = userId => `${PAGE_PREFIX}${encodeURIComponent(userId)}`;
+const rscCache = userId => `${RSC_PREFIX}${encodeURIComponent(userId)}`;
 
-const BYPASS_PATH_PREFIXES = new Set(['/api/', '/login', '/signin', '/signup', '/_next/']);
+async function getUser() {
+  const response = await (await caches.open(META_CACHE)).match(ACTIVE_USER_KEY);
+  if (!response) return null;
+  try { const value = await response.json(); return typeof value.userId === 'string' ? value.userId : null; } catch { return null; }
+}
 
-const FETCH_TIMEOUT = 5000;
-const MAX_PAGE_CACHE_ENTRIES = 30;
-const MAX_STATIC_CACHE_ENTRIES = 120;
+async function clearPrivateCaches() {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter(key => key.startsWith(DATA_PREFIX) || key.startsWith(PAGE_PREFIX) || key.startsWith(RSC_PREFIX)).map(key => caches.delete(key)));
+  await (await caches.open(META_CACHE)).delete(ACTIVE_USER_KEY);
+}
 
-const isSameOrigin = request => {
-  return new URL(request.url).origin === self.location.origin;
-};
+async function setUser(userId) {
+  const previous = await getUser();
+  if (previous && previous !== userId) await clearPrivateCaches();
+  await (await caches.open(META_CACHE)).put(ACTIVE_USER_KEY, new Response(JSON.stringify({ userId }), { headers: { 'Content-Type': 'application/json' } }));
+}
 
-const isHtmlNavigation = request => {
-  return request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
-};
+async function notify(message) { (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).forEach(client => client.postMessage(message)); }
 
-const hasStaticExtension = pathname => {
-  const lastDotIndex = pathname.lastIndexOf('.');
+async function put(cacheName, key, response) {
+  if (!response || response.status !== 200) return;
+  const headers = new Headers(response.headers);
+  headers.set('X-Primal-Cached-At', new Date().toISOString());
+  await (await caches.open(cacheName)).put(key, new Response(response.clone().body, { status: response.status, statusText: response.statusText, headers }));
+}
 
-  if (lastDotIndex === -1) {
-    return false;
-  }
+async function cachedFallback(response) {
+  const headers = new Headers(response.headers); headers.set('X-Primal-Offline-Cache', '1');
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
 
-  const extension = pathname.slice(lastDotIndex).toLowerCase();
-  return STATIC_FILE_EXTENSIONS.has(extension);
-};
-
-const isStaticAssetRequest = request => {
-  const url = new URL(request.url);
-  return hasStaticExtension(url.pathname);
-};
-
-const shouldBypassRequest = request => {
-  if (IS_DEV) return true;
-  if (request.method !== 'GET') return true;
-  if (!isSameOrigin(request)) return true;
-
-  const pathname = new URL(request.url).pathname;
-
-  for (const prefix of BYPASS_PATH_PREFIXES) {
-    if (pathname.startsWith(prefix)) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const fetchWithTimeout = async (request, timeout = FETCH_TIMEOUT) => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
+async function networkFirst(request, cacheName, key) {
   try {
-    return await fetch(request, { signal: controller.signal });
-  } finally {
-    clearTimeout(timeoutId);
+    const response = await fetch(request);
+    if (response.status >= 500) throw new Error(`Server unavailable (${response.status})`);
+    await put(cacheName, key, response);
+    await notify({ type: 'OFFLINE_NETWORK_OK' });
+    return response;
+  } catch {
+    const cached = await (await caches.open(cacheName)).match(key);
+    if (cached) { await notify({ type: 'OFFLINE_CACHE_FALLBACK', url: request.url }); return cachedFallback(cached); }
+    throw new Error('Offline and no saved response');
   }
-};
-
-const trimCacheEntries = async (cache, maxEntries) => {
-  const keys = await cache.keys();
-
-  if (keys.length <= maxEntries) {
-    return;
-  }
-
-  const entriesToDelete = keys.length - maxEntries;
-
-  for (let index = 0; index < entriesToDelete; index += 1) {
-    await cache.delete(keys[index]);
-  }
-};
-
-const safeCachePut = async (cacheName, request, response, maxEntries) => {
-  if (!response || response.status !== 200) {
-    return;
-  }
-
-  const cache = await caches.open(cacheName);
-  await cache.put(request, response.clone());
-  await trimCacheEntries(cache, maxEntries);
-};
-
-self.addEventListener('message', event => {
-  if (event.data && (event.data.type === 'SKIP_WAITING' || event.data.type === 'VERSION_MISMATCH')) {
-    self.skipWaiting();
-  }
-});
+}
 
 self.addEventListener('install', event => {
-  if (IS_DEV) {
-    self.skipWaiting();
-    return;
-  }
-
-  event.waitUntil(
-    (async () => {
-      try {
-        const cache = await caches.open(STATIC_CACHE_NAME);
-
-        await Promise.allSettled(
-          PRECACHE_URLS.map(async url => {
-            try {
-              await cache.add(url);
-            } catch (error) {
-              console.warn(`[SW] Failed to precache ${url}:`, error);
-            }
-          }),
-        );
-
-        await self.skipWaiting();
-      } catch (error) {
-        console.error('[SW] Install failed:', error);
-      }
-    })(),
-  );
+  if (IS_DEV) return;
+  event.waitUntil((async () => { const cache = await caches.open(STATIC_CACHE); await Promise.allSettled(PRECACHE_URLS.map(url => cache.add(url))); await self.skipWaiting(); })());
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    (async () => {
-      try {
-        const keys = await caches.keys();
+self.addEventListener('activate', event => event.waitUntil((async () => {
+  const keys = await caches.keys();
+  await Promise.all(keys.map(key => {
+    const oldStatic = key.startsWith(`${PREFIX}-static-`) && key !== STATIC_CACHE;
+    const oldPages = key.startsWith(`${PREFIX}-pages-`) && !key.startsWith(PAGE_PREFIX);
+    const oldRsc = key.startsWith(`${PREFIX}-rsc-`) && !key.startsWith(RSC_PREFIX);
+    return oldStatic || oldPages || oldRsc ? caches.delete(key) : Promise.resolve();
+  }));
+  await self.clients.claim();
+})()));
 
-        await Promise.all(
-          keys.map(key => {
-            if (IS_DEV || key.startsWith(APP_CACHE_PREFIX)) {
-              return caches.delete(key);
-            }
-
-            return Promise.resolve();
-          }),
-        );
-
-        await self.clients.claim();
-
-        if (!IS_DEV) {
-          const clientList = await self.clients.matchAll({
-            type: 'window',
-            includeUncontrolled: true,
-          });
-
-          for (const client of clientList) {
-            client.postMessage({ type: 'SW_UPDATED', version: APP_VERSION });
-          }
-        }
-      } catch (error) {
-        console.error('[SW] Activation failed:', error);
-      }
-    })(),
-  );
+self.addEventListener('message', event => {
+  const data = event.data || {};
+  if (data.type === 'SKIP_WAITING' || data.type === 'VERSION_MISMATCH') { self.skipWaiting(); return; }
+  if (data.type === 'OFFLINE_SET_USER' && typeof data.userId === 'string') { event.waitUntil(setUser(data.userId)); return; }
+  if (data.type === 'OFFLINE_CLEAR_USER') { event.waitUntil(clearPrivateCaches()); return; }
+  if (data.type === 'OFFLINE_WARM_ROUTES' && Array.isArray(data.routes)) event.waitUntil((async () => {
+    const userId = await getUser(); if (!userId) return;
+    const routes = [...new Set([...CORE_ROUTES, ...data.routes])].filter(route => typeof route === 'string' && route.startsWith('/user/'));
+    await Promise.allSettled(routes.map(async route => { const request = new Request(new URL(route, self.location.origin), { credentials: 'include' }); const response = await fetch(request); await put(pageCache(userId), request, response); }));
+  })());
 });
 
 self.addEventListener('fetch', event => {
   const request = event.request;
-
-  if (shouldBypassRequest(request)) {
-    return;
-  }
-
-  if (isHtmlNavigation(request)) {
-    event.respondWith(
-      (async () => {
-        try {
-          const freshResponse = await fetchWithTimeout(request);
-
-          if (freshResponse && freshResponse.status === 200) {
-            await safeCachePut(PAGE_CACHE_NAME, request, freshResponse.clone(), MAX_PAGE_CACHE_ENTRIES);
-          }
-
-          return freshResponse;
-        } catch (error) {
-          console.warn(`[SW] HTML fetch failed for ${request.url}:`, error.message);
-
-          const pageCache = await caches.open(PAGE_CACHE_NAME);
-          const staticCache = await caches.open(STATIC_CACHE_NAME);
-
-          const cachedPage = await pageCache.match(request);
-          if (cachedPage) {
-            return cachedPage;
-          }
-
-          const offlinePage = await staticCache.match('/offline.html');
-          if (offlinePage) {
-            return offlinePage;
-          }
-
-          return new Response('Offline', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-          });
-        }
-      })(),
-    );
-
-    return;
-  }
-
-  if (!isStaticAssetRequest(request)) {
-    return;
-  }
-
-  event.respondWith(
-    (async () => {
-      const staticCache = await caches.open(STATIC_CACHE_NAME);
-      const cachedResponse = await staticCache.match(request);
-
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      try {
-        const networkResponse = await fetchWithTimeout(request);
-
-        if (
-          networkResponse &&
-          networkResponse.status === 200 &&
-          (networkResponse.type === 'basic' || networkResponse.type === 'cors')
-        ) {
-          await safeCachePut(STATIC_CACHE_NAME, request, networkResponse.clone(), MAX_STATIC_CACHE_ENTRIES);
-        }
-
-        return networkResponse;
-      } catch (error) {
-        console.warn(`[SW] Asset fetch failed for ${request.url}:`, error.message);
-
-        return new Response('Offline', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-        });
-      }
-    })(),
-  );
+  if (IS_DEV || request.method !== 'GET' || !sameOrigin(request)) return;
+  if (asset(request)) { event.respondWith((async () => { const cache = await caches.open(STATIC_CACHE); const hit = await cache.match(request); if (hit) return hit; const response = await fetch(request); await put(STATIC_CACHE, request, response); return response; })()); return; }
+  if (userApi(request)) { event.respondWith((async () => { const userId = await getUser(); return userId ? networkFirst(request, dataCache(userId), request) : fetch(request); })()); return; }
+  if (userRoute(request) && rscRequest(request)) { event.respondWith((async () => { const userId = await getUser(); if (!userId) return fetch(request); const keyUrl = new URL(request.url); keyUrl.searchParams.delete('_rsc'); return networkFirst(request, rscCache(userId), new Request(keyUrl)); })()); return; }
+  if (userRoute(request) && navigation(request)) { event.respondWith((async () => { const userId = await getUser(); if (!userId) return fetch(request); try { return await networkFirst(request, pageCache(userId), request); } catch { return (await (await caches.open(STATIC_CACHE)).match('/offline.html')) || new Response('Offline', { status: 503 }); } })()); }
 });
 
 self.addEventListener('push', event => {
-  if (!event.data) {
-    console.warn('[SW] Empty push event received');
-    return;
-  }
-
-  let data = {};
-
-  try {
-    data = event.data.json();
-  } catch (error) {
-    console.error('[SW] Push payload parse failed:', error);
-    return;
-  }
-
-  const title = typeof data.title === 'string' ? data.title.slice(0, 100) : 'Primal Powerhouse';
-  const body = typeof data.body === 'string' ? data.body.slice(0, 150) : 'New update from your coach!';
-  const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/user/dashboard';
-  const tag = typeof data.tag === 'string' && data.tag.trim() ? data.tag : 'primal-powerhouse-notification';
-  const conversationId = typeof data.conversationId === 'string' ? data.conversationId : null;
-  const senderId = typeof data.senderId === 'string' ? data.senderId : null;
-
-  event.waitUntil(
-    self.registration
-      .showNotification(title, {
-        body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag,
-        requireInteraction: Boolean(data.requireInteraction),
-        data: { url, conversationId, senderId },
-      })
-      .catch(error => console.error('[SW] Notification failed:', error)),
-  );
+  if (!event.data) return;
+  event.waitUntil((async () => { try { const data = event.data.json(); await self.registration.showNotification(data.title || 'Primal Powerhouse', { body: data.body || 'You have a new update.', icon: '/icon-192.png', badge: '/icon-192.png', data: { url: typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/user/dashboard' } }); } catch {} })());
 });
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-
-  const targetUrl = event.notification.data?.url || '/user/dashboard';
-
-  event.waitUntil(
-    (async () => {
-      const windowClients = await clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true,
-      });
-
-      for (const client of windowClients) {
-        const clientUrl = new URL(client.url);
-
-        if (clientUrl.origin !== self.location.origin) {
-          continue;
-        }
-
-        try {
-          await client.navigate(targetUrl);
-          await client.focus();
-          return;
-        } catch (error) {
-          console.warn('[SW] Failed to navigate existing client:', error);
-        }
-      }
-
-      await clients.openWindow(targetUrl);
-    })(),
-  );
-});
+self.addEventListener('notificationclick', event => { event.notification.close(); event.waitUntil(self.clients.openWindow(event.notification.data?.url || '/user/dashboard')); });

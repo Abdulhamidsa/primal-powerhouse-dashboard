@@ -3,29 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-
-interface Video {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  difficulty: string;
-  tags: string[];
-  thumbnailUrl?: string;
-  videoUrl: string;
-  instructions?: string[];
-  muscleGroups?: string[];
-  equipment?: string[];
-}
-
-interface VideoAssignment {
-  id: string;
-  assignedDate: string;
-  isCompleted: boolean;
-  notes?: string;
-  video: Video;
-}
+import { useMemo } from 'react';
+import useSWR from 'swr';
+import { getUserTrainingVideoAssignment } from '@/features/training/api/userTraining.api';
 
 function formatDuration(seconds: number) {
   const mins = Math.max(1, Math.floor(seconds / 60));
@@ -36,36 +16,16 @@ export default function UserVideoDetailPage() {
   const params = useParams<{ assignmentId: string }>();
   const assignmentId = params.assignmentId;
 
-  const [assignment, setAssignment] = useState<VideoAssignment | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: assignment, error, isLoading: loading } = useSWR(
+    assignmentId ? ['/api/user/videos', assignmentId] : null,
+    ([, id]: [string, string]) => getUserTrainingVideoAssignment(id),
+    { revalidateOnFocus: false, revalidateOnReconnect: false },
+  );
 
   const isImage = useMemo(() => {
     if (!assignment?.video?.videoUrl) return false;
     return /\.(gif|webp|png|jpg|jpeg)$/i.test(assignment.video.videoUrl);
   }, [assignment]);
-
-  useEffect(() => {
-    const run = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/user/videos/${assignmentId}`);
-        if (!response.ok) {
-          throw new Error('Failed to load exercise details');
-        }
-        const data = await response.json();
-        setAssignment(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (assignmentId) {
-      run();
-    }
-  }, [assignmentId]);
 
   const handleImageFullscreen = async () => {
     const container = document.getElementById('exercise-media-container');
@@ -94,7 +54,7 @@ export default function UserVideoDetailPage() {
         <Link href="/user/training" className="inline-flex items-center text-sm text-primary hover:underline">
           ← Back to training
         </Link>
-        <div className="bg-card border border-border rounded-xl p-6 text-destructive">{error ?? 'Video not found'}</div>
+        <div className="bg-card border border-border rounded-xl p-6 text-destructive">{error?.message ?? 'Video not found'}</div>
       </div>
     );
   }

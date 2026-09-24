@@ -8,6 +8,10 @@ export async function getUserTrainingVideos() {
   return httpClient.get<TrainingVideoAssignment[]>(USER_TRAINING_VIDEOS_URL);
 }
 
+export async function getUserTrainingVideoAssignment(assignmentId: string) {
+  return httpClient.get<TrainingVideoAssignment>(`${USER_TRAINING_VIDEOS_URL}/${encodeURIComponent(assignmentId)}`);
+}
+
 export async function getUserTrainingCoach() {
   return httpClient.get<TrainingCoachResponse>(USER_TRAINING_COACH_URL);
 }
