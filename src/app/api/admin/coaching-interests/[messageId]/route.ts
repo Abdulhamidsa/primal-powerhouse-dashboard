@@ -3,7 +3,10 @@ import { requireApiAuth } from '@/lib/api-auth';
 import { resolveActor } from '@/lib/chat/conversation';
 import { prisma } from '@/lib/prisma';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
-import { COACHING_INTEREST_CLIENT_TEMP_ID, COACHING_INTEREST_MESSAGE } from '@/features/coaching-interest/server/coachingInterest.server';
+import {
+  COACHING_INTEREST_CLIENT_TEMP_ID,
+  COACHING_INTEREST_MESSAGE,
+} from '@/features/coaching-interest/server/coachingInterest.server';
 import { updateAdminCoachingInterestSchema } from '@/features/coaching-interest/schemas/coachingInterest.schema';
 
 function readPhone(client: { id: string; phone: string | null; phoneEncrypted: string | null }): string | null {

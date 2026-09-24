@@ -9,20 +9,37 @@ import { rateLimit } from '@/lib/security/rate-limit';
 import { getRequestIpAddress } from '@/lib/chat/conversation';
 import { getPusherServer, hasPusherServerConfig } from '@/lib/realtime/pusher-server';
 import { toConversationChannel, toUserChannel } from '@/lib/realtime/channels';
-import { COACHING_INTEREST_CLIENT_TEMP_ID, COACHING_INTEREST_MESSAGE, createIdempotentCoachingInterest } from '@/features/coaching-interest/server/coachingInterest.server';
+import {
+  COACHING_INTEREST_CLIENT_TEMP_ID,
+  COACHING_INTEREST_MESSAGE,
+  createIdempotentCoachingInterest,
+} from '@/features/coaching-interest/server/coachingInterest.server';
 
 async function requireSelfServiceClient(request: NextRequest) {
   const auth = await requireApiAuth(request, 'client');
   if (!auth.ok) return auth;
-  const client = await prisma.client.findUnique({ where: { id: auth.user.userId }, select: { id: true, coachId: true, accessMode: true, name: true } });
+  const client = await prisma.client.findUnique({
+    where: { id: auth.user.userId },
+    select: { id: true, coachId: true, accessMode: true, name: true },
+  });
   if (!client) return { ok: false as const, res: NextResponse.json({ error: 'Client not found' }, { status: 404 }) };
-  if (client.accessMode !== 'SELF_SERVICE') return { ok: false as const, res: NextResponse.json({ error: 'This request is available to self-service users only.' }, { status: 403 }) };
+  if (client.accessMode !== 'SELF_SERVICE')
+    return {
+      ok: false as const,
+      res: NextResponse.json({ error: 'This request is available to self-service users only.' }, { status: 403 }),
+    };
   return { ok: true as const, auth, client };
 }
 
 async function findRequest(conversationId: string, clientId: string) {
   return prisma.message.findUnique({
-    where: { conversationId_senderId_clientTempId: { conversationId, senderId: clientId, clientTempId: COACHING_INTEREST_CLIENT_TEMP_ID } },
+    where: {
+      conversationId_senderId_clientTempId: {
+        conversationId,
+        senderId: clientId,
+        clientTempId: COACHING_INTEREST_CLIENT_TEMP_ID,
+      },
+    },
     select: { id: true, conversationId: true, senderId: true, senderRole: true, createdAt: true },
   });
 }
@@ -48,7 +65,8 @@ export async function POST(request: NextRequest) {
   const access = await requireSelfServiceClient(request);
   if (!access.ok) return access.res;
   const limited = rateLimit(`coaching-interest:${access.client.id}:${getRequestIpAddress(request)}`, 10, 60_000);
-  if (!limited.allowed) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+  if (!limited.allowed)
+    return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
 
   const conversation = await findOrCreateClientConversation(access.client.id);
   const messageId = randomUUID();
@@ -63,10 +81,19 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await createIdempotentCoachingInterest({
-    create: () => prisma.message.create({
-      data: { id: messageId, conversationId: conversation.id, senderId: access.client.id, senderRole: 'CLIENT', clientTempId: COACHING_INTEREST_CLIENT_TEMP_ID, body, bodyEncrypted },
-      select: { id: true, conversationId: true, senderId: true, senderRole: true, createdAt: true },
-    }),
+    create: () =>
+      prisma.message.create({
+        data: {
+          id: messageId,
+          conversationId: conversation.id,
+          senderId: access.client.id,
+          senderRole: 'CLIENT',
+          clientTempId: COACHING_INTEREST_CLIENT_TEMP_ID,
+          body,
+          bodyEncrypted,
+        },
+        select: { id: true, conversationId: true, senderId: true, senderRole: true, createdAt: true },
+      }),
     findExisting: () => findRequest(conversation.id, access.client.id),
   });
   if (!result.created) return NextResponse.json(responseFor(result.message));
@@ -75,18 +102,25 @@ export async function POST(request: NextRequest) {
   await prisma.conversation.update({ where: { id: conversation.id }, data: { lastMessageAt: created.createdAt } });
 
   if (hasPusherServerConfig()) {
-    const payload = { ...created, body: COACHING_INTEREST_MESSAGE, attachments: [], createdAt: created.createdAt.toISOString() };
+    const payload = {
+      ...created,
+      body: COACHING_INTEREST_MESSAGE,
+      attachments: [],
+      createdAt: created.createdAt.toISOString(),
+    };
     try {
       const admins = await prisma.user.findMany({ where: { role: { in: ['ADMIN', 'COACH'] } }, select: { id: true } });
       await Promise.all([
         getPusherServer().trigger(toConversationChannel(conversation.id), 'message.created', payload),
-        ...admins.map(admin => getPusherServer().trigger(toUserChannel(admin.id), 'notification.message', {
-          conversationId: conversation.id,
-          senderName: access.client.name,
-          preview: 'Ready to be contacted about 1:1 coaching.',
-          hasAttachment: false,
-          createdAt: created.createdAt.toISOString(),
-        })),
+        ...admins.map(admin =>
+          getPusherServer().trigger(toUserChannel(admin.id), 'notification.message', {
+            conversationId: conversation.id,
+            senderName: access.client.name,
+            preview: 'Ready to be contacted about 1:1 coaching.',
+            hasAttachment: false,
+            createdAt: created.createdAt.toISOString(),
+          }),
+        ),
       ]);
     } catch (error) {
       console.error('Failed to publish coaching interest event:', error);

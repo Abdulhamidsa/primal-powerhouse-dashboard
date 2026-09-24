@@ -18,7 +18,11 @@ export function AdminChatWorkspace() {
         </WorkspaceTab>
         <WorkspaceTab active={view === 'requests'} onClick={() => setView('requests')}>
           <Inbox size={16} /> Requests
-          {pendingCount > 0 ? <span className="rounded-full bg-[var(--color-accent)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-text-on-accent)]">{pendingCount}</span> : null}
+          {pendingCount > 0 ? (
+            <span className="rounded-full bg-[var(--color-accent)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-text-on-accent)]">
+              {pendingCount}
+            </span>
+          ) : null}
         </WorkspaceTab>
       </div>
       <div className="min-h-0 flex-1">
@@ -28,9 +32,21 @@ export function AdminChatWorkspace() {
   );
 }
 
-function WorkspaceTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function WorkspaceTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <button type="button" onClick={onClick} className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-semibold transition-colors ${active ? 'bg-white/[0.09] text-foreground' : 'text-muted-foreground hover:bg-white/[0.05] hover:text-foreground'}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-semibold transition-colors ${active ? 'bg-white/[0.09] text-foreground' : 'text-muted-foreground hover:bg-white/[0.05] hover:text-foreground'}`}
+    >
       {children}
     </button>
   );
