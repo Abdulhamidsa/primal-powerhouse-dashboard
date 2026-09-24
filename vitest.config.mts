@@ -8,6 +8,7 @@ export default defineConfig({
       'src/features/mobile-auth/**/*.test.ts',
       'src/features/user-dashboard/lib/*.test.ts',
       'src/features/learn/**/*.test.ts',
+      'src/features/coaching-interest/**/*.test.ts',
     ],
   },
 });

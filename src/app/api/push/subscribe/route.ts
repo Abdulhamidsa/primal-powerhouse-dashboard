@@ -6,6 +6,7 @@ import { assertSameOrigin } from '@/lib/security/csrf';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { z } from 'zod';
+import { clientHasCoachingAccess, coachingAccessDeniedResponse } from '@/lib/auth/client-access';
 
 const subscribeSchema = z.object({
   endpoint: z.string().url(),
@@ -22,6 +23,7 @@ export async function POST(request: NextRequest) {
 
     const auth = await requireApiAuth(request, 'client');
     if (!auth.ok) return auth.res;
+    if (!(await clientHasCoachingAccess(auth.user.userId))) return coachingAccessDeniedResponse();
 
     const limiter = rateLimit(`push:subscribe:${auth.user.userId}`, 10, 60_000);
     if (!limiter.allowed) return jsonWithCache({ error: 'Too many requests' }, { status: 429 });

@@ -151,10 +151,8 @@ const selfServiceNavItems: NavItem[] = [
   userNavItems[0],
   { name: 'Meal Plan', mobileName: 'Plan', href: '/user/my-plan', icon: CalendarCheck2, description: 'Your starter meal plan' },
   { name: 'Training Plan', mobileName: 'Train', href: '/user/training', icon: Activity, description: 'Your starter training plan' },
+  { name: 'Method', mobileName: 'Method', href: '/user/learn', icon: Flame, description: 'Handbook and practical guidance' },
   userNavItems[4],
-  { name: 'Learn / Method', mobileName: 'Learn', href: '/user/learn', icon: Flame, description: 'Guides and method' },
-  { name: 'Profile', mobileName: 'Profile', href: '/user/profile', icon: User, description: 'Progress and account' },
-  { name: 'Upgrade', mobileName: 'Upgrade', href: '/user/upgrade', icon: Handshake, description: 'Explore coaching' },
 ];
 
 const userAccountMenuItems: NavItem[] = [
@@ -182,6 +180,13 @@ const userAccountMenuItems: NavItem[] = [
     icon: Bell,
     description: 'Message alerts',
   },
+];
+
+const selfServiceAccountMenuItems: NavItem[] = [
+  userAccountMenuItems[0],
+  userAccountMenuItems[1],
+  userAccountMenuItems[2],
+  { name: 'Upgrade', href: '/user/upgrade', icon: Handshake, description: 'Explore personal guidance' },
 ];
 
 function isActivePath(pathname: string, href: string): boolean {
@@ -322,6 +327,7 @@ export default function Navigation({
   const safeUnreadTotal = dashboardSummary?.unreadTotal ?? 0;
   const safeUser = isMounted ? (dashboardSummary?.user ?? null) : null;
   const isSelfService = userType === 'user' && profileUser?.accessMode === 'SELF_SERVICE';
+  const accountMenuItems = isSelfService ? selfServiceAccountMenuItems : userAccountMenuItems;
 
   useEffect(() => {
     setAccountMenuOpen(false);
@@ -494,7 +500,7 @@ export default function Navigation({
 
                   {accountMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur-xl">
-                      {userAccountMenuItems.map(item => {
+                      {accountMenuItems.map(item => {
                         const Icon = item.icon;
                         const active = isActivePath(pathname, item.href);
 
@@ -613,7 +619,7 @@ export default function Navigation({
               </div>
 
               <div className="overflow-hidden rounded-3xl border border-border/70 bg-background/55">
-                {userAccountMenuItems.map((item, index) => {
+                {accountMenuItems.map((item, index) => {
                   const Icon = item.icon;
                   const active = isActivePath(pathname, item.href.split('#')[0]);
 

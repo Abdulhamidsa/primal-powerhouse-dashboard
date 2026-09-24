@@ -10,7 +10,7 @@ export function LearnExperience() {
   const reader = useHandbookReader();
 
   return (
-    <div className="overflow-x-clip bg-[var(--color-bg)] pb-28 text-[var(--color-text)]">
+    <div className="overflow-x-clip bg-[var(--color-bg)] pb-32 text-[var(--color-text)]">
       <HandbookCover onOpen={() => reader.open()} />
       <MethodSystem />
       <PrimalFaq onOpenHandbook={reader.open} />

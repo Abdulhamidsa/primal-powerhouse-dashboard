@@ -17,10 +17,10 @@ export default async function UserAppLayout({ children }: { children: React.Reac
 
   const client = await prisma.client.findUnique({
     where: { id: payload.userId },
-    select: { signupSource: true, emailVerifiedAt: true, email: true },
+    select: { signupSource: true, emailVerifiedAt: true, email: true, accessMode: true },
   });
   if (!client) redirect('/user/login');
   if (requiresEmailVerification(client)) redirect(`/user/verify-required?email=${encodeURIComponent(client.email)}`);
 
-  return <UserShell userId={payload.userId}>{children}</UserShell>;
+  return <UserShell userId={payload.userId} accessMode={client.accessMode}>{children}</UserShell>;
 }

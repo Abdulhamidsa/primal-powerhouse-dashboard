@@ -235,6 +235,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!actor) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  if (actor.type === 'client' && !(await clientHasCoachingAccess(actor.clientId))) return coachingAccessDeniedResponse();
 
   const { conversationId } = await params;
   const conversation = await (prisma as any).conversation.findUnique({

@@ -14,7 +14,7 @@
 
 .book {
   position: relative;
-  width: min(72vw, 284px);
+  width: min(52vw, 210px);
   aspect-ratio: 0.72;
   margin-inline: auto;
   transform: rotateY(-7deg) rotateX(2deg);
