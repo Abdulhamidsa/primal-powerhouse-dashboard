@@ -1,5 +1,5 @@
 
-import { ChatPanel } from '@/features/client-coach-messaging/components/ChatPanel';
+import { AdminChatWorkspace } from '@/features/coaching-interest/components/AdminChatWorkspace';
 import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
 import { Radio } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export default function AdminChatPage() {
       />
 
       <AdminPanel className="h-[calc(100dvh-220px)] min-h-[620px] overflow-hidden">
-        <ChatPanel variant="admin" />
+        <AdminChatWorkspace />
       </AdminPanel>
     </AdminPage>
   );

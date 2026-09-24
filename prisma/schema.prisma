@@ -361,21 +361,24 @@ model NotificationDeliveryLog {
 }
 
 model Message {
-  clientTempId    String?
-  id              String            @id @default(cuid())
-  conversationId  String
-  senderId        String
-  senderRole      MessageSenderRole
-  body            String?
-  bodyEncrypted   String?
-  attachmentsJson String?
-  createdAt       DateTime          @default(now())
+  clientTempId                     String?
+  id                               String            @id @default(cuid())
+  conversationId                   String
+  senderId                         String
+  senderRole                       MessageSenderRole
+  body                             String?
+  bodyEncrypted                    String?
+  attachmentsJson                  String?
+  coachingInterestHandledAt        DateTime?
+  coachingInterestHandledById      String?
+  createdAt                        DateTime          @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, senderId, clientTempId])
   @@index([conversationId, createdAt])
   @@index([senderId])
+  @@index([clientTempId, coachingInterestHandledAt])
   @@map("messages")
 }
 

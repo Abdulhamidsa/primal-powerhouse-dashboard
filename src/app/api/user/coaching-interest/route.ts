@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   if (hasPusherServerConfig()) {
     const payload = { ...created, body: COACHING_INTEREST_MESSAGE, attachments: [], createdAt: created.createdAt.toISOString() };
     try {
-      const admins = await prisma.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } });
+      const admins = await prisma.user.findMany({ where: { role: { in: ['ADMIN', 'COACH'] } }, select: { id: true } });
       await Promise.all([
         getPusherServer().trigger(toConversationChannel(conversation.id), 'message.created', payload),
         ...admins.map(admin => getPusherServer().trigger(toUserChannel(admin.id), 'notification.message', {
