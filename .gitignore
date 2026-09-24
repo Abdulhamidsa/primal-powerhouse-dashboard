@@ -370,6 +370,7 @@ prisma/migrations/*
 !prisma/migrations/*/migration.sql
 !prisma/migrations/migration_lock.toml
 !src/features/mobile-auth/**/*.test.ts
+!src/features/coaching-interest/**/*.test.ts
 !apps/mobile/src/**/*.test.ts
 !scripts/*.test.cjs
 !docs/mobile-parity.md
