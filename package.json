@@ -47,7 +47,6 @@
     "fastest-levenshtein": "1.0.16",
     "google-auth-library": "11.0.2",
     "jsonwebtoken": "9.0.3",
-    "lucide-react": "0.562.0",
     "motion": "12.36.0",
     "next": "15",
     "openai": "6.32.0",
