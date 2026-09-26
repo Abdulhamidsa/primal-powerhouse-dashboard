@@ -1,8 +1,8 @@
 'use client';
 
-import { ArrowUpRight, MoveRight } from 'lucide-react';
-import { HANDBOOK_CHAPTERS, HANDBOOK_PAGES } from '@/features/learn/data/handbook';
-import { METHOD_STAGES } from '@/features/learn/data/method';
+import { ArrowUpRight, BookOpenText } from 'lucide-react';
+import { HANDBOOK_PAGES } from '@/features/learn/data/handbook';
+import { UserPageHero } from '@/components/UserPageHero';
 import { getHandbookProgress } from '@/features/learn/lib/handbook';
 import styles from './learn.module.css';
 
@@ -17,15 +17,19 @@ export function MethodLanding({ pageIndex, onOpen }: Props) {
   const hasProgress = pageIndex > 0;
 
   return (
-    <div className="mx-auto w-full max-w-xl px-4 pb-7 pt-5">
-      <section aria-labelledby="method-title">
-        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-accent)]">Method · Volume 01</p>
-        <h1 id="method-title" className="mt-3 max-w-[12ch] text-[2.35rem] font-semibold leading-[0.92] tracking-[-0.065em] text-[var(--color-text)]">
-          The Primal Handbook
-        </h1>
-        <p className="mt-4 max-w-[31rem] text-sm leading-6 text-[var(--color-text-muted)]">
-          Training, nutrition, recovery, and the decisions that connect them.
-        </p>
+    <div className="mx-auto w-full max-w-xl px-4 pb-6 pt-4">
+      <UserPageHero
+        eyebrow="Method"
+        title="Build the knowledge behind your program"
+        description="A practical field guide to the principles behind sustainable progress."
+        icon={<BookOpenText size={17} />}
+      />
+
+      <section className="mt-6" aria-labelledby="handbook-title">
+        <div className="flex items-baseline justify-between gap-4">
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-accent)]">Volume 01</p><h2 id="handbook-title" className="mt-1 text-xl font-semibold tracking-[-0.04em] text-[var(--color-text)]">The Primal Handbook</h2></div>
+          <span className="text-xs text-[var(--color-text-muted)]">18 pages</span>
+        </div>
 
         <button
           type="button"
@@ -36,7 +40,7 @@ export function MethodLanding({ pageIndex, onOpen }: Props) {
           <span className={styles.bookGlow} />
           <span className={`${styles.book} !mx-0 !w-[min(47vw,188px)]`}>
             <span className={`${styles.cover} flex h-full flex-col px-7 pb-6 pt-7`}>
-              <span className="relative z-10 text-[8px] font-bold uppercase tracking-[0.32em] text-[var(--color-accent)]">Primal Power</span>
+              <span className="relative z-10 whitespace-nowrap text-[7px] font-bold uppercase tracking-[0.22em] text-[var(--color-accent)]">Primal Power</span>
               <span className={`${styles.emboss} relative z-10 mt-auto block font-serif text-[1.75rem] font-bold leading-[0.84] tracking-[-0.055em]`}>THE<br />PRIMAL<br />HANDBOOK</span>
               <span className="relative z-10 mt-4 h-px w-9 bg-[var(--color-accent)]" />
               <span className={`${styles.emboss} relative z-10 mt-4 text-[7px] font-bold uppercase tracking-[0.22em]`}>Train · Fuel · Recover</span>
@@ -56,20 +60,12 @@ export function MethodLanding({ pageIndex, onOpen }: Props) {
         ) : null}
       </section>
 
-      <section className="mt-10" aria-labelledby="system-title">
-        <div className="flex items-baseline justify-between gap-4"><h2 id="system-title" className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-accent)]">The system</h2><span className="text-xs text-[var(--color-text-muted)]">Six connected practices</span></div>
-        <div className="mt-3 border-y border-[var(--color-border)]">
-          {METHOD_STAGES.map(stage => {
-            const chapter = HANDBOOK_CHAPTERS.find(item => item.id === stage.id)!;
-            return (
-              <button key={stage.id} type="button" onClick={() => onOpen(chapter.firstPageId)} className="group flex min-h-[68px] w-full items-center gap-3 border-b border-[var(--color-border)] text-left last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]">
-                <span className="w-6 font-mono text-[10px] font-bold text-[var(--color-accent)]">{stage.number}</span>
-                <span className="min-w-0 flex-1"><span className="block text-sm font-semibold uppercase tracking-[0.14em] text-[var(--color-text)]">{stage.label}</span><span className="mt-0.5 block truncate text-xs text-[var(--color-text-muted)]">{stage.statement}</span></span>
-                <MoveRight size={17} className="shrink-0 text-[var(--color-text-muted)] transition-transform group-hover:translate-x-1 group-hover:text-[var(--color-accent)]" />
-              </button>
-            );
-          })}
-        </div>
+      <section className="mt-8 border-t border-[var(--color-border)] pt-6" aria-labelledby="about-handbook-title">
+        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-accent)]">About this handbook</p>
+        <h2 id="about-handbook-title" className="mt-2 text-xl font-semibold tracking-[-0.04em] text-[var(--color-text)]">Understand the whole system.</h2>
+        <p className="mt-3 max-w-[35rem] text-sm leading-6 text-[var(--color-text-muted)]">
+          Learn how training, nutrition, recovery, tracking, and thoughtful adjustment work together—so you can make better decisions instead of chasing random fixes.
+        </p>
       </section>
     </div>
   );

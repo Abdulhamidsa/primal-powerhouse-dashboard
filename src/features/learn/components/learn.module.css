@@ -13,7 +13,9 @@
 }
 
 .book {
+  display: block;
   position: relative;
+  min-width: 0;
   width: min(52vw, 210px);
   aspect-ratio: 0.72;
   margin-inline: auto;
@@ -42,6 +44,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  contain: paint;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 4px 12px 12px 4px;
   background:

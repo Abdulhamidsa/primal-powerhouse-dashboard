@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, BookOpenText, CalendarCheck2, Check, Dumbbell, Flame, Utensils } from 'lucide-react';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
+import { UserPageHero } from '@/components/UserPageHero';
 
 export function SelfServiceDashboardContent({ summary }: { summary: UserDashboardSummary }) {
   const firstName = summary.user.name.split(' ')[0] || 'Member';
@@ -25,15 +26,20 @@ export function SelfServiceDashboardContent({ summary }: { summary: UserDashboar
 
   return (
     <div className="space-y-3">
-      <section className="relative overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-        <div aria-hidden="true" className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[var(--color-accent)]/45 to-transparent" />
-        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-accent)]"><Flame size={14} /> Starter program</div>
-        <h1 className="mt-3 text-[1.75rem] font-semibold leading-none tracking-[-0.045em] text-[var(--color-text)]">Welcome back, {firstName}</h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Your training, nutrition, and next step in one place.</p>
-        <Link href={continueAction.href} className="mt-5 flex min-h-12 items-center justify-between rounded-2xl bg-[var(--color-accent)] px-4 text-sm font-semibold text-[var(--color-text-on-accent)] transition-transform active:scale-[0.99]">
+      <UserPageHero
+        eyebrow="Starter program"
+        title={`Welcome back, ${firstName}`}
+        description="Your training, nutrition, and next step in one place."
+        icon={<Flame size={17} />}
+        statusItems={[
+          { label: 'Meals', value: mealsSelected ? `${mealsCompleted}/${mealsSelected} complete` : 'Choose today', tone: mealsDone ? 'good' : 'neutral' },
+          { label: 'Training', value: trainingDone ? 'Complete' : trainingReady ? 'Ready' : 'Waiting', tone: trainingDone ? 'good' : trainingReady ? 'neutral' : 'warn' },
+        ]}
+      >
+        <Link href={continueAction.href} className="flex min-h-12 items-center justify-between rounded-2xl bg-[var(--color-accent)] px-4 text-sm font-semibold text-[var(--color-text-on-accent)] transition-transform active:scale-[0.99]">
           <span>{continueAction.label}</span><ArrowRight size={17} />
         </Link>
-      </section>
+      </UserPageHero>
 
       <section className="grid grid-cols-2 gap-3" aria-label="Your program">
         <ProgramCard

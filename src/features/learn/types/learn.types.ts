@@ -57,14 +57,6 @@ export type HandbookChapter = {
   firstPageId: string;
 };
 
-export type MethodStage = {
-  id: HandbookChapterId;
-  number: string;
-  label: string;
-  statement: string;
-  detail: string;
-};
-
 export type FaqEntry = {
   id: string;
   question: string;

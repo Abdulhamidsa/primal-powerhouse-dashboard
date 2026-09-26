@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ChevronDown, Search, X } from 'lucide-react';
 import { FAQ_ENTRIES } from '@/features/learn/data/faq';
 import { filterFaqEntries } from '@/features/learn/lib/handbook';
@@ -10,7 +9,6 @@ import { cn } from '@/lib/utils';
 export function PrimalFaq() {
   const [query, setQuery] = useState('');
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
-  const reduceMotion = useReducedMotion();
   const results = useMemo(() => filterFaqEntries(FAQ_ENTRIES, query), [query]);
 
   const toggle = (id: string) => setOpenIds(current => {
@@ -20,7 +18,7 @@ export function PrimalFaq() {
   });
 
   return (
-    <section className="mx-auto max-w-xl px-4 pb-32 pt-5" aria-labelledby="faq-title">
+    <section className="mx-auto max-w-xl px-4 pb-6 pt-5" aria-labelledby="faq-title">
       <div className="border-t border-[var(--color-border)] pt-8">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--color-accent)]">FAQ</p>
         <h2 id="faq-title" className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-[var(--color-text)]">Questions, answered.</h2>
@@ -44,15 +42,11 @@ export function PrimalFaq() {
                   <span className="flex-1 text-sm font-semibold leading-6 text-[var(--color-text)] sm:text-base">{entry.question}</span>
                   <ChevronDown size={18} className={cn('shrink-0 text-[var(--color-text-muted)] transition-transform', open && 'rotate-180 text-[var(--color-accent)]')} />
                 </button>
-                <AnimatePresence initial={false}>
-                  {open ? (
-                    <motion.div id={answerId} initial={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }} transition={{ duration: reduceMotion ? 0.08 : 0.25 }} className="overflow-hidden">
-                      <div className="pb-6 pl-8 pr-3 sm:pl-10">
-                        <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">{entry.answer}</p>
-                      </div>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
+                {open ? (
+                  <div id={answerId} className="pb-6 pl-8 pr-3 sm:pl-10">
+                    <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">{entry.answer}</p>
+                  </div>
+                ) : null}
               </div>
             );
           })}

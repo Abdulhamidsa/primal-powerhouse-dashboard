@@ -9,7 +9,7 @@ export function LearnExperience() {
   const reader = useHandbookReader();
 
   return (
-    <div className="overflow-x-clip bg-[var(--color-bg)] pb-32 text-[var(--color-text)]">
+    <div className="overflow-x-clip bg-[var(--color-bg)] text-[var(--color-text)]">
       <MethodLanding pageIndex={reader.pageIndex} onOpen={reader.open} />
       <PrimalFaq />
       <HandbookReader isOpen={reader.isOpen} pageIndex={reader.pageIndex} onClose={reader.close} onNext={reader.next} onPrevious={reader.previous} onNavigate={reader.goToPage} />
