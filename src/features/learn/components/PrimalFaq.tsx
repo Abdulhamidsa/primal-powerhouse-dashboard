@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 import { FAQ_ENTRIES } from '@/features/learn/data/faq';
 import { filterFaqEntries } from '@/features/learn/lib/handbook';
 import { cn } from '@/lib/utils';
 
-export function PrimalFaq({ onOpenHandbook }: { onOpenHandbook: (pageId: string) => void }) {
+export function PrimalFaq() {
   const [query, setQuery] = useState('');
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const reduceMotion = useReducedMotion();
@@ -20,13 +20,13 @@ export function PrimalFaq({ onOpenHandbook }: { onOpenHandbook: (pageId: string)
   });
 
   return (
-    <section className="px-4 py-3">
-      <div className="mx-auto max-w-xl rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--color-accent)]">Ask Primal</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[var(--color-text)]">Questions, answered.</h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Search the practical details behind your program.</p>
+    <section className="mx-auto max-w-xl px-4 pb-32 pt-5" aria-labelledby="faq-title">
+      <div className="border-t border-[var(--color-border)] pt-8">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--color-accent)]">FAQ</p>
+        <h2 id="faq-title" className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-[var(--color-text)]">Questions, answered.</h2>
+        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Quick, practical answers for the moments you need them.</p>
 
-        <label className="mt-5 flex min-h-12 items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/65 px-3 focus-within:border-[var(--color-accent)]">
+        <label className="mt-5 flex min-h-12 items-center gap-3 border-y border-[var(--color-border)] px-1 focus-within:border-[var(--color-accent)]">
           <Search size={18} className="shrink-0 text-[var(--color-accent)]" />
           <span className="sr-only">Search Primal questions</span>
           <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search Primal…" className="min-w-0 flex-1 bg-transparent py-4 text-base text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]" />
@@ -49,11 +49,6 @@ export function PrimalFaq({ onOpenHandbook }: { onOpenHandbook: (pageId: string)
                     <motion.div id={answerId} initial={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }} transition={{ duration: reduceMotion ? 0.08 : 0.25 }} className="overflow-hidden">
                       <div className="pb-6 pl-8 pr-3 sm:pl-10">
                         <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">{entry.answer}</p>
-                        {entry.handbookPageId ? (
-                          <button type="button" onClick={() => onOpenHandbook(entry.handbookPageId!)} className="group mt-5 inline-flex min-h-11 items-center gap-2 border-b border-[var(--color-accent)] text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-accent)]">
-                            Read more <span className="text-[var(--color-text-muted)]">{entry.handbookLabel}</span><ArrowUpRight size={14} className="text-[var(--color-accent)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                          </button>
-                        ) : null}
                       </div>
                     </motion.div>
                   ) : null}

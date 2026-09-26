@@ -1,8 +1,34 @@
-import type { LucideIcon } from 'lucide-react';
-
 export type HandbookChapterId = 'foundation' | 'train' | 'fuel' | 'recover' | 'track' | 'adapt';
 
-export type HandbookPageVariant = 'contents' | 'chapter' | 'article' | 'principle' | 'diagram' | 'stat' | 'checklist';
+export type HandbookPageVariant =
+  | 'contents'
+  | 'chapter'
+  | 'article'
+  | 'principle'
+  | 'diagram'
+  | 'stat'
+  | 'checklist'
+  | 'photo'
+  | 'timeline'
+  | 'chart'
+  | 'comparison'
+  | 'case-study'
+  | 'reflection'
+  | 'transition';
+
+export type HandbookMedia = {
+  src: string;
+  alt: string;
+  caption?: string;
+  date?: string;
+  weight?: string;
+};
+
+export type HandbookChart = {
+  label: string;
+  points: Array<{ label: string; value: number }>;
+  annotations?: Array<{ label: string; pointIndex: number }>;
+};
 
 export type HandbookPage = {
   id: string;
@@ -19,6 +45,9 @@ export type HandbookPage = {
   statLabel?: string;
   items?: Array<{ title: string; detail: string }>;
   note?: string;
+  media?: HandbookMedia;
+  chart?: HandbookChart;
+  callouts?: string[];
 };
 
 export type HandbookChapter = {
@@ -34,14 +63,10 @@ export type MethodStage = {
   label: string;
   statement: string;
   detail: string;
-  concepts: string[];
-  icon: LucideIcon;
 };
 
 export type FaqEntry = {
   id: string;
   question: string;
   answer: string;
-  handbookPageId?: string;
-  handbookLabel?: string;
 };

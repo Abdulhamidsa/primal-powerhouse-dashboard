@@ -84,8 +84,8 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
           className="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-[#090806] text-white"
           style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(155,88,62,0.14),transparent_35%),linear-gradient(#0b0a08,#050504)]" />
-          <header className="relative z-20 flex min-h-16 items-center gap-3 border-b border-white/10 px-3 sm:px-6">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_5%,rgba(193,122,93,0.12),transparent_30%),#070706]" />
+          <header className="relative z-20 flex min-h-14 items-center gap-3 border-b border-white/10 px-4 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <BookOpenText size={18} className="shrink-0 text-[#c17a5d]" />
               <div className="min-w-0"><p className="truncate text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">Chapter {page.chapterNumber ?? '—'}</p><p className="truncate text-sm font-semibold">{page.chapterLabel}</p></div>
@@ -95,7 +95,7 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
           </header>
 
           <div
-            className="relative z-10 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-3 py-3 sm:px-8 sm:py-6"
+            className="relative z-10 flex min-h-0 flex-1 overflow-hidden"
             onTouchStart={event => { const touch = event.touches[0]; touchStartRef.current = { x: touch.clientX, y: touch.clientY }; }}
             onTouchEnd={event => {
               const start = touchStartRef.current;
@@ -117,7 +117,7 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
                   animate={{ opacity: 1, x: 0, rotateY: 0 }}
                   exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: direction * -42, rotateY: direction * 3 }}
                   transition={{ duration: reduceMotion ? 0.08 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 overflow-y-auto rounded-[2px]"
+                  className="absolute inset-0 overflow-y-auto"
                 >
                   <HandbookPage page={page} displayNumber={pageIndex + 1} onNavigate={onNavigate} />
                 </motion.div>
@@ -125,7 +125,7 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
             </div>
           </div>
 
-          <footer className="relative z-20 border-t border-white/10 px-3 pb-2 pt-2 sm:px-6">
+          <footer className="relative z-20 border-t border-white/10 px-4 pb-2 pt-2 sm:px-6">
             <div className="mx-auto flex max-w-[780px] items-center gap-3">
               <button type="button" onClick={onPrevious} disabled={pageIndex === 0} aria-label="Previous page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronLeft size={20} /></button>
               <div className="min-w-0 flex-1">
