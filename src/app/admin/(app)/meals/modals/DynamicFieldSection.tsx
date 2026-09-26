@@ -1,3 +1,4 @@
+import { XIcon } from '@phosphor-icons/react';
 // components/admin/meals/DynamicFieldSection.tsx
 import { AddMealSection } from './AddMealSection';
 
@@ -66,9 +67,7 @@ export function DynamicFieldSection({
                 type="button"
                 onClick={() => removeArrayItem(field, index)}
                 className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-red-400 transition-colors hover:bg-red-500/10"
-              >
-                ✕
-              </button>
+              ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
             )}
           </div>
         ))}

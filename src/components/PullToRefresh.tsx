@@ -100,9 +100,9 @@ export function PullToRefresh({
       >
         <div className="flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-primary shadow-[0_12px_36px_rgba(0,0,0,0.22)] backdrop-blur-xl">
           {refreshing ? (
-            <Loader2 size={19} className="animate-spin" />
+            <Loader2 aria-hidden="true" focusable="false" size={19} className="animate-spin" />
           ) : (
-            <RefreshCcw
+            <RefreshCcw aria-hidden="true" focusable="false"
               size={18}
               style={{
                 transform: `rotate(${progress * 220}deg) scale(${0.82 + progress * 0.18})`,

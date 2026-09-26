@@ -289,7 +289,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🎬 Video Title *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2"> Video Title *</label>
                     <input
                       type="text"
                       value={formData.title}
@@ -300,7 +300,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🔗 Video URL *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2"> Video URL *</label>
                     <input
                       type="url"
                       value={formData.videoUrl}
@@ -317,7 +317,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🖼️ Thumbnail URL</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2"> Thumbnail URL</label>
                     <input
                       type="url"
                       value={formData.thumbnailUrl}
@@ -359,9 +359,9 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                           )}
                           <div className="absolute top-3 right-3">
                             <span className="bg-black/70 text-white px-3 py-1 rounded-full text-xs font-medium">
-                              {previewType === 'youtube' && '📺 YouTube'}
-                              {previewType === 'vimeo' && '🎭 Vimeo'}
-                              {previewType === 'direct' && '🎬 Direct'}
+                              {previewType === 'youtube' && ' YouTube'}
+                              {previewType === 'vimeo' && ' Vimeo'}
+                              {previewType === 'direct' && ' Direct'}
                             </span>
                           </div>
                         </>
@@ -385,7 +385,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📝 Description *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
                     <textarea
                       value={formData.description}
                       onChange={e => handleInputChange('description', e.target.value)}
@@ -397,7 +397,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">🎯 Category</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2"> Category</label>
                       <select
                         value={formData.category}
                         onChange={e => handleInputChange('category', e.target.value)}
@@ -412,7 +412,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">💪 Difficulty</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2"> Difficulty</label>
                       <select
                         value={formData.difficulty}
                         onChange={e => handleInputChange('difficulty', e.target.value)}
@@ -440,7 +440,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🏷️ Tags (comma-separated)</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2"> Tags (comma-separated)</label>
                     <input
                       type="text"
                       value={formData.tags ? formData.tags.join(', ') : ''}
@@ -453,7 +453,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">📋 Instructions</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3"> Instructions</label>
                     {formData.instructions &&
                       formData.instructions.map((instruction, index) => (
                         <div key={index} className="flex gap-2 mb-2">
@@ -484,7 +484,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">💡 Tips</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3"> Tips</label>
                     {formData.tips &&
                       formData.tips.map((tip, index) => (
                         <div key={index} className="flex gap-2 mb-2">
@@ -524,7 +524,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    🏋️ Equipment Required *
+                     Equipment Required *
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {EQUIPMENT_OPTIONS.map(equipment => (
@@ -550,7 +550,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    🎯 Muscle Groups Targeted *
+                     Muscle Groups Targeted *
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {MUSCLE_GROUPS.map(muscle => (

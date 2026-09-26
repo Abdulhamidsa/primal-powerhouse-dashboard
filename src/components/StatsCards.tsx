@@ -45,7 +45,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
     {
       title: 'Total Meals',
       value: totalMeals.toString(),
-      icon: <Utensils size={24} />,
+      icon: <Utensils aria-hidden="true" focusable="false" size={24} />,
       color: 'var(--color-surface)',
       textColor: 'var(--color-accent)',
       subtitle: 'In your library',
@@ -53,7 +53,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
     {
       title: 'Avg Calories',
       value: averageCalories.toString(),
-      icon: <Flame size={24} />,
+      icon: <Flame aria-hidden="true" focusable="false" size={24} />,
       color: 'var(--color-surface)',
       textColor: 'var(--color-accent)',
       subtitle: 'Per meal',
@@ -61,7 +61,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
     {
       title: 'Avg Protein',
       value: `${averageProtein}g`,
-      icon: <Dumbbell size={24} />,
+      icon: <Dumbbell aria-hidden="true" focusable="false" size={24} />,
       color: 'var(--color-surface)',
       textColor: 'var(--color-accent)',
       subtitle: 'Per meal',
@@ -69,7 +69,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
     {
       title: 'Avg Prep Time',
       value: `${averagePrepTime}min`,
-      icon: <Clock size={24} />,
+      icon: <Clock aria-hidden="true" focusable="false" size={24} />,
       color: 'var(--color-surface)',
       textColor: 'var(--color-accent)',
       subtitle: 'Total time',
@@ -118,10 +118,10 @@ export default function StatsCards({ meals }: StatsCardsProps) {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { type: 'breakfast', icon: <Sunrise size={24} />, label: 'Breakfast' },
-            { type: 'lunch', icon: <Sun size={24} />, label: 'Lunch' },
-            { type: 'dinner', icon: <Moon size={24} />, label: 'Dinner' },
-            { type: 'snack', icon: <Apple size={24} />, label: 'Snacks' },
+            { type: 'breakfast', icon: <Sunrise aria-hidden="true" focusable="false" size={24} />, label: 'Breakfast' },
+            { type: 'lunch', icon: <Sun aria-hidden="true" focusable="false" size={24} />, label: 'Lunch' },
+            { type: 'dinner', icon: <Moon aria-hidden="true" focusable="false" size={24} />, label: 'Dinner' },
+            { type: 'snack', icon: <Apple aria-hidden="true" focusable="false" size={24} />, label: 'Snacks' },
           ].map(({ type, icon, label }) => {
             const count = mealsByType[type] || 0;
             const percentage = totalMeals > 0 ? Math.round((count / totalMeals) * 100) : 0;
@@ -167,7 +167,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
                 </div>
               </div>
               <div style={{ color: 'var(--color-accent)' }}>
-                <Utensils size={24} />
+                <Utensils aria-hidden="true" focusable="false" size={24} />
               </div>
             </div>
           </div>

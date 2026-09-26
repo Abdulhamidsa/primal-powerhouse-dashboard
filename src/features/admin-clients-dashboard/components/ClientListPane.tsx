@@ -29,7 +29,7 @@ export function ClientListPane({
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-muted-foreground">
-              <Users size={15} />
+              <Users aria-hidden="true" focusable="false" size={15} />
             </span>
             <div>
             <h2 className="text-sm font-semibold text-foreground">
@@ -45,7 +45,7 @@ export function ClientListPane({
               onClick={onAddClientAction}
               className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
             >
-              <Plus size={14} />
+              <Plus aria-hidden="true" focusable="false" size={14} />
               Add
             </button>
           )}
@@ -71,7 +71,7 @@ export function ClientListPane({
         </div>
 
         <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search aria-hidden="true" focusable="false" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={event => onSearchChangeAction(event.target.value)}

@@ -17,7 +17,7 @@ function SetEditor({
     <Card>
       <Label>
         Set {set.setNumber}
-        {set.completed ? ' · saved ✓' : set.skipped ? ' · skipped' : ''}
+        {set.completed ? ' · saved ' : set.skipped ? ' · skipped' : ''}
       </Label>
       <Field
         label="Reps"

@@ -49,7 +49,7 @@ export function ProfileAvatarEditModal({
             onClick={onCloseAction}
             className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <X className="h-5 w-5" />
+            <X aria-hidden="true" focusable="false" className="h-5 w-5" />
           </button>
         </div>
 

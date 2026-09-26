@@ -16,7 +16,7 @@ export const MealsEmptyState = ({ hasActiveFilters, selectedType }: MealsEmptySt
   return (
     <div className="rounded-[22px] border border-dashed border-white/12 bg-black/15 px-6 py-16 text-center">
       <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-muted-foreground">
-        <Utensils size={24} />
+        <Utensils aria-hidden="true" focusable="false" size={24} />
       </div>
 
       <h3 className="mb-2 text-lg font-semibold text-foreground">No meals found</h3>

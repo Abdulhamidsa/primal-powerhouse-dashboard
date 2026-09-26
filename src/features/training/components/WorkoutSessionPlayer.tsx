@@ -77,7 +77,7 @@ function ExerciseMedia({ exercise }: { exercise: TrainingSessionDTO['exercises']
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-muted-foreground">
             <span className="rounded-full bg-background/70 p-3">
-              <ImageIcon size={22} />
+              <ImageIcon aria-hidden="true" focusable="false" size={22} />
             </span>
             <p className="text-sm font-medium">No exercise demo added</p>
             <p className="text-xs">Your coach can add a video or image for this movement.</p>
@@ -148,7 +148,7 @@ function SetEditor({
               : 'border-border bg-background text-muted-foreground hover:bg-muted/60'
           }`}
         >
-          <Check size={15} />
+          <Check aria-hidden="true" focusable="false" size={15} />
           Done
         </button>
         <button
@@ -364,7 +364,7 @@ export function WorkoutSessionPlayer({
       <section className="rounded-[28px] border border-border bg-card p-5 shadow-sm">
         <div className="flex items-center gap-3">
           <span className="rounded-2xl bg-emerald-500/10 p-2 text-emerald-500">
-            <Flag size={18} />
+            <Flag aria-hidden="true" focusable="false" size={18} />
           </span>
           <div>
             <h3 className="text-lg font-semibold text-foreground">Rest day</h3>
@@ -394,14 +394,14 @@ export function WorkoutSessionPlayer({
             className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-border px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 disabled:opacity-50"
             aria-label="Close workout"
           >
-            <X size={16} />
+            <X aria-hidden="true" focusable="false" size={16} />
             <span className="hidden sm:inline">Leave workout</span>
             <span className="sm:hidden">Leave</span>
           </button>
 
           <div className="min-w-0 text-center">
             <div className="flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              <Dumbbell size={13} />
+              <Dumbbell aria-hidden="true" focusable="false" size={13} />
               Exercise {activeIndex + 1} of {session.exercises.length}
             </div>
             <h1 className="mt-1 truncate text-base font-semibold text-foreground">{primaryTitle}</h1>
@@ -413,7 +413,7 @@ export function WorkoutSessionPlayer({
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted/60"
             aria-label="Show exercise list"
           >
-            <ListChecks size={18} />
+            <ListChecks aria-hidden="true" focusable="false" size={18} />
           </button>
         </div>
 
@@ -519,7 +519,7 @@ export function WorkoutSessionPlayer({
             disabled={!hasPrevious || saving || completing}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-border px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 disabled:opacity-50"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft aria-hidden="true" focusable="false" size={16} />
             Previous
           </button>
           <button
@@ -529,7 +529,7 @@ export function WorkoutSessionPlayer({
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-border px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60 disabled:opacity-50"
           >
             Next
-            <ChevronRight size={16} />
+            <ChevronRight aria-hidden="true" focusable="false" size={16} />
           </button>
           <button
             type="button"
@@ -537,7 +537,7 @@ export function WorkoutSessionPlayer({
             disabled={saving || completing}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-border px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 disabled:opacity-50"
           >
-            <Square size={15} />
+            <Square aria-hidden="true" focusable="false" size={15} />
             Abandon
           </button>
           <button
@@ -546,7 +546,7 @@ export function WorkoutSessionPlayer({
             disabled={saving || completing || !canComplete}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            {completing ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+            {completing ? <Loader2 aria-hidden="true" focusable="false" size={15} className="animate-spin" /> : <Play aria-hidden="true" focusable="false" size={15} />}
             Complete
           </button>
         </div>

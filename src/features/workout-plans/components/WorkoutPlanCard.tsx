@@ -27,7 +27,7 @@ export default function WorkoutPlanCard({ plan, onEdit, onMutate }: Props) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Dumbbell size={18} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+          <Dumbbell aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
           <span className="font-semibold text-[var(--color-text-primary)] truncate">{plan.name}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -36,14 +36,14 @@ export default function WorkoutPlanCard({ plan, onEdit, onMutate }: Props) {
             className="p-1.5 rounded-lg hover:bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]"
             title="Edit plan"
           >
-            <Edit2 size={15} />
+            <Edit2 aria-hidden="true" focusable="false" size={15} />
           </button>
           <button
             onClick={handleDelete}
             className="p-1.5 rounded-lg hover:bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]"
             title="Delete plan"
           >
-            <Trash2 size={15} />
+            <Trash2 aria-hidden="true" focusable="false" size={15} />
           </button>
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function WorkoutPlanCard({ plan, onEdit, onMutate }: Props) {
         </span>
         {plan._count !== undefined && (
           <span className="flex items-center gap-1">
-            <Users size={12} />
+            <Users aria-hidden="true" focusable="false" size={12} />
             {plan._count.assignments} assigned
           </span>
         )}

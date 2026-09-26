@@ -159,7 +159,7 @@ export function PersonalInfoTab({ clientId, client }: Props) {
                 border: '1px solid var(--color-accent)',
               }}
             >
-              <KeyRound size={14} />
+              <KeyRound aria-hidden="true" focusable="false" size={14} />
               {loadingCreds ? 'Loading...' : 'View Stored Credentials'}
             </button>
             <button
@@ -173,7 +173,7 @@ export function PersonalInfoTab({ clientId, client }: Props) {
                 border: '1px solid var(--color-border)',
               }}
             >
-              <RotateCcw size={14} />
+              <RotateCcw aria-hidden="true" focusable="false" size={14} />
               {resettingPassword ? 'Resetting...' : 'Reset Password'}
             </button>
           </div>

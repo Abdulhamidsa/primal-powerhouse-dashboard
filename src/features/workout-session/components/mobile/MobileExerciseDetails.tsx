@@ -60,11 +60,11 @@ export default function MobileExerciseDetails({ exercise, isTransitioning }: Pro
           className="mt-3 w-full text-left p-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors"
         >
           <div className="flex items-start gap-2">
-            <MessageSquare size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+            <MessageSquare aria-hidden="true" focusable="false" size={14} className="mt-0.5 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-foreground">Coach notes</p>
-                <ChevronDown
+                <ChevronDown aria-hidden="true" focusable="false"
                   size={14}
                   className="text-muted-foreground transition-transform duration-200"
                   style={{ transform: notesExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}

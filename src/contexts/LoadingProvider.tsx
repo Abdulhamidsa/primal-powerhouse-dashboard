@@ -48,7 +48,7 @@ function LoadingOverlay() {
     <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-50">
       <div className="flex flex-col items-center gap-4">
         <div className="rounded-full bg-white p-4 shadow-lg">
-          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+          <Loader2 aria-hidden="true" focusable="false" className="h-8 w-8 animate-spin text-accent" />
         </div>
         <p className="text-sm font-medium text-foreground">Loading…</p>
       </div>

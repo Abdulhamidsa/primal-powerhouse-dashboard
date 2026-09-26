@@ -19,7 +19,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
   if (assignments.length === 0) {
     return (
       <div className={cx(iosPanel, 'p-6 text-center')} style={iosPanelStyle}>
-        <Utensils size={40} className="mx-auto mb-3" style={{ color: 'var(--color-text-muted)' }} />
+        <Utensils aria-hidden="true" focusable="false" size={40} className="mx-auto mb-3" style={{ color: 'var(--color-text-muted)' }} />
         <p style={{ color: 'var(--color-text-muted)' }}>
           No meals assigned yet. Assign meals to see nutrition analytics.
         </p>
@@ -32,7 +32,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
       {/* Weekly Summary */}
       <div className={cx(iosPanel, 'p-6')} style={iosPanelStyle}>
         <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text)' }}>
-          📊 Weekly Nutrition Overview
+           Weekly Nutrition Overview
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -46,7 +46,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
             }}
           >
             <div className="flex items-center justify-between mb-2">
-              <Flame size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
+              <Flame aria-hidden="true" focusable="false" size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
               <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 WEEKLY
               </span>
@@ -70,7 +70,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
             }}
           >
             <div className="flex items-center justify-between mb-2">
-              <Beef size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
+              <Beef aria-hidden="true" focusable="false" size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
               <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 {weeklyProteinPercent}%
               </span>
@@ -94,7 +94,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
             }}
           >
             <div className="flex items-center justify-between mb-2">
-              <Wheat size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
+              <Wheat aria-hidden="true" focusable="false" size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
               <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 {weeklyCarbsPercent}%
               </span>
@@ -118,7 +118,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
             }}
           >
             <div className="flex items-center justify-between mb-2">
-              <Droplets size={24} style={{ color: 'rgba(0,0,0,0.7)' }} />
+              <Droplets aria-hidden="true" focusable="false" size={24} style={{ color: 'rgba(0,0,0,0.7)' }} />
               <span className="text-xs font-medium" style={{ color: 'rgba(0,0,0,0.6)' }}>
                 {weeklyFatPercent}%
               </span>
@@ -144,7 +144,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
             }}
           >
             <div className="flex items-center justify-between mb-2">
-              <Leaf size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
+              <Leaf aria-hidden="true" focusable="false" size={24} style={{ color: 'rgba(255,255,255,0.9)' }} />
               <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 BONUS
               </span>
@@ -163,7 +163,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
       {/* Daily Breakdown */}
       <div className={cx(iosPanel, 'p-6')} style={iosPanelStyle}>
         <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text)' }}>
-          📅 Daily Breakdown
+          Daily Breakdown
         </h3>
 
         <div className="space-y-4">
@@ -271,7 +271,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
       {stats.byMealType.length > 0 && (
         <div className={cx(iosPanel, 'p-6')} style={iosPanelStyle}>
           <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text)' }}>
-            🍽️ By Meal Type
+            By Meal Type
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

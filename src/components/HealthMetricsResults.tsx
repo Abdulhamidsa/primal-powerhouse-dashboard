@@ -79,7 +79,7 @@ export function HealthMetricsResults({
           className="mb-6 flex items-start gap-3 rounded-2xl border px-4 py-4"
           style={{ borderColor: 'var(--color-accent)', background: 'var(--color-accent-translucent)' }}
         >
-          <ShieldAlert size={18} style={{ color: 'var(--color-accent)', marginTop: 2 }} />
+          <ShieldAlert aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-accent)', marginTop: 2 }} />
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
               Coach review required
@@ -195,19 +195,19 @@ export function HealthMetricsResults({
               label="Protein"
               value={`${metrics.macros.protein}g`}
               share={`${Math.round(((metrics.macros.protein * 4) / metrics.recommendedCalories) * 100)}%`}
-              icon={<Beef size={18} />}
+              icon={<Beef aria-hidden="true" focusable="false" size={18} />}
             />
             <MacroCard
               label="Carbs"
               value={`${metrics.macros.carbs}g`}
               share={`${Math.round(((metrics.macros.carbs * 4) / metrics.recommendedCalories) * 100)}%`}
-              icon={<Wheat size={18} />}
+              icon={<Wheat aria-hidden="true" focusable="false" size={18} />}
             />
             <MacroCard
               label="Fat"
               value={`${metrics.macros.fat}g`}
               share={`${Math.round(((metrics.macros.fat * 9) / metrics.recommendedCalories) * 100)}%`}
-              icon={<Droplets size={18} />}
+              icon={<Droplets aria-hidden="true" focusable="false" size={18} />}
             />
           </div>
         </div>
@@ -219,7 +219,7 @@ export function HealthMetricsResults({
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
         >
           <div className="mb-3 flex items-center gap-2">
-            <AlertCircle size={16} style={{ color: 'var(--color-accent)' }} />
+            <AlertCircle aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
             <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
               Safety Warnings
             </h3>
@@ -243,7 +243,7 @@ export function HealthMetricsResults({
         style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
       >
         <div className="mb-3 flex items-center gap-2">
-          <Target size={16} style={{ color: 'var(--color-accent)' }} />
+          <Target aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
           <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
             Notes and Coaching Observations
           </h3>
@@ -290,7 +290,7 @@ export function HealthMetricsResults({
                   className="rounded-lg p-2"
                   style={{ color: 'var(--color-text-muted)', opacity: isSaving ? 0.5 : 1 }}
                 >
-                  <Trash2 size={18} />
+                  <Trash2 aria-hidden="true" focusable="false" size={18} />
                 </button>
               </div>
             ))}
@@ -300,7 +300,7 @@ export function HealthMetricsResults({
             className="rounded-xl border px-4 py-6 text-center"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
-            <AlertCircle size={20} style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }} />
+            <AlertCircle aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }} />
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
               No notes added yet.
             </p>

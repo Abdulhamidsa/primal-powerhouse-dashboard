@@ -1,5 +1,7 @@
 'use client';
 
+
+import { ArrowsClockwiseIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import NextImage from 'next/image';
 import { ChefHatIcon as ChefHat, CaretDownIcon as ChevronDown, CaretUpIcon as ChevronUp, CopyIcon as Copy, ArrowsClockwiseIcon as Sparkles, XIcon as X } from '@phosphor-icons/react';
@@ -706,7 +708,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-start gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
-                <ChefHat size={20} />
+                <ChefHat aria-hidden="true" focusable="false" size={20} />
               </div>
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
@@ -726,7 +728,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
               aria-label="Close"
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
             >
-              <X size={18} />
+              <X aria-hidden="true" focusable="false" size={18} />
             </button>
           </div>
         </div>
@@ -829,7 +831,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             {showTemplateWarning && !isPersonalizedMeal && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">⚠️</span>
+                  <span className="text-2xl"><WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                   <div>
                     <h3 className="text-amber-400 font-semibold mb-1">Template Meal - Used by Multiple Clients</h3>
                     <p className="text-amber-300 text-sm mb-3">
@@ -840,7 +842,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                       . Any changes you make here will affect ALL clients who have this meal assigned.
                     </p>
                     <p className="text-amber-200 text-xs">
-                      💡 <strong>Tip:</strong> To avoid affecting other clients, edit meals from the individual
+                       <strong>Tip:</strong> To avoid affecting other clients, edit meals from the individual
                       client&apos;s profile instead. That will only modify that client&apos;s copy.
                     </p>
                   </div>
@@ -852,7 +854,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             {isPersonalizedMeal && (
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">✨</span>
+                  <span className="text-2xl"><ArrowsClockwiseIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                   <div>
                     <h3 className="text-blue-400 font-semibold mb-1">Personalized Meal</h3>
                     <p className="text-blue-300 text-sm">
@@ -1098,7 +1100,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                               Remove
                             </button>
                           )}
-                          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          {isExpanded ? <ChevronUp aria-hidden="true" focusable="false" size={18} /> : <ChevronDown aria-hidden="true" focusable="false" size={18} />}
                         </div>
                       </div>
 
@@ -1207,9 +1209,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                         type="button"
                         onClick={() => removeInstructionRow(index)}
                         className="px-3 py-3 text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
-                      >
-                        ✕
-                      </button>
+                      ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
                     )}
                   </div>
                 ))}
@@ -1244,9 +1244,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                         type="button"
                         onClick={() => removeArrayItem('tags', index)}
                         className="px-3 py-3 text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
-                      >
-                        ✕
-                      </button>
+                      ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
                     )}
                   </div>
                 ))}
@@ -1285,7 +1283,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                   aria-label="Copy generated prompt"
                   title="Copy prompt"
                 >
-                  <Copy size={14} />
+                  <Copy aria-hidden="true" focusable="false" size={14} />
                 </button>
               </div>
 
@@ -1295,7 +1293,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                 disabled={loading || !formData.name.trim()}
                 className="mb-3 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <Sparkles size={16} />
+                <Sparkles aria-hidden="true" focusable="false" size={16} />
                 {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
               </button>
 

@@ -148,7 +148,7 @@ export function ClientProfileEditModal({
             onClick={onCloseAction}
             className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <X className="h-5 w-5" />
+            <X aria-hidden="true" focusable="false" className="h-5 w-5" />
           </button>
         </div>
 
@@ -300,7 +300,7 @@ export function ClientProfileEditModal({
               className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/20 disabled:opacity-60"
             >
               <span className="inline-flex items-center gap-2">
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw aria-hidden="true" focusable="false" className="h-4 w-4" />
                 {isResettingPassword ? 'Resetting...' : 'Reset Password'}
               </span>
             </button>

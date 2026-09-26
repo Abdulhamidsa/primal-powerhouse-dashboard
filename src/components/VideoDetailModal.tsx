@@ -1,7 +1,7 @@
 'use client';
 
 
-import { ChartBarIcon, CircleNotchIcon, ClipboardTextIcon, FileTextIcon, FlaskIcon, LightbulbIcon, PencilSimpleIcon, PlusIcon, TagIcon, TrashIcon, UserIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
+import { BarbellIcon, ChartBarIcon, CircleNotchIcon, ClipboardTextIcon, FileTextIcon, FirstAidIcon, FlameIcon, FlaskIcon, LightbulbIcon, LightningIcon, PencilSimpleIcon, PersonSimpleIcon, PersonSimpleRunIcon, PersonSimpleTaiChiIcon, PlusIcon, SnowflakeIcon, SoccerBallIcon, SunHorizonIcon, TagIcon, TargetIcon, TrashIcon, UserIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
 import { Video } from '@/types/video';
 import { useState } from 'react';
 
@@ -77,30 +77,30 @@ export default function VideoDetailModal({
     }
   };
 
-  const getCategoryIcon = (category: string): string => {
+  const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'STRENGTH_TRAINING':
-        return '🏋️';
+        return <BarbellIcon size={18} aria-hidden="true" />;
       case 'CARDIO':
-        return '🏃';
+        return <PersonSimpleRunIcon size={18} aria-hidden="true" />;
       case 'MOBILITY':
-        return '🧘';
+        return <PersonSimpleIcon size={18} aria-hidden="true" />;
       case 'YOGA':
-        return '🕉️';
+        return <PersonSimpleTaiChiIcon size={18} aria-hidden="true" />;
       case 'PILATES':
-        return '🤸';
+        return <PersonSimpleIcon size={18} aria-hidden="true" />;
       case 'WARM_UP':
-        return '🔥';
+        return <SunHorizonIcon size={18} aria-hidden="true" />;
       case 'COOL_DOWN':
-        return '❄️';
+        return <SnowflakeIcon size={18} aria-hidden="true" />;
       case 'FUNCTIONAL':
-        return '⚡';
+        return <LightningIcon size={18} aria-hidden="true" />;
       case 'REHABILITATION':
-        return '🏥';
+        return <FirstAidIcon size={18} aria-hidden="true" />;
       case 'SPORTS_SPECIFIC':
-        return '⚽';
+        return <SoccerBallIcon size={18} aria-hidden="true" />;
       default:
-        return '🎯';
+        return <TargetIcon size={18} aria-hidden="true" />;
     }
   };
 
@@ -135,7 +135,7 @@ export default function VideoDetailModal({
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(video.difficulty)} bg-white/20 text-white`}
                 >
-                  💪 {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
+                   {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
                 </span>
                 <span className="text-blue-200">•</span>
                 <span className="flex items-center gap-1">⏱️ {formatDuration(video.duration)}</span>
@@ -287,7 +287,7 @@ export default function VideoDetailModal({
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(video.difficulty)}`}
                     >
-                      💪 {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
+                       {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -312,7 +312,7 @@ export default function VideoDetailModal({
                         key={index}
                         className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                        🏋️ {item}
+                         {item}
                       </span>
                     ))}
                   </div>
@@ -332,7 +332,7 @@ export default function VideoDetailModal({
                         key={index}
                         className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                        🎯 {muscle}
+                         {muscle}
                       </span>
                     ))}
                   </div>
@@ -352,7 +352,7 @@ export default function VideoDetailModal({
                         key={index}
                         className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                        🏷️ {tag}
+                         {tag}
                       </span>
                     ))}
                   </div>

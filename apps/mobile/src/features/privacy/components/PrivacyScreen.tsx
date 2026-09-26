@@ -16,7 +16,7 @@ export default function PrivacyScreen() {
               <Button
                 secondary
                 key={key}
-                title={`${m.query.data!.consents[key] ? '✓ Enabled' : 'Disabled'} · ${key.replace(/([A-Z])/g, ' $1')}`}
+                title={`${m.query.data!.consents[key] ? 'Enabled' : 'Disabled'} · ${key.replace(/([A-Z])/g, ' $1')}`}
                 onPress={() => m.toggle(key)}
                 disabled={m.offline || m.action.pending}
               />

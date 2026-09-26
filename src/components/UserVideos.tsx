@@ -89,14 +89,14 @@ export default function UserVideos({ userId }: UserVideosProps) {
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
       case 'strength_training':
-        return <Dumbbell className="w-5 h-5" />;
+        return <Dumbbell aria-hidden="true" focusable="false" className="w-5 h-5" />;
       case 'cardio':
-        return <Heart className="w-5 h-5" />;
+        return <Heart aria-hidden="true" focusable="false" className="w-5 h-5" />;
       case 'mobility':
       case 'yoga':
-        return <User className="w-5 h-5" />;
+        return <User aria-hidden="true" focusable="false" className="w-5 h-5" />;
       default:
-        return <Zap className="w-5 h-5" />;
+        return <Zap aria-hidden="true" focusable="false" className="w-5 h-5" />;
     }
   };
 
@@ -146,7 +146,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Play className="w-10 h-10 text-purple-400" />
+            <Play aria-hidden="true" focusable="false" className="w-10 h-10 text-purple-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-3">No Workouts Yet</h3>
           <p className="text-slate-400 max-w-sm">
@@ -227,19 +227,19 @@ export default function UserVideos({ userId }: UserVideosProps) {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center">
-                      <Play className="w-8 h-8 text-slate-400" />
+                      <Play aria-hidden="true" focusable="false" className="w-8 h-8 text-slate-400" />
                     </div>
                   )}
 
                   {/* Play overlay */}
                   <div className="absolute inset-0 bg-black/30 rounded-xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Play className="w-6 h-6 text-white" />
+                    <Play aria-hidden="true" focusable="false" className="w-6 h-6 text-white" />
                   </div>
 
                   {/* Completion badge */}
                   {assignment.isCompleted && (
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-white" />
+                      <CheckCircle aria-hidden="true" focusable="false" className="w-4 h-4 text-white" />
                     </div>
                   )}
                 </div>
@@ -254,7 +254,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
                       {assignment.video.difficulty}
                     </span>
                     <div className="flex items-center gap-1 text-xs text-slate-400">
-                      <Clock size={12} />
+                      <Clock aria-hidden="true" focusable="false" size={12} />
                       {formatDuration(assignment.video.duration)}
                     </div>
                   </div>
@@ -284,7 +284,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
                     onClick={() => setSelectedVideo(assignment)}
                     className="p-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-xl transition-colors"
                   >
-                    <Play className="w-5 h-5 text-purple-400" />
+                    <Play aria-hidden="true" focusable="false" className="w-5 h-5 text-purple-400" />
                   </button>
                 </div>
               </div>
@@ -304,14 +304,14 @@ export default function UserVideos({ userId }: UserVideosProps) {
                   onClick={() => setSelectedVideo(null)}
                   className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full transition-colors"
                 >
-                  <X size={20} />
+                  <X aria-hidden="true" focusable="false" size={20} />
                 </button>
               </div>
 
               {/* Video Player */}
               <div className="bg-black rounded-xl mb-6 aspect-video flex items-center justify-center">
                 <div className="text-center">
-                  <Play className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                  <Play aria-hidden="true" focusable="false" className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                   <p className="text-slate-400 mb-4">Ready to train?</p>
                   <a
                     href={selectedVideo.video.videoUrl}
@@ -319,7 +319,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors"
                   >
-                    <Play size={16} />
+                    <Play aria-hidden="true" focusable="false" size={16} />
                     Start Workout
                   </a>
                 </div>
@@ -329,7 +329,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-slate-700/50 rounded-xl p-3 text-center">
-                    <Clock className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                    <Clock aria-hidden="true" focusable="false" className="w-5 h-5 text-blue-400 mx-auto mb-1" />
                     <div className="text-white font-semibold text-sm">
                       {formatDuration(selectedVideo.video.duration)}
                     </div>
@@ -343,7 +343,7 @@ export default function UserVideos({ userId }: UserVideosProps) {
                     <div className="text-slate-400 text-xs">Type</div>
                   </div>
                   <div className="bg-slate-700/50 rounded-xl p-3 text-center">
-                    <Zap className="w-5 h-5 text-orange-400 mx-auto mb-1" />
+                    <Zap aria-hidden="true" focusable="false" className="w-5 h-5 text-orange-400 mx-auto mb-1" />
                     <div
                       className={`font-semibold text-sm capitalize ${getDifficultyColor(selectedVideo.video.difficulty)}`}
                     >
@@ -378,14 +378,14 @@ export default function UserVideos({ userId }: UserVideosProps) {
                     onClick={() => markAsCompleted(selectedVideo.id)}
                     className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    <CheckCircle size={20} />
+                    <CheckCircle aria-hidden="true" focusable="false" size={20} />
                     Mark as Completed
                   </button>
                 )}
 
                 {selectedVideo.isCompleted && (
                   <div className="w-full py-3 bg-green-500/20 border border-green-500/30 text-green-400 font-semibold rounded-xl text-center flex items-center justify-center gap-2">
-                    <CheckCircle size={20} />
+                    <CheckCircle aria-hidden="true" focusable="false" size={20} />
                     Workout Completed!
                   </div>
                 )}

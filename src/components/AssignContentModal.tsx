@@ -403,7 +403,7 @@ export default function AssignContentModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  📅 Due Date (Optional)
+                  Due Date (Optional)
                 </label>
                 <input
                   type="date"
@@ -420,7 +420,7 @@ export default function AssignContentModal({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                  📝 Notes (Optional)
+                  Notes (Optional)
                 </label>
                 <textarea
                   value={notes}

@@ -14,9 +14,9 @@ function formatPercent(value: number | null): string {
 }
 
 function trendIcon(trend: WeeklyComplianceBreakdown['trend']) {
-  if (trend === 'up') return <ArrowUp size={14} />;
-  if (trend === 'down') return <ArrowDown size={14} />;
-  return <ArrowRight size={14} />;
+  if (trend === 'up') return <ArrowUp aria-hidden="true" focusable="false" size={14} />;
+  if (trend === 'down') return <ArrowDown aria-hidden="true" focusable="false" size={14} />;
+  return <ArrowRight aria-hidden="true" focusable="false" size={14} />;
 }
 
 function riskPillClass(status: WeeklyComplianceBreakdown['riskStatus']): string {
@@ -142,7 +142,7 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
             Daily Compliance History
           </h3>
           <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-2.5" style={{ color: 'var(--color-text-muted)' }} />
+            <Search aria-hidden="true" focusable="false" size={14} className="absolute left-2.5 top-2.5" style={{ color: 'var(--color-text-muted)' }} />
             <input
               value={query}
               onChange={event => setQuery(event.target.value)}

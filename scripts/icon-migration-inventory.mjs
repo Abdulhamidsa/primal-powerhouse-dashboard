@@ -261,3 +261,93 @@ if (process.argv.includes('--apply-svg')) {
     }
   }
 }
+
+if (process.argv.includes('--apply-emoji')) {
+  const uiFiles = execFileSync('rg', ['-l', '--pcre2', '[\\x{1F300}-\\x{1FAFF}\\x{2600}-\\x{27BF}]', 'src', 'apps/mobile', '-g', '*.tsx', '-g', '*.ts'], { encoding: 'utf8' })
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean);
+  const visualEmoji = new Map([
+    ['⚠️', 'WarningCircle'],
+    ['✨', 'ArrowsClockwise'],
+    ['📅', 'Calendar'],
+    ['🎥', 'VideoCamera'],
+    ['🍽️', 'ForkKnife'],
+    ['🛒', 'ShoppingCart'],
+    ['👨‍🍳', 'CookingPot'],
+    ['🎯', 'Target'],
+    ['😕', 'WarningCircle'],
+    ['🔥', 'Flame'],
+    ['🥩', 'Cow'],
+    ['🍞', 'Bread'],
+    ['🥑', 'Drop'],
+    ['📝', 'NotePencil'],
+    ['🗑️', 'Trash'],
+  ]);
+  const strip = ['🌅', '☀️', '🌙', '🍎', '😊', '🤔', '😰', '🎬', '🔗', '🖼️', '📺', '🎭', '🎯', '💪', '🏷️', '📋', '💡', '🏋️', '🏃', '🧘', '🕉️', '🤸', '❄️', '⚡', '🏥', '⚽', '🥗', '🍳', '🔍', '📊', '🔄', '🍲', '✅', '❌'];
+
+  for (const file of uiFiles) {
+    let source = fs.readFileSync(file, 'utf8');
+    const icons = new Set();
+    if (!file.includes('apps\\mobile') && !file.includes('apps/mobile')) {
+      for (const [emoji, icon] of visualEmoji) {
+        const escaped = emoji.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        source = source.replace(new RegExp(`(<(?:span|div)\\b[^>]*>)\\s*${escaped}\\s*(<\\/(?:span|div)>)`, 'g'), (_match, open, close) => {
+          icons.add(`${icon}Icon`);
+          return `${open}<${icon}Icon className="h-[1em] w-[1em]" aria-hidden="true" />${close}`;
+        });
+      }
+      if (source.includes('✕')) {
+        source = source.replace(/(^|>)\s*✕\s*(?=<|$)/gm, '$1<XIcon className="h-4 w-4" aria-hidden="true" />');
+        icons.add('XIcon');
+      }
+    }
+
+    for (const token of strip) source = source.split(token).join('');
+    source = source
+      .replace(/✓\s*/g, '')
+      .replace(/⚠️\s*/g, '')
+      .replace(/📝\s*/g, '')
+      .replace(/📅\s*/g, '')
+      .replace(/🎥\s*/g, '')
+      .replace(/🍽️\s*/g, '')
+      .replace(/🗑️\s*/g, '')
+      .replace(/🔥\s*/g, '')
+      .replace(/🥩\s*/g, '')
+      .replace(/🍞\s*/g, '')
+      .replace(/🥑\s*/g, '');
+
+    if (icons.size) {
+      const importLine = `import { ${[...icons].sort().join(', ')} } from '@phosphor-icons/react';\n`;
+      const directive = source.match(/^(['"]use client['"];\s*)/);
+      if (directive) source = source.slice(0, directive[0].length) + '\n' + importLine + source.slice(directive[0].length);
+      else source = importLine + source;
+    }
+    fs.writeFileSync(file, source);
+  }
+}
+
+if (process.argv.includes('--apply-a11y')) {
+  const phosphorFiles = execFileSync('rg', ['-l', '@phosphor-icons/react', 'src', '-g', '*.tsx'], { encoding: 'utf8' })
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean);
+  for (const file of phosphorFiles) {
+    let source = fs.readFileSync(file, 'utf8');
+    const locals = new Set();
+    for (const match of source.matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+['"]@phosphor-icons\/react(?:\/ssr)?['"]/g)) {
+      for (const part of match[1].split(',')) {
+        const cleaned = part.trim().replace(/^type\s+/, '');
+        if (!cleaned) continue;
+        const pieces = cleaned.split(/\s+as\s+/);
+        const local = (pieces[1] ?? pieces[0]).trim();
+        if (local !== 'Icon') locals.add(local);
+      }
+    }
+    for (const local of locals) {
+      const pattern = new RegExp(`<${local}\\b(?![^>]*\\baria-(?:hidden|label)=)(?![^>]*\\balt=)`, 'g');
+      source = source.replace(pattern, `<${local} aria-hidden="true" focusable="false"`);
+    }
+    fs.writeFileSync(file, source);
+  }
+}

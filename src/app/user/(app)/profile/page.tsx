@@ -41,7 +41,7 @@ function SettingsLink({
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      <ChevronRight aria-hidden="true" focusable="false" className="h-4 w-4 text-muted-foreground" />
     </Link>
   );
 }
@@ -85,7 +85,7 @@ export default function UserProfilePage() {
                 <Image src={userData.avatar} alt={userData.name} fill className="object-cover" />
               ) : (
                 <div className="grid h-full w-full place-items-center">
-                  <User className="h-8 w-8 text-muted-foreground" />
+                  <User aria-hidden="true" focusable="false" className="h-8 w-8 text-muted-foreground" />
                 </div>
               )}
 
@@ -95,7 +95,7 @@ export default function UserProfilePage() {
                 className="absolute bottom-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-foreground shadow-sm"
                 aria-label="Edit profile picture"
               >
-                <Camera className="h-3.5 w-3.5" />
+                <Camera aria-hidden="true" focusable="false" className="h-3.5 w-3.5" />
               </button>
             </div>
 
@@ -110,28 +110,28 @@ export default function UserProfilePage() {
         <SettingsCard>
           <SettingsLink
             href="/user/settings/security"
-            icon={<KeyRound className="h-4 w-4" />}
+            icon={<KeyRound aria-hidden="true" focusable="false" className="h-4 w-4" />}
             title="Account Security"
             description="Password and login access"
           />
           <div className="ml-16 h-px bg-border/60" />
           <SettingsLink
             href="/user/settings/notifications"
-            icon={<Bell className="h-4 w-4" />}
+            icon={<Bell aria-hidden="true" focusable="false" className="h-4 w-4" />}
             title="Notifications"
             description="Coach message alerts and device status"
           />
           <div className="ml-16 h-px bg-border/60" />
           <SettingsLink
             href="/user/privacy"
-            icon={<Shield className="h-4 w-4" />}
+            icon={<Shield aria-hidden="true" focusable="false" className="h-4 w-4" />}
             title="Privacy & Data"
             description="Consent, export, sessions, and deletion"
           />
           <div className="ml-16 h-px bg-border/60" />
           <SettingsLink
             href="/user/settings/body"
-            icon={<Ruler className="h-4 w-4" />}
+            icon={<Ruler aria-hidden="true" focusable="false" className="h-4 w-4" />}
             title="Body Metrics"
             description="Age, height, and weight targets"
           />
@@ -146,13 +146,13 @@ export default function UserProfilePage() {
             className="flex min-h-[64px] w-full items-center gap-3 px-4 py-3 text-left transition-colors active:bg-muted/60"
           >
             <div className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/50">
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare aria-hidden="true" focusable="false" className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">Feedback</p>
               <p className="text-xs text-muted-foreground">Tell us what should feel better</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight aria-hidden="true" focusable="false" className="h-4 w-4 text-muted-foreground" />
           </button>
           <div className="ml-16 h-px bg-border/60" />
           <UpdateAppButton />
@@ -165,7 +165,7 @@ export default function UserProfilePage() {
             className="flex min-h-[60px] w-full items-center justify-between px-4 py-3 text-left text-destructive transition-colors active:bg-destructive/10"
           >
             <span className="text-sm font-semibold">Sign out</span>
-            <LogOut className="h-4 w-4" />
+            <LogOut aria-hidden="true" focusable="false" className="h-4 w-4" />
           </button>
         </SettingsCard>
 

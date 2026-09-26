@@ -36,7 +36,7 @@ export default function UserTrainingPage() {
           eyebrow="Training"
           title="Train with focus"
           description="See today’s workout, continue a session, or review your weekly plan."
-          icon={<Dumbbell size={17} />}
+          icon={<Dumbbell aria-hidden="true" focusable="false" size={17} />}
           statusItems={[
             {
               label: 'Plan',
@@ -54,7 +54,7 @@ export default function UserTrainingPage() {
         {trainingPlanLoading ? <div className="h-56 animate-pulse rounded-[30px] border border-border bg-card/70" /> : null}
         {plan ? <TrainingDashboard /> : !trainingPlanLoading ? <section className="rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><Dumbbell size={18} /></div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><Dumbbell aria-hidden="true" focusable="false" size={18} /></div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next workout</p>
               <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-foreground">
@@ -68,7 +68,7 @@ export default function UserTrainingPage() {
             </div>
           </div>
 
-          {nextWorkout ? <Link href={`/user/workout/${encodeURIComponent(nextWorkout.id)}`} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><span>Start workout</span><ArrowRight size={16} /></Link> : null}
+          {nextWorkout ? <Link href={`/user/workout/${encodeURIComponent(nextWorkout.id)}`} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><span>Start workout</span><ArrowRight aria-hidden="true" focusable="false" size={16} /></Link> : null}
 
         </section> : null}
 
@@ -76,7 +76,7 @@ export default function UserTrainingPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground">
-                <Dumbbell size={16} />
+                <Dumbbell aria-hidden="true" focusable="false" size={16} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Your plans</p>
@@ -94,13 +94,13 @@ export default function UserTrainingPage() {
         <section className="overflow-hidden rounded-[26px] border shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
           <button type="button" onClick={() => setShowVideos(previous => !previous)} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--color-bg-alt)]" aria-expanded={showVideos}>
             <span className="flex min-w-0 items-center gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground"><Play size={15} /></span>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground"><Play aria-hidden="true" focusable="false" size={15} /></span>
               <span className="min-w-0">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Optional reference</span>
                 <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Exercise videos</span>
               </span>
             </span>
-            <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${showVideos ? 'rotate-180' : ''}`} />
+            <ChevronDown aria-hidden="true" focusable="false" size={16} className={`shrink-0 text-muted-foreground transition-transform ${showVideos ? 'rotate-180' : ''}`} />
           </button>
 
           {showVideos ? <div className="border-t border-border/70 p-4"><UserTrainingAssignments /></div> : null}

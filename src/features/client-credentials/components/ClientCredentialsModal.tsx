@@ -37,7 +37,7 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
         <div className="p-6">
           <div className="flex items-start gap-3 mb-4">
             <div className="p-2 rounded-lg" style={{ background: 'var(--color-accent-muted)' }}>
-              <AlertCircle style={{ color: 'var(--color-accent)', width: 20, height: 20 }} />
+              <AlertCircle aria-hidden="true" focusable="false" style={{ color: 'var(--color-accent)', width: 20, height: 20 }} />
             </div>
             <div>
               <DialogTitle className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
@@ -57,7 +57,7 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
             }}
           >
             <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-4 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <AlertCircle aria-hidden="true" focusable="false" className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>
                 {mode === 'reset'
                   ? 'Save this password securely. It will not be shown again after you close this dialog.'
@@ -92,7 +92,7 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
                   }}
                   title="Copy email"
                 >
-                  {copiedField === 'email' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedField === 'email' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -124,7 +124,7 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
                   }}
                   title={showPassword ? 'Hide password' : 'Reveal password'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Eye aria-hidden="true" focusable="false" className="w-4 h-4" />}
                 </button>
                 <button
                   type="button"
@@ -136,7 +136,7 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
                   }}
                   title="Copy password"
                 >
-                  {copiedField === 'password' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedField === 'password' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
                 </button>
               </div>
             </div>

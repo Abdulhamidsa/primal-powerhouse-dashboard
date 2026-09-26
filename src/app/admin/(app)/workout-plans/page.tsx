@@ -26,7 +26,7 @@ export default function WorkoutPlansPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
           style={{ background: 'var(--color-accent)', color: '#fff' }}
         >
-          <Plus size={16} />
+          <Plus aria-hidden="true" focusable="false" size={16} />
           New Plan
         </button>
       </div>

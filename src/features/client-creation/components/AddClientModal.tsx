@@ -241,7 +241,7 @@ export default function AddClientModal({
             <div className="p-6">
               <div className="flex items-start gap-3 mb-4">
                 <div className="p-2 rounded-lg" style={{ background: 'var(--color-accent-muted)' }}>
-                  <AlertCircle style={{ color: 'var(--color-accent)', width: 20, height: 20 }} />
+                  <AlertCircle aria-hidden="true" focusable="false" style={{ color: 'var(--color-accent)', width: 20, height: 20 }} />
                 </div>
                 <div>
                   <DialogTitle className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
@@ -261,7 +261,7 @@ export default function AddClientModal({
                 }}
               >
                 <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-4 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <AlertCircle aria-hidden="true" focusable="false" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>
                     Save these credentials securely. The password will not be shown again. Share safely with your
                     client.
@@ -294,7 +294,7 @@ export default function AddClientModal({
                       }}
                       title="Copy email"
                     >
-                      {copiedField === 'email' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedField === 'email' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function AddClientModal({
                       }}
                       title="Copy password"
                     >
-                      {copiedField === 'password' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedField === 'password' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -392,7 +392,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
+                      <User aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Full Name *
                     </div>
                   </label>
@@ -414,7 +414,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
+                      <Mail aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Email Address *
                     </div>
                   </label>
@@ -436,7 +436,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
+                      <Phone aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Phone Number *
                     </div>
                   </label>
@@ -458,7 +458,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
+                      <User aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Gender
                     </div>
                   </label>
@@ -509,7 +509,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Scale className="w-4 h-4" />
+                      <Scale aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Current Weight (kg) *
                     </div>
                   </label>
@@ -537,7 +537,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Scale className="w-4 h-4" />
+                      <Scale aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Target Weight (kg) *
                     </div>
                   </label>
@@ -565,7 +565,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Ruler className="w-4 h-4" />
+                      <Ruler aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Height (cm) *
                     </div>
                   </label>
@@ -593,7 +593,7 @@ export default function AddClientModal({
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Age *
                     </div>
                   </label>
@@ -623,7 +623,7 @@ export default function AddClientModal({
             <div>
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
                 <div className="flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
+                  <Activity aria-hidden="true" focusable="false" className="w-5 h-5" />
                   Activity Level
                 </div>
               </h3>
@@ -671,7 +671,7 @@ export default function AddClientModal({
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
                   <div className="flex items-center gap-2">
-                    <Target className="w-5 h-5" />
+                    <Target aria-hidden="true" focusable="false" className="w-5 h-5" />
                     Fitness Goals *
                   </div>
                 </h3>
@@ -681,7 +681,7 @@ export default function AddClientModal({
                   className="px-3 py-1 rounded-lg flex items-center gap-1 text-sm"
                   style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
                 >
-                  <Plus className="w-4 h-4" /> Add Goal
+                  <Plus aria-hidden="true" focusable="false" className="w-4 h-4" /> Add Goal
                 </button>
               </div>
               <div className="space-y-2">
@@ -714,7 +714,7 @@ export default function AddClientModal({
                         className="px-3 py-3 rounded-lg transition-colors"
                         style={{ color: 'var(--color-accent)' }}
                       >
-                        <X className="w-4 h-4" />
+                        <X aria-hidden="true" focusable="false" className="w-4 h-4" />
                       </button>
                     )}
                   </div>
@@ -731,7 +731,7 @@ export default function AddClientModal({
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
                   <div className="flex items-center gap-2">
-                    <UtensilsCrossed className="w-5 h-5" />
+                    <UtensilsCrossed aria-hidden="true" focusable="false" className="w-5 h-5" />
                     Dietary Restrictions
                   </div>
                 </h3>
@@ -741,7 +741,7 @@ export default function AddClientModal({
                   className="px-3 py-1 rounded-lg flex items-center gap-1 text-sm"
                   style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
                 >
-                  <Plus className="w-4 h-4" /> Add Restriction
+                  <Plus aria-hidden="true" focusable="false" className="w-4 h-4" /> Add Restriction
                 </button>
               </div>
               <div className="space-y-2">
@@ -776,7 +776,7 @@ export default function AddClientModal({
                         className="px-3 py-3 rounded-lg transition-colors"
                         style={{ color: 'var(--color-accent)' }}
                       >
-                        <X className="w-4 h-4" />
+                        <X aria-hidden="true" focusable="false" className="w-4 h-4" />
                       </button>
                     )}
                   </div>
@@ -787,7 +787,7 @@ export default function AddClientModal({
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+                  <FileText aria-hidden="true" focusable="false" className="w-4 h-4" />
                   Additional Notes
                 </div>
               </label>

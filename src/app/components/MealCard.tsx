@@ -18,30 +18,30 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
   const getMealTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'breakfast':
-        return <Sunrise className="h-4 w-4" />;
+        return <Sunrise aria-hidden="true" focusable="false" className="h-4 w-4" />;
       case 'lunch':
-        return <Sun className="h-4 w-4" />;
+        return <Sun aria-hidden="true" focusable="false" className="h-4 w-4" />;
       case 'dinner':
-        return <Moon className="h-4 w-4" />;
+        return <Moon aria-hidden="true" focusable="false" className="h-4 w-4" />;
       case 'snack':
-        return <Apple className="h-4 w-4" />;
+        return <Apple aria-hidden="true" focusable="false" className="h-4 w-4" />;
       default:
-        return <Utensils className="h-4 w-4" />;
+        return <Utensils aria-hidden="true" focusable="false" className="h-4 w-4" />;
     }
   };
 
   const getMealTypeIconLarge = (type: string) => {
     switch (type.toLowerCase()) {
       case 'breakfast':
-        return <Sunrise className="h-16 w-16" />;
+        return <Sunrise aria-hidden="true" focusable="false" className="h-16 w-16" />;
       case 'lunch':
-        return <Sun className="h-16 w-16" />;
+        return <Sun aria-hidden="true" focusable="false" className="h-16 w-16" />;
       case 'dinner':
-        return <Moon className="h-16 w-16" />;
+        return <Moon aria-hidden="true" focusable="false" className="h-16 w-16" />;
       case 'snack':
-        return <Apple className="h-16 w-16" />;
+        return <Apple aria-hidden="true" focusable="false" className="h-16 w-16" />;
       default:
-        return <Utensils className="h-16 w-16" />;
+        return <Utensils aria-hidden="true" focusable="false" className="h-16 w-16" />;
     }
   };
 
@@ -163,11 +163,11 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
           <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400 mb-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
+                <Clock aria-hidden="true" focusable="false" className="h-4 w-4" />
                 <span>{meal.prepTime + meal.cookTime} min</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
+                <Users aria-hidden="true" focusable="false" className="h-4 w-4" />
                 <span>
                   {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
                 </span>
@@ -261,17 +261,17 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
               <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Preparation</h4>
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg flex flex-col items-center justify-center">
-                  <Clock className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
+                  <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
                   <div className="text-sm font-semibold">{meal.prepTime} min</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">Prep Time</div>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg flex flex-col items-center justify-center">
-                  <Clock className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
+                  <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
                   <div className="text-sm font-semibold">{meal.cookTime} min</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">Cook Time</div>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg flex flex-col items-center justify-center">
-                  <Users className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
+                  <Users aria-hidden="true" focusable="false" className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
                   <div className="text-sm font-semibold">{meal.servings}</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">Servings</div>
                 </div>

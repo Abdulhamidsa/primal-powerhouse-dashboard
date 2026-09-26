@@ -153,7 +153,7 @@ export function MealsTab({
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
             aria-label="Open meal actions menu"
           >
-            <EllipsisVertical size={18} />
+            <EllipsisVertical aria-hidden="true" focusable="false" size={18} />
           </button>
 
           {showMoreMenu && (
@@ -191,7 +191,7 @@ export function MealsTab({
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
             style={{ background: 'var(--color-accent)', color: 'var(--color-text-black)' }}
           >
-            <PlusCircle size={18} />
+            <PlusCircle aria-hidden="true" focusable="false" size={18} />
             Assign Meals
           </button>
         </div>
@@ -271,7 +271,7 @@ export function MealsTab({
                               className="w-full h-full flex items-center justify-center"
                               style={{ background: 'linear-gradient(135deg, var(--color-bg-alt), var(--color-bg))' }}
                             >
-                              <Leaf className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
+                              <Leaf aria-hidden="true" focusable="false" className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
                             </div>
                           )}
                           {/* Badge */}
@@ -280,7 +280,7 @@ export function MealsTab({
                               className="px-3 py-1 rounded-full text-xs font-medium uppercase inline-flex items-center gap-1"
                               style={{ background: 'var(--color-accent)', color: 'var(--color-text-black)' }}
                             >
-                              <Leaf size={10} />
+                              <Leaf aria-hidden="true" focusable="false" size={10} />
                               {side.type === 'SOUP' ? 'Soup' : 'Salad'}
                             </span>
                           </div>
@@ -325,7 +325,7 @@ export function MealsTab({
 
                           <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                             <span className="inline-flex items-center gap-1">
-                              <CalendarDays size={12} />
+                              <CalendarDays aria-hidden="true" focusable="false" size={12} />
                               Assigned: {new Date(a.assignedDate).toLocaleDateString()}
                             </span>
                           </div>
@@ -362,7 +362,7 @@ export function MealsTab({
                             className="w-full h-full flex items-center justify-center"
                             style={{ background: 'linear-gradient(135deg, var(--color-bg-alt), var(--color-bg))' }}
                           >
-                            <Utensils className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
+                            <Utensils aria-hidden="true" focusable="false" className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
                           </div>
                         )}
 
@@ -377,7 +377,7 @@ export function MealsTab({
                             }}
                             title="Delete assignment for this client"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 aria-hidden="true" focusable="false" size={16} />
                           </button>
                         )}
 
@@ -449,7 +449,7 @@ export function MealsTab({
                         {/* Assignment Date */}
                         <div className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
                           <span className="inline-flex items-center gap-1">
-                            <CalendarDays size={12} />
+                            <CalendarDays aria-hidden="true" focusable="false" size={12} />
                             Assigned: {new Date(a.assignedDate).toLocaleDateString()}
                           </span>
                         </div>
@@ -465,7 +465,7 @@ export function MealsTab({
                             }}
                           >
                             <div className="flex items-start gap-2">
-                              <FileText size={12} className="mt-0.5 flex-shrink-0" />
+                              <FileText aria-hidden="true" focusable="false" size={12} className="mt-0.5 flex-shrink-0" />
                               <span className="leading-relaxed">{a.notes}</span>
                             </div>
                           </div>
@@ -490,7 +490,7 @@ export function MealsTab({
                             }}
                             title="Edit this personalized meal"
                           >
-                            <Edit size={14} />
+                            <Edit aria-hidden="true" focusable="false" size={14} />
                             Edit
                           </button>
                           {onRemove && (
@@ -504,7 +504,7 @@ export function MealsTab({
                               }}
                               title="Delete assignment for this client only"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 aria-hidden="true" focusable="false" size={14} />
                               Delete
                             </button>
                           )}
@@ -524,9 +524,9 @@ export function MealsTab({
               }}
             >
               {selectedFilter === 'SIDES' ? (
-                <Leaf size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+                <Leaf aria-hidden="true" focusable="false" size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
               ) : (
-                <Utensils size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+                <Utensils aria-hidden="true" focusable="false" size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
               )}
               <p className="text-base font-medium mb-1" style={{ color: 'var(--color-text)' }}>
                 No{' '}
@@ -545,7 +545,7 @@ export function MealsTab({
         </>
       ) : (
         <EmptyState
-          icon={<Utensils size={56} style={{ color: 'var(--color-text-muted)' }} />}
+          icon={<Utensils aria-hidden="true" focusable="false" size={56} style={{ color: 'var(--color-text-muted)' }} />}
           title="No Meals Assigned"
           subtitle="This client does not have any assigned meals yet."
           buttonLabel="Assign First Meal"
@@ -614,7 +614,7 @@ function EmptyState({
         className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
         style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
       >
-        <PlusCircle size={18} />
+        <PlusCircle aria-hidden="true" focusable="false" size={18} />
         {buttonLabel}
       </button>
     </div>

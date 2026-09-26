@@ -33,7 +33,7 @@ export default function UserBodySettingsPage() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md space-y-6 px-4 pb-32 pt-5">
         <Link href="/user/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft aria-hidden="true" focusable="false" className="h-4 w-4" />
           Profile
         </Link>
 
@@ -44,11 +44,11 @@ export default function UserBodySettingsPage() {
         </div>
 
         <section className="overflow-hidden rounded-3xl border border-border bg-card">
-          <MetricRow icon={<Cake className="h-4 w-4" />} label="Age" value={user?.age ? `${user.age} years` : 'Not set'} />
+          <MetricRow icon={<Cake aria-hidden="true" focusable="false" className="h-4 w-4" />} label="Age" value={user?.age ? `${user.age} years` : 'Not set'} />
           <div className="ml-16 h-px bg-border/60" />
-          <MetricRow icon={<Ruler className="h-4 w-4" />} label="Height" value={user?.height ? `${user.height} cm` : 'Not set'} />
+          <MetricRow icon={<Ruler aria-hidden="true" focusable="false" className="h-4 w-4" />} label="Height" value={user?.height ? `${user.height} cm` : 'Not set'} />
           <div className="ml-16 h-px bg-border/60" />
-          <MetricRow icon={<Scale className="h-4 w-4" />} label="Weight" value={weight} />
+          <MetricRow icon={<Scale aria-hidden="true" focusable="false" className="h-4 w-4" />} label="Weight" value={weight} />
         </section>
       </div>
     </div>

@@ -60,7 +60,7 @@ export function CheckInCalendarMonth({
           style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
           aria-label="Previous week"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft aria-hidden="true" focusable="false" size={16} />
         </button>
 
         <div className="text-center">
@@ -79,7 +79,7 @@ export function CheckInCalendarMonth({
           style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
           aria-label="Next week"
         >
-          <ChevronRight size={16} />
+          <ChevronRight aria-hidden="true" focusable="false" size={16} />
         </button>
       </div>
 

@@ -112,7 +112,7 @@ export default function UserMealsPage() {
 
           {saveError ? (
             <div className="flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-sm text-[var(--color-accent)]">
-              <AlertCircle size={16} />
+              <AlertCircle aria-hidden="true" focusable="false" size={16} />
               <span>{saveError.message}</span>
             </div>
           ) : null}
@@ -181,7 +181,7 @@ export default function UserMealsPage() {
             disabled={!hasChanges || isSaving}
             className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] disabled:opacity-60"
           >
-            <Undo2 size={14} />
+            <Undo2 aria-hidden="true" focusable="false" size={14} />
             Reset
           </button>
 
@@ -191,7 +191,7 @@ export default function UserMealsPage() {
             disabled={!hasChanges || isSaving}
             className="inline-flex items-center gap-2 rounded-2xl bg-[var(--color-accent-translucent)] px-4 py-2 text-sm font-medium text-[var(--color-text)] disabled:opacity-60"
           >
-            <Save size={14} />
+            <Save aria-hidden="true" focusable="false" size={14} />
             {isSaving ? 'Saving...' : 'Save Selection'}
           </button>
         </div>

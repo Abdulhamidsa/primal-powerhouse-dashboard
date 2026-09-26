@@ -1,5 +1,9 @@
 'use client';
 
+import { MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon } from '@phosphor-icons/react';
+
+
+import { BreadIcon, CowIcon, DropIcon, FlameIcon, ForkKnifeIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
@@ -17,10 +21,10 @@ const daysOfWeek = [
 ];
 
 const mealTypes = [
-  { value: 'BREAKFAST', label: 'Breakfast', icon: '🌅', color: 'bg-orange-100 text-orange-800' },
-  { value: 'LUNCH', label: 'Lunch', icon: '☀️', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'DINNER', label: 'Dinner', icon: '🌙', color: 'bg-purple-100 text-purple-800' },
-  { value: 'SNACK', label: 'Snack', icon: '🍎', color: 'bg-green-100 text-green-800' },
+  { value: 'BREAKFAST', label: 'Breakfast', icon: <SunHorizonIcon size={18} aria-hidden="true" />, color: 'bg-orange-100 text-orange-800' },
+  { value: 'LUNCH', label: 'Lunch', icon: <SunIcon size={18} aria-hidden="true" />, color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'DINNER', label: 'Dinner', icon: <MoonIcon size={18} aria-hidden="true" />, color: 'bg-purple-100 text-purple-800' },
+  { value: 'SNACK', label: 'Snack', icon: <OrangeIcon size={18} aria-hidden="true" />, color: 'bg-green-100 text-green-800' },
 ];
 
 export default function ClientMealPlansPage() {
@@ -127,7 +131,7 @@ export default function ClientMealPlansPage() {
         {/* <Navigation /> */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">😕</div>
+            <div className="text-6xl mb-4"><WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Client not found</h1>
             <p className="text-gray-600">The requested client could not be found.</p>
           </div>
@@ -179,7 +183,7 @@ export default function ClientMealPlansPage() {
 
         {mealPlans.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🍽️</div>
+            <div className="text-6xl mb-4"><ForkKnifeIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No meal plans yet</h3>
             <p className="text-gray-600 mb-6">This client doesn&apos;t have any meal plans assigned.</p>
             <button className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
@@ -198,7 +202,7 @@ export default function ClientMealPlansPage() {
                       <p className="text-3xl font-bold text-gray-900">{Math.round(totalNutrition.calories / 7)}</p>
                     </div>
                     <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
-                      <span className="text-2xl">🔥</span>
+                      <span className="text-2xl"><FlameIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                     </div>
                   </div>
                 </div>
@@ -210,7 +214,7 @@ export default function ClientMealPlansPage() {
                       <p className="text-3xl font-bold text-gray-900">{Math.round(totalNutrition.protein / 7)}g</p>
                     </div>
                     <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                      <span className="text-2xl">🥩</span>
+                      <span className="text-2xl"><CowIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                     </div>
                   </div>
                 </div>
@@ -222,7 +226,7 @@ export default function ClientMealPlansPage() {
                       <p className="text-3xl font-bold text-gray-900">{Math.round(totalNutrition.carbs / 7)}g</p>
                     </div>
                     <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
-                      <span className="text-2xl">🍞</span>
+                      <span className="text-2xl"><BreadIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                     </div>
                   </div>
                 </div>
@@ -234,7 +238,7 @@ export default function ClientMealPlansPage() {
                       <p className="text-3xl font-bold text-gray-900">{Math.round(totalNutrition.fat / 7)}g</p>
                     </div>
                     <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                      <span className="text-2xl">🥑</span>
+                      <span className="text-2xl"><DropIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                     </div>
                   </div>
                 </div>
@@ -288,10 +292,10 @@ export default function ClientMealPlansPage() {
                                   <div className="bg-gray-50 rounded-lg p-3">
                                     <div className="font-medium text-gray-900 mb-2">{assignment.meal.name}</div>
                                     <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-2">
-                                      <div>🔥 {Math.round(assignment.meal.calories * assignment.portion)} cal</div>
-                                      <div>🥩 {Math.round(assignment.meal.protein * assignment.portion)}g protein</div>
-                                      <div>🍞 {Math.round(assignment.meal.carbs * assignment.portion)}g carbs</div>
-                                      <div>🥑 {Math.round(assignment.meal.fat * assignment.portion)}g fat</div>
+                                      <div>{Math.round(assignment.meal.calories * assignment.portion)} cal</div>
+                                      <div>{Math.round(assignment.meal.protein * assignment.portion)}g protein</div>
+                                      <div>{Math.round(assignment.meal.carbs * assignment.portion)}g carbs</div>
+                                      <div>{Math.round(assignment.meal.fat * assignment.portion)}g fat</div>
                                     </div>
                                     {assignment.portion !== 1 && (
                                       <div className="text-xs text-blue-600 font-medium">

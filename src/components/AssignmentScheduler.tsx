@@ -1,7 +1,7 @@
 'use client';
 
 
-import { CaretLeftIcon, CaretRightIcon, XIcon } from '@phosphor-icons/react';
+import { CaretLeftIcon, CaretRightIcon, ForkKnifeIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { VideoAssignment } from '@/types/video';
 
@@ -357,7 +357,13 @@ export default function AssignmentScheduler({
                     className={`p-4 rounded-lg border-2 cursor-move hover:shadow-md transition-all ${item.type === 'video' ? 'bg-purple-50 border-purple-200 text-purple-900' : 'bg-green-50 border-green-200 text-green-900'}`}
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-lg">{item.type === 'video' ? '🎥' : '🍽️'}</span>
+                      <span className="text-lg">
+                        {item.type === 'video' ? (
+                          <VideoCameraIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                        ) : (
+                          <ForkKnifeIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                        )}
+                      </span>
                       <span className="font-medium">{item.title}</span>
                     </div>
                     {item.type === 'video' && item.duration && (

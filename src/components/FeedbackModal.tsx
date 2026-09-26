@@ -85,7 +85,7 @@ export function FeedbackModal({ isOpen, onCloseAction }: FeedbackModalProps) {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-muted/40">
-                  <MessageSquare className="h-5 w-5 text-foreground" />
+                  <MessageSquare aria-hidden="true" focusable="false" className="h-5 w-5 text-foreground" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Send Feedback</h2>
@@ -98,14 +98,14 @@ export function FeedbackModal({ isOpen, onCloseAction }: FeedbackModalProps) {
                 onClick={onCloseAction}
                 className="grid h-9 w-9 place-items-center rounded-2xl border border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted/60 active:bg-muted/70"
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" focusable="false" className="h-4 w-4" />
               </button>
             </div>
 
             {isSuccess ? (
               <div className="flex flex-col items-center justify-center gap-4 py-10 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted/30">
-                  <Check className="h-8 w-8 text-foreground" />
+                  <Check aria-hidden="true" focusable="false" className="h-8 w-8 text-foreground" />
                 </div>
                 <div>
                   <p className="text-base font-semibold text-foreground">Thank you</p>

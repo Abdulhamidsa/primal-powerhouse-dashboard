@@ -62,7 +62,7 @@ export default function UpdateAppButton() {
               hasUpdate ? 'bg-accent text-accent-foreground' : 'bg-muted/50 text-foreground'
             }`}
           >
-            {hasUpdate ? <Download className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+            {hasUpdate ? <Download aria-hidden="true" focusable="false" className="h-4 w-4" /> : <RefreshCw aria-hidden="true" focusable="false" className="h-4 w-4" />}
           </div>
 
           <div className="min-w-0 flex-1">
@@ -95,13 +95,13 @@ export default function UpdateAppButton() {
                 <div className="flex items-start gap-3">
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15">
                     {isSuccess ? (
-                      <CheckCircle2 className="h-6 w-6 text-green-500" />
+                      <CheckCircle2 aria-hidden="true" focusable="false" className="h-6 w-6 text-green-500" />
                     ) : isUpdating ? (
-                      <Loader2 className="h-6 w-6 animate-spin text-accent" />
+                      <Loader2 aria-hidden="true" focusable="false" className="h-6 w-6 animate-spin text-accent" />
                     ) : hasUpdate ? (
-                      <Sparkles className="h-6 w-6 text-accent" />
+                      <Sparkles aria-hidden="true" focusable="false" className="h-6 w-6 text-accent" />
                     ) : (
-                      <RefreshCw className="h-6 w-6 text-foreground" />
+                      <RefreshCw aria-hidden="true" focusable="false" className="h-6 w-6 text-foreground" />
                     )}
                   </div>
 
@@ -167,7 +167,7 @@ export default function UpdateAppButton() {
                 {isUpdating ? (
                   <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
                     <div className="flex items-center gap-3">
-                      <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                      <Loader2 aria-hidden="true" focusable="false" className="h-4 w-4 animate-spin text-accent" />
                       <p className="text-sm font-medium text-foreground">
                         Applying update and refreshing cached files...
                       </p>
@@ -182,7 +182,7 @@ export default function UpdateAppButton() {
                 {isSuccess ? (
                   <div className="rounded-2xl border border-green-500/20 bg-green-500/10 p-4">
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle2 aria-hidden="true" focusable="false" className="h-5 w-5 text-green-500" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">Update completed successfully</p>
                         <p className="text-xs text-muted-foreground">The app is now running the latest version.</p>

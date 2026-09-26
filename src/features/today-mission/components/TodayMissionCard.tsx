@@ -14,15 +14,15 @@ const TONE_STYLES: Record<TodayMissionTone, { className: string; icon: ReactNode
   },
   good: {
     className: 'border-emerald-500/15 bg-emerald-500/10 text-emerald-600',
-    icon: <CheckCircle2 size={12} />,
+    icon: <CheckCircle2 aria-hidden="true" focusable="false" size={12} />,
   },
   warn: {
     className: 'border-amber-500/15 bg-amber-500/10 text-amber-700',
-    icon: <Flame size={12} />,
+    icon: <Flame aria-hidden="true" focusable="false" size={12} />,
   },
   danger: {
     className: 'border-rose-500/15 bg-rose-500/10 text-rose-600',
-    icon: <CalendarCheck2 size={12} />,
+    icon: <CalendarCheck2 aria-hidden="true" focusable="false" size={12} />,
   },
 };
 
@@ -138,7 +138,7 @@ export function TodayMissionCard({
             className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
             style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
           >
-            <UtensilsCrossed size={12} className="text-muted-foreground" />
+            <UtensilsCrossed aria-hidden="true" focusable="false" size={12} className="text-muted-foreground" />
             {summary.title}
           </div>
 
@@ -223,14 +223,14 @@ export function TodayMissionCard({
         <Button asChild className="h-11 rounded-full px-5 shadow-none">
           <Link href={summary.nextActionHref} title={summary.nextActionLabel}>
             <span className="truncate">{summary.nextActionLabel}</span>
-            <ArrowRight size={14} />
+            <ArrowRight aria-hidden="true" focusable="false" size={14} />
           </Link>
         </Button>
 
         {hasUnread ? (
           <Button asChild variant="outline" className="h-11 rounded-full px-5 shadow-none">
             <Link href="/user/chat" title="Open coach chat">
-              <MessageSquare size={14} />
+              <MessageSquare aria-hidden="true" focusable="false" size={14} />
               <span>Open chat</span>
             </Link>
           </Button>

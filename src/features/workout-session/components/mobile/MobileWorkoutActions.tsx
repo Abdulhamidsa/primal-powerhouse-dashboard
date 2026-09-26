@@ -37,7 +37,7 @@ export default function MobileWorkoutActions({
           className="w-full py-3.5 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-sm"
           style={{ background: 'var(--color-accent)' }}
         >
-          <Check size={18} strokeWidth={3} />
+          <Check aria-hidden="true" focusable="false" size={18} strokeWidth={3} />
           Done with this exercise
         </button>
       )}
@@ -48,7 +48,7 @@ export default function MobileWorkoutActions({
           onClick={onPrev}
           className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border bg-background flex items-center justify-center gap-1.5 text-foreground active:scale-[0.98] transition-transform disabled:opacity-40 disabled:active:scale-100"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft aria-hidden="true" focusable="false" size={16} />
           Previous
         </button>
 
@@ -68,7 +68,7 @@ export default function MobileWorkoutActions({
             className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border bg-background flex items-center justify-center gap-1.5 text-foreground active:scale-[0.98] transition-transform disabled:opacity-40 disabled:active:scale-100"
           >
             Next
-            <ChevronRight size={16} />
+            <ChevronRight aria-hidden="true" focusable="false" size={16} />
           </button>
         )}
       </div>

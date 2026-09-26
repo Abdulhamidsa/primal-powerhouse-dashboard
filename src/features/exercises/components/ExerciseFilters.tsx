@@ -51,7 +51,7 @@ function FilterDropdown({ label, options, selectedValues, onChange }: FilterDrop
             {selectedValues.length}
           </span>
         )}
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown aria-hidden="true" focusable="false" size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -124,7 +124,7 @@ export default function ExerciseFilters({
             onClick={onClear}
             className="flex items-center gap-1 text-xs text-[var(--color-accent)] hover:opacity-80"
           >
-            <X size={12} />
+            <X aria-hidden="true" focusable="false" size={12} />
             Clear all
           </button>
         )}

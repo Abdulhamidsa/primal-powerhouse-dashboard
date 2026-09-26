@@ -1476,7 +1476,7 @@ export default function IntegratedMealAssignmentModal({
                 className="w-10 h-10 rounded flex items-center justify-center shrink-0"
                 style={{ background: 'var(--color-surface)' }}
               >
-                <Leaf size={16} style={{ color: 'var(--color-accent)' }} />
+                <Leaf aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -1496,7 +1496,7 @@ export default function IntegratedMealAssignmentModal({
               style={{ color: 'var(--color-danger)' }}
               aria-label="Remove side"
             >
-              <X size={12} />
+              <X aria-hidden="true" focusable="false" size={12} />
             </button>
           </div>
         ) : (
@@ -1505,7 +1505,7 @@ export default function IntegratedMealAssignmentModal({
             className="mt-2 w-full flex items-center justify-center gap-1 rounded-lg border border-dashed py-1.5 text-xs transition-colors hover:opacity-80"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
           >
-            <Leaf size={12} />
+            <Leaf aria-hidden="true" focusable="false" size={12} />
             Add side
           </button>
         )}
@@ -1532,7 +1532,7 @@ export default function IntegratedMealAssignmentModal({
                 className="w-10 h-10 rounded flex items-center justify-center shrink-0"
                 style={{ background: 'var(--color-surface)' }}
               >
-                <X size={14} />
+                <X aria-hidden="true" focusable="false" size={14} />
               </div>
               <span>No side</span>
             </button>
@@ -1562,7 +1562,7 @@ export default function IntegratedMealAssignmentModal({
                         className="w-10 h-10 rounded flex items-center justify-center shrink-0"
                         style={{ background: 'var(--color-surface)' }}
                       >
-                        <Leaf size={14} style={{ color: 'var(--color-accent)' }} />
+                        <Leaf aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-accent)' }} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0 text-left">
@@ -1572,7 +1572,7 @@ export default function IntegratedMealAssignmentModal({
                       </div>
                     </div>
                     {selectedSides[slotKey] === side.id && (
-                      <Check size={12} className="shrink-0" style={{ color: 'var(--color-accent)' }} />
+                      <Check aria-hidden="true" focusable="false" size={12} className="shrink-0" style={{ color: 'var(--color-accent)' }} />
                     )}
                   </button>
                 ))
@@ -1622,7 +1622,7 @@ export default function IntegratedMealAssignmentModal({
                   color: 'var(--color-text-muted)',
                 }}
               >
-                <Calendar size={16} />
+                <Calendar aria-hidden="true" focusable="false" size={16} />
                 Back to Schedule
               </button>
             )}
@@ -1633,7 +1633,7 @@ export default function IntegratedMealAssignmentModal({
               style={{ color: 'var(--color-text-muted)' }}
               aria-label="Close"
             >
-              <X size={24} />
+              <X aria-hidden="true" focusable="false" size={24} />
             </button>
           </div>
         </div>
@@ -1645,7 +1645,7 @@ export default function IntegratedMealAssignmentModal({
               className="mb-4 p-3 rounded flex items-center gap-2"
               style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}
             >
-              <Check size={18} />
+              <Check aria-hidden="true" focusable="false" size={18} />
               {successMessage}
             </div>
           )}
@@ -1660,7 +1660,7 @@ export default function IntegratedMealAssignmentModal({
                 color: 'var(--color-accent)',
               }}
             >
-              <Edit size={18} />
+              <Edit aria-hidden="true" focusable="false" size={18} />
               <div>
                 <p className="font-medium">Editing Existing Meal Plan: {activeMealPlan.name}</p>
                 <p className="text-xs">
@@ -1697,7 +1697,7 @@ export default function IntegratedMealAssignmentModal({
                         className="w-10 h-10 rounded-full flex items-center justify-center"
                         style={{ background: 'var(--color-bg)' }}
                       >
-                        <User size={20} style={{ color: 'var(--color-text-muted)' }} />
+                        <User aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-text-muted)' }} />
                       </div>
                       <div>
                         <div className="font-medium">{client.name}</div>
@@ -1720,7 +1720,7 @@ export default function IntegratedMealAssignmentModal({
                   style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Calendar size={18} />
+                    <Calendar aria-hidden="true" focusable="false" size={18} />
                     Meal Plan Details
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1841,7 +1841,7 @@ export default function IntegratedMealAssignmentModal({
                                       <span>{meal.calories} cal</span>
                                       <span>P: {meal.protein}g</span>
                                       <span className="flex items-center gap-1">
-                                        <Clock size={12} />
+                                        <Clock aria-hidden="true" focusable="false" size={12} />
                                         {meal.prepTime + meal.cookTime} min
                                       </span>
                                     </div>
@@ -1870,7 +1870,7 @@ export default function IntegratedMealAssignmentModal({
                                         className="text-xs font-semibold mb-1 flex items-center gap-1"
                                         style={{ color: 'var(--color-text-muted)' }}
                                       >
-                                        <Leaf size={12} />
+                                        <Leaf aria-hidden="true" focusable="false" size={12} />
                                         Side
                                       </div>
                                       <SideImagePicker
@@ -1886,7 +1886,7 @@ export default function IntegratedMealAssignmentModal({
                                     className="w-full p-3 border border-dashed rounded flex items-center justify-center gap-2"
                                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
                                   >
-                                    <Utensils size={16} />
+                                    <Utensils aria-hidden="true" focusable="false" size={16} />
                                     <span className="text-sm">Add {mealType.label}</span>
                                   </button>
                                 )}
@@ -1967,7 +1967,7 @@ export default function IntegratedMealAssignmentModal({
                                           className="flex items-center gap-1"
                                           style={{ color: 'var(--color-text-muted)' }}
                                         >
-                                          <Clock size={12} />
+                                          <Clock aria-hidden="true" focusable="false" size={12} />
                                           {meal.prepTime + meal.cookTime} min
                                         </span>
                                       </div>
@@ -2004,7 +2004,7 @@ export default function IntegratedMealAssignmentModal({
                                           className="text-xs font-semibold mb-1 flex items-center gap-1"
                                           style={{ color: 'var(--color-text-muted)' }}
                                         >
-                                          <Leaf size={12} />
+                                          <Leaf aria-hidden="true" focusable="false" size={12} />
                                           Side
                                         </div>
                                         <SideImagePicker
@@ -2019,7 +2019,7 @@ export default function IntegratedMealAssignmentModal({
                                         style={{ color: 'var(--color-danger)' }}
                                         aria-label="Remove meal"
                                       >
-                                        <X size={14} />
+                                        <X aria-hidden="true" focusable="false" size={14} />
                                       </button>
                                     </div>
                                   ) : (
@@ -2032,7 +2032,7 @@ export default function IntegratedMealAssignmentModal({
                                         background: 'var(--color-surface)',
                                       }}
                                     >
-                                      <Utensils size={16} />
+                                      <Utensils aria-hidden="true" focusable="false" size={16} />
                                       <span className="text-xs">Add {mealType.label}</span>
                                     </button>
                                   )}
@@ -2097,7 +2097,7 @@ export default function IntegratedMealAssignmentModal({
                   style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
                 >
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <AlertCircle size={16} style={{ color: 'var(--color-accent)' }} />
+                    <AlertCircle aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
                     Ready To Save
                   </h4>
                   <div className="space-y-2 text-sm">
@@ -2142,7 +2142,7 @@ export default function IntegratedMealAssignmentModal({
                       <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        <Save size={18} />
+                        <Save aria-hidden="true" focusable="false" size={18} />
                         {isEditingExistingPlan || hasExistingActivePlan ? 'Update Meal Plan' : 'Create Meal Plan'}
                       </>
                     )}
@@ -2171,7 +2171,7 @@ export default function IntegratedMealAssignmentModal({
                     color: 'var(--color-text)',
                   }}
                 />
-                <Search
+                <Search aria-hidden="true" focusable="false"
                   size={18}
                   className="absolute left-3 top-1/2 transform -translate-y-1/2"
                   style={{ color: 'var(--color-text-muted)' }}
@@ -2284,7 +2284,7 @@ export default function IntegratedMealAssignmentModal({
                                   }}
                                   title={`Assigned to ${dayName} - ${mealTypeName}`}
                                 >
-                                  <Check size={14} />
+                                  <Check aria-hidden="true" focusable="false" size={14} />
                                   <span>ASSIGNED</span>
                                 </div>
                               );
@@ -2296,13 +2296,13 @@ export default function IntegratedMealAssignmentModal({
 
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2 text-sm">
-                            <Clock size={14} style={{ color: 'var(--color-text-muted)' }} />
+                            <Clock aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
                             <span style={{ color: 'var(--color-text-muted)' }}>
                               {meal.prepTime + meal.cookTime} min
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
-                            <Users size={14} style={{ color: 'var(--color-text-muted)' }} />
+                            <Users aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
                             <span style={{ color: 'var(--color-text-muted)' }}>
                               {meal.servings} {meal.servings === 1 ? 'serving' : 'servings'}
                             </span>
@@ -2343,7 +2343,7 @@ export default function IntegratedMealAssignmentModal({
                               background: 'var(--color-accent-translucent)',
                             }}
                           >
-                            <Edit size={16} />
+                            <Edit aria-hidden="true" focusable="false" size={16} />
                             <span>Personalize</span>
                           </button>
 
@@ -2363,7 +2363,7 @@ export default function IntegratedMealAssignmentModal({
                                 : 'Assign this meal'
                             }
                           >
-                            <Calendar size={16} />
+                            <Calendar aria-hidden="true" focusable="false" size={16} />
                             <span>{isMealAssigned(meal.id) ? 'Already Assigned' : 'Assign'}</span>
                           </button>
                         </div>

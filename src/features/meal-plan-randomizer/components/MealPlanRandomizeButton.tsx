@@ -41,7 +41,7 @@ export function MealPlanRandomizeButton({
         disabled={isRandomizing || disabled}
         className="h-10 rounded-full flex gap-2 border-border bg-card px-4 text-sm font-medium text-foreground shadow-sm"
       >
-        <Shuffle size={14} />
+        <Shuffle aria-hidden="true" focusable="false" size={14} />
         Randomize
       </Button>
 

@@ -85,7 +85,7 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
       {/* Loading skeleton */}
       {!mediaLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted animate-pulse">
-          <Dumbbell size={40} className="text-muted-foreground/40" />
+          <Dumbbell aria-hidden="true" focusable="false" size={40} className="text-muted-foreground/40" />
         </div>
       )}
 
@@ -135,7 +135,7 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
         </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Dumbbell size={48} className="text-muted-foreground/40" />
+          <Dumbbell aria-hidden="true" focusable="false" size={48} className="text-muted-foreground/40" />
         </div>
       )}
 
@@ -150,7 +150,7 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            {isPlaying ? <Pause size={28} className="text-white" /> : <Play size={28} className="text-white ml-1" />}
+            {isPlaying ? <Pause aria-hidden="true" focusable="false" size={28} className="text-white" /> : <Play aria-hidden="true" focusable="false" size={28} className="text-white ml-1" />}
           </div>
         </button>
       )}

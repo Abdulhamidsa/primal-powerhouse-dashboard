@@ -60,7 +60,7 @@ export default function EditMotivationalMessageModal({
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-2xl font-bold text-foreground">Edit Motivational Message</h2>
           <button onClick={onCloseAction} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X size={24} />
+            <X aria-hidden="true" focusable="false" size={24} />
           </button>
         </div>
 

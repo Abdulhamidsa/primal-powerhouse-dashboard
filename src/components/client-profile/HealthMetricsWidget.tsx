@@ -35,7 +35,7 @@ export function HealthMetricsWidget({
     return (
       <div className={cx(iosPanel, 'p-6')} style={iosPanelStyle}>
         <div className="flex items-center gap-3 mb-4">
-          <AlertCircle size={24} style={{ color: 'var(--color-text-muted)' }} />
+          <AlertCircle aria-hidden="true" focusable="false" size={24} style={{ color: 'var(--color-text-muted)' }} />
           <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
             Health Metrics
           </h3>
@@ -52,7 +52,7 @@ export function HealthMetricsWidget({
             color: 'var(--color-text-on-accent)',
           }}
         >
-          📊 Calculate Now
+           Calculate Now
         </button>
       </div>
     );
@@ -107,7 +107,7 @@ export function HealthMetricsWidget({
           }}
         >
           <div className="flex items-center gap-1 mb-1">
-            <Flame size={14} style={{ color: '#ff6b6b' }} />
+            <Flame aria-hidden="true" focusable="false" size={14} style={{ color: '#ff6b6b' }} />
             <p style={{ color: '#ff6b6b' }} className="text-xs font-semibold">
               DAILY KCAL
             </p>
@@ -131,7 +131,7 @@ export function HealthMetricsWidget({
                 background: 'rgba(255, 107, 107, 0.1)',
               }}
             >
-              <Beef size={20} style={{ color: '#ff6b6b' }} />
+              <Beef aria-hidden="true" focusable="false" size={20} style={{ color: '#ff6b6b' }} />
             </div>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mb-1">
               Protein
@@ -148,7 +148,7 @@ export function HealthMetricsWidget({
                 background: 'rgba(78, 205, 196, 0.1)',
               }}
             >
-              <Wheat size={20} style={{ color: '#4ecdc4' }} />
+              <Wheat aria-hidden="true" focusable="false" size={20} style={{ color: '#4ecdc4' }} />
             </div>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mb-1">
               Carbs
@@ -165,7 +165,7 @@ export function HealthMetricsWidget({
                 background: 'rgba(255, 217, 61, 0.1)',
               }}
             >
-              <Droplets size={20} style={{ color: '#ffd93d' }} />
+              <Droplets aria-hidden="true" focusable="false" size={20} style={{ color: '#ffd93d' }} />
             </div>
             <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mb-1">
               Fat

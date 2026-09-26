@@ -65,10 +65,10 @@ export function SummaryTabContent({
             </h2>
             <div className="mt-2 space-y-1">
               <p className="text-sm inline-flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                <Mail size={14} /> {client.email}
+                <Mail aria-hidden="true" focusable="false" size={14} /> {client.email}
               </p>
               <p className="text-sm inline-flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                <Phone size={14} /> {client.phone || 'Not provided'}
+                <Phone aria-hidden="true" focusable="false" size={14} /> {client.phone || 'Not provided'}
               </p>
             </div>
           </div>
@@ -91,11 +91,11 @@ export function SummaryTabContent({
             >
               {client.status === 'ARCHIVED' ? (
                 <>
-                  <Undo2 size={14} /> Restore
+                  <Undo2 aria-hidden="true" focusable="false" size={14} /> Restore
                 </>
               ) : (
                 <>
-                  <Archive size={14} /> Archive
+                  <Archive aria-hidden="true" focusable="false" size={14} /> Archive
                 </>
               )}
             </button>
@@ -105,11 +105,11 @@ export function SummaryTabContent({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <MetricTile label="Status" value={client.status} />
           <MetricTile label="BMI" value={bmi == null ? 'N/A' : bmi.toFixed(1)} />
-          <MetricTile label="Age" value={client.age == null ? 'N/A' : `${client.age}`} icon={<Timer size={14} />} />
+          <MetricTile label="Age" value={client.age == null ? 'N/A' : `${client.age}`} icon={<Timer aria-hidden="true" focusable="false" size={14} />} />
           <MetricTile
             label="Sessions"
             value={client.sessionsCompleted == null ? '0' : `${client.sessionsCompleted}`}
-            icon={<Scale size={14} />}
+            icon={<Scale aria-hidden="true" focusable="false" size={14} />}
           />
         </div>
       </div>
@@ -128,17 +128,17 @@ export function SummaryTabContent({
             <Row
               label="Height"
               value={client.height == null ? 'N/A' : `${client.height} cm`}
-              icon={<Ruler size={14} />}
+              icon={<Ruler aria-hidden="true" focusable="false" size={14} />}
             />
             <Row
               label="Current Weight"
               value={summaryWeightKg == null ? 'N/A' : `${summaryWeightKg} kg`}
-              icon={<Scale size={14} />}
+              icon={<Scale aria-hidden="true" focusable="false" size={14} />}
             />
             <Row
               label="Target Weight"
               value={client.targetWeight == null ? 'N/A' : `${client.targetWeight} kg`}
-              icon={<Scale size={14} />}
+              icon={<Scale aria-hidden="true" focusable="false" size={14} />}
             />
             <Row label="Activity" value={client.activityLevel || 'N/A'} />
           </div>

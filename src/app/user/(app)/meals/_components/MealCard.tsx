@@ -60,7 +60,7 @@ export function MealCard({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
         <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-2xl bg-black/35 backdrop-blur">
-          <ChefHat size={16} className="text-white/90" />
+          <ChefHat aria-hidden="true" focusable="false" size={16} className="text-white/90" />
         </div>
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
           <span className="truncate rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur">
@@ -83,8 +83,8 @@ export function MealCard({
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <MetaChip icon={<Clock size={12} />} label={`${totalTime}m`} />
-          <MetaChip icon={<Users size={12} />} label={`${assignment.meal.servings} servings`} />
+          <MetaChip icon={<Clock aria-hidden="true" focusable="false" size={12} />} label={`${totalTime}m`} />
+          <MetaChip icon={<Users aria-hidden="true" focusable="false" size={12} />} label={`${assignment.meal.servings} servings`} />
           <MetaChip label={assignment.meal.difficulty} />
         </div>
       </div>

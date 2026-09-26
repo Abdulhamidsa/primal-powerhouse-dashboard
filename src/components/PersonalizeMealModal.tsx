@@ -1,5 +1,7 @@
 'use client';
 
+
+import { XIcon } from '@phosphor-icons/react';
 import React, { useState, useEffect } from 'react';
 import { Meal } from '@/types/meal';
 import { MacroTarget } from '@/lib/meal-planner/types';
@@ -95,9 +97,7 @@ export default function PersonalizeMealModal({ meal, isOpen, onCloseAction, onSa
             <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
               Personalize Meal: {meal.name}
             </h2>
-            <button onClick={onCloseAction} className="p-2 rounded-full hover:bg-gray-200" aria-label="Close">
-              ✕
-            </button>
+            <button onClick={onCloseAction} className="p-2 rounded-full hover:bg-gray-200" aria-label="Close"><XIcon className="h-4 w-4" aria-hidden="true" /></button>
           </div>
           <p style={{ color: 'var(--color-text-muted)' }}>
             Adjust the macro targets to personalize this meal for your client.

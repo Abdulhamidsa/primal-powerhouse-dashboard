@@ -25,12 +25,12 @@ export const MealsHeader = ({ onCreateManual, onOpenBuilder }: MealsHeaderProps)
               onClick={onCreateManual}
               className="flex items-center gap-2 bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90"
             >
-              <Plus size={18} />
+              <Plus aria-hidden="true" focusable="false" size={18} />
               Create Manually
             </Button>
 
             <Button variant="secondary" onClick={onOpenBuilder} className="flex items-center gap-2">
-              <ChefHat size={18} />
+              <ChefHat aria-hidden="true" focusable="false" size={18} />
               Add Meal Template
             </Button>
           </div>

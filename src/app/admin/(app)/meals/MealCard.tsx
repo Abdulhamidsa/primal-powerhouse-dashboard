@@ -52,11 +52,11 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
 
         <div className="absolute top-3 left-3">
           <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-            {meal.type === 'BREAKFAST' && <Sunrise className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'LUNCH' && <Sun className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'DINNER' && <Moon className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'SNACK' && <Apple className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'SIDES' && <Leaf className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
+            {meal.type === 'BREAKFAST' && <Sunrise aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
+            {meal.type === 'LUNCH' && <Sun aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
+            {meal.type === 'DINNER' && <Moon aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
+            {meal.type === 'SNACK' && <Apple aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
+            {meal.type === 'SIDES' && <Leaf aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
             {meal.type.charAt(0) + meal.type.slice(1).toLowerCase()}
           </div>
         </div>
@@ -82,12 +82,12 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
 
         <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
+            <Clock aria-hidden="true" focusable="false" className="h-3.5 w-3.5" />
             {totalTime} min
           </span>
 
           <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
+            <Users aria-hidden="true" focusable="false" className="h-3.5 w-3.5" />
             {meal.servings} serving{meal.servings > 1 ? 's' : ''}
           </span>
         </div>
@@ -117,7 +117,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
             }}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-white/[0.08]"
           >
-            <Edit className="h-4 w-4" />
+            <Edit aria-hidden="true" focusable="false" className="h-4 w-4" />
             Edit
           </Button>
 
@@ -128,7 +128,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
             }}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/15 bg-red-500/5 px-3 py-2 text-sm font-semibold text-red-300 transition-colors hover:bg-red-500/10"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 aria-hidden="true" focusable="false" className="h-4 w-4" />
             Delete
           </Button>
         </div>

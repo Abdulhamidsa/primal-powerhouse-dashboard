@@ -114,7 +114,7 @@ export function PlanSelectedMealCard({
                       key={item}
                       className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-muted)]"
                     >
-                      <Clock3 size={11} />
+                      <Clock3 aria-hidden="true" focusable="false" size={11} />
                       {item}
                     </span>
                   ))}
@@ -124,7 +124,7 @@ export function PlanSelectedMealCard({
 
             {isCompleted ? (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-accent-translucent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-accent)]">
-                <CheckCircle2 size={12} />
+                <CheckCircle2 aria-hidden="true" focusable="false" size={12} />
                 {completionTimeLabel ? `Done ${completionTimeLabel}` : 'Done'}
               </span>
             ) : null}
@@ -147,7 +147,7 @@ export function PlanSelectedMealCard({
                   background: isCompleted ? 'var(--color-accent-muted)' : 'transparent',
                 }}
               >
-                <Check size={14} />
+                <Check aria-hidden="true" focusable="false" size={14} />
                 <span className="truncate">{isCompleted ? 'Done' : 'Mark done'}</span>
               </button>
             ) : null}
@@ -162,7 +162,7 @@ export function PlanSelectedMealCard({
                 aria-label="Change meal"
                 className="inline-flex min-h-10 min-w-0 w-full items-center justify-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-2 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
-                <RefreshCcw size={14} />
+                <RefreshCcw aria-hidden="true" focusable="false" size={14} />
                 <span className="truncate">Change meal</span>
               </button>
             ) : null}
@@ -207,8 +207,8 @@ function MealDetailModal({
 }) {
   const availableTabs = useMemo(() => {
     const tabs: Array<{ key: PlanSelectedMealCardTabKey; label: string; icon: React.ReactNode }> = [
-      { key: 'ingredients', label: 'Ingredients', icon: <Wheat size={13} /> },
-      { key: 'instructions', label: 'Instructions', icon: <Flame size={13} /> },
+      { key: 'ingredients', label: 'Ingredients', icon: <Wheat aria-hidden="true" focusable="false" size={13} /> },
+      { key: 'instructions', label: 'Instructions', icon: <Flame aria-hidden="true" focusable="false" size={13} /> },
     ];
     return tabs;
   }, []);
@@ -246,7 +246,7 @@ function MealDetailModal({
               <div className="mt-2 flex flex-wrap gap-2">
                 {metaItems.map(item => (
                   <span key={item} className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm">
-                    <Clock3 size={11} />
+                    <Clock3 aria-hidden="true" focusable="false" size={11} />
                     {item}
                   </span>
                 ))}
@@ -259,7 +259,7 @@ function MealDetailModal({
             aria-label="Close"
             className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60 active:scale-95"
           >
-            <X size={16} />
+            <X aria-hidden="true" focusable="false" size={16} />
           </button>
         </div>
 

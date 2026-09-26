@@ -243,12 +243,12 @@ export default function EditAssignmentsModal({
               <div className="flex items-center gap-6 text-sm">
                 {toAdd.length > 0 && (
                   <span className="text-green-700">
-                    ✅ Adding {toAdd.length} {type}
+                     Adding {toAdd.length} {type}
                   </span>
                 )}
                 {toRemove.length > 0 && (
                   <span className="text-red-700">
-                    ❌ Removing {toRemove.length} {type}
+                     Removing {toRemove.length} {type}
                   </span>
                 )}
               </div>

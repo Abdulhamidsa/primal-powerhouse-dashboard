@@ -62,7 +62,7 @@ export function ChatDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             className="p-1.5 rounded-lg transition-opacity hover:opacity-70"
             style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)' }}
           >
-            <X size={15} />
+            <X aria-hidden="true" focusable="false" size={15} />
           </button>
         </div>
 

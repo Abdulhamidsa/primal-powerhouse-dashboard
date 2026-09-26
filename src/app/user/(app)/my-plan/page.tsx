@@ -62,7 +62,7 @@ function MealPlanHelp({ open, onClose }: { open: boolean; onClose: () => void })
             aria-label="Close meal plan explanation"
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
           >
-            <X size={16} />
+            <X aria-hidden="true" focusable="false" size={16} />
           </button>
         </div>
 
@@ -328,7 +328,7 @@ export default function UserMyPlanPage() {
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
     >
       <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-        <Plus size={18} />
+        <Plus aria-hidden="true" focusable="false" size={18} />
       </div>
 
       <p className="mt-3 text-sm font-semibold tracking-tight text-[var(--color-text)]">
@@ -352,7 +352,7 @@ export default function UserMyPlanPage() {
           eyebrow="Plan"
           title="Meal Plan"
           description="Choose your meals for today and mark them done after eating."
-          icon={<Salad size={17} />}
+          icon={<Salad aria-hidden="true" focusable="false" size={17} />}
           statusItems={[
             { label: 'Selected', value: `${selectedMealCount}`, tone: selectedMealCount ? 'good' : 'warn' },
             { label: 'Completed', value: `${completedMealCount}`, tone: completedMealCount ? 'good' : 'neutral' },
@@ -364,7 +364,7 @@ export default function UserMyPlanPage() {
             className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
             aria-label="How the meal plan works"
           >
-            <CircleAlert size={15} />
+            <CircleAlert aria-hidden="true" focusable="false" size={15} />
             How it works
           </button>
         </UserPageHero>
@@ -379,7 +379,7 @@ export default function UserMyPlanPage() {
 
         {adherenceError ? (
           <div className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-3 text-sm text-red-300">
-            <AlertCircle size={16} />
+            <AlertCircle aria-hidden="true" focusable="false" size={16} />
             <span>{adherenceError.message}</span>
           </div>
         ) : null}
@@ -528,7 +528,7 @@ export default function UserMyPlanPage() {
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
                   aria-label="Close meal options"
                 >
-                  <X size={16} />
+                  <X aria-hidden="true" focusable="false" size={16} />
                 </button>
               </div>
 

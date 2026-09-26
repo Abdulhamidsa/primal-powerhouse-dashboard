@@ -159,9 +159,9 @@ export function MessageComposer({
                 color: 'var(--color-text)',
               }}
             >
-              {attachment.type === 'image' ? <ImagePlus size={11} /> : <Paperclip size={11} />}
+              {attachment.type === 'image' ? <ImagePlus aria-hidden="true" focusable="false" size={11} /> : <Paperclip aria-hidden="true" focusable="false" size={11} />}
               {attachment.type}
-              <X size={12} />
+              <X aria-hidden="true" focusable="false" size={12} />
             </button>
           ))}
         </div>
@@ -189,7 +189,7 @@ export function MessageComposer({
                 aria-label="Stop video recording"
                 title="Stop video recording"
               >
-                <Square size={14} />
+                <Square aria-hidden="true" focusable="false" size={14} />
               </button>
               <button
                 type="button"
@@ -199,7 +199,7 @@ export function MessageComposer({
                 aria-label="Cancel video recording"
                 title="Cancel video recording"
               >
-                <X size={14} />
+                <X aria-hidden="true" focusable="false" size={14} />
               </button>
             </div>
           </div>
@@ -236,7 +236,7 @@ export function MessageComposer({
               aria-label="Stop recording"
               title="Stop recording"
             >
-              <Square size={14} />
+              <Square aria-hidden="true" focusable="false" size={14} />
             </button>
             <button
               type="button"
@@ -246,7 +246,7 @@ export function MessageComposer({
               aria-label="Cancel recording"
               title="Cancel recording"
             >
-              <X size={14} />
+              <X aria-hidden="true" focusable="false" size={14} />
             </button>
           </div>
         </div>
@@ -269,7 +269,7 @@ export function MessageComposer({
               aria-label="Discard voice note"
               title="Discard voice note"
             >
-              <Trash2 size={13} />
+              <Trash2 aria-hidden="true" focusable="false" size={13} />
             </button>
           </div>
           <audio src={voicePreviewUrl} controls className="w-full" />
@@ -293,7 +293,7 @@ export function MessageComposer({
               aria-label="Discard video note"
               title="Discard video note"
             >
-              <Trash2 size={13} />
+              <Trash2 aria-hidden="true" focusable="false" size={13} />
             </button>
           </div>
           <video src={videoPreviewUrl} controls className="w-full rounded-lg" />
@@ -327,7 +327,7 @@ export function MessageComposer({
               className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm font-medium transition-colors hover:bg-[var(--color-bg-alt)]"
               style={{ color: 'var(--color-text)' }}
             >
-              <Camera size={17} className="text-[var(--color-accent)]" />
+              <Camera aria-hidden="true" focusable="false" size={17} className="text-[var(--color-accent)]" />
               Take photo or video
             </button>
             <button
@@ -336,7 +336,7 @@ export function MessageComposer({
               className="flex min-h-12 w-full items-center gap-3 border-t px-4 text-left text-sm font-medium transition-colors hover:bg-[var(--color-bg-alt)]"
               style={{ color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
             >
-              <FileUp size={17} className="text-[var(--color-accent)]" />
+              <FileUp aria-hidden="true" focusable="false" size={17} className="text-[var(--color-accent)]" />
               Upload file
             </button>
             <button
@@ -349,7 +349,7 @@ export function MessageComposer({
               className="flex min-h-12 w-full items-center gap-3 border-t px-4 text-left text-sm font-medium transition-colors hover:bg-[var(--color-bg-alt)] disabled:opacity-50"
               style={{ color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
             >
-              <Video size={17} className="text-[var(--color-accent)]" />
+              <Video aria-hidden="true" focusable="false" size={17} className="text-[var(--color-accent)]" />
               Record video note
             </button>
           </div>
@@ -384,7 +384,7 @@ export function MessageComposer({
           aria-label="Open message actions"
           title="Open message actions"
         >
-          <Plus size={18} className={actionMenuOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
+          <Plus aria-hidden="true" focusable="false" size={18} className={actionMenuOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
         </button>
 
         <button
@@ -401,7 +401,7 @@ export function MessageComposer({
           aria-label="Record voice note"
           title="Record voice note"
         >
-          <Mic size={16} />
+          <Mic aria-hidden="true" focusable="false" size={16} />
         </button>
 
         <textarea
@@ -431,7 +431,7 @@ export function MessageComposer({
           aria-label={isSending ? 'Sending message' : isUploading ? 'Uploading attachment' : 'Send message'}
           title={isSending ? 'Sending message' : isUploading ? 'Uploading attachment' : 'Send message'}
         >
-          {isUploading || isSending ? <Loader2 size={16} className="animate-spin" /> : <SendHorizontal size={16} />}
+          {isUploading || isSending ? <Loader2 aria-hidden="true" focusable="false" size={16} className="animate-spin" /> : <SendHorizontal aria-hidden="true" focusable="false" size={16} />}
         </button>
       </div>
     </form>

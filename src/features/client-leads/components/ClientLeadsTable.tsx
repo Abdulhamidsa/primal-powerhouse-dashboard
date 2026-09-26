@@ -85,7 +85,7 @@ function StatusPicker({
         className="inline-flex items-center gap-1 rounded-full transition-opacity hover:opacity-80 disabled:opacity-60"
       >
         <LeadStatusBadge status={lead.status} />
-        <ChevronDown size={12} className="text-muted-foreground" />
+        <ChevronDown aria-hidden="true" focusable="false" size={12} className="text-muted-foreground" />
       </button>
 
       {open ? (
@@ -152,23 +152,23 @@ function LeadCard({
       <div className="mt-4 space-y-2 text-xs text-muted-foreground">
         {lead.email ? (
           <p className="flex items-center gap-2 truncate">
-            <Mail size={13} className="shrink-0" />
+            <Mail aria-hidden="true" focusable="false" size={13} className="shrink-0" />
             {lead.email}
           </p>
         ) : null}
         {lead.phone ? (
           <p className="flex items-center gap-2 truncate">
-            <Phone size={13} className="shrink-0" />
+            <Phone aria-hidden="true" focusable="false" size={13} className="shrink-0" />
             {lead.phone}
           </p>
         ) : null}
         <p className="flex items-center gap-2">
-          <Calendar size={13} className="shrink-0" />
+          <Calendar aria-hidden="true" focusable="false" size={13} className="shrink-0" />
           Added {formatDate(lead.createdAt)}
         </p>
         {lead.notes ? (
           <p className="flex items-start gap-2">
-            <FileText size={13} className="mt-0.5 shrink-0" />
+            <FileText aria-hidden="true" focusable="false" size={13} className="mt-0.5 shrink-0" />
             <span className="line-clamp-2">{lead.notes}</span>
           </p>
         ) : null}
@@ -189,7 +189,7 @@ function LeadCard({
             onClick={onEditAction}
             className="grid h-8 w-8 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
           >
-            <Pencil size={14} />
+            <Pencil aria-hidden="true" focusable="false" size={14} />
           </button>
           {lead.status === 'MADE_DEAL' ? (
             <button
@@ -198,7 +198,7 @@ function LeadCard({
               onClick={onConvertAction}
               className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-2.5 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/15"
             >
-              <UserCheck size={13} />
+              <UserCheck aria-hidden="true" focusable="false" size={13} />
               Convert
             </button>
           ) : null}
@@ -210,7 +210,7 @@ function LeadCard({
               disabled={loadingCredentials}
               className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] px-2.5 text-xs font-semibold text-[var(--color-accent)] transition-opacity hover:opacity-85 disabled:opacity-50"
             >
-              <KeyRound size={13} />
+              <KeyRound aria-hidden="true" focusable="false" size={13} />
               {loadingCredentials ? '...' : 'Keys'}
             </button>
           ) : null}
@@ -220,7 +220,7 @@ function LeadCard({
             onClick={onDeleteAction}
             className="grid h-8 w-8 place-items-center rounded-xl border border-red-500/15 bg-red-500/5 text-red-300 transition-colors hover:bg-red-500/10"
           >
-            <Trash2 size={14} />
+            <Trash2 aria-hidden="true" focusable="false" size={14} />
           </button>
         </div>
       </div>
@@ -307,7 +307,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
             <p className="mt-1 text-xs text-muted-foreground">Find prospects by name, email, or phone.</p>
           </div>
           <div className="relative w-full lg:max-w-sm">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               value={search}
               onChange={event => setSearch(event.target.value)}

@@ -12,7 +12,7 @@ export default function AdminChatPage() {
         description="Review client conversations, answer unread messages, and keep the coaching loop moving from one focused desktop workspace."
         actions={
           <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-muted-foreground">
-            <Radio size={15} className="text-emerald-400" />
+            <Radio aria-hidden="true" focusable="false" size={15} className="text-emerald-400" />
             Live messaging
           </div>
         }

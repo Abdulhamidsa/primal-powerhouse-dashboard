@@ -51,7 +51,7 @@ export default function PlanScreen() {
                   </>
                 ) : null}
                 <Button
-                  title={model.completed(item) ? '✓ Eaten · undo' : 'Done — I ate this meal'}
+                  title={model.completed(item) ? 'Eaten · undo' : 'Done — I ate this meal'}
                   disabled={model.action.pending || model.offline || !model.completionReady}
                   onPress={() => model.toggle(item)}
                 />

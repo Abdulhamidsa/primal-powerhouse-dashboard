@@ -53,7 +53,7 @@ export default function WorkoutScreen() {
               />
               <Button
                 secondary
-                title={s.completed ? '✓ Done — undo' : 'Mark set done'}
+                title={s.completed ? 'Done — undo' : 'Mark set done'}
                 disabled={m.action.pending || !m.draft.ready}
                 onPress={() => m.toggleSet(e.id, i)}
               />

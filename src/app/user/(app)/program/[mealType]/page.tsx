@@ -73,7 +73,7 @@ export default function ProgramMealTypePage() {
             onClick={() => router.push('/user/program')}
             className="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)]"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft aria-hidden="true" focusable="false" size={16} />
             Back to Program
           </button>
           <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
@@ -92,7 +92,7 @@ export default function ProgramMealTypePage() {
           onClick={() => router.push('/user/program')}
           className="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)]"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft aria-hidden="true" focusable="false" size={16} />
           Back to Program
         </button>
 
@@ -205,7 +205,7 @@ export default function ProgramMealTypePage() {
                 className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur"
                 aria-label="Close preview"
               >
-                <X size={16} />
+                <X aria-hidden="true" focusable="false" size={16} />
               </button>
               <div className="absolute bottom-3 left-3 right-3">
                 <h2 className="text-lg font-semibold text-white">{previewMeal.name}</h2>
@@ -219,7 +219,7 @@ export default function ProgramMealTypePage() {
               <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
                 {(previewMeal.prepTime ?? 0) + (previewMeal.cookTime ?? 0) > 0 ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1">
-                    <Clock3 size={12} />
+                    <Clock3 aria-hidden="true" focusable="false" size={12} />
                     {(previewMeal.prepTime ?? 0) + (previewMeal.cookTime ?? 0)} min
                   </span>
                 ) : null}
@@ -289,7 +289,7 @@ export default function ProgramMealTypePage() {
                 className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur"
                 aria-label="Close preview"
               >
-                <X size={16} />
+                <X aria-hidden="true" focusable="false" size={16} />
               </button>
               <div className="absolute bottom-3 left-3 right-3">
                 <h2 className="text-lg font-semibold text-white">{previewSide.name}</h2>
@@ -300,7 +300,7 @@ export default function ProgramMealTypePage() {
             <div className="space-y-4 p-4">
               <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
                 <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1">
-                  <Leaf size={12} />
+                  <Leaf aria-hidden="true" focusable="false" size={12} />
                   {previewSide.type === 'SOUP' ? 'Soup' : 'Salad'}
                 </span>
                 {previewSide.foodOrigin ? (
@@ -414,7 +414,7 @@ function SideOptionCard({
               : 'border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text)] hover:border-[var(--color-accent-muted)]',
           ].join(' ')}
         >
-          <Leaf size={16} />
+          <Leaf aria-hidden="true" focusable="false" size={16} />
           {selected ? 'Selected' : 'Select'}
         </button>
       </div>

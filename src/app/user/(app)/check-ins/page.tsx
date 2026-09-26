@@ -88,7 +88,7 @@ export default function UserCheckInsPage() {
             eyebrow="Daily rhythm"
             title="Check-Ins"
             description="Share your progress with your coach."
-            icon={<Activity size={17} />}
+            icon={<Activity aria-hidden="true" focusable="false" size={17} />}
           />
           <div
             className="rounded-[28px] border p-5 shadow-sm"
@@ -111,7 +111,7 @@ export default function UserCheckInsPage() {
             eyebrow="Daily rhythm"
             title="Check-Ins"
             description="Share how you are doing so your coach can guide your next step."
-            icon={<Activity size={17} />}
+            icon={<Activity aria-hidden="true" focusable="false" size={17} />}
             statusItems={heroStatusItems}
           >
             {weeklyEnabled ? (
@@ -124,7 +124,7 @@ export default function UserCheckInsPage() {
                 }`}
               >
                 <span>{weeklyActionLabel}</span>
-                <ArrowRight size={15} />
+                <ArrowRight aria-hidden="true" focusable="false" size={15} />
               </Link>
             ) : null}
           </UserPageHero>
@@ -149,14 +149,14 @@ export default function UserCheckInsPage() {
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-                  <Scale size={15} />
+                  <Scale aria-hidden="true" focusable="false" size={15} />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Optional</span>
                   <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Weight progress</span>
                 </span>
               </span>
-              <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${showWeightProgress ? 'rotate-180' : ''}`} />
+              <ChevronDown aria-hidden="true" focusable="false" size={16} className={`shrink-0 text-muted-foreground transition-transform ${showWeightProgress ? 'rotate-180' : ''}`} />
             </button>
 
             {showWeightProgress ? (

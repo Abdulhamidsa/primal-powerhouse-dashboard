@@ -40,7 +40,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
         {/* Search */}
         <div className="flex-1 max-w-md">
           <div className="relative">
-            <Search
+            <Search aria-hidden="true" focusable="false"
               className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4"
               style={{ color: 'var(--color-text-muted)' }}
             />
@@ -62,7 +62,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-lg"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                <X className="w-4 h-4" />
+                <X aria-hidden="true" focusable="false" className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -121,7 +121,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
               border: '1px solid var(--color-border)',
             }}
           >
-            <X className="w-4 h-4" />
+            <X aria-hidden="true" focusable="false" className="w-4 h-4" />
             Clear All
           </button>
         )}
@@ -134,7 +134,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
           style={{ borderColor: 'var(--color-border)' }}
         >
           <div className="flex items-center gap-2">
-            <Video className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
+            <Video aria-hidden="true" focusable="false" className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
             <span className="text-sm" style={{ color: 'var(--color-text)' }}>
               {videosCount} video{videosCount !== 1 ? 's' : ''} found
             </span>
@@ -159,7 +159,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
                       className="rounded-full p-0.5"
                       style={{ color: 'var(--color-accent)' }}
                     >
-                      <X className="w-3 h-3" />
+                      <X aria-hidden="true" focusable="false" className="w-3 h-3" />
                     </button>
                   </span>
                 )}
@@ -178,7 +178,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
                       className="rounded-full p-0.5"
                       style={{ color: 'var(--color-accent)' }}
                     >
-                      <X className="w-3 h-3" />
+                      <X aria-hidden="true" focusable="false" className="w-3 h-3" />
                     </button>
                   </span>
                 )}
@@ -197,7 +197,7 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
                       className="rounded-full p-0.5"
                       style={{ color: 'var(--color-accent)' }}
                     >
-                      <X className="w-3 h-3" />
+                      <X aria-hidden="true" focusable="false" className="w-3 h-3" />
                     </button>
                   </span>
                 )}

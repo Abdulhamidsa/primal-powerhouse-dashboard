@@ -38,30 +38,30 @@ export default function NewMealDetailModal({
   const getMealTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'breakfast':
-        return <Sunrise className="h-6 w-6" />;
+        return <Sunrise aria-hidden="true" focusable="false" className="h-6 w-6" />;
       case 'lunch':
-        return <Sun className="h-6 w-6" />;
+        return <Sun aria-hidden="true" focusable="false" className="h-6 w-6" />;
       case 'dinner':
-        return <Moon className="h-6 w-6" />;
+        return <Moon aria-hidden="true" focusable="false" className="h-6 w-6" />;
       case 'snack':
-        return <Apple className="h-6 w-6" />;
+        return <Apple aria-hidden="true" focusable="false" className="h-6 w-6" />;
       default:
-        return <Utensils className="h-6 w-6" />;
+        return <Utensils aria-hidden="true" focusable="false" className="h-6 w-6" />;
     }
   };
 
   const getMealTypeIconLarge = (type: string) => {
     switch (type.toLowerCase()) {
       case 'breakfast':
-        return <Sunrise className="h-16 w-16" />;
+        return <Sunrise aria-hidden="true" focusable="false" className="h-16 w-16" />;
       case 'lunch':
-        return <Sun className="h-16 w-16" />;
+        return <Sun aria-hidden="true" focusable="false" className="h-16 w-16" />;
       case 'dinner':
-        return <Moon className="h-16 w-16" />;
+        return <Moon aria-hidden="true" focusable="false" className="h-16 w-16" />;
       case 'snack':
-        return <Apple className="h-16 w-16" />;
+        return <Apple aria-hidden="true" focusable="false" className="h-16 w-16" />;
       default:
-        return <Utensils className="h-16 w-16" />;
+        return <Utensils aria-hidden="true" focusable="false" className="h-16 w-16" />;
     }
   };
 
@@ -113,17 +113,17 @@ export default function NewMealDetailModal({
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--color-text-muted)]">
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1.5">
-                      <Clock className="h-4 w-4 text-[var(--color-accent)]" />
+                      <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
                       <span>Prep: {meal.prepTime} min</span>
                     </div>
 
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1.5">
-                      <Clock className="h-4 w-4 text-[var(--color-accent)]" />
+                      <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
                       <span>Cook: {meal.cookTime} min</span>
                     </div>
 
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1.5">
-                      <Users className="h-4 w-4 text-[var(--color-accent)]" />
+                      <Users aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
                       <span>
                         {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
                       </span>
@@ -165,7 +165,7 @@ export default function NewMealDetailModal({
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
-                      <Utensils className="h-5 w-5 text-[var(--color-accent)]" />
+                      <Utensils aria-hidden="true" focusable="false" className="h-5 w-5 text-[var(--color-accent)]" />
                       <h2 className="text-lg font-semibold text-[var(--color-text)]">Ingredients</h2>
                     </div>
 
@@ -191,7 +191,7 @@ export default function NewMealDetailModal({
 
                   <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-[var(--color-accent)]" />
+                      <Clock aria-hidden="true" focusable="false" className="h-5 w-5 text-[var(--color-accent)]" />
                       <h2 className="text-lg font-semibold text-[var(--color-text)]">Instructions</h2>
                     </div>
 
@@ -239,7 +239,7 @@ export default function NewMealDetailModal({
                       onClick={() => setPersonalizeModalOpen(true)}
                       className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent-translucent)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent-translucent)]/80"
                     >
-                      <Sparkles className="h-4 w-4" />
+                      <Sparkles aria-hidden="true" focusable="false" className="h-4 w-4" />
                       Personalize
                     </button>
 
@@ -247,7 +247,7 @@ export default function NewMealDetailModal({
                       onClick={() => setAssignModalOpen(true)}
                       className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface)]"
                     >
-                      <Users className="h-4 w-4" />
+                      <Users aria-hidden="true" focusable="false" className="h-4 w-4" />
                       Assign
                     </button>
 
@@ -256,7 +256,7 @@ export default function NewMealDetailModal({
                         onClick={() => onEditAction(meal)}
                         className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface)]"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil aria-hidden="true" focusable="false" className="h-4 w-4" />
                         Edit
                       </button>
                     )}
@@ -266,7 +266,7 @@ export default function NewMealDetailModal({
                         onClick={() => onDeleteAction(meal.id)}
                         className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/15"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 aria-hidden="true" focusable="false" className="h-4 w-4" />
                         Delete
                       </button>
                     )}

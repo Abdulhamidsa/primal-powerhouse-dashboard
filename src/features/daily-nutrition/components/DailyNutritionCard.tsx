@@ -47,7 +47,7 @@ export function DailyNutritionCard() {
           className="grid h-9 w-9 place-items-center rounded-full"
           style={{ background: 'var(--color-accent-muted)' }}
         >
-          <Salad className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
+          <Salad aria-hidden="true" focusable="false" className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
         </div>
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -93,7 +93,7 @@ export function DailyNutritionCard() {
           </p>
         ) : selectedStatus ? (
           <p className="text-xs inline-flex items-center gap-1" style={{ color: 'var(--color-accent)' }}>
-            <CheckCircle2 size={14} />
+            <CheckCircle2 aria-hidden="true" focusable="false" size={14} />
             Today saved as {statusLabel(selectedStatus)}
           </p>
         ) : null}

@@ -31,7 +31,7 @@ export function MotivationalMessageTab({
           className="flex h-9 w-9 items-center justify-center rounded-2xl"
           style={{ background: 'var(--color-accent-muted)' }}
         >
-          <MessageSquare size={16} style={{ color: 'var(--color-accent)' }} />
+          <MessageSquare aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
         </div>
         <div>
           <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>

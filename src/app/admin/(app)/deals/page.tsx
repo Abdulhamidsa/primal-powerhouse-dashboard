@@ -29,7 +29,7 @@ export default function DealsPage() {
         actions={
           <>
             <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-muted-foreground">
-              <TrendingUp size={15} className="text-[var(--color-accent)]" />
+              <TrendingUp aria-hidden="true" focusable="false" size={15} className="text-[var(--color-accent)]" />
               {activeCount} active · {leads.length} total
             </div>
             <Button
@@ -37,7 +37,7 @@ export default function DealsPage() {
               onClick={() => setShowAddModal(true)}
               className="gap-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90"
             >
-              <Plus size={16} />
+              <Plus aria-hidden="true" focusable="false" size={16} />
               Add Lead
             </Button>
           </>
@@ -48,7 +48,7 @@ export default function DealsPage() {
         <div className="border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--color-accent)]">
-              <Handshake size={18} />
+              <Handshake aria-hidden="true" focusable="false" size={18} />
             </div>
             <div>
               <h2 className="text-base font-semibold text-foreground">Lead board</h2>

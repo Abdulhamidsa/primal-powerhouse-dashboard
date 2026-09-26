@@ -135,7 +135,7 @@ export function DailyCheckInCard({ checkIn, onViewAction, onMarkReviewedAction, 
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          <Scale size={12} />
+          <Scale aria-hidden="true" focusable="false" size={12} />
           <span>{checkIn.reviewed ? 'Ready for follow-up' : 'Open for coach review'}</span>
         </div>
 
@@ -146,7 +146,7 @@ export function DailyCheckInCard({ checkIn, onViewAction, onMarkReviewedAction, 
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity"
             style={{ background: 'var(--color-accent)', color: '#fff' }}
           >
-            <Eye size={12} />
+            <Eye aria-hidden="true" focusable="false" size={12} />
             View
           </button>
           {!checkIn.reviewed ? (
@@ -162,7 +162,7 @@ export function DailyCheckInCard({ checkIn, onViewAction, onMarkReviewedAction, 
                 opacity: isMarkingReviewed ? 0.6 : 1,
               }}
             >
-              <CheckCircle size={12} />
+              <CheckCircle aria-hidden="true" focusable="false" size={12} />
               {isMarkingReviewed ? '...' : 'Review'}
             </button>
           ) : null}

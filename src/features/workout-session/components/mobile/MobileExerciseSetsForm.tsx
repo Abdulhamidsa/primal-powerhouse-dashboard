@@ -71,14 +71,14 @@ export default function MobileExerciseSetsForm({
           onClick={() => onAddSet(currentIdx)}
           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-muted/60 hover:bg-muted active:scale-[0.98] transition-all text-xs font-medium text-foreground"
         >
-          <Plus size={14} /> Add set
+          <Plus aria-hidden="true" focusable="false" size={14} /> Add set
         </button>
         {state.sets.length > 1 && (
           <button
             onClick={() => onRemoveSet(currentIdx)}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-muted/60 hover:bg-muted active:scale-[0.98] transition-all text-xs font-medium text-muted-foreground"
           >
-            <Minus size={14} /> Remove last
+            <Minus aria-hidden="true" focusable="false" size={14} /> Remove last
           </button>
         )}
       </div>
@@ -135,7 +135,7 @@ function SetRow({
             border: `2px solid ${set.completed ? 'var(--color-accent)' : 'var(--color-border)'}`,
           }}
         >
-          {set.completed && <Check size={16} className="text-white" strokeWidth={3} />}
+          {set.completed && <Check aria-hidden="true" focusable="false" size={16} className="text-white" strokeWidth={3} />}
         </div>
       </button>
     </div>
@@ -164,7 +164,7 @@ function Stepper({
         className="flex-shrink-0 w-9 h-10 flex items-center justify-center text-muted-foreground active:scale-90 transition-transform"
         aria-label="Decrease"
       >
-        <Minus size={14} />
+        <Minus aria-hidden="true" focusable="false" size={14} />
       </button>
       <input
         type="text"
@@ -181,7 +181,7 @@ function Stepper({
         className="flex-shrink-0 w-9 h-10 flex items-center justify-center text-muted-foreground active:scale-90 transition-transform"
         aria-label="Increase"
       >
-        <Plus size={14} />
+        <Plus aria-hidden="true" focusable="false" size={14} />
       </button>
     </div>
   );

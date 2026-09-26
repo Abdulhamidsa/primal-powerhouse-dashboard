@@ -43,9 +43,9 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
       <div className="select-checkbox absolute top-3 left-3 z-10" onClick={handleCheckboxClick}>
         <div className="w-6 h-6 rounded-lg flex items-center justify-center">
           {isSelected ? (
-            <CheckSquare className="w-5 h-5" style={{ color: 'var(--color-accent)' }} />
+            <CheckSquare aria-hidden="true" focusable="false" className="w-5 h-5" style={{ color: 'var(--color-accent)' }} />
           ) : (
-            <Square className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
+            <Square aria-hidden="true" focusable="false" className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
           )}
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Play className="w-12 h-12" style={{ color: 'var(--color-accent)' }} />
+            <Play aria-hidden="true" focusable="false" className="w-12 h-12" style={{ color: 'var(--color-accent)' }} />
           </div>
         )}
 
@@ -72,7 +72,7 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
             className="rounded-full p-4 opacity-0 group-hover:opacity-100 transition-all transform scale-75 group-hover:scale-100"
             style={{ background: 'var(--color-surface)', backdropFilter: 'blur(4px)' }}
           >
-            <Play className="w-6 h-6" style={{ color: 'var(--color-accent)' }} />
+            <Play aria-hidden="true" focusable="false" className="w-6 h-6" style={{ color: 'var(--color-accent)' }} />
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
           className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs"
           style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', color: 'white' }}
         >
-          <Clock className="w-3 h-3 inline mr-1" />
+          <Clock aria-hidden="true" focusable="false" className="w-3 h-3 inline mr-1" />
           {formatDuration(video.duration)}
         </div>
 
@@ -90,7 +90,7 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
           className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs flex items-center gap-1"
           style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', color: 'white' }}
         >
-          <Eye className="w-3 h-3" />
+          <Eye aria-hidden="true" focusable="false" className="w-3 h-3" />
           {video.viewCount}
         </div>
       </div>
@@ -146,7 +146,7 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
                   color: 'var(--color-text-muted)',
                 }}
               >
-                <Tag className="w-3 h-3" />
+                <Tag aria-hidden="true" focusable="false" className="w-3 h-3" />
                 {tag}
               </span>
             ))}
@@ -166,7 +166,7 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
         {/* Muscle Groups */}
         {video.muscleGroups && video.muscleGroups.length > 0 && (
           <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            <Activity className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
+            <Activity aria-hidden="true" focusable="false" className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
             <span>
               {video.muscleGroups.slice(0, 2).join(', ')}
               {video.muscleGroups.length > 2 && ' +more'}

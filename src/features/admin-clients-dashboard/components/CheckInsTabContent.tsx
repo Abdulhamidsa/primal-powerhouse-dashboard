@@ -108,7 +108,7 @@ function CheckInCard({
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity"
             style={{ background: 'var(--color-accent)', color: '#fff' }}
           >
-            <Eye size={12} />
+            <Eye aria-hidden="true" focusable="false" size={12} />
             View
           </button>
           <button
@@ -122,7 +122,7 @@ function CheckInCard({
               opacity: isDeleting ? 0.5 : 1,
             }}
           >
-            <Trash2 size={12} />
+            <Trash2 aria-hidden="true" focusable="false" size={12} />
             {isDeleting ? '...' : 'Delete'}
           </button>
         </div>
@@ -276,7 +276,7 @@ export function CheckInsTabContent({
                   opacity: isResetting || !weeklyChecks.length ? 0.6 : 1,
                 }}
               >
-                <RotateCcw size={12} />
+                <RotateCcw aria-hidden="true" focusable="false" size={12} />
                 {isResetting ? 'Resetting...' : 'Reset All'}
               </button>
             </div>

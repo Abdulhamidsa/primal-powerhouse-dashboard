@@ -96,7 +96,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               aria-label="Close"
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
             >
-              <X size={18} />
+              <X aria-hidden="true" focusable="false" size={18} />
             </button>
           </div>
         </div>
@@ -106,7 +106,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <User size={14} />
+                <User aria-hidden="true" focusable="false" size={14} />
                 Full Name *
               </span>
             </label>
@@ -128,7 +128,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Mail size={14} />
+                <Mail aria-hidden="true" focusable="false" size={14} />
                 Email Address
                 <span className="text-xs font-normal opacity-60">(optional)</span>
               </span>
@@ -148,7 +148,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
                 title="Generate @primalpowerhouse.com email from name"
                 className="flex items-center gap-1.5 whitespace-nowrap rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:opacity-40"
               >
-                <Wand2 size={13} />
+                <Wand2 aria-hidden="true" focusable="false" size={13} />
                 Generate
               </button>
             </div>
@@ -168,7 +168,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Phone size={14} />
+                <Phone aria-hidden="true" focusable="false" size={14} />
                 Phone
                 <span className="text-xs font-normal opacity-60">(optional)</span>
               </span>
@@ -186,7 +186,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <CreditCard size={14} />
+                <CreditCard aria-hidden="true" focusable="false" size={14} />
                 Subscription Type
               </span>
             </label>
@@ -203,7 +203,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
           <div>
             <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <FileText size={14} />
+                <FileText aria-hidden="true" focusable="false" size={14} />
                 Notes
               </span>
             </label>

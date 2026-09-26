@@ -1,5 +1,7 @@
 'use client';
 
+
+import { WarningCircleIcon } from '@phosphor-icons/react';
 import { useState, useEffect, JSX } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -152,13 +154,13 @@ export default function ClientProfilePage() {
   };
 
   const tabs: Array<{ key: TabKey; label: string; icon: JSX.Element }> = [
-    { key: 'overview', label: 'Overview', icon: <Info size={16} /> },
-    { key: 'personal', label: 'Personal Info', icon: <User size={16} /> },
-    { key: 'videos', label: 'Videos', icon: <Film size={16} /> },
-    { key: 'meals', label: 'Meals', icon: <Utensils size={16} /> },
-    { key: 'client-health', label: 'Health', icon: <Activity size={16} /> },
-    { key: 'progress', label: 'Progress', icon: <BarChart size={16} /> },
-    { key: 'message', label: 'Message', icon: <MessageSquare size={16} /> },
+    { key: 'overview', label: 'Overview', icon: <Info aria-hidden="true" focusable="false" size={16} /> },
+    { key: 'personal', label: 'Personal Info', icon: <User aria-hidden="true" focusable="false" size={16} /> },
+    { key: 'videos', label: 'Videos', icon: <Film aria-hidden="true" focusable="false" size={16} /> },
+    { key: 'meals', label: 'Meals', icon: <Utensils aria-hidden="true" focusable="false" size={16} /> },
+    { key: 'client-health', label: 'Health', icon: <Activity aria-hidden="true" focusable="false" size={16} /> },
+    { key: 'progress', label: 'Progress', icon: <BarChart aria-hidden="true" focusable="false" size={16} /> },
+    { key: 'message', label: 'Message', icon: <MessageSquare aria-hidden="true" focusable="false" size={16} /> },
   ];
 
   const getWeeklyStatusStyles = (status: 'completed' | 'due' | 'overdue') => {
@@ -233,7 +235,7 @@ export default function ClientProfilePage() {
                   borderColor: 'var(--color-danger)',
                 }}
               >
-                <div className="text-4xl mb-4">⚠️</div>
+                <div className="text-4xl mb-4"><WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
                 <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-danger)' }}>
                   Connection Error
                 </h2>
@@ -250,7 +252,7 @@ export default function ClientProfilePage() {
                     opacity: isRetrying ? 0.5 : 1,
                   }}
                 >
-                  {isRetrying ? 'Retrying...' : '🔄 Retry Connection'}
+                  {isRetrying ? 'Retrying...' : ' Retry Connection'}
                 </button>
                 <div
                   className="text-xs text-left p-4 rounded"
@@ -268,7 +270,7 @@ export default function ClientProfilePage() {
               </div>
             ) : (
               <>
-                <Users size={44} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+                <Users aria-hidden="true" focusable="false" size={44} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
                 <p className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
                   Loading client...
                 </p>
@@ -280,7 +282,7 @@ export default function ClientProfilePage() {
                 className="mt-4 inline-flex items-center gap-1 text-sm"
                 style={{ color: 'var(--color-accent)' }}
               >
-                <ChevronLeft size={16} /> Back to Clients
+                <ChevronLeft aria-hidden="true" focusable="false" size={16} /> Back to Clients
               </Link>
             )}
           </div>

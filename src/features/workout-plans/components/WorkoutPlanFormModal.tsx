@@ -140,7 +140,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
             {plan ? 'Edit Workout Plan' : 'New Workout Plan'}
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-hover)]">
-            <X size={18} style={{ color: 'var(--color-text-secondary)' }} />
+            <X aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-text-secondary)' }} />
           </button>
         </div>
 
@@ -183,7 +183,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                 className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg"
                 style={{ color: 'var(--color-accent)' }}
               >
-                <Plus size={14} />
+                <Plus aria-hidden="true" focusable="false" size={14} />
                 Add exercise
               </button>
             </div>
@@ -202,7 +202,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <GripVertical size={16} className="text-[var(--color-text-secondary)] shrink-0" />
+                    <GripVertical aria-hidden="true" focusable="false" size={16} className="text-[var(--color-text-secondary)] shrink-0" />
                     <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">
                       {idx + 1}. {ex.videoTitle}
                     </span>
@@ -211,7 +211,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                     onClick={() => removeExercise(idx)}
                     className="shrink-0 p-1 rounded text-[var(--color-text-secondary)]"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 aria-hidden="true" focusable="false" size={14} />
                   </button>
                 </div>
 
@@ -302,7 +302,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
             >
               <h3 className="font-semibold text-[var(--color-text-primary)]">Pick an exercise</h3>
               <button onClick={() => setShowVideoPicker(false)}>
-                <X size={18} style={{ color: 'var(--color-text-secondary)' }} />
+                <X aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-text-secondary)' }} />
               </button>
             </div>
 
@@ -312,7 +312,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border"
                 style={{ borderColor: 'var(--color-border)' }}
               >
-                <Search size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                <Search aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-secondary)' }} />
                 <input
                   autoFocus
                   value={videoSearch}

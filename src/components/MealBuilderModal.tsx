@@ -713,7 +713,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
-                  <Wand2 size={20} />
+                  <Wand2 aria-hidden="true" focusable="false" size={20} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
@@ -732,7 +732,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                 aria-label="Close"
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
               >
-                <X size={18} />
+                <X aria-hidden="true" focusable="false" size={18} />
               </button>
             </div>
           </div>
@@ -894,7 +894,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       disabled={loading || aiGenerating}
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <Sparkles size={16} />
+                      <Sparkles aria-hidden="true" focusable="false" size={16} />
                       {aiGenerating
                         ? 'Generating With AI...'
                         : isSideMode
@@ -920,7 +920,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                     aria-label="Copy generated prompt"
                     title="Copy prompt"
                   >
-                    <Copy size={14} />
+                    <Copy aria-hidden="true" focusable="false" size={14} />
                   </button>
                 </div>
 
@@ -953,7 +953,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       </p>
                     </div>
 
-                    <ChevronDown
+                    <ChevronDown aria-hidden="true" focusable="false"
                       size={18}
                       className={`mt-1 text-[var(--color-text-muted)] transition-transform ${
                         isIngredientSearchOpen ? 'rotate-180' : 'rotate-0'
@@ -1150,7 +1150,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   disabled={loading || !state.name.trim()}
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Sparkles size={16} />
+                  <Sparkles aria-hidden="true" focusable="false" size={16} />
                   {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
                 </button>
               </section>

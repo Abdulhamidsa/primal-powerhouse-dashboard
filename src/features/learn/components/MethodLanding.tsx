@@ -22,7 +22,7 @@ export function MethodLanding({ pageIndex, onOpen }: Props) {
         eyebrow="Method"
         title="Build the knowledge behind your program"
         description="A practical field guide to the principles behind sustainable progress."
-        icon={<BookOpenText size={17} />}
+        icon={<BookOpenText aria-hidden="true" focusable="false" size={17} />}
       />
 
       <section className="mt-6" aria-labelledby="handbook-title">
@@ -48,7 +48,7 @@ export function MethodLanding({ pageIndex, onOpen }: Props) {
             </span>
           </span>
           <span className="absolute bottom-3 right-0 inline-flex items-center gap-2 text-xs font-semibold text-[var(--color-text)] transition-transform group-hover:translate-x-1">
-            {hasProgress ? 'Continue reading' : 'Open handbook'} <ArrowUpRight size={16} className="text-[var(--color-accent)]" />
+            {hasProgress ? 'Continue reading' : 'Open handbook'} <ArrowUpRight aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
           </span>
         </button>
 

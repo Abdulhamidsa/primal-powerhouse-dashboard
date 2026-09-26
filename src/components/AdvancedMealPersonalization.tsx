@@ -416,15 +416,15 @@ export default function MealPersonalization({
   const getMealTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'breakfast':
-        return <Sunrise className="h-6 w-6" />;
+        return <Sunrise aria-hidden="true" focusable="false" className="h-6 w-6" />;
       case 'lunch':
-        return <Sun className="h-6 w-6" />;
+        return <Sun aria-hidden="true" focusable="false" className="h-6 w-6" />;
       case 'dinner':
-        return <Moon className="h-6 w-6" />;
+        return <Moon aria-hidden="true" focusable="false" className="h-6 w-6" />;
       case 'snack':
-        return <Apple className="h-6 w-6" />;
+        return <Apple aria-hidden="true" focusable="false" className="h-6 w-6" />;
       default:
-        return <Utensils className="h-6 w-6" />;
+        return <Utensils aria-hidden="true" focusable="false" className="h-6 w-6" />;
     }
   };
 
@@ -476,7 +476,7 @@ export default function MealPersonalization({
               style={{ color: 'var(--color-text-muted)' }}
               aria-label="Close"
             >
-              <X size={24} />
+              <X aria-hidden="true" focusable="false" size={24} />
             </button>
           </div>
         </div>
@@ -922,7 +922,7 @@ export default function MealPersonalization({
                       className="p-1 rounded hover:bg-red-500 hover:bg-opacity-10 transition-colors"
                       style={{ color: 'var(--color-danger)' }}
                     >
-                      <X size={18} />
+                      <X aria-hidden="true" focusable="false" size={18} />
                     </button>
                   </div>
                 </div>
@@ -996,7 +996,7 @@ export default function MealPersonalization({
                   color: 'var(--color-text-on-accent)',
                 }}
               >
-                <Save size={18} />
+                <Save aria-hidden="true" focusable="false" size={18} />
                 Save Personalized Meal
               </button>
             </div>

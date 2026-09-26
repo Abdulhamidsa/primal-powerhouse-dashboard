@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { DataService, Client } from '@/services/dataService';
 import EditMealModal from '@/components/EditMealModal';
-import { ForkKnifeIcon as Utensils, FlameIcon as Flame, ClockIcon as Clock, UsersIcon as Users, PencilSimpleIcon as Edit, ArrowLeftIcon as ArrowLeft, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
+import { ForkKnifeIcon as Utensils, FlameIcon as Flame, ClockIcon as Clock, UsersIcon as Users, PencilSimpleIcon as Edit, ArrowLeftIcon as ArrowLeft, ArrowsClockwiseIcon as Sparkles, MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon } from '@phosphor-icons/react';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
 interface PersonalizedMeal {
@@ -95,13 +95,13 @@ export default function ClientPersonalizedMealsPage() {
   };
 
   const getMealTypeIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      BREAKFAST: '🌅',
-      LUNCH: '☀️',
-      DINNER: '🌙',
-      SNACK: '🍎',
+    const icons: Record<string, React.ReactNode> = {
+      BREAKFAST: <SunHorizonIcon size={18} aria-hidden="true" />,
+      LUNCH: <SunIcon size={18} aria-hidden="true" />,
+      DINNER: <MoonIcon size={18} aria-hidden="true" />,
+      SNACK: <OrangeIcon size={18} aria-hidden="true" />,
     };
-    return icons[type] || '🍽️';
+    return icons[type] || <Utensils size={18} aria-hidden="true" />;
   };
 
   const getMealTypeColor = (type: string) => {
@@ -141,7 +141,7 @@ export default function ClientPersonalizedMealsPage() {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 mb-4 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft aria-hidden="true" focusable="false" className="w-5 h-5" />
             Back
           </button>
 
@@ -157,7 +157,7 @@ export default function ClientPersonalizedMealsPage() {
             )}
             <div>
               <h1 className="text-3xl font-bold text-zinc-100 flex items-center gap-2">
-                <Sparkles className="w-8 h-8 text-blue-500" />
+                <Sparkles aria-hidden="true" focusable="false" className="w-8 h-8 text-blue-500" />
                 Personalized Meals
               </h1>
               <p className="text-zinc-400">
@@ -168,7 +168,7 @@ export default function ClientPersonalizedMealsPage() {
 
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
             <p className="text-blue-400 text-sm flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles aria-hidden="true" focusable="false" className="w-4 h-4" />
               <span>
                 These are personalized copies you can edit independently without affecting the original meal templates.
               </span>
@@ -199,7 +199,7 @@ export default function ClientPersonalizedMealsPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-zinc-800">
-                      <Utensils className="w-12 h-12 text-zinc-600" />
+                      <Utensils aria-hidden="true" focusable="false" className="w-12 h-12 text-zinc-600" />
                     </div>
                   )}
                   <div className="absolute top-4 left-4">
@@ -211,7 +211,7 @@ export default function ClientPersonalizedMealsPage() {
                   </div>
                   <div className="absolute top-4 right-4">
                     <span className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-blue-500/90 text-white border border-blue-400">
-                      <Sparkles className="w-3 h-3" />
+                      <Sparkles aria-hidden="true" focusable="false" className="w-3 h-3" />
                       Personalized
                     </span>
                   </div>
@@ -224,7 +224,7 @@ export default function ClientPersonalizedMealsPage() {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-blue-500 flex items-center justify-center gap-1">
-                        <Flame className="w-5 h-5" />
+                        <Flame aria-hidden="true" focusable="false" className="w-5 h-5" />
                         {meal.calories}
                       </p>
                       <p className="text-xs text-zinc-400">Calories</p>
@@ -238,11 +238,11 @@ export default function ClientPersonalizedMealsPage() {
                   {/* Timing Info */}
                   <div className="flex items-center justify-between text-sm text-zinc-400 mb-4">
                     <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
+                      <Clock aria-hidden="true" focusable="false" className="w-4 h-4" />
                       {meal.prepTime + meal.cookTime} min
                     </span>
                     <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
+                      <Users aria-hidden="true" focusable="false" className="w-4 h-4" />
                       {meal.servings} serving{meal.servings > 1 ? 's' : ''}
                     </span>
                   </div>
@@ -271,7 +271,7 @@ export default function ClientPersonalizedMealsPage() {
                     onClick={() => handleEditMeal(meal.id)}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600/10 text-blue-500 hover:bg-blue-600/20 border border-blue-600/30 rounded-lg transition-colors font-medium text-sm"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit aria-hidden="true" focusable="false" className="w-4 h-4" />
                     Edit Personalized Meal
                   </button>
                 </div>
@@ -280,7 +280,7 @@ export default function ClientPersonalizedMealsPage() {
           </div>
         ) : (
           <div className="text-center py-16 bg-zinc-900 rounded-2xl border border-zinc-800">
-            <Sparkles className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+            <Sparkles aria-hidden="true" focusable="false" className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2 text-zinc-100">No personalized meals yet</h3>
             <p className="text-zinc-400 mb-6">
               Assign meals to {client?.name} to create personalized copies that can be customized.

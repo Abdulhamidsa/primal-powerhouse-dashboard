@@ -1,5 +1,7 @@
 'use client';
 
+
+import { WarningCircleIcon } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 import { XIcon as X, PlayIcon as Play, PauseIcon as Pause, SpeakerHighIcon as Volume2, SpeakerXIcon as VolumeX, CornersOutIcon as Maximize, ArrowCounterClockwiseIcon as RotateCcw } from '@phosphor-icons/react';
 
@@ -186,7 +188,7 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
               </p>
             </div>
             <button onClick={onCloseAction} className="text-white hover:text-gray-300 transition-colors">
-              <X size={24} />
+              <X aria-hidden="true" focusable="false" size={24} />
             </button>
           </div>
         </div>
@@ -214,7 +216,7 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
           {videoError && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
               <div className="text-center text-white">
-                <div className="text-4xl mb-4">⚠️</div>
+                <div className="text-4xl mb-4"><WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
                 <h3 className="text-xl font-semibold mb-2">Video Unavailable</h3>
                 <p className="text-gray-300 mb-4">This video cannot be played at the moment.</p>
                 <a
@@ -233,7 +235,7 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
           {!isPlaying && !videoError && videoSource.type === 'direct' && (
             <div className="absolute inset-0 flex items-center justify-center">
               <button onClick={togglePlay} className="bg-white/20 hover:bg-white/30 rounded-full p-4 transition-colors">
-                <Play size={48} className="text-white ml-1" />
+                <Play aria-hidden="true" focusable="false" size={48} className="text-white ml-1" />
               </button>
             </div>
           )}
@@ -249,7 +251,7 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
                 onClick={onCompleteAction}
                 className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
               >
-                ✓ Mark Complete
+                Mark Complete
               </button>
             )}
             <a
@@ -288,13 +290,13 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button onClick={restart} className="text-white hover:text-gray-300 transition-colors">
-                  <RotateCcw size={20} />
+                  <RotateCcw aria-hidden="true" focusable="false" size={20} />
                 </button>
                 <button onClick={togglePlay} className="text-white hover:text-gray-300 transition-colors">
-                  {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                  {isPlaying ? <Pause aria-hidden="true" focusable="false" size={24} /> : <Play aria-hidden="true" focusable="false" size={24} />}
                 </button>
                 <button onClick={toggleMute} className="text-white hover:text-gray-300 transition-colors">
-                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  {isMuted ? <VolumeX aria-hidden="true" focusable="false" size={20} /> : <Volume2 aria-hidden="true" focusable="false" size={20} />}
                 </button>
               </div>
 
@@ -308,7 +310,7 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
                   </button>
                 )}
                 <button onClick={toggleFullscreen} className="text-white hover:text-gray-300 transition-colors">
-                  <Maximize size={20} />
+                  <Maximize aria-hidden="true" focusable="false" size={20} />
                 </button>
               </div>
             </div>

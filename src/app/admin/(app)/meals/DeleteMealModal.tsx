@@ -20,7 +20,7 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-red-500/25 bg-red-500/10 text-red-300">
-                <Trash2 size={20} />
+                <Trash2 aria-hidden="true" focusable="false" size={20} />
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-red-300">Danger zone</p>
@@ -35,7 +35,7 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
               aria-label="Close"
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <X size={18} />
+              <X aria-hidden="true" focusable="false" size={18} />
             </button>
           </div>
         </div>
@@ -68,7 +68,7 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
               </>
             ) : (
               <>
-                <Trash2 className="h-4 w-4" />
+                <Trash2 aria-hidden="true" focusable="false" className="h-4 w-4" />
                 Delete
               </>
             )}

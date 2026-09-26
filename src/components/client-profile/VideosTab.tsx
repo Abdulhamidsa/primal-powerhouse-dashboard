@@ -26,7 +26,7 @@ export function VideosTab({
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
           style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
         >
-          <PlusCircle size={18} />
+          <PlusCircle aria-hidden="true" focusable="false" size={18} />
           Assign Videos
         </button>
       </div>
@@ -57,7 +57,7 @@ export function VideosTab({
                       className="w-20 h-16 rounded-xl flex items-center justify-center flex-shrink-0 border"
                       style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
-                      <Film className="w-8 h-8" style={{ color: 'var(--color-accent)' }} />
+                      <Film aria-hidden="true" focusable="false" className="w-8 h-8" style={{ color: 'var(--color-accent)' }} />
                     </div>
                   )}
 
@@ -71,7 +71,7 @@ export function VideosTab({
                       style={{ color: 'var(--color-text-muted)' }}
                     >
                       <span className="inline-flex items-center gap-1">
-                        <Clock size={12} /> {formatDuration(a.video.duration)}
+                        <Clock aria-hidden="true" focusable="false" size={12} /> {formatDuration(a.video.duration)}
                       </span>
                       <span>•</span>
                       <span className="capitalize">{a.video.difficulty}</span>
@@ -81,7 +81,7 @@ export function VideosTab({
 
                     <div className="mt-2 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
                       <span className="inline-flex items-center gap-1">
-                        <CalendarDays size={10} /> Assigned: {new Date(a.assignedDate).toLocaleDateString()}
+                        <CalendarDays aria-hidden="true" focusable="false" size={10} /> Assigned: {new Date(a.assignedDate).toLocaleDateString()}
                       </span>
                     </div>
 
@@ -95,7 +95,7 @@ export function VideosTab({
                         }}
                       >
                         <div className="flex items-start gap-2">
-                          <FileText size={12} className="mt-[2px]" />
+                          <FileText aria-hidden="true" focusable="false" size={12} className="mt-[2px]" />
                           <span className="leading-snug">{a.notes}</span>
                         </div>
                       </div>
@@ -112,7 +112,7 @@ export function VideosTab({
                     }}
                     title="Remove assignment"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 aria-hidden="true" focusable="false" size={18} />
                   </button>
                 </div>
               </div>
@@ -121,7 +121,7 @@ export function VideosTab({
         </div>
       ) : (
         <EmptyState
-          icon={<Film size={56} style={{ color: 'var(--color-text-muted)' }} />}
+          icon={<Film aria-hidden="true" focusable="false" size={56} style={{ color: 'var(--color-text-muted)' }} />}
           title="No Videos Assigned"
           subtitle="This client does not have any assigned videos yet."
           buttonLabel="Assign First Video"
@@ -159,7 +159,7 @@ function EmptyState({
         className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition active:scale-[0.99]"
         style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
       >
-        <PlusCircle size={18} />
+        <PlusCircle aria-hidden="true" focusable="false" size={18} />
         {buttonLabel}
       </button>
     </div>

@@ -81,7 +81,7 @@ export default function CoachContact({ userId }: CoachContactProps) {
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <UserIcon className="w-10 h-10 text-blue-400" />
+            <UserIcon aria-hidden="true" focusable="false" className="w-10 h-10 text-blue-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-3">No Coach Assigned</h3>
           <p className="text-slate-400 max-w-sm">
@@ -104,7 +104,7 @@ export default function CoachContact({ userId }: CoachContactProps) {
           <p className="text-slate-400">Your Personal Coach</p>
           <div className="flex items-center justify-center gap-1 mt-2">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              <Star aria-hidden="true" focusable="false" key={i} className="w-4 h-4 text-yellow-400 fill-current" />
             ))}
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function CoachContact({ userId }: CoachContactProps) {
               'Phone calls for urgent matters or consultations',
             ].map((tip, index) => (
               <div key={index} className="flex items-start gap-3">
-                <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                <Check aria-hidden="true" focusable="false" className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-slate-400">{tip}</p>
               </div>
             ))}

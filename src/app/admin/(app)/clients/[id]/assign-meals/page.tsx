@@ -1,7 +1,8 @@
 'use client';
 
 
-import { CaretLeftIcon, ClockIcon } from '@phosphor-icons/react';
+
+import { CaretLeftIcon, ClockIcon, ForkKnifeIcon, MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon, XIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Client, Meal, MealType, DailyMealPlan, AssignedMeal } from '@/types/meal';
 import Link from 'next/link';
@@ -434,13 +435,15 @@ export default function AssignMealsPage() {
   const getMealTypeIcon = (type: MealType) => {
     switch (type) {
       case 'breakfast':
-        return '🌅';
+        return <SunHorizonIcon size={18} aria-hidden="true" />;
       case 'lunch':
-        return '☀️';
+        return <SunIcon size={18} aria-hidden="true" />;
       case 'dinner':
-        return '🌙';
+        return <MoonIcon size={18} aria-hidden="true" />;
       case 'snack':
-        return '🍎';
+        return <OrangeIcon size={18} aria-hidden="true" />;
+      default:
+        return <ForkKnifeIcon size={18} aria-hidden="true" />;
     }
   };
 
@@ -569,10 +572,10 @@ export default function AssignMealsPage() {
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="all">All Meals</option>
-                    <option value="breakfast">🌅 Breakfast</option>
-                    <option value="lunch">☀️ Lunch</option>
-                    <option value="dinner">🌙 Dinner</option>
-                    <option value="snack">🍎 Snack</option>
+                    <option value="breakfast"> Breakfast</option>
+                    <option value="lunch"> Lunch</option>
+                    <option value="dinner"> Dinner</option>
+                    <option value="snack"> Snack</option>
                   </select>
                 </div>
               </div>
@@ -733,9 +736,7 @@ export default function AssignMealsPage() {
                                   <button
                                     onClick={() => removeMeal(date, mealType)}
                                     className="text-red-500 hover:text-red-700"
-                                  >
-                                    ✕
-                                  </button>
+                                  ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
                                 )}
                               </div>
                               {assignedMeal && (

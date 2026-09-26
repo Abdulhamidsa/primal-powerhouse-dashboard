@@ -60,7 +60,7 @@ function isStartable(day: TrainingPlanDayDTO) {
 }
 
 function DayStatus({ day, today }: { day: TrainingPlanDayDTO; today: string }) {
-  if (isCompleted(day)) return <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={13} /> Done</span>;
+  if (isCompleted(day)) return <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check aria-hidden="true" focusable="false" size={13} /> Done</span>;
   if (day.status === 'SKIPPED') return <span className="text-xs font-semibold text-muted-foreground">Skipped</span>;
   if (day.type === 'REST') return <span className="text-xs font-semibold text-emerald-600">Rest</span>;
   if (day.latestSession?.status === 'IN_PROGRESS') return <span className="text-xs font-semibold text-primary">In progress</span>;
@@ -154,7 +154,7 @@ export function TrainingDashboard() {
       <section className="rounded-[30px] border p-5 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><Dumbbell size={18} /></div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><Dumbbell aria-hidden="true" focusable="false" size={18} /></div>
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today’s training</p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">{todayDay ? dayTitle(todayDay) : 'No workout scheduled'}</h2>
@@ -167,21 +167,21 @@ export function TrainingDashboard() {
               </p>
             </div>
           </div>
-          <button type="button" onClick={() => refresh()} aria-label="Refresh training plan" className="rounded-full p-2 text-muted-foreground hover:bg-muted/60"><RefreshCcw size={15} /></button>
+          <button type="button" onClick={() => refresh()} aria-label="Refresh training plan" className="rounded-full p-2 text-muted-foreground hover:bg-muted/60"><RefreshCcw aria-hidden="true" focusable="false" size={15} /></button>
         </div>
 
         {actionError ? <p className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{actionError}</p> : null}
         <div className="mt-4 rounded-2xl border border-border/70 bg-muted/20 p-3">
           {todayDone ? (
-            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600"><Check size={17} /> Done for today</div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600"><Check aria-hidden="true" focusable="false" size={17} /> Done for today</div>
           ) : todayDay?.type === 'REST' ? (
             <div className="flex flex-col gap-1 text-sm">
-              <span className="flex items-center gap-2 font-semibold text-emerald-600"><Flag size={17} /> Rest and recover</span>
+              <span className="flex items-center gap-2 font-semibold text-emerald-600"><Flag aria-hidden="true" focusable="false" size={17} /> Rest and recover</span>
               {nextWorkout ? <span className="text-muted-foreground">Next workout: {nextWorkoutLabel}</span> : null}
             </div>
           ) : startableTodayDay ? (
             <button type="button" onClick={() => handleStart(startableTodayDay)} className="flex min-h-11 w-full items-center justify-between rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground">
-              <span>{startableTodayDay.latestSession?.status === 'IN_PROGRESS' ? 'Continue workout' : 'Start workout'}</span><ChevronRight size={16} />
+              <span>{startableTodayDay.latestSession?.status === 'IN_PROGRESS' ? 'Continue workout' : 'Start workout'}</span><ChevronRight aria-hidden="true" focusable="false" size={16} />
             </button>
           ) : <p className="text-sm text-muted-foreground">{nextWorkoutLabel ? `No workout today. Next up: ${nextWorkoutLabel}.` : 'No workout is available this week.'}</p>}
         </div>
@@ -194,7 +194,7 @@ export function TrainingDashboard() {
         </div>
         {nextWorkoutLabel ? (
           <div className="mt-4 flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary">
-            <Sparkles size={15} />
+            <Sparkles aria-hidden="true" focusable="false" size={15} />
             <span className="font-semibold">Next workout:</span>
             <span className="min-w-0 truncate">{nextWorkoutLabel}</span>
           </div>
@@ -219,7 +219,7 @@ export function TrainingDashboard() {
                 </p>
               </div>
               {canStart ? <button type="button" onClick={() => handleStart(day)} className="mt-3 flex min-h-9 w-full items-center justify-between rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-                <span>{day.latestSession?.status === 'IN_PROGRESS' ? 'Continue' : 'Start'}</span><ChevronRight size={14} />
+                <span>{day.latestSession?.status === 'IN_PROGRESS' ? 'Continue' : 'Start'}</span><ChevronRight aria-hidden="true" focusable="false" size={14} />
               </button> : isNext && !isToday ? <p className="mt-3 text-xs font-semibold text-primary">Next workout</p> : null}
             </div>;
           })}

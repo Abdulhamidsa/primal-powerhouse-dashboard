@@ -87,7 +87,7 @@ export default function MealDetailPage() {
           onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft aria-hidden="true" focusable="false" size={18} />
           Back to meals
         </button>
 
@@ -131,9 +131,9 @@ export default function MealDetailPage() {
           <div className="p-6">
             {/* Meta chips */}
             <div className="flex flex-wrap gap-2">
-              <MetaChip icon={<Clock size={12} />} label={`Prep ${formatDuration(meal.prepTime)}`} />
-              <MetaChip icon={<Clock size={12} />} label={`Cook ${formatDuration(meal.cookTime)}`} />
-              <MetaChip icon={<Users size={12} />} label={`${meal.servings} servings`} />
+              <MetaChip icon={<Clock aria-hidden="true" focusable="false" size={12} />} label={`Prep ${formatDuration(meal.prepTime)}`} />
+              <MetaChip icon={<Clock aria-hidden="true" focusable="false" size={12} />} label={`Cook ${formatDuration(meal.cookTime)}`} />
+              <MetaChip icon={<Users aria-hidden="true" focusable="false" size={12} />} label={`${meal.servings} servings`} />
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -144,7 +144,7 @@ export default function MealDetailPage() {
 
             <div className="mt-3">
               <StatRow
-                icon={<Clock size={14} />}
+                icon={<Clock aria-hidden="true" focusable="false" size={14} />}
                 label="Prep / cook"
                 value={`${formatDuration(meal.prepTime)} / ${formatDuration(meal.cookTime)}`}
               />
@@ -165,7 +165,7 @@ export default function MealDetailPage() {
                 background: activeTab === 'ingredients' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
               }}
             >
-              <Wheat size={14} />
+              <Wheat aria-hidden="true" focusable="false" size={14} />
               Ingredients
             </button>
 
@@ -180,7 +180,7 @@ export default function MealDetailPage() {
                   background: activeTab === 'spices' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
                 }}
               >
-                <Sparkles size={14} />
+                <Sparkles aria-hidden="true" focusable="false" size={14} />
                 Spices
               </button>
             ) : null}
@@ -195,7 +195,7 @@ export default function MealDetailPage() {
                 background: activeTab === 'instructions' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
               }}
             >
-              <Flame size={14} />
+              <Flame aria-hidden="true" focusable="false" size={14} />
               Instructions
             </button>
           </div>

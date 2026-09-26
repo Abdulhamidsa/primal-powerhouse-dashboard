@@ -12,7 +12,7 @@ function TodayBadge({ streakCount }: { streakCount: number }) {
 
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold text-foreground" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-      <Flame size={12} className="text-primary" />
+      <Flame aria-hidden="true" focusable="false" size={12} className="text-primary" />
       {streakCount} day streak
     </span>
   );
@@ -71,7 +71,7 @@ function DashboardStatusCard({
           <span className="mt-1 block text-xs leading-5 text-[var(--color-text-muted)]">{description}</span>
           <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-accent)]">
             {action}
-            <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight aria-hidden="true" focusable="false" size={13} className="transition-transform group-hover:translate-x-0.5" />
           </span>
         </span>
       </div>
@@ -84,9 +84,9 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
     const denmarkTime = new Date().toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' });
     const hour = new Date(denmarkTime).getHours();
 
-    if (hour >= 5 && hour < 12) return { text: 'Good morning', icon: <Sun size={17} /> };
-    if (hour >= 12 && hour < 18) return { text: 'Good afternoon', icon: <Sun size={17} /> };
-    return { text: 'Good evening', icon: <Moon size={17} /> };
+    if (hour >= 5 && hour < 12) return { text: 'Good morning', icon: <Sun aria-hidden="true" focusable="false" size={17} /> };
+    if (hour >= 12 && hour < 18) return { text: 'Good afternoon', icon: <Sun aria-hidden="true" focusable="false" size={17} /> };
+    return { text: 'Good evening', icon: <Moon aria-hidden="true" focusable="false" size={17} /> };
   }, []);
 
   const { summary: todayMission } = useTodayMission(summary);
@@ -122,7 +122,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
           title="Check-ins"
           description={isCheckInComplete ? 'Daily check-in is complete.' : 'Energy, hunger, sleep, meals, and training are due.'}
           href="/user/check-ins"
-          icon={<ClipboardCheck size={18} />}
+          icon={<ClipboardCheck aria-hidden="true" focusable="false" size={18} />}
           state={isCheckInComplete ? 'done' : 'pending'}
           action={isCheckInComplete ? 'Review' : 'Finish'}
         />
@@ -138,7 +138,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                   : 'Open your training plan.'
           }
           href="/user/training"
-          icon={<Dumbbell size={18} />}
+          icon={<Dumbbell aria-hidden="true" focusable="false" size={18} />}
           state={isWorkoutDone ? 'done' : isWorkoutInProgress ? 'progress' : 'pending'}
           action={isWorkoutInProgress ? 'Continue' : isWorkoutDone ? 'Review' : 'Open'}
         />
@@ -152,7 +152,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
                 : 'Choose your meals for today.'
           }
           href="/user/my-plan"
-          icon={<Salad size={18} />}
+          icon={<Salad aria-hidden="true" focusable="false" size={18} />}
           state={isMealsComplete ? 'done' : hasMeals && todayMission.mealProgress.completed > 0 ? 'progress' : 'pending'}
           action={isMealsComplete ? 'Review' : hasMeals ? 'Continue' : 'Choose'}
         />
@@ -161,7 +161,7 @@ export function UserDashboardContent({ summary }: { summary: UserDashboardSummar
       {showCoachNote ? <section className="rounded-[26px] border px-4 py-3.5 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: 'var(--color-accent-translucent)', color: 'var(--color-accent)' }}>
-            {summary.unreadTotal > 0 ? <MessageCircle size={15} /> : <CheckCircle2 size={15} />}
+            {summary.unreadTotal > 0 ? <MessageCircle aria-hidden="true" focusable="false" size={15} /> : <CheckCircle2 aria-hidden="true" focusable="false" size={15} />}
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach note</p>

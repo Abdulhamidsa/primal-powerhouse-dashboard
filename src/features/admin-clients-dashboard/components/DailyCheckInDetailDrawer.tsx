@@ -170,7 +170,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
             className="rounded-lg p-1.5 transition-opacity hover:opacity-70"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            <X size={18} />
+            <X aria-hidden="true" focusable="false" size={18} />
           </button>
         </div>
 
@@ -200,7 +200,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
                 className="flex items-center gap-2 rounded-xl border px-3 py-2.5"
                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
               >
-                <Salad size={14} style={{ color: 'var(--color-text-muted)' }} />
+                <Salad aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
                 <div>
                   <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                     Nutrition
@@ -221,7 +221,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
                 className="flex items-center gap-2 rounded-xl border px-3 py-2.5"
                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
               >
-                <Dumbbell size={14} style={{ color: 'var(--color-text-muted)' }} />
+                <Dumbbell aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
                 <div>
                   <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                     Training
@@ -244,7 +244,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
           <div>
             <SectionHeading>
               <span className="inline-flex items-center gap-1.5">
-                <FileText size={12} /> Coach Note
+                <FileText aria-hidden="true" focusable="false" size={12} /> Coach Note
               </span>
             </SectionHeading>
             <TextBlock label="Note" value={checkIn.note} />
@@ -253,7 +253,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
                 className="flex items-center gap-2 rounded-xl border border-dashed px-3 py-3"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
               >
-                <Clock3 size={14} />
+                <Clock3 aria-hidden="true" focusable="false" size={14} />
                 <span className="text-sm">No note was added for this day.</span>
               </div>
             ) : null}
@@ -266,7 +266,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
         >
           {checkIn.reviewed ? (
             <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
-              <CheckCircle size={14} />
+              <CheckCircle aria-hidden="true" focusable="false" size={14} />
               Marked as reviewed
             </div>
           ) : (
@@ -282,7 +282,7 @@ export function DailyCheckInDetailDrawer({ checkIn, onClose, onMarkReviewed }: P
                 opacity: isMarkingReviewed ? 0.6 : 1,
               }}
             >
-              <CheckCircle size={14} />
+              <CheckCircle aria-hidden="true" focusable="false" size={14} />
               {isMarkingReviewed ? 'Saving...' : 'Mark as reviewed'}
             </button>
           )}

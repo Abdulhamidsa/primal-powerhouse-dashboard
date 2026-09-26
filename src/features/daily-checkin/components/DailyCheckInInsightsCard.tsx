@@ -155,7 +155,7 @@ export function DailyCheckInInsightsCard() {
       {(visibility?.dailyWeightEnabled ?? true) ? (
         <div className="mt-5 rounded-2xl border border-border/70 bg-background/70 p-4">
           <div className="mb-3 flex items-center gap-2">
-            <Scale size={14} className="text-muted-foreground" />
+            <Scale aria-hidden="true" focusable="false" size={14} className="text-muted-foreground" />
             <p className="text-sm font-medium text-foreground">Weight for today</p>
             {todayEntry?.weightKg != null ? (
               <span className="ml-auto text-xs font-semibold text-accent">{todayEntry.weightKg} kg</span>
@@ -205,7 +205,7 @@ export function DailyCheckInInsightsCard() {
               aria-label="View earlier period"
               className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] transition-opacity disabled:opacity-30"
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft aria-hidden="true" focusable="false" size={14} />
             </button>
             <button
               type="button"
@@ -214,7 +214,7 @@ export function DailyCheckInInsightsCard() {
               aria-label="View more recent period"
               className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] transition-opacity disabled:opacity-30"
             >
-              <ChevronRight size={14} />
+              <ChevronRight aria-hidden="true" focusable="false" size={14} />
             </button>
             <button
               type="button"
@@ -228,7 +228,7 @@ export function DailyCheckInInsightsCard() {
                 borderColor: showAll ? 'var(--color-accent)' : 'var(--color-border)',
               }}
             >
-              <LayoutList size={13} />
+              <LayoutList aria-hidden="true" focusable="false" size={13} />
             </button>
           </div>
         </div>

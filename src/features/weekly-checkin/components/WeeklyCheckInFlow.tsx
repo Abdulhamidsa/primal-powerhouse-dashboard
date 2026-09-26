@@ -92,7 +92,7 @@ function PhotoUploadTile({
             onClick={onClear}
             aria-label={`Remove ${label} photo`}
           >
-            <X size={14} />
+            <X aria-hidden="true" focusable="false" size={14} />
           </button>
         ) : null}
       </div>
@@ -123,7 +123,7 @@ function PhotoUploadTile({
           color: 'var(--color-text)',
         }}
       >
-        {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+        {isUploading ? <Loader2 aria-hidden="true" focusable="false" size={14} className="animate-spin" /> : <Upload aria-hidden="true" focusable="false" size={14} />}
         {isUploading ? 'Uploading...' : value ? 'Replace photo' : 'Upload photo'}
         <input
           ref={fileInputRef}
@@ -392,7 +392,7 @@ export function WeeklyCheckInFlow() {
               onClick={() => setStep(current => Math.max(1, current - 1))}
               disabled={step === 1 || isSubmitting}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft aria-hidden="true" focusable="false" className="mr-2 h-4 w-4" />
               Back
             </Button>
 
@@ -403,18 +403,18 @@ export function WeeklyCheckInFlow() {
                 disabled={isSubmitting}
               >
                 Next
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight aria-hidden="true" focusable="false" className="ml-2 h-4 w-4" />
               </Button>
             ) : (
               <Button type="button" onClick={handleSubmit} disabled={submitDisabled}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 aria-hidden="true" focusable="false" className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Check className="mr-2 h-4 w-4" />
+                    <Check aria-hidden="true" focusable="false" className="mr-2 h-4 w-4" />
                     Submit check-in
                   </>
                 )}

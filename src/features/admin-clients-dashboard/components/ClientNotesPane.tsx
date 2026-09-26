@@ -45,7 +45,7 @@ export function ClientNotesPane({
             className="inline-flex items-center gap-2 text-xs mb-3"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft aria-hidden="true" focusable="false" size={14} />
             Back to clients
           </button>
         ) : null}
@@ -112,7 +112,7 @@ export function ClientNotesPane({
             opacity: isSaving || !draft.trim() ? 0.6 : 1,
           }}
         >
-          <SendHorizontal size={14} />
+          <SendHorizontal aria-hidden="true" focusable="false" size={14} />
           {isSaving ? 'Saving...' : 'Add Note'}
         </button>
       </form>

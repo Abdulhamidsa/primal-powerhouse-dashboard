@@ -316,7 +316,7 @@ export default function AssignVideosModal({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">📅 Due Date (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Due Date (Optional)</label>
                 <input
                   type="date"
                   value={dueDate}
@@ -326,7 +326,7 @@ export default function AssignVideosModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">📝 Notes (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes (Optional)</label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}

@@ -197,7 +197,7 @@ function AttentionRow({
               disabled={busyItemId === item.clientId}
               className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              <MessageSquare size={13} /> Message
+              <MessageSquare aria-hidden="true" focusable="false" size={13} /> Message
             </button>
           ) : null}
 
@@ -208,7 +208,7 @@ function AttentionRow({
               disabled={busyItemId === reviewedAction.checkInId}
               className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.04] disabled:opacity-60"
             >
-              <CheckCircle2 size={13} /> Reviewed
+              <CheckCircle2 aria-hidden="true" focusable="false" size={13} /> Reviewed
             </button>
           ) : null}
 
@@ -216,7 +216,7 @@ function AttentionRow({
           {assignWorkoutAction?.href ? <ActionLink href={assignWorkoutAction.href} muted>Workout</ActionLink> : null}
           {openClientAction?.href ? (
             <ActionLink href={openClientAction.href} muted>
-              Open <ArrowRight size={12} />
+              Open <ArrowRight aria-hidden="true" focusable="false" size={12} />
             </ActionLink>
           ) : null}
         </div>
@@ -285,7 +285,7 @@ export function AdminCommandCenterView({
             href="/admin/clients"
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
           >
-            <Users size={15} />
+            <Users aria-hidden="true" focusable="false" size={15} />
             Open clients
           </Link>
         }
@@ -302,34 +302,34 @@ export function AdminCommandCenterView({
           label="Attention"
           value={data.compactMetrics.clientsNeedingAttention}
           helper={attentionCount ? `${attentionCount} queue item${attentionCount === 1 ? '' : 's'}` : 'Queue clear'}
-          icon={<ShieldAlert size={18} />}
+          icon={<ShieldAlert aria-hidden="true" focusable="false" size={18} />}
           tone={data.compactMetrics.clientsNeedingAttention > 0 ? 'danger' : 'success'}
         />
         <MetricCard
           label="Replies"
           value={data.compactMetrics.quickRepliesPending}
           helper="Coach messages to send"
-          icon={<MessageSquare size={18} />}
+          icon={<MessageSquare aria-hidden="true" focusable="false" size={18} />}
           tone="accent"
         />
         <MetricCard
           label="Sessions"
           value={data.compactMetrics.sessionsToday}
           helper="Training activity today"
-          icon={<Activity size={18} />}
+          icon={<Activity aria-hidden="true" focusable="false" size={18} />}
         />
         <MetricCard
           label="Last refresh"
           value={relativeTimeLabel(data.generatedAt)}
           helper="Command center snapshot"
-          icon={<Gauge size={18} />}
+          icon={<Gauge aria-hidden="true" focusable="false" size={18} />}
         />
       </section>
 
       <section className="grid gap-5 2xl:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
         <AdminPanel className="overflow-hidden">
           <AdminPanelHeader
-            icon={<ShieldAlert size={17} />}
+            icon={<ShieldAlert aria-hidden="true" focusable="false" size={17} />}
             title="Needs attention"
             description="The highest-priority client situations, ordered by severity."
             meta={
@@ -363,7 +363,7 @@ export function AdminCommandCenterView({
         <div className="grid gap-5">
           <AdminPanel className="overflow-hidden">
             <AdminPanelHeader
-              icon={<Clock3 size={17} />}
+              icon={<Clock3 aria-hidden="true" focusable="false" size={17} />}
               title="Today actions"
               description="Small tasks that keep clients moving."
               meta={
@@ -402,12 +402,12 @@ export function AdminCommandCenterView({
                             disabled={busyItemId === action.clientId}
                             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
                           >
-                            <MessageSquare size={13} /> Message
+                            <MessageSquare aria-hidden="true" focusable="false" size={13} /> Message
                           </button>
                         ) : null}
                         {openClientAction?.href ? (
                           <ActionLink href={openClientAction.href} muted>
-                            Open <ArrowRight size={12} />
+                            Open <ArrowRight aria-hidden="true" focusable="false" size={12} />
                           </ActionLink>
                         ) : null}
                       </div>
@@ -421,7 +421,7 @@ export function AdminCommandCenterView({
           </AdminPanel>
 
           <AdminPanel className="overflow-hidden">
-            <AdminPanelHeader icon={<Sparkles size={17} />} title="Momentum" description="Positive signals worth reinforcing." />
+            <AdminPanelHeader icon={<Sparkles aria-hidden="true" focusable="false" size={17} />} title="Momentum" description="Positive signals worth reinforcing." />
 
             {data.momentum.length ? (
               <div className="divide-y divide-white/10">
@@ -450,7 +450,7 @@ export function AdminCommandCenterView({
 
       <AdminPanel className="overflow-hidden">
         <AdminPanelHeader
-          icon={<Activity size={17} />}
+          icon={<Activity aria-hidden="true" focusable="false" size={17} />}
           title="Recent changes"
           description="Latest messages, check-ins, nutrition updates, and training activity."
           meta={

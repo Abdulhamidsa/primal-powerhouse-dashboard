@@ -81,7 +81,7 @@ export function LeadDetailDrawer({ lead, onCloseAction }: Props) {
             onClick={onCloseAction}
             className="ml-3 grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
           >
-            <X size={16} />
+            <X aria-hidden="true" focusable="false" size={16} />
           </button>
         </div>
 
@@ -93,8 +93,8 @@ export function LeadDetailDrawer({ lead, onCloseAction }: Props) {
               Contact
             </h3>
             <div className="space-y-4">
-              <Field icon={<Mail size={14} />} label="Email" value={lead.email} />
-              <Field icon={<Phone size={14} />} label="Phone" value={lead.phone} />
+              <Field icon={<Mail aria-hidden="true" focusable="false" size={14} />} label="Email" value={lead.email} />
+              <Field icon={<Phone aria-hidden="true" focusable="false" size={14} />} label="Phone" value={lead.phone} />
             </div>
           </section>
 
@@ -106,10 +106,10 @@ export function LeadDetailDrawer({ lead, onCloseAction }: Props) {
               Lead Details
             </h3>
             <div className="space-y-4">
-              <Field icon={<CreditCard size={14} />} label="Subscription Type" value={lead.subscriptionType} />
-              <Field icon={<FileText size={14} />} label="Notes" value={lead.notes} />
+              <Field icon={<CreditCard aria-hidden="true" focusable="false" size={14} />} label="Subscription Type" value={lead.subscriptionType} />
+              <Field icon={<FileText aria-hidden="true" focusable="false" size={14} />} label="Notes" value={lead.notes} />
               <Field
-                icon={<Calendar size={14} />}
+                icon={<Calendar aria-hidden="true" focusable="false" size={14} />}
                 label="Added"
                 value={new Date(lead.createdAt).toLocaleDateString('en-GB', {
                   day: '2-digit',
@@ -146,7 +146,7 @@ export function LeadDetailDrawer({ lead, onCloseAction }: Props) {
                     disabled={loadingCreds}
                     className="flex items-center gap-2 rounded-2xl border border-[var(--color-accent)]/30 bg-[var(--color-accent-muted)] px-4 py-2.5 text-sm font-semibold text-[var(--color-accent)] transition-opacity hover:opacity-80 disabled:opacity-50"
                   >
-                    <KeyRound size={14} />
+                    <KeyRound aria-hidden="true" focusable="false" size={14} />
                     {loadingCreds ? 'Loading...' : 'View Credentials'}
                   </button>
                 ) : (
@@ -175,7 +175,7 @@ export function LeadDetailDrawer({ lead, onCloseAction }: Props) {
                           onClick={() => setShowPassword(p => !p)}
                           className="rounded-xl border border-white/10 bg-white/[0.04] p-1.5 text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
                         >
-                          {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                          {showPassword ? <EyeOff aria-hidden="true" focusable="false" size={14} /> : <Eye aria-hidden="true" focusable="false" size={14} />}
                         </button>
                       </div>
                     </div>

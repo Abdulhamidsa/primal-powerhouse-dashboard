@@ -120,7 +120,7 @@ export function WorkoutSessionReviewDrawer({ clientId, sessionId, onClose }: Pro
             className="rounded-lg p-1.5 transition-opacity hover:opacity-70"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            <X size={18} />
+            <X aria-hidden="true" focusable="false" size={18} />
           </button>
         </div>
 
@@ -222,7 +222,7 @@ export function WorkoutSessionReviewDrawer({ clientId, sessionId, onClose }: Pro
         >
           {isReviewed ? (
             <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
-              <CheckCircle size={14} /> Marked as reviewed
+              <CheckCircle aria-hidden="true" focusable="false" size={14} /> Marked as reviewed
             </div>
           ) : (
             <button
@@ -237,7 +237,7 @@ export function WorkoutSessionReviewDrawer({ clientId, sessionId, onClose }: Pro
                 opacity: isMarking ? 0.6 : 1,
               }}
             >
-              <CheckCircle size={14} />
+              <CheckCircle aria-hidden="true" focusable="false" size={14} />
               {isMarking ? 'Saving...' : 'Mark as reviewed'}
             </button>
           )}

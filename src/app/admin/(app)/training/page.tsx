@@ -28,7 +28,7 @@ export default function AdminTrainingPage() {
         description="Build the library, create reusable workout templates, open client plan windows, then program the weekly pattern that clients follow."
         actions={
           <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-muted-foreground">
-            <Workflow size={15} className="text-[var(--color-accent)]" />
+            <Workflow aria-hidden="true" focusable="false" size={15} className="text-[var(--color-accent)]" />
             Library → Templates → Plans → Week
           </div>
         }

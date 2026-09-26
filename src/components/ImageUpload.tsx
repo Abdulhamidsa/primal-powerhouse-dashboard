@@ -178,7 +178,7 @@ export default function ImageUpload({
               disabled={disabled}
               className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Upload size={16} />
+              <Upload aria-hidden="true" focusable="false" size={16} />
               Change
             </button>
 
@@ -188,7 +188,7 @@ export default function ImageUpload({
               disabled={disabled}
               className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/15 px-4 py-2 text-sm font-medium text-red-100 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <X size={16} />
+              <X aria-hidden="true" focusable="false" size={16} />
               Remove
             </button>
           </div>
@@ -211,9 +211,9 @@ export default function ImageUpload({
         >
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
             {isDragging ? (
-              <Upload size={20} className="text-[var(--color-accent)]" />
+              <Upload aria-hidden="true" focusable="false" size={20} className="text-[var(--color-accent)]" />
             ) : (
-              <ImageIcon size={20} className="text-[var(--color-accent)]" />
+              <ImageIcon aria-hidden="true" focusable="false" size={20} className="text-[var(--color-accent)]" />
             )}
           </div>
 

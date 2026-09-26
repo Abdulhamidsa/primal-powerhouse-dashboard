@@ -1,5 +1,7 @@
 'use client';
 
+
+import { XIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { DataService } from '@/services/dataService';
 import { WarningCircleIcon as AlertCircle, CheckIcon as Check, CopyIcon as Copy } from '@phosphor-icons/react';
@@ -390,9 +392,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
                       type="button"
                       onClick={() => removeArrayItem('goals', index)}
                       className="px-3 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      ✕
-                    </button>
+                    ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
                   )}
                 </div>
               ))}
@@ -437,9 +437,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
                       type="button"
                       onClick={() => removeArrayItem('dietaryRestrictions', index)}
                       className="px-3 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      ✕
-                    </button>
+                    ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
                   )}
                 </div>
               ))}
@@ -482,7 +480,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
             <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200">
               <div className="flex items-start gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
-                  <AlertCircle size={18} />
+                  <AlertCircle aria-hidden="true" focusable="false" size={18} />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Client Credentials</h3>
@@ -512,7 +510,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
                       className="p-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700"
                       title="Copy email"
                     >
-                      {copiedField === 'email' ? <Check size={16} /> : <Copy size={16} />}
+                      {copiedField === 'email' ? <Check aria-hidden="true" focusable="false" size={16} /> : <Copy aria-hidden="true" focusable="false" size={16} />}
                     </button>
                   </div>
                 </div>
@@ -532,7 +530,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }: AddCl
                       className="p-2 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700"
                       title="Copy password"
                     >
-                      {copiedField === 'password' ? <Check size={16} /> : <Copy size={16} />}
+                      {copiedField === 'password' ? <Check aria-hidden="true" focusable="false" size={16} /> : <Copy aria-hidden="true" focusable="false" size={16} />}
                     </button>
                   </div>
                 </div>

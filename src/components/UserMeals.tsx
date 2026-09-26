@@ -148,7 +148,7 @@ export default function UserMeals({ userId }: UserMealsProps) {
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Utensils className="w-10 h-10 text-green-400" />
+            <Utensils aria-hidden="true" focusable="false" className="w-10 h-10 text-green-400" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-3">No Meals Yet</h3>
           <p className="text-slate-400 max-w-sm">
@@ -191,14 +191,14 @@ export default function UserMeals({ userId }: UserMealsProps) {
                       disabled={!canScrollLeft}
                       className="p-2 rounded-full bg-slate-700/50 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-600/50 transition-colors"
                     >
-                      <ChevronLeft size={16} />
+                      <ChevronLeft aria-hidden="true" focusable="false" size={16} />
                     </button>
                     <button
                       onClick={() => scrollCarousel(type, 'right')}
                       disabled={!canScrollRight}
                       className="p-2 rounded-full bg-slate-700/50 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-600/50 transition-colors"
                     >
-                      <ChevronRight size={16} />
+                      <ChevronRight aria-hidden="true" focusable="false" size={16} />
                     </button>
                   </div>
                 )}

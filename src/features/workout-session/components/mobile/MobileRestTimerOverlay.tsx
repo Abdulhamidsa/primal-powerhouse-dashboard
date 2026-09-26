@@ -33,7 +33,7 @@ export default function MobileRestTimerOverlay({ seconds, onSkip }: Props) {
           color: '#fff',
         }}
       >
-        <Timer size={18} className="shrink-0" />
+        <Timer aria-hidden="true" focusable="false" size={18} className="shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs opacity-80 font-medium">Rest timer</p>
           <p className="text-base font-bold tabular-nums">{seconds}s</p>

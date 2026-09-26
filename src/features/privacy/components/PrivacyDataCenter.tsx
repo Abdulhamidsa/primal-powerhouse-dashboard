@@ -183,7 +183,7 @@ export function PrivacyDataCenter() {
           className="flex min-h-[68px] w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
         >
           <div className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/50">
-            <Download className="h-4 w-4" />
+            <Download aria-hidden="true" focusable="false" className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground">Export My Data</p>
@@ -207,7 +207,7 @@ export function PrivacyDataCenter() {
           className="flex min-h-[64px] w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
         >
           <div className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/50">
-            <LogOut className="h-4 w-4" />
+            <LogOut aria-hidden="true" focusable="false" className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground">Logout All Sessions</p>
@@ -220,7 +220,7 @@ export function PrivacyDataCenter() {
         <div className="px-4 py-4">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-destructive/10 text-destructive">
-              <Trash2 className="h-4 w-4" />
+              <Trash2 aria-hidden="true" focusable="false" className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">Delete Account</p>

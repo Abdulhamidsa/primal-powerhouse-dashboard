@@ -155,7 +155,7 @@ export function ClientHeader({
               border: '1px solid var(--color-border)',
             }}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft aria-hidden="true" focusable="false" size={20} />
           </Link>
 
           {/* Identity */}
@@ -203,7 +203,7 @@ export function ClientHeader({
                 color: 'var(--color-text)',
               }}
             >
-              <Film size={16} className="opacity-90" />
+              <Film aria-hidden="true" focusable="false" size={16} className="opacity-90" />
               <span className="hidden sm:inline">Assign Videos</span>
               <span className="sm:hidden ">Videos</span>
             </button>
@@ -217,7 +217,7 @@ export function ClientHeader({
                 color: 'var(--color-text)',
               }}
             >
-              <Utensils size={16} className="opacity-90" />
+              <Utensils aria-hidden="true" focusable="false" size={16} className="opacity-90" />
               <span className="hidden sm:inline">Assign Meals</span>
               <span className="sm:hidden">Meals</span>
             </button>
@@ -231,7 +231,7 @@ export function ClientHeader({
                 color: 'var(--color-text)',
               }}
             >
-              <MessageCircle size={16} />
+              <MessageCircle aria-hidden="true" focusable="false" size={16} />
               <span className="hidden sm:inline">Message</span>
               <span className="sm:hidden">Msg</span>
             </button>

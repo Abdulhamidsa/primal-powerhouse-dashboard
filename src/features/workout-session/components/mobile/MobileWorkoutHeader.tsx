@@ -34,7 +34,7 @@ export default function MobileWorkoutHeader({
           className="flex-shrink-0 p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           aria-label="Exit workout"
         >
-          <X size={20} />
+          <X aria-hidden="true" focusable="false" size={20} />
         </button>
       </div>
 

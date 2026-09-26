@@ -81,7 +81,7 @@ export function WeightProjectionTimelineCard({
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}>
-          <Target size={12} />
+          <Target aria-hidden="true" focusable="false" size={12} />
           {summary.direction === 'lose' ? 'Fat-loss plan' : summary.direction === 'gain' ? 'Gain plan' : 'Maintenance'}
         </div>
       </div>
@@ -181,7 +181,7 @@ export function WeightProjectionTimelineCard({
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
         <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
-            <LineChartIcon size={12} />
+            <LineChartIcon aria-hidden="true" focusable="false" size={12} />
             Plan snapshot
           </div>
           <p className="mt-2 text-sm" style={{ color: 'var(--color-text)' }}>
@@ -192,7 +192,7 @@ export function WeightProjectionTimelineCard({
         </div>
         <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
-            <CalendarClock size={12} />
+            <CalendarClock aria-hidden="true" focusable="false" size={12} />
             Full timeline
           </div>
           <p className="mt-2 text-sm" style={{ color: 'var(--color-text)' }}>

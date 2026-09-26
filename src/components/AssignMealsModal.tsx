@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon } from '@phosphor-icons/react';
 import { DataService, Meal, MealPlan } from '@/services/dataService';
 import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
 import { type SideItem } from '@/features/sides/types/side.types';
@@ -24,10 +25,10 @@ const daysOfWeek = [
 ];
 
 const mealTypes = [
-  { value: 'BREAKFAST', label: 'Breakfast', icon: '🌅' },
-  { value: 'LUNCH', label: 'Lunch', icon: '☀️' },
-  { value: 'DINNER', label: 'Dinner', icon: '🌙' },
-  { value: 'SNACK', label: 'Snack', icon: '🍎' },
+  { value: 'BREAKFAST', label: 'Breakfast', icon: <SunHorizonIcon size={18} aria-hidden="true" /> },
+  { value: 'LUNCH', label: 'Lunch', icon: <SunIcon size={18} aria-hidden="true" /> },
+  { value: 'DINNER', label: 'Dinner', icon: <MoonIcon size={18} aria-hidden="true" /> },
+  { value: 'SNACK', label: 'Snack', icon: <OrangeIcon size={18} aria-hidden="true" /> },
 ] as const;
 
 type MealTypeValue = (typeof mealTypes)[number]['value'];
@@ -295,7 +296,7 @@ export default function AssignMealsModal({
               </p>
               {existingMealPlan && (
                 <p className="text-sm text-orange-600 mt-1">
-                  ⚠️ This will replace all existing meals and side assignments in the active meal plan with your new
+                  This will replace all existing meals and side assignments in the active meal plan with your new
                   selections.
                 </p>
               )}
@@ -435,10 +436,10 @@ export default function AssignMealsModal({
                               {selectedMeal && (
                                 <div className="mt-2 p-2 bg-blue-50 rounded-lg">
                                   <div className="text-xs text-gray-600">
-                                    <div>🔥 {selectedMeal.calories} cal</div>
-                                    <div>🥩 {selectedMeal.protein}g protein</div>
-                                    <div>🍞 {selectedMeal.carbs}g carbs</div>
-                                    <div>🥑 {selectedMeal.fat}g fat</div>
+                                    <div>{selectedMeal.calories} cal</div>
+                                    <div>{selectedMeal.protein}g protein</div>
+                                    <div>{selectedMeal.carbs}g carbs</div>
+                                    <div>{selectedMeal.fat}g fat</div>
                                   </div>
                                 </div>
                               )}

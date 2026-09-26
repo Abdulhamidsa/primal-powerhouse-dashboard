@@ -182,7 +182,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
           onClick={() => setShowConfirmFinish(true)}
           className="p-2 rounded-xl hover:bg-card text-muted-foreground"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft aria-hidden="true" focusable="false" size={20} />
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-bold text-foreground truncate">{assignment.workoutPlan.name}</h1>
@@ -198,7 +198,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
           className="flex items-center gap-3 px-4 py-3 rounded-2xl"
           style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
         >
-          <Timer size={18} />
+          <Timer aria-hidden="true" focusable="false" size={18} />
           <span className="font-semibold">Rest: {restSeconds}s</span>
           <button className="ml-auto text-xs underline opacity-70" onClick={() => setRestSeconds(null)}>
             Skip
@@ -226,7 +226,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                 borderColor: active ? 'var(--color-accent)' : 'var(--color-border)',
               }}
             >
-              {done && <CheckCircle2 size={12} style={{ color: 'var(--color-accent)' }} />}
+              {done && <CheckCircle2 aria-hidden="true" focusable="false" size={12} style={{ color: 'var(--color-accent)' }} />}
               {ex.video.title.length > 16 ? ex.video.title.slice(0, 15) + '…' : ex.video.title}
             </button>
           );
@@ -246,7 +246,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
             </p>
             {currentExercise.notes && (
               <p className="text-xs text-muted-foreground mt-1 flex items-start gap-1">
-                <MessageSquare size={12} className="mt-0.5 shrink-0" />
+                <MessageSquare aria-hidden="true" focusable="false" size={12} className="mt-0.5 shrink-0" />
                 {currentExercise.notes}
               </p>
             )}
@@ -270,7 +270,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                     onClick={() => updateSet(currentIdx, si, { reps: Math.max(0, set.reps - 1) })}
                     className="text-muted-foreground"
                   >
-                    <Minus size={14} />
+                    <Minus aria-hidden="true" focusable="false" size={14} />
                   </button>
                   <input
                     type="number"
@@ -283,7 +283,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                     onClick={() => updateSet(currentIdx, si, { reps: set.reps + 1 })}
                     className="text-muted-foreground"
                   >
-                    <Plus size={14} />
+                    <Plus aria-hidden="true" focusable="false" size={14} />
                   </button>
                 </div>
                 {/* Weight stepper */}
@@ -292,7 +292,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                     onClick={() => updateSet(currentIdx, si, { weightKg: Math.max(0, set.weightKg - 2.5) })}
                     className="text-muted-foreground"
                   >
-                    <Minus size={14} />
+                    <Minus aria-hidden="true" focusable="false" size={14} />
                   </button>
                   <input
                     type="number"
@@ -306,7 +306,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                     onClick={() => updateSet(currentIdx, si, { weightKg: set.weightKg + 2.5 })}
                     className="text-muted-foreground"
                   >
-                    <Plus size={14} />
+                    <Plus aria-hidden="true" focusable="false" size={14} />
                   </button>
                 </div>
                 {/* Completed toggle */}
@@ -314,7 +314,7 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                   onClick={() => updateSet(currentIdx, si, { completed: !set.completed })}
                   className="flex items-center justify-center"
                 >
-                  <CheckCircle2
+                  <CheckCircle2 aria-hidden="true" focusable="false"
                     size={18}
                     style={{ color: set.completed ? 'var(--color-accent)' : 'var(--color-border)' }}
                   />
@@ -328,14 +328,14 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                 onClick={() => addSet(currentIdx)}
                 className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground"
               >
-                <Plus size={13} /> Add set
+                <Plus aria-hidden="true" focusable="false" size={13} /> Add set
               </button>
               {currentState.sets.length > 1 && (
                 <button
                   onClick={() => removeSet(currentIdx)}
                   className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground"
                 >
-                  <Minus size={13} /> Remove last
+                  <Minus aria-hidden="true" focusable="false" size={13} /> Remove last
                 </button>
               )}
             </div>
@@ -387,14 +387,14 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
           onClick={() => setCurrentIdx(i => i - 1)}
           className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border flex items-center justify-center gap-2 text-foreground disabled:opacity-40"
         >
-          <ChevronLeft size={16} /> Previous
+          <ChevronLeft aria-hidden="true" focusable="false" size={16} /> Previous
         </button>
         {currentIdx < exercises.length - 1 ? (
           <button
             onClick={() => setCurrentIdx(i => i + 1)}
             className="flex-1 py-3 rounded-2xl text-sm font-medium border border-border flex items-center justify-center gap-2 text-foreground"
           >
-            Next <ChevronRight size={16} />
+            Next <ChevronRight aria-hidden="true" focusable="false" size={16} />
           </button>
         ) : (
           <button

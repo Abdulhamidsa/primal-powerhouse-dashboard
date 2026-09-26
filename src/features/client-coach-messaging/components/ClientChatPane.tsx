@@ -28,7 +28,7 @@ export function ClientChatPane({
             className="mb-3 inline-flex items-center gap-2 text-xs"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft aria-hidden="true" focusable="false" size={14} />
             Back to clients
           </button>
         ) : null}
@@ -54,7 +54,7 @@ export function ClientChatPane({
             className="inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
           >
-            <NotebookText size={14} />
+            <NotebookText aria-hidden="true" focusable="false" size={14} />
             Notes
           </button>
         </div>

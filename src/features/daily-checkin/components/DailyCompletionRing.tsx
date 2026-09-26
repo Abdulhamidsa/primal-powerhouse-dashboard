@@ -93,7 +93,7 @@ function ProgressRing({ value, size = 96, strokeWidth = 8 }: ProgressRingProps) 
                 '0 10px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
             }}
           >
-            <Activity
+            <Activity aria-hidden="true" focusable="false"
               size={Math.max(18, size * 0.18)}
               className="text-[var(--color-accent)]"
               strokeWidth={2.2}

@@ -184,7 +184,7 @@ export default function MealsPage() {
               onClick={() => setShowAddModal(true)}
               className="gap-2 rounded-xl bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90"
             >
-              <Plus size={16} />
+              <Plus aria-hidden="true" focusable="false" size={16} />
               Create manually
             </Button>
             <Button
@@ -192,7 +192,7 @@ export default function MealsPage() {
               onClick={() => setShowBuilderModal(true)}
               className="gap-2 rounded-xl border-white/10 bg-white/[0.06] text-foreground hover:bg-white/[0.1]"
             >
-              <ChefHat size={16} />
+              <ChefHat aria-hidden="true" focusable="false" size={16} />
               Add meal template
             </Button>
           </>
@@ -208,7 +208,7 @@ export default function MealsPage() {
 
       <AdminPanel className="overflow-hidden">
         <AdminPanelHeader
-          icon={<Sparkles size={18} />}
+          icon={<Sparkles aria-hidden="true" focusable="false" size={18} />}
           title="Library workbench"
           description="Use quick controls to find meals by type, name, ingredients, tags, macro profile, image status, or prep speed."
           meta={

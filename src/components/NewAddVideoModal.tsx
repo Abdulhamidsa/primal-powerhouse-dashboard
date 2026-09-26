@@ -286,7 +286,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                       <div className="flex items-center gap-2">
-                        <VideoIcon className="w-4 h-4" />
+                        <VideoIcon aria-hidden="true" focusable="false" className="w-4 h-4" />
                         Video Title *
                       </div>
                     </label>
@@ -307,7 +307,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                       <div className="flex items-center gap-2">
-                        <Play className="w-4 h-4" />
+                        <Play aria-hidden="true" focusable="false" className="w-4 h-4" />
                         Video URL *
                       </div>
                     </label>
@@ -325,7 +325,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                     />
                     {formData.videoUrl && !previewType && (
                       <p className="text-sm mt-2 flex items-center gap-2" style={{ color: 'var(--color-accent)' }}>
-                        <Info className="w-4 h-4" />
+                        <Info aria-hidden="true" focusable="false" className="w-4 h-4" />
                         URL format not recognized. Supported: YouTube, Vimeo, MP4/WebM/OGG
                       </p>
                     )}
@@ -357,7 +357,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                 <div className="space-y-2">
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                     <div className="flex items-center gap-2">
-                      <Play className="w-4 h-4" />
+                      <Play aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Video Preview
                     </div>
                   </label>
@@ -395,7 +395,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                         className="flex flex-col items-center justify-center h-full"
                         style={{ color: 'var(--color-text-muted)' }}
                       >
-                        <Play className="w-12 h-12 mb-2 opacity-30" />
+                        <Play aria-hidden="true" focusable="false" className="w-12 h-12 mb-2 opacity-30" />
                         <p className="text-sm font-medium">Enter a video URL to see preview</p>
                       </div>
                     )}
@@ -419,7 +419,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                       <div className="flex items-center gap-2">
-                        <Info className="w-4 h-4" />
+                        <Info aria-hidden="true" focusable="false" className="w-4 h-4" />
                         Description *
                       </div>
                     </label>
@@ -441,7 +441,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                         <div className="flex items-center gap-2">
-                          <Tag className="w-4 h-4" />
+                          <Tag aria-hidden="true" focusable="false" className="w-4 h-4" />
                           Category
                         </div>
                       </label>
@@ -466,7 +466,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                         <div className="flex items-center gap-2">
-                          <Award className="w-4 h-4" />
+                          <Award aria-hidden="true" focusable="false" className="w-4 h-4" />
                           Difficulty
                         </div>
                       </label>
@@ -492,7 +492,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
+                        <Clock aria-hidden="true" focusable="false" className="w-4 h-4" />
                         Duration (minutes) *
                       </div>
                     </label>
@@ -514,7 +514,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
                       <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4" />
+                        <Tag aria-hidden="true" focusable="false" className="w-4 h-4" />
                         Tags (comma-separated)
                       </div>
                     </label>
@@ -559,7 +559,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                             style={{ color: 'var(--color-accent)' }}
                             type="button"
                           >
-                            <X className="w-4 h-4" />
+                            <X aria-hidden="true" focusable="false" className="w-4 h-4" />
                           </button>
                         </div>
                       ))}
@@ -572,7 +572,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                       }}
                       type="button"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Add Instruction
                     </button>
                   </div>
@@ -602,7 +602,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                             style={{ color: 'var(--color-accent)' }}
                             type="button"
                           >
-                            <X className="w-4 h-4" />
+                            <X aria-hidden="true" focusable="false" className="w-4 h-4" />
                           </button>
                         </div>
                       ))}
@@ -615,7 +615,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                       }}
                       type="button"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus aria-hidden="true" focusable="false" className="w-4 h-4" />
                       Add Tip
                     </button>
                   </div>
@@ -631,7 +631,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                 <div>
                   <h3 className="font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
                     <div className="flex items-center gap-2">
-                      <Dumbbell className="w-5 h-5" />
+                      <Dumbbell aria-hidden="true" focusable="false" className="w-5 h-5" />
                       Equipment Required *
                     </div>
                   </h3>
@@ -670,7 +670,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                 <div>
                   <h3 className="font-semibold mb-3" style={{ color: 'var(--color-text)' }}>
                     <div className="flex items-center gap-2">
-                      <Activity className="w-5 h-5" />
+                      <Activity aria-hidden="true" focusable="false" className="w-5 h-5" />
                       Muscle Groups Targeted *
                     </div>
                   </h3>

@@ -87,11 +87,11 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_5%,rgba(193,122,93,0.12),transparent_30%),#070706]" />
           <header className="relative z-20 flex min-h-14 items-center gap-3 border-b border-white/10 px-4 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <BookOpenText size={18} className="shrink-0 text-[#c17a5d]" />
+              <BookOpenText aria-hidden="true" focusable="false" size={18} className="shrink-0 text-[#c17a5d]" />
               <div className="min-w-0"><p className="truncate text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">Chapter {page.chapterNumber ?? '—'}</p><p className="truncate text-sm font-semibold">{page.chapterLabel}</p></div>
             </div>
-            <button type="button" onClick={() => onNavigate('contents')} aria-label="Open table of contents" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><List size={18} /></button>
-            <button type="button" onClick={onClose} aria-label="Close handbook" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><X size={18} /></button>
+            <button type="button" onClick={() => onNavigate('contents')} aria-label="Open table of contents" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><List aria-hidden="true" focusable="false" size={18} /></button>
+            <button type="button" onClick={onClose} aria-label="Close handbook" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><X aria-hidden="true" focusable="false" size={18} /></button>
           </header>
 
           <div
@@ -127,12 +127,12 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
 
           <footer className="relative z-20 border-t border-white/10 px-4 pb-2 pt-2 sm:px-6">
             <div className="mx-auto flex max-w-[780px] items-center gap-3">
-              <button type="button" onClick={onPrevious} disabled={pageIndex === 0} aria-label="Previous page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronLeft size={20} /></button>
+              <button type="button" onClick={onPrevious} disabled={pageIndex === 0} aria-label="Previous page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronLeft aria-hidden="true" focusable="false" size={20} /></button>
               <div className="min-w-0 flex-1">
                 <div className="h-px overflow-hidden bg-white/15"><div className="h-full bg-[#c17a5d] transition-[width] duration-300" style={{ width: `${progress}%` }} /></div>
                 <div className="mt-2 flex justify-between text-[9px] font-bold uppercase tracking-[0.18em] text-white/40"><span>{progress}% read</span><span>{pageIndex + 1} / {HANDBOOK_PAGES.length}</span></div>
               </div>
-              <button type="button" onClick={onNext} disabled={pageIndex === HANDBOOK_PAGES.length - 1} aria-label="Next page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronRight size={20} /></button>
+              <button type="button" onClick={onNext} disabled={pageIndex === HANDBOOK_PAGES.length - 1} aria-label="Next page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronRight aria-hidden="true" focusable="false" size={20} /></button>
             </div>
           </footer>
           <p className="sr-only" aria-live="polite">Page {pageIndex + 1} of {HANDBOOK_PAGES.length}: {page.title}</p>

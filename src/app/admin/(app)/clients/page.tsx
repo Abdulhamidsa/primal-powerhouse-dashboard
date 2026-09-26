@@ -133,7 +133,7 @@ function ClientCommandHeader({
               {client.isSystemTemplate ? <span className="rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">System template</span> : null}
             </div>
             <p className="mt-1 flex items-center gap-2 truncate text-sm text-muted-foreground">
-              <Mail size={14} />
+              <Mail aria-hidden="true" focusable="false" size={14} />
               {client.email}
             </p>
             {client.status === 'INACTIVE' && client.deletionScheduledFor ? (
@@ -156,7 +156,7 @@ function ClientCommandHeader({
             onClick={onEditProfileAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
           >
-            <UserPen size={15} />
+            <UserPen aria-hidden="true" focusable="false" size={15} />
             Edit profile
           </button> : null}
            {!client.isSystemTemplate && client.status === 'ACTIVE' ? <button
@@ -164,7 +164,7 @@ function ClientCommandHeader({
             onClick={onOpenHealthMetricsAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
           >
-            <Calculator size={15} />
+            <Calculator aria-hidden="true" focusable="false" size={15} />
             Health metrics
           </button> : null}
            {!client.isSystemTemplate && client.status !== 'INACTIVE' ? <button
@@ -172,7 +172,7 @@ function ClientCommandHeader({
             onClick={onArchiveClientAction}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
           >
-            {client.status === 'ARCHIVED' ? <Undo2 size={15} /> : <Archive size={15} />}
+            {client.status === 'ARCHIVED' ? <Undo2 aria-hidden="true" focusable="false" size={15} /> : <Archive aria-hidden="true" focusable="false" size={15} />}
             {client.status === 'ARCHIVED' ? 'Restore' : 'Archive'}
           </button> : null}
         </div>
@@ -595,7 +595,7 @@ export default function ClientsPage() {
             onClick={() => setShowAddClientModal(true)}
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
           >
-            <Users size={15} />
+            <Users aria-hidden="true" focusable="false" size={15} />
             Add client
           </button>
         }
@@ -677,7 +677,7 @@ export default function ClientsPage() {
                           onClick={() => { setActiveRailTab('chat'); setShowCommunicationDrawer(true); }}
                           className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
-                          <MessageSquare size={14} />
+                          <MessageSquare aria-hidden="true" focusable="false" size={14} />
                           Chat
                         </button> : null}
                         {!client.isSystemTemplate ? <button
@@ -685,7 +685,7 @@ export default function ClientsPage() {
                           onClick={() => { setActiveRailTab('notes'); setShowCommunicationDrawer(true); }}
                           className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
-                          <NotebookText size={14} />
+                          <NotebookText aria-hidden="true" focusable="false" size={14} />
                           Notes
                         </button> : null}
                         {!client.isSystemTemplate ? <button
@@ -693,7 +693,7 @@ export default function ClientsPage() {
                           onClick={() => { setActiveRailTab('actions'); setShowCommunicationDrawer(true); }}
                           className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
-                          <Settings2 size={14} />
+                          <Settings2 aria-hidden="true" focusable="false" size={14} />
                           Actions
                         </button> : null}
                         <button
@@ -701,7 +701,7 @@ export default function ClientsPage() {
                           onClick={() => setShowChangeUserDrawer(true)}
                           className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
                         >
-                          <Search size={14} />
+                          <Search aria-hidden="true" focusable="false" size={14} />
                           Change client
                         </button>
                       </>
@@ -716,7 +716,7 @@ export default function ClientsPage() {
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 <div className="space-y-2 text-center">
-                  <Users size={22} className="mx-auto" />
+                  <Users aria-hidden="true" focusable="false" size={22} className="mx-auto" />
                   <p>Select a client to view details.</p>
                 </div>
               </div>
@@ -733,7 +733,7 @@ export default function ClientsPage() {
                     <p className="text-sm font-semibold text-foreground">Coach workspace</p>
                     <p className="text-xs text-muted-foreground">{client.name}</p>
                   </div>
-                  <button type="button" aria-label="Close coach workspace" onClick={() => setShowCommunicationDrawer(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X size={17} /></button>
+                  <button type="button" aria-label="Close coach workspace" onClick={() => setShowCommunicationDrawer(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X aria-hidden="true" focusable="false" size={17} /></button>
                 </div>
                 <div className="grid grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
                   {[
@@ -793,7 +793,7 @@ export default function ClientsPage() {
                       }}
                       className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
                     >
-                      <ClipboardList size={16} className="text-[var(--color-accent)]" />
+                      <ClipboardList aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
                       Assign meals
                     </button>
                     <button
@@ -804,7 +804,7 @@ export default function ClientsPage() {
                       }}
                       className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
                     >
-                      <Dumbbell size={16} className="text-[var(--color-accent)]" />
+                      <Dumbbell aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
                       Assign videos
                     </button>
                     <button
@@ -812,7 +812,7 @@ export default function ClientsPage() {
                       onClick={() => setShowProfileEditModal(true)}
                       className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
                     >
-                      <UserPen size={16} className="text-[var(--color-accent)]" />
+                      <UserPen aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
                       Edit profile
                     </button>
                     <button
@@ -820,7 +820,7 @@ export default function ClientsPage() {
                       onClick={() => setShowHealthMetricsModal(true)}
                       className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
                     >
-                      <Calculator size={16} className="text-[var(--color-accent)]" />
+                      <Calculator aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
                       Update health metrics
                     </button>
                     </> : null}
@@ -829,7 +829,7 @@ export default function ClientsPage() {
                       onClick={handleArchiveClient}
                       className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
                     >
-                      {client.status === 'ARCHIVED' ? <Undo2 size={16} /> : <Archive size={16} />}
+                      {client.status === 'ARCHIVED' ? <Undo2 aria-hidden="true" focusable="false" size={16} /> : <Archive aria-hidden="true" focusable="false" size={16} />}
                       {client.status === 'ARCHIVED' ? 'Restore client' : 'Archive client'}
                     </button> : null}
                      {client.status === 'ACTIVE' ? (
@@ -842,7 +842,7 @@ export default function ClientsPage() {
                          }}
                          className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.04] px-3 py-3 text-left text-sm text-red-200 transition-colors hover:bg-red-500/[0.09]"
                        >
-                         <Trash2 size={16} />
+                         <Trash2 aria-hidden="true" focusable="false" size={16} />
                          Delete client
                        </button>
                      ) : null}
@@ -943,7 +943,7 @@ export default function ClientsPage() {
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
                 aria-label="Close user picker"
               >
-                <X size={14} />
+                <X aria-hidden="true" focusable="false" size={14} />
               </button>
             </div>
             <div className="p-4 space-y-3">
@@ -998,7 +998,7 @@ export default function ClientsPage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">Danger zone</p>
                 <h2 id="delete-client-title" className="mt-2 text-xl font-semibold text-foreground">Delete {client.name}?</h2>
               </div>
-              <button type="button" aria-label="Close delete dialog" onClick={() => setShowDeleteClientDialog(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X size={17} /></button>
+              <button type="button" aria-label="Close delete dialog" onClick={() => setShowDeleteClientDialog(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X aria-hidden="true" focusable="false" size={17} /></button>
             </div>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
               This immediately removes access and anonymizes the client. Permanent deletion will be scheduled using the existing privacy grace period.

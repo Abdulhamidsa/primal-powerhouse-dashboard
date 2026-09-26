@@ -196,7 +196,7 @@ export function MessageList({
                             className="inline-flex items-center gap-1 text-[10px]"
                             style={{ color: 'var(--color-danger)' }}
                           >
-                            <AlertTriangle size={12} />
+                            <AlertTriangle aria-hidden="true" focusable="false" size={12} />
                             Failed
                           </span>
                           {onRetryAction ? (
@@ -206,7 +206,7 @@ export function MessageList({
                               className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px]"
                               style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}
                             >
-                              <RotateCcw size={11} />
+                              <RotateCcw aria-hidden="true" focusable="false" size={11} />
                               Retry
                             </button>
                           ) : null}

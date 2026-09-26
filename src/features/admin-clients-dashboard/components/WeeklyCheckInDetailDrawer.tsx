@@ -162,7 +162,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
             className="rounded-lg p-1.5 transition-opacity hover:opacity-70"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            <X size={18} />
+            <X aria-hidden="true" focusable="false" size={18} />
           </button>
         </div>
 
@@ -174,7 +174,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
             >
               <div className="flex items-center gap-2">
-                <Scale size={14} style={{ color: 'var(--color-text-muted)' }} />
+                <Scale aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
                 <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                   Weight
                 </span>
@@ -188,7 +188,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
           <div>
             <SectionHeading>
               <span className="inline-flex items-center gap-1.5">
-                <Camera size={12} /> Progress Photos
+                <Camera aria-hidden="true" focusable="false" size={12} /> Progress Photos
               </span>
             </SectionHeading>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -201,7 +201,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
           <div>
             <SectionHeading>
               <span className="inline-flex items-center gap-1.5">
-                <FileText size={12} /> Reflection
+                <FileText aria-hidden="true" focusable="false" size={12} /> Reflection
               </span>
             </SectionHeading>
             <div className="space-y-3">
@@ -218,7 +218,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
         >
           {isReviewed ? (
             <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
-              <CheckCircle size={14} />
+              <CheckCircle aria-hidden="true" focusable="false" size={14} />
               Marked as reviewed
             </div>
           ) : (
@@ -234,7 +234,7 @@ export function WeeklyCheckInDetailDrawer({ checkIn, clientId, onClose }: Props)
                 opacity: isMarkingReviewed ? 0.6 : 1,
               }}
             >
-              <CheckCircle size={14} />
+              <CheckCircle aria-hidden="true" focusable="false" size={14} />
               {isMarkingReviewed ? 'Saving...' : 'Mark as reviewed'}
             </button>
           )}

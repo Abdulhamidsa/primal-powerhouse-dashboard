@@ -1,5 +1,7 @@
 'use client';
 
+
+import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import UserMeals from '@/components/UserMeals';
@@ -81,7 +83,7 @@ export default function UserDashboard() {
             onClick={handleLogout}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
           >
-            <LogOut size={20} />
+            <LogOut aria-hidden="true" focusable="false" size={20} />
           </button>
         </div>
       </header>
@@ -94,7 +96,7 @@ export default function UserDashboard() {
             <div className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30">
               <div className="text-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">✨</span>
+                  <span className="text-2xl"><ArrowsClockwiseIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                 </div>
                 <blockquote className="text-lg font-medium text-white mb-2">
                   &quot;Success is the sum of small efforts repeated day in and day out.&quot;
@@ -110,7 +112,7 @@ export default function UserDashboard() {
                 className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-6 text-left hover:from-green-500/30 hover:to-emerald-600/30 transition-all duration-300"
               >
                 <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4">
-                  <Utensils className="text-green-400" size={24} />
+                  <Utensils aria-hidden="true" focusable="false" className="text-green-400" size={24} />
                 </div>
                 <h3 className="text-white font-semibold mb-1">Nutrition</h3>
                 <p className="text-slate-400 text-sm">View meal plans</p>
@@ -121,7 +123,7 @@ export default function UserDashboard() {
                 className="bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 rounded-2xl p-6 text-left hover:from-purple-500/30 hover:to-pink-600/30 transition-all duration-300"
               >
                 <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
-                  <Play className="text-purple-400" size={24} />
+                  <Play aria-hidden="true" focusable="false" className="text-purple-400" size={24} />
                 </div>
                 <h3 className="text-white font-semibold mb-1">Training</h3>
                 <p className="text-slate-400 text-sm">Watch workouts</p>
@@ -135,7 +137,7 @@ export default function UserDashboard() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                  <User className="text-blue-400" size={24} />
+                  <User aria-hidden="true" focusable="false" className="text-blue-400" size={24} />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">Your Coach</h3>
@@ -160,7 +162,7 @@ export default function UserDashboard() {
               activeSection === 'home' ? 'text-blue-400 bg-blue-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Home size={20} />
+            <Home aria-hidden="true" focusable="false" size={20} />
             <span className="text-xs font-medium">Home</span>
           </button>
 
@@ -170,7 +172,7 @@ export default function UserDashboard() {
               activeSection === 'meals' ? 'text-green-400 bg-green-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Utensils size={20} />
+            <Utensils aria-hidden="true" focusable="false" size={20} />
             <span className="text-xs font-medium">Meals</span>
           </button>
 
@@ -180,7 +182,7 @@ export default function UserDashboard() {
               activeSection === 'videos' ? 'text-purple-400 bg-purple-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Play size={20} />
+            <Play aria-hidden="true" focusable="false" size={20} />
             <span className="text-xs font-medium">Training</span>
           </button>
 
@@ -190,7 +192,7 @@ export default function UserDashboard() {
               activeSection === 'coach' ? 'text-blue-400 bg-blue-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <User size={20} />
+            <User aria-hidden="true" focusable="false" size={20} />
             <span className="text-xs font-medium">Coach</span>
           </button>
         </div>

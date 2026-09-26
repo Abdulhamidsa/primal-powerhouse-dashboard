@@ -248,7 +248,7 @@ export default function HealthMetricsModal({
             className="rounded-xl border p-2"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
           >
-            <X className="h-5 w-5" />
+            <X aria-hidden="true" focusable="false" className="h-5 w-5" />
           </button>
         </div>
 
@@ -280,7 +280,7 @@ export default function HealthMetricsModal({
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
             >
               <div className="flex items-center gap-2">
-                <Target size={16} style={{ color: 'var(--color-accent)' }} />
+                <Target aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
                 <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                   Goal Direction
                 </h3>
@@ -334,7 +334,7 @@ export default function HealthMetricsModal({
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
             >
               <div className="flex items-center gap-2">
-                <Gauge size={16} style={{ color: 'var(--color-accent)' }} />
+                <Gauge aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
                 <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                   Coaching Phase
                 </h3>
@@ -362,7 +362,7 @@ export default function HealthMetricsModal({
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
             >
               <div className="flex items-center gap-2">
-                <Activity size={16} style={{ color: 'var(--color-accent)' }} />
+                <Activity aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
                 <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                   Activity Profile
                 </h3>

@@ -95,7 +95,7 @@ export default function UserNotificationSettingsPage() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md space-y-6 px-4 pb-32 pt-5">
         <Link href="/user/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft aria-hidden="true" focusable="false" className="h-4 w-4" />
           Profile
         </Link>
 
@@ -108,7 +108,7 @@ export default function UserNotificationSettingsPage() {
         <section className="overflow-hidden rounded-3xl border border-border bg-card">
           <div className="flex items-center gap-3 px-4 py-4">
             <div className="grid h-11 w-11 place-items-center rounded-2xl bg-muted/50">
-              <Bell className="h-5 w-5" />
+              <Bell aria-hidden="true" focusable="false" className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">Coach Messages</p>
@@ -162,7 +162,7 @@ export default function UserNotificationSettingsPage() {
             </div>
 
             <div className="mt-4 flex items-start gap-2 rounded-2xl bg-muted/25 p-3 text-xs text-muted-foreground">
-              <Smartphone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <Smartphone aria-hidden="true" focusable="false" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <p>
                 {installState === 'browser' && platform === 'ios'
                   ? 'On iPhone, use Share > Add to Home Screen, then reopen the installed app and enable notifications there.'

@@ -30,21 +30,21 @@ export function SelfServiceDashboardContent({ summary }: { summary: UserDashboar
         eyebrow="Starter program"
         title={`Welcome back, ${firstName}`}
         description="Your training, nutrition, and next step in one place."
-        icon={<Flame size={17} />}
+        icon={<Flame aria-hidden="true" focusable="false" size={17} />}
         statusItems={[
           { label: 'Meals', value: mealsSelected ? `${mealsCompleted}/${mealsSelected} complete` : 'Choose today', tone: mealsDone ? 'good' : 'neutral' },
           { label: 'Training', value: trainingDone ? 'Complete' : trainingReady ? 'Ready' : 'Waiting', tone: trainingDone ? 'good' : trainingReady ? 'neutral' : 'warn' },
         ]}
       >
         <Link href={continueAction.href} className="flex min-h-12 items-center justify-between rounded-2xl bg-[var(--color-accent)] px-4 text-sm font-semibold text-[var(--color-text-on-accent)] transition-transform active:scale-[0.99]">
-          <span>{continueAction.label}</span><ArrowRight size={17} />
+          <span>{continueAction.label}</span><ArrowRight aria-hidden="true" focusable="false" size={17} />
         </Link>
       </UserPageHero>
 
       <section className="grid grid-cols-2 gap-3" aria-label="Your program">
         <ProgramCard
           href="/user/my-plan"
-          icon={<Utensils size={18} />}
+          icon={<Utensils aria-hidden="true" focusable="false" size={18} />}
           eyebrow="Nutrition"
           title="Meal plan"
           detail={mealsSelected ? `${mealsCompleted} of ${mealsSelected} meals complete` : 'Choose today’s meals'}
@@ -52,7 +52,7 @@ export function SelfServiceDashboardContent({ summary }: { summary: UserDashboar
         />
         <ProgramCard
           href="/user/training"
-          icon={<Dumbbell size={18} />}
+          icon={<Dumbbell aria-hidden="true" focusable="false" size={18} />}
           eyebrow="Training"
           title={summary.training.activePlanName || 'Training plan'}
           detail={summary.training.activeSessionId ? 'Session in progress' : trainingReady ? 'Your plan is ready' : 'Open your program'}
@@ -71,13 +71,13 @@ export function SelfServiceDashboardContent({ summary }: { summary: UserDashboar
             {dailyTotal > 0 ? `${dailyCompleted}/${dailyTotal}` : '—'}
           </div>
         </div>
-        {summary.streakCount > 0 ? <p className="mt-3 flex items-center gap-2 border-t border-[var(--color-border)] pt-3 text-xs text-[var(--color-text-muted)]"><Check size={14} className="text-[var(--color-accent)]" /> {summary.streakCount} day consistency streak</p> : null}
+        {summary.streakCount > 0 ? <p className="mt-3 flex items-center gap-2 border-t border-[var(--color-border)] pt-3 text-xs text-[var(--color-text-muted)]"><Check aria-hidden="true" focusable="false" size={14} className="text-[var(--color-accent)]" /> {summary.streakCount} day consistency streak</p> : null}
       </section>
 
       <Link href="/user/learn" className="group flex min-h-[88px] items-center gap-4 rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 transition-colors hover:border-[var(--color-accent)]/40">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><BookOpenText size={19} /></span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><BookOpenText aria-hidden="true" focusable="false" size={19} /></span>
         <span className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">Method</span><span className="mt-1 block text-sm font-semibold text-[var(--color-text)]">Build the knowledge behind your program</span></span>
-        <ArrowRight size={17} className="text-[var(--color-text-muted)] transition-transform group-hover:translate-x-0.5" />
+        <ArrowRight aria-hidden="true" focusable="false" size={17} className="text-[var(--color-text-muted)] transition-transform group-hover:translate-x-0.5" />
       </Link>
     </div>
   );
@@ -90,7 +90,7 @@ function ProgramCard({ href, icon, eyebrow, title, detail, progress, active }: {
       <p className="mt-4 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">{eyebrow}</p>
       <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-[var(--color-text)]">{title}</p>
       <p className="mt-auto pt-3 text-[11px] leading-4 text-[var(--color-text-muted)]">{detail}</p>
-      {typeof progress === 'number' ? <div className="mt-2 h-1 overflow-hidden rounded-full bg-[var(--color-bg-alt)]"><div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${progress}%` }} /></div> : active ? <div className="mt-2 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--color-accent)]"><CalendarCheck2 size={12} /> Active</div> : null}
+      {typeof progress === 'number' ? <div className="mt-2 h-1 overflow-hidden rounded-full bg-[var(--color-bg-alt)]"><div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${progress}%` }} /></div> : active ? <div className="mt-2 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--color-accent)]"><CalendarCheck2 aria-hidden="true" focusable="false" size={12} /> Active</div> : null}
     </Link>
   );
 }

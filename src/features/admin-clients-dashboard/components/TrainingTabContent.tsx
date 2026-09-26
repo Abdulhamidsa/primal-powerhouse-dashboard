@@ -71,7 +71,7 @@ export default function TrainingTabContent({ clientId }: Props) {
             className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg"
             style={{ color: 'var(--color-accent)' }}
           >
-            <Plus size={14} />
+            <Plus aria-hidden="true" focusable="false" size={14} />
             Assign plan
           </button>
         )}
@@ -86,7 +86,7 @@ export default function TrainingTabContent({ clientId }: Props) {
               onClick={() => handleAssign(plan.id)}
               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
             >
-              <Dumbbell size={16} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+              <Dumbbell aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
               <div>
                 <p className="text-sm font-medium text-[var(--color-text-primary)]">{plan.name}</p>
                 <p className="text-xs text-[var(--color-text-secondary)]">
@@ -120,7 +120,7 @@ export default function TrainingTabContent({ clientId }: Props) {
                   className="flex items-center gap-3 px-4 py-3 cursor-pointer"
                   onClick={() => setExpandedId(isExpanded ? null : a.id)}
                 >
-                  <Dumbbell
+                  <Dumbbell aria-hidden="true" focusable="false"
                     size={16}
                     style={{ color: a.isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)', flexShrink: 0 }}
                   />
@@ -143,9 +143,9 @@ export default function TrainingTabContent({ clientId }: Props) {
                       title={a.isActive ? 'Deactivate' : 'Activate'}
                     >
                       {a.isActive ? (
-                        <ToggleRight size={18} style={{ color: 'var(--color-accent)' }} />
+                        <ToggleRight aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-accent)' }} />
                       ) : (
-                        <ToggleLeft size={18} style={{ color: 'var(--color-text-secondary)' }} />
+                        <ToggleLeft aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-text-secondary)' }} />
                       )}
                     </button>
                     <button
@@ -157,12 +157,12 @@ export default function TrainingTabContent({ clientId }: Props) {
                       className="p-1.5 rounded-lg hover:bg-[var(--color-surface-hover)] disabled:opacity-50 text-[var(--color-text-secondary)]"
                       title="Remove"
                     >
-                      <Trash2 size={15} />
+                      <Trash2 aria-hidden="true" focusable="false" size={15} />
                     </button>
                     {isExpanded ? (
-                      <ChevronUp size={16} className="text-[var(--color-text-secondary)]" />
+                      <ChevronUp aria-hidden="true" focusable="false" size={16} className="text-[var(--color-text-secondary)]" />
                     ) : (
-                      <ChevronDown size={16} className="text-[var(--color-text-secondary)]" />
+                      <ChevronDown aria-hidden="true" focusable="false" size={16} className="text-[var(--color-text-secondary)]" />
                     )}
                   </div>
                 </div>

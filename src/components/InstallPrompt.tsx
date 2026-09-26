@@ -119,7 +119,7 @@ export default function InstallPrompt() {
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-primary/10 text-primary">
-              <Download size={18} />
+              <Download aria-hidden="true" focusable="false" size={18} />
             </div>
 
             <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ export default function InstallPrompt() {
                   className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                   aria-label="Close"
                 >
-                  <X size={16} />
+                  <X aria-hidden="true" focusable="false" size={16} />
                 </button>
               </div>
 

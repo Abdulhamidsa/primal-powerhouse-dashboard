@@ -80,7 +80,7 @@ export function MealOptionCard({
                 key={item}
                 className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-muted)]"
               >
-                <Clock3 size={11} />
+                <Clock3 aria-hidden="true" focusable="false" size={11} />
                 {item}
               </span>
             ))}
@@ -102,7 +102,7 @@ export function MealOptionCard({
             disabled ? 'cursor-not-allowed opacity-60' : '',
           ].join(' ')}
         >
-          {selected ? <CheckCircle2 size={16} /> : <PlusCircle size={16} />}
+          {selected ? <CheckCircle2 aria-hidden="true" focusable="false" size={16} /> : <PlusCircle aria-hidden="true" focusable="false" size={16} />}
           {selected ? 'Selected' : 'Select'}
         </button>
       </div>

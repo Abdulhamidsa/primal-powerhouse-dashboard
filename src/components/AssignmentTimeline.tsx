@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CalendarIcon, ForkKnifeIcon, NotePencilIcon, TrashIcon, VideoCameraIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import Image from 'next/image';
 import { VideoAssignment } from '@/types/video';
@@ -136,17 +138,17 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'video_assigned':
-        return '🎥';
+        return <VideoCameraIcon className="h-5 w-5" aria-hidden="true" />;
       case 'meal_assigned':
-        return '🍽️';
+        return <ForkKnifeIcon className="h-5 w-5" aria-hidden="true" />;
       case 'video_removed':
-        return '❌';
+        return <TrashIcon className="h-5 w-5" aria-hidden="true" />;
       case 'meal_removed':
-        return '❌';
+        return <TrashIcon className="h-5 w-5" aria-hidden="true" />;
       case 'note_added':
-        return '📝';
+        return <NotePencilIcon className="h-5 w-5" aria-hidden="true" />;
       default:
-        return '📅';
+        return <CalendarIcon className="h-5 w-5" aria-hidden="true" />;
     }
   };
 
@@ -173,7 +175,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-          <span className="text-xl">📅</span>
+          <span className="text-xl"><CalendarIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
           Assignment Timeline
         </h3>
         <div className="text-sm text-gray-500">{timeline.length} total assignments</div>
@@ -217,8 +219,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                           className="text-blue-600 hover:text-blue-800 text-sm font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                           title="Add/Edit Notes"
                         >
-                          📝
-                        </button>
+                          </button>
 
                         {event.type.includes('assigned') && (
                           <button
@@ -228,8 +229,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                             className="text-red-600 hover:text-red-800 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
                             title="Remove Assignment"
                           >
-                            🗑️
-                          </button>
+                            </button>
                         )}
                       </div>
                     </div>
@@ -238,7 +238,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                     {event.notes && (
                       <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <div className="flex items-start gap-2">
-                          <span className="text-blue-600">📝</span>
+                          <span className="text-blue-600"><NotePencilIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                           <p className="text-sm text-blue-800">{event.notes}</p>
                         </div>
                       </div>
@@ -294,7 +294,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                             />
                           ) : (
                             <div className="w-16 h-12 bg-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <span className="text-purple-600">🎥</span>
+                              <span className="text-purple-600"><VideoCameraIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -322,21 +322,21 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                           <div className="w-16 h-12 bg-green-200 rounded-lg flex items-center justify-center flex-shrink-0">
                             <span className="text-green-600 text-lg">
                               {event.item.meal.type === 'breakfast'
-                                ? '🍳'
+                                ? ''
                                 : event.item.meal.type === 'lunch'
-                                  ? '🥗'
+                                  ? ''
                                   : event.item.meal.type === 'dinner'
-                                    ? '🍽️'
-                                    : '🍎'}
+                                    ? ''
+                                    : ''}
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h5 className="font-medium text-green-900 text-sm">{event.item.meal.name}</h5>
                             <div className="grid grid-cols-2 gap-2 text-xs text-green-700 mt-1">
-                              <span>🔥 {event.item.meal.calories} cal</span>
-                              <span>🥩 {event.item.meal.protein}g protein</span>
-                              <span>🍞 {event.item.meal.carbs}g carbs</span>
-                              <span>🥑 {event.item.meal.fat}g fat</span>
+                              <span>{event.item.meal.calories} cal</span>
+                              <span>{event.item.meal.protein}g protein</span>
+                              <span>{event.item.meal.carbs}g carbs</span>
+                              <span>{event.item.meal.fat}g fat</span>
                             </div>
                             {event.item.dueDate && (
                               <div className="text-xs text-green-600 mt-1">
@@ -355,7 +355,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📅</div>
+          <div className="text-6xl mb-4"><CalendarIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assignments Yet</h3>
           <p className="text-gray-500">Start assigning videos and meals to see the timeline here.</p>
         </div>

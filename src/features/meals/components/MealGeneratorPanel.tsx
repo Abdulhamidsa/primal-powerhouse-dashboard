@@ -82,7 +82,7 @@
 //       {/* <div className="border-b border-[var(--color-border)] bg-[var(--color-bg-alt)] px-4 py-3 sm:px-5">
 //         <div className="flex items-center gap-2 text-[var(--color-text)]">
 //           <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-1.5">
-//             <ChefHat className="h-4 w-4 text-[var(--color-accent)]" />
+//             <ChefHat aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
 //           </div>
 //           <div>
 //             <h3 className="text-sm font-semibold">AI Meal Generator</h3>
@@ -142,7 +142,7 @@
 //               checked={generateImages}
 //               onChange={e => setGenerateImages(e.target.checked)}
 //             />
-//             <ImageIcon className="h-4 w-4 text-[var(--color-text-muted)]" />
+//             <ImageIcon aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-text-muted)]" />
 //             <span>Generate images</span>
 //           </label>
 //           <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@
 //               className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
 //               disabled={loading}
 //             >
-//               <Sparkles className="h-4 w-4" />
+//               <Sparkles aria-hidden="true" focusable="false" className="h-4 w-4" />
 //               {loading ? 'Generating...' : 'Generate'}
 //             </button>
 //             <button
@@ -159,7 +159,7 @@
 //               className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface)]"
 //               onClick={reset}
 //             >
-//               <RefreshCw className="h-4 w-4" />
+//               <RefreshCw aria-hidden="true" focusable="false" className="h-4 w-4" />
 //               Reset
 //             </button>
 //           </div>
@@ -217,7 +217,7 @@
 //       {results && (
 //         <div className="border-t border-[var(--color-border)] p-4 sm:p-5">
 //           <h4 className="flex items-center gap-2 text-base font-semibold text-[var(--color-text)]">
-//             <Layers3 className="h-4 w-4 text-[var(--color-accent)]" />
+//             <Layers3 aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
 //             Generated Meals
 //           </h4>
 //           {results.length === 0 && (
@@ -249,7 +249,7 @@
 //                     disabled={getMealStatus(m, idx) === 'saving' || getMealStatus(m, idx) === 'saved'}
 //                     className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-alt)] disabled:cursor-not-allowed disabled:opacity-60"
 //                   >
-//                     <Save className="h-3.5 w-3.5" />
+//                     <Save aria-hidden="true" focusable="false" className="h-3.5 w-3.5" />
 //                     {getMealStatus(m, idx) === 'saving' && 'Saving...'}
 //                     {getMealStatus(m, idx) === 'saved' && 'Saved'}
 //                     {(getMealStatus(m, idx) === 'idle' || getMealStatus(m, idx) === 'error') && 'Save Template'}

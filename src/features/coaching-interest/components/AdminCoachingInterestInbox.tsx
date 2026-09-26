@@ -92,7 +92,7 @@ export function AdminCoachingInterestInbox() {
           </div>
 
           <div className="relative mt-3">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               value={search}
               onChange={event => setSearch(event.target.value)}
@@ -170,7 +170,7 @@ export function AdminCoachingInterestInbox() {
                   </span>
                 </div>
                 <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock3 size={14} /> Requested {formatDate(selected.requestedAt)}
+                  <Clock3 aria-hidden="true" focusable="false" size={14} /> Requested {formatDate(selected.requestedAt)}
                 </p>
               </div>
             </div>
@@ -191,7 +191,7 @@ export function AdminCoachingInterestInbox() {
                 href={`mailto:${selected.email}`}
                 className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition-colors hover:bg-white/[0.06]"
               >
-                <Mail size={18} className="text-[var(--color-accent)]" />
+                <Mail aria-hidden="true" focusable="false" size={18} className="text-[var(--color-accent)]" />
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Email</p>
                   <p className="mt-1 truncate text-sm text-foreground">{selected.email}</p>
@@ -202,7 +202,7 @@ export function AdminCoachingInterestInbox() {
                   href={`tel:${selected.phone}`}
                   className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition-colors hover:bg-white/[0.06]"
                 >
-                  <Phone size={18} className="text-[var(--color-accent)]" />
+                  <Phone aria-hidden="true" focusable="false" size={18} className="text-[var(--color-accent)]" />
                   <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Phone</p>
                     <p className="mt-1 truncate text-sm text-foreground">{selected.phone}</p>
@@ -210,7 +210,7 @@ export function AdminCoachingInterestInbox() {
                 </a>
               ) : (
                 <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-muted-foreground">
-                  <Phone size={18} />
+                  <Phone aria-hidden="true" focusable="false" size={18} />
                   <p className="text-sm">No phone saved</p>
                 </div>
               )}
@@ -232,7 +232,7 @@ export function AdminCoachingInterestInbox() {
                 onClick={() => void setContacted(selected.id, !selected.contactedAt)}
                 className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[var(--color-accent)] px-4 text-sm font-semibold text-[var(--color-text-on-accent)] disabled:opacity-60"
               >
-                {selected.contactedAt ? <RotateCcw size={16} /> : <Check size={16} />}
+                {selected.contactedAt ? <RotateCcw aria-hidden="true" focusable="false" size={16} /> : <Check aria-hidden="true" focusable="false" size={16} />}
                 {updatingId === selected.id
                   ? 'Updating…'
                   : selected.contactedAt
@@ -243,7 +243,7 @@ export function AdminCoachingInterestInbox() {
                 href={`/admin/clients?clientId=${encodeURIComponent(selected.clientId)}`}
                 className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-foreground hover:bg-white/[0.07]"
               >
-                <UserRound size={16} /> Open client profile
+                <UserRound aria-hidden="true" focusable="false" size={16} /> Open client profile
               </Link>
             </div>
           </div>
@@ -251,7 +251,7 @@ export function AdminCoachingInterestInbox() {
           <div className="flex min-h-full items-center justify-center text-center">
             <div className="max-w-sm rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-7">
               <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--color-accent)]">
-                <Send size={22} />
+                <Send aria-hidden="true" focusable="false" size={22} />
               </div>
               <p className="mt-4 text-base font-semibold text-foreground">No request selected</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">

@@ -384,7 +384,7 @@ export function DailyCheckInCard() {
             <p className="text-xs font-medium text-destructive">{errorMessage}</p>
           ) : completionData.isComplete ? (
             <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-accent)]">
-              <CheckCircle2 size={14} />
+              <CheckCircle2 aria-hidden="true" focusable="false" size={14} />
               All done for today.
             </p>
           ) : (

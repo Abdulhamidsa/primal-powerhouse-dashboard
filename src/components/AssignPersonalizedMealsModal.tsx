@@ -343,7 +343,7 @@ export default function AssignPersonalizedMealsModal({
             style={{ color: 'var(--color-text-muted)' }}
             aria-label="Close"
           >
-            <X size={24} />
+            <X aria-hidden="true" focusable="false" size={24} />
           </button>
         </div>
 
@@ -354,7 +354,7 @@ export default function AssignPersonalizedMealsModal({
               className="mb-4 p-3 rounded flex items-center gap-2"
               style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}
             >
-              <Check size={18} />
+              <Check aria-hidden="true" focusable="false" size={18} />
               {successMessage}
             </div>
           )}
@@ -379,7 +379,7 @@ export default function AssignPersonalizedMealsModal({
                       color: 'var(--color-text)',
                     }}
                   />
-                  <Search
+                  <Search aria-hidden="true" focusable="false"
                     size={18}
                     className="absolute left-3 top-1/2 transform -translate-y-1/2"
                     style={{ color: 'var(--color-text-muted)' }}
@@ -444,7 +444,7 @@ export default function AssignPersonalizedMealsModal({
                                 style={{ color: 'var(--color-accent)' }}
                                 title="Personalize this meal"
                               >
-                                <Edit size={16} />
+                                <Edit aria-hidden="true" focusable="false" size={16} />
                               </button>
                             </div>
                           </div>
@@ -475,7 +475,7 @@ export default function AssignPersonalizedMealsModal({
                         className="w-10 h-10 rounded-full flex items-center justify-center"
                         style={{ background: 'var(--color-accent-translucent)' }}
                       >
-                        <User size={20} style={{ color: 'var(--color-accent)' }} />
+                        <User aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-accent)' }} />
                       </div>
                       <div>
                         <div className="font-medium">{selectedClient?.name || 'Loading client...'}</div>
@@ -514,7 +514,7 @@ export default function AssignPersonalizedMealsModal({
                               className="w-10 h-10 rounded-full flex items-center justify-center"
                               style={{ background: 'var(--color-bg)' }}
                             >
-                              <User size={20} style={{ color: 'var(--color-text-muted)' }} />
+                              <User aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-text-muted)' }} />
                             </div>
                             <div>
                               <div className="font-medium">{client.name}</div>
@@ -552,7 +552,7 @@ export default function AssignPersonalizedMealsModal({
                       border: '1px solid',
                     }}
                   >
-                    <Edit size={18} />
+                    <Edit aria-hidden="true" focusable="false" size={18} />
                     Personalize Before Assigning
                   </button>
 
@@ -567,7 +567,7 @@ export default function AssignPersonalizedMealsModal({
                       color: 'var(--color-text-on-accent)',
                     }}
                   >
-                    <Calendar size={18} />
+                    <Calendar aria-hidden="true" focusable="false" size={18} />
                     Assign Without Personalization
                   </button>
                 </div>

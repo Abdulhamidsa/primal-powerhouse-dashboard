@@ -206,7 +206,7 @@ export default function ShoppingListPage() {
           eyebrow="Shopping List"
           title="Everything in one place"
           description="Ingredients, spices, and meal notes pulled from your selected plan."
-          icon={<ShoppingBag size={17} />}
+          icon={<ShoppingBag aria-hidden="true" focusable="false" size={17} />}
           statusItems={[
             { label: 'Checked', value: `${checkedCount}/${totalCount || 0}`, tone: checkedCount ? 'good' : 'neutral' },
             { label: 'Complete', value: `${completionPct}%`, tone: completionPct === 100 ? 'good' : 'neutral' },
@@ -221,7 +221,7 @@ export default function ShoppingListPage() {
               disabled={isPageLoading}
               className="h-8 rounded-full flex gap-2 border-border bg-background px-3 text-xs text-foreground"
             >
-              <RefreshCcw size={12} className={isPageLoading ? 'animate-spin' : ''} />
+              <RefreshCcw aria-hidden="true" focusable="false" size={12} className={isPageLoading ? 'animate-spin' : ''} />
               Refresh
             </Button>
             <button
@@ -232,7 +232,7 @@ export default function ShoppingListPage() {
               aria-label="Share shopping list"
               title="Share list"
             >
-              <Share2 size={13} />
+              <Share2 aria-hidden="true" focusable="false" size={13} />
               Share
             </button>
             <button
@@ -274,7 +274,7 @@ export default function ShoppingListPage() {
         {!isPageLoading && !error && !hasItems ? (
           <section className="mt-5 rounded-[30px] border border-border bg-card px-5 py-8 text-center shadow-sm">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/40 text-muted-foreground">
-              <ShoppingBag size={26} />
+              <ShoppingBag aria-hidden="true" focusable="false" size={26} />
             </div>
             <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">No shopping list yet</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -333,7 +333,7 @@ export default function ShoppingListPage() {
                               : { background: 'transparent', border: '2px solid var(--color-border)' }
                           }
                         >
-                          {isChecked && <Check size={12} color="white" strokeWidth={3.5} />}
+                          {isChecked && <Check aria-hidden="true" focusable="false" size={12} color="white" strokeWidth={3.5} />}
                         </span>
 
                         <span

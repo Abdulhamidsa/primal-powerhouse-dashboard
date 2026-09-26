@@ -89,10 +89,10 @@ export default function MealFilters({ onFilterChangeAction, totalMeals }: MealFi
             className="w-full px-3 py-2 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
           >
             <option value="all">All meals</option>
-            <option value="breakfast">🌅 Breakfast</option>
-            <option value="lunch">☀️ Lunch</option>
-            <option value="dinner">🌙 Dinner</option>
-            <option value="snack">🍎 Snack</option>
+            <option value="breakfast"> Breakfast</option>
+            <option value="lunch"> Lunch</option>
+            <option value="dinner"> Dinner</option>
+            <option value="snack"> Snack</option>
           </select>
         </div>
 

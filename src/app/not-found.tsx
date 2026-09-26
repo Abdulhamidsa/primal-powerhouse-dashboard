@@ -7,7 +7,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/40 flex items-center justify-center px-4">
       <div className="w-full max-w-3xl bg-card border border-border rounded-2xl shadow-lg p-8 md:p-12 text-center space-y-6">
         <div className="inline-flex items-center justify-center rounded-full border border-border bg-muted/50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <Compass className="mr-2 h-4 w-4" />
+          <Compass aria-hidden="true" focusable="false" className="mr-2 h-4 w-4" />
           404 - Page Not Found
         </div>
 
@@ -22,7 +22,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button asChild variant="default" size="lg" className="min-w-[200px]">
             <Link href="/">
-              <Home className="mr-2 h-4 w-4" />
+              <Home aria-hidden="true" focusable="false" className="mr-2 h-4 w-4" />
               Back to Home
             </Link>
           </Button>

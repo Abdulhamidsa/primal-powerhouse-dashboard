@@ -63,7 +63,7 @@ export const MealFilters = ({
     <div className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={searchQuery}
             onChange={event => onSearchChange(event.target.value)}
@@ -74,7 +74,7 @@ export const MealFilters = ({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="flex h-11 min-w-[220px] items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-3 text-sm text-muted-foreground">
-            <SlidersHorizontal className="h-4 w-4 text-[var(--color-accent)]" />
+            <SlidersHorizontal aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
             <span className="shrink-0">Sort</span>
             <select
               value={sortBy}
@@ -96,7 +96,7 @@ export const MealFilters = ({
               onClick={onClearFilters}
               className="h-11 rounded-2xl border border-white/10 px-4 text-sm text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
             >
-              <X className="mr-2 h-4 w-4" />
+              <X aria-hidden="true" focusable="false" className="mr-2 h-4 w-4" />
               Clear
             </Button>
           ) : null}
@@ -118,7 +118,7 @@ export const MealFilters = ({
                   : 'border-white/10 bg-white/[0.04] text-muted-foreground hover:border-white/15 hover:bg-white/[0.07] hover:text-foreground',
               ].join(' ')}
             >
-              {type === 'SIDES' ? <Leaf size={14} /> : null}
+              {type === 'SIDES' ? <Leaf aria-hidden="true" focusable="false" size={14} /> : null}
               {formatMealType(type)}
               <span
                 className={[

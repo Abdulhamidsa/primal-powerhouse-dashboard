@@ -38,7 +38,7 @@ function NotificationCard({
       onClick={handleClick}
     >
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-accent)]/10">
-        <MessageCircle className="h-4 w-4 text-[var(--color-accent)]" />
+        <MessageCircle aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-[var(--color-text)]">{notification.senderName}</p>
@@ -53,7 +53,7 @@ function NotificationCard({
           onDismiss();
         }}
       >
-        <X className="h-3.5 w-3.5" />
+        <X aria-hidden="true" focusable="false" className="h-3.5 w-3.5" />
       </button>
     </div>
   );

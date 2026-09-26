@@ -299,7 +299,7 @@ export function ChatPanel({
                 </div>
 
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     value={conversationSearch}
                     onChange={event => setConversationSearch(event.target.value)}
@@ -341,7 +341,7 @@ export function ChatPanel({
               <div className="flex flex-1 items-center justify-center p-6 text-center">
                 <div>
                   <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-muted-foreground">
-                    <Inbox size={20} />
+                    <Inbox aria-hidden="true" focusable="false" size={20} />
                   </div>
                   <p className="text-sm font-semibold text-foreground">No conversations found</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -463,7 +463,7 @@ export function ChatPanel({
                 className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-[var(--color-bg-alt)]"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
               >
-                <ArrowLeft size={20} />
+                <ArrowLeft aria-hidden="true" focusable="false" size={20} />
               </button>
             ) : null}
 
@@ -507,7 +507,7 @@ export function ChatPanel({
                 <div className="flex items-center gap-3 text-muted-foreground">
                   {isAdminVariant ? (
                     <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.04]">
-                      <MessageSquare size={18} />
+                      <MessageSquare aria-hidden="true" focusable="false" size={18} />
                     </div>
                   ) : null}
                   <p
@@ -542,7 +542,7 @@ export function ChatPanel({
               <div className="flex min-h-full items-center justify-center px-6 text-center">
                 <div className="max-w-sm rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-7 shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
                   <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--color-accent)]">
-                    <UserRound size={22} />
+                    <UserRound aria-hidden="true" focusable="false" size={22} />
                   </div>
                   <p className="text-base font-semibold text-foreground">Choose a client conversation</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">

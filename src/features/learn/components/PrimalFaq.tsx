@@ -25,10 +25,10 @@ export function PrimalFaq() {
         <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Quick, practical answers for the moments you need them.</p>
 
         <label className="mt-5 flex min-h-12 items-center gap-3 border-y border-[var(--color-border)] px-1 focus-within:border-[var(--color-accent)]">
-          <Search size={18} className="shrink-0 text-[var(--color-accent)]" />
+          <Search aria-hidden="true" focusable="false" size={18} className="shrink-0 text-[var(--color-accent)]" />
           <span className="sr-only">Search Primal questions</span>
           <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search Primal…" className="min-w-0 flex-1 bg-transparent py-4 text-base text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]" />
-          {query ? <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="grid h-11 w-11 place-items-center text-[var(--color-text-muted)] hover:text-[var(--color-text)]"><X size={17} /></button> : null}
+          {query ? <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="grid h-11 w-11 place-items-center text-[var(--color-text-muted)] hover:text-[var(--color-text)]"><X aria-hidden="true" focusable="false" size={17} /></button> : null}
         </label>
 
         <div className="mt-4 border-t border-[var(--color-border)]">
@@ -40,7 +40,7 @@ export function PrimalFaq() {
                 <button type="button" aria-expanded={open} aria-controls={answerId} onClick={() => toggle(entry.id)} className="group flex min-h-[72px] w-full items-center gap-4 py-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]">
                   <span className="font-mono text-[9px] font-bold text-[var(--color-accent)]">{String(index + 1).padStart(2, '0')}</span>
                   <span className="flex-1 text-sm font-semibold leading-6 text-[var(--color-text)] sm:text-base">{entry.question}</span>
-                  <ChevronDown size={18} className={cn('shrink-0 text-[var(--color-text-muted)] transition-transform', open && 'rotate-180 text-[var(--color-accent)]')} />
+                  <ChevronDown aria-hidden="true" focusable="false" size={18} className={cn('shrink-0 text-[var(--color-text-muted)] transition-transform', open && 'rotate-180 text-[var(--color-accent)]')} />
                 </button>
                 {open ? (
                   <div id={answerId} className="pb-6 pl-8 pr-3 sm:pl-10">

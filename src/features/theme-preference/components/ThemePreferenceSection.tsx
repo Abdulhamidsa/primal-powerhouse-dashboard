@@ -31,7 +31,7 @@ export function ThemePreferenceSection({ value, options, onChangeAction }: Theme
           aria-expanded={isOpen}
         >
           <div className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/50">
-            <Palette className="h-4 w-4" />
+            <Palette aria-hidden="true" focusable="false" className="h-4 w-4" />
           </div>
 
           <div className="min-w-0 flex-1">
@@ -45,7 +45,7 @@ export function ThemePreferenceSection({ value, options, onChangeAction }: Theme
               style={{ backgroundColor: `var(${selectedOption.swatchVarName})` }}
             />
             <span className="text-sm font-medium text-foreground">{selectedOption.label}</span>
-            <ChevronDown
+            <ChevronDown aria-hidden="true" focusable="false"
               className={cn('h-4 w-4 text-muted-foreground transition-transform', isOpen ? 'rotate-180' : '')}
             />
           </div>
@@ -96,7 +96,7 @@ export function ThemePreferenceSection({ value, options, onChangeAction }: Theme
                           : 'border-border bg-card text-transparent',
                       )}
                     >
-                      <Check className="h-3.5 w-3.5" />
+                      <Check aria-hidden="true" focusable="false" className="h-3.5 w-3.5" />
                     </span>
                   </button>
                 );

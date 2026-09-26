@@ -165,7 +165,7 @@ export default function NewVideoDetailModal({
               style={{ color: 'var(--color-text-muted)' }}
             >
               <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
+                <Clock aria-hidden="true" focusable="false" className="w-4 h-4" />
                 <span>{formatDuration(video.duration)}</span>
               </div>
               <div className="flex items-center gap-1">
@@ -201,7 +201,7 @@ export default function NewVideoDetailModal({
                     className="text-lg font-semibold mb-3 flex items-center gap-2"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <Clock className="w-5 h-5" style={{ color: 'var(--color-accent)' }} />
+                    <Clock aria-hidden="true" focusable="false" className="w-5 h-5" style={{ color: 'var(--color-accent)' }} />
                     Instructions
                   </h3>
                   <ol className="space-y-3">

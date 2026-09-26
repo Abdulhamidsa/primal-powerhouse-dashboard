@@ -32,7 +32,7 @@ export function WeeklyCheckInCard() {
       >
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-            <Activity className="h-5 w-5" />
+            <Activity aria-hidden="true" focusable="false" className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -56,7 +56,7 @@ export function WeeklyCheckInCard() {
     >
       <div className="flex min-w-0 items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-          <CalendarCheck2 className="h-5 w-5" />
+          <CalendarCheck2 aria-hidden="true" focusable="false" className="h-5 w-5" />
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -64,7 +64,7 @@ export function WeeklyCheckInCard() {
             <StatusBadge label={dueLabel} />
           </div>
           <div className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
-            <CheckCircle2 className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            <CheckCircle2 aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
             <span>Submitted {formatDateLabel(checkIn.submittedAt)}</span>
           </div>
         </div>
@@ -76,7 +76,7 @@ export function WeeklyCheckInCard() {
         variant="outline"
         onClick={() => router.push('/user/check-in')}
       >
-        <PencilLine className="h-4 w-4" />
+        <PencilLine aria-hidden="true" focusable="false" className="h-4 w-4" />
       </Button>
     </div>
   );

@@ -18,18 +18,18 @@ export function ClientQuickStats({
         <Stat
           title="Assigned Videos"
           value={videosCount}
-          icon={<Film size={22} style={{ color: 'var(--color-accent)' }} />}
+          icon={<Film aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />}
         />
         <Stat
           title="Assigned Meals"
           value={mealsCount}
-          icon={<Utensils size={22} style={{ color: 'var(--color-accent)' }} />}
+          icon={<Utensils aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />}
         />
-        <Stat title="BMI" value={bmi} icon={<BarChart size={22} style={{ color: 'var(--color-accent)' }} />} />
+        <Stat title="BMI" value={bmi} icon={<BarChart aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />} />
         <Stat
           title="Sessions"
           value={sessions}
-          icon={<Activity size={22} style={{ color: 'var(--color-accent)' }} />}
+          icon={<Activity aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />}
         />
       </div>
     </div>
