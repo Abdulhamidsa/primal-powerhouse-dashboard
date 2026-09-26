@@ -332,13 +332,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                         <div className="flex items-start gap-3">
                           <div className="w-16 h-12 bg-green-200 rounded-lg flex items-center justify-center flex-shrink-0">
                             <span className="text-green-600 text-lg">
-                              {event.item.meal.type === 'breakfast'
-                                ? ''
-                                : event.item.meal.type === 'lunch'
-                                  ? ''
-                                  : event.item.meal.type === 'dinner'
-                                    ? ''
-                                    : ''}
+                              <ForkKnifeIcon size={20} aria-hidden="true" />
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">

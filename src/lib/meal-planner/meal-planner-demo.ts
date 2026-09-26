@@ -126,7 +126,7 @@ export function formatMealPlanResult(result: ReturnType<typeof generateClientMea
 export function runMealPlannerDemo() {
   const clientPlans = generateClientMealPlans();
 
-  let fullOutput = ' MEAL PLANNER DEMO \n';
+  let fullOutput = '🍲 MEAL PLANNER DEMO 🍲\n';
   fullOutput += '=========================\n';
 
   clientPlans.forEach(plan => {
