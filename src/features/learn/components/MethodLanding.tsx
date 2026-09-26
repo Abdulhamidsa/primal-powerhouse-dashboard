@@ -33,7 +33,7 @@ export function MethodLanding({ pageIndex, onOpen }: Props) {
               The Primal Handbook
             </h2>
           </div>
-          <span className="text-xs text-[var(--color-text-muted)]">18 pages</span>
+          <span className="text-xs text-[var(--color-text-muted)]">14 pages</span>
         </div>
 
         <button

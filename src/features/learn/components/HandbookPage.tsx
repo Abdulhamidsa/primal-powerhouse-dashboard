@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowDownIcon as ArrowDown, CheckIcon as Check, ArrowRightIcon as MoveRight } from '@phosphor-icons/react';
+import Image from 'next/image';
 import { HANDBOOK_CHAPTERS } from '@/features/learn/data/handbook';
 import type { HandbookPage as HandbookPageType } from '@/features/learn/types/learn.types';
 
@@ -79,6 +80,69 @@ function ChapterSpread({ page, displayNumber, onNavigate }: Props) {
   );
 }
 
+function JourneySpread({ page, displayNumber, onNavigate }: Props) {
+  const mediaItems = page.mediaItems ?? (page.media ? [page.media] : []);
+  const chartMax = page.chart ? Math.max(...page.chart.points.map(point => point.value), 1) : 1;
+
+  return (
+    <PublicationFrame page={page} displayNumber={displayNumber} onNavigate={onNavigate}>
+      <div className="flex flex-1 flex-col py-8">
+        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#c17a5d]">{page.eyebrow}</p>
+        <h2 className="mt-3 max-w-[18ch] font-serif text-4xl leading-[0.98] tracking-[-0.055em] sm:text-5xl">
+          {page.title}
+        </h2>
+        {page.body ? (
+          <div className="mt-6 space-y-4 text-[15px] leading-7 text-white/70">
+            {page.body.map(paragraph => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+        ) : null}
+        {mediaItems.length ? (
+          <div className="mt-7 grid grid-cols-2 gap-3">
+            {mediaItems.map(media => (
+              <figure key={`${media.src}-${media.alt}`}>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                  <Image src={media.src} alt={media.alt} fill unoptimized className="object-cover" />
+                </div>
+                {media.caption ? (
+                  <figcaption className="mt-2 text-[11px] leading-4 text-white/50">{media.caption}</figcaption>
+                ) : null}
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-7 border-y border-dashed border-white/15 py-7 text-sm leading-6 text-white/45">
+            Personal photos, dates, and weight data can be added here when they are ready.
+          </div>
+        )}
+        {page.chart ? (
+          <div className="mt-7 border-y border-white/10 py-5">
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">{page.chart.label}</p>
+            <div className="flex h-28 items-end gap-2">
+              {page.chart.points.map(point => (
+                <div key={point.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                  <div
+                    className="w-full rounded-t bg-[#c17a5d]"
+                    style={{ height: `${Math.max(8, (point.value / chartMax) * 100)}%` }}
+                    title={`${point.label}: ${point.value}`}
+                  />
+                  <span className="truncate text-[9px] text-white/45">{point.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        {page.note ? (
+          <aside className="mt-auto border-l border-[#c17a5d] pl-4 pt-5 text-[12px] font-medium leading-5 text-white/55">
+            {page.note}
+          </aside>
+        ) : null}
+      </div>
+    </PublicationFrame>
+  );
+}
+
 function EditorialSpread({ page, displayNumber, onNavigate }: Props) {
   const structured = (page.variant === 'diagram' || page.variant === 'checklist') && page.items;
   return (
@@ -146,5 +210,7 @@ function EditorialSpread({ page, displayNumber, onNavigate }: Props) {
 export function HandbookPage(props: Props) {
   if (props.page.variant === 'contents') return <ContentsSpread {...props} />;
   if (props.page.variant === 'chapter') return <ChapterSpread {...props} />;
+  if (props.page.variant === 'photo' || props.page.variant === 'timeline' || props.page.variant === 'chart')
+    return <JourneySpread {...props} />;
   return <EditorialSpread {...props} />;
 }

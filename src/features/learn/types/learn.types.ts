@@ -46,6 +46,7 @@ export type HandbookPage = {
   items?: Array<{ title: string; detail: string }>;
   note?: string;
   media?: HandbookMedia;
+  mediaItems?: HandbookMedia[];
   chart?: HandbookChart;
   callouts?: string[];
 };
