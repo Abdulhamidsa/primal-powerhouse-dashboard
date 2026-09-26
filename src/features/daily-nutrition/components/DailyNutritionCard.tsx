@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Salad, CheckCircle2 } from 'lucide-react';
+import { BowlFoodIcon as Salad, CheckCircleIcon as CheckCircle2 } from '@phosphor-icons/react';
 import { useDailyNutritionToday, useUpsertDailyNutrition } from '@/features/daily-nutrition/hooks/useDailyNutrition';
 import type { DailyNutritionStatus } from '@/features/daily-nutrition/types/dailyNutrition.types';
 

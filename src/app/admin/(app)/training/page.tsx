@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarDays, Dumbbell, LibraryBig, Route, Workflow } from 'lucide-react';
+import { CalendarDotsIcon as CalendarDays, BarbellIcon as Dumbbell, BooksIcon as LibraryBig, PathIcon as Route, FlowArrowIcon as Workflow } from '@phosphor-icons/react';
 import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
 import { ExerciseLibrary } from '@/features/training/components/ExerciseLibrary';
 import { TemplateBuilder } from '@/features/training/components/TemplateBuilder';

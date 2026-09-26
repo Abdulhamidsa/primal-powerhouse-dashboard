@@ -1,4 +1,4 @@
-import { Flame, Beef, Wheat, Droplets, Leaf, Utensils } from 'lucide-react';
+import { FlameIcon as Flame, CowIcon as Beef, GrainsIcon as Wheat, DropIcon as Droplets, LeafIcon as Leaf, ForkKnifeIcon as Utensils } from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '@/lib/ui';
 import { MealAssignment } from '@/lib/client-page/types';
 import { calculateNutritionStats, getMacroPercentages } from '@/lib/nutrition-calculations';

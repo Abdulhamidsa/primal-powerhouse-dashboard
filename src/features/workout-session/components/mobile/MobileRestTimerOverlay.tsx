@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Timer } from 'lucide-react';
+import { TimerIcon as Timer } from '@phosphor-icons/react';
 
 interface Props {
   seconds: number;

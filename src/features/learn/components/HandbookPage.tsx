@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, Check, MoveRight } from 'lucide-react';
+import { ArrowDownIcon as ArrowDown, CheckIcon as Check, ArrowRightIcon as MoveRight } from '@phosphor-icons/react';
 import { HANDBOOK_CHAPTERS } from '@/features/learn/data/handbook';
 import type { HandbookPage as HandbookPageType } from '@/features/learn/types/learn.types';
 

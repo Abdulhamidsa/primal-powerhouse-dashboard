@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ArrowDown, ArrowRight, ArrowUp, Search } from 'lucide-react';
+import { ArrowDownIcon as ArrowDown, ArrowRightIcon as ArrowRight, ArrowUpIcon as ArrowUp, MagnifyingGlassIcon as Search } from '@phosphor-icons/react';
 import { useClientHealth } from '@/features/client-health/hooks/useClientHealth';
 import type {
   DailyComplianceBreakdown,

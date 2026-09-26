@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChefHat, Plus, Sparkles } from 'lucide-react';
+import { ChefHatIcon as ChefHat, PlusIcon as Plus, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
 import AddMealModal from '@/components/AddMealModal';
 import MealBuilderModal from '@/components/MealBuilderModal';
 import EditMealModal from '@/components/EditMealModal';

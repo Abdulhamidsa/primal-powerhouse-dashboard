@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { CheckCircle, Eye, Scale } from 'lucide-react';
+import { CheckCircleIcon as CheckCircle, EyeIcon as Eye, ScalesIcon as Scale } from '@phosphor-icons/react';
 import type { AdminDailyCheckInListItem } from '@/features/daily-checkin/types/adminDailyCheckIn.types';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
 

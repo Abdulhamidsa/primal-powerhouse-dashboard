@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Flame, ImageIcon, Leaf, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { ClockIcon as Clock, FlameIcon as Flame, ImageIcon as ImageIcon, LeafIcon as Leaf, MagnifyingGlassIcon as Search, SlidersHorizontalIcon as SlidersHorizontal, ArrowsClockwiseIcon as Sparkles, XIcon as X } from '@phosphor-icons/react/ssr';
 import { Button } from '@/components/ui/button';
 import { MealFilterType } from '@/lib/meal-planner/types';
 

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Meal } from '@/types/meal';
-import { Sunrise, Sun, Moon, Apple, Utensils, Clock, Users } from 'lucide-react';
+import { SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, ForkKnifeIcon as Utensils, ClockIcon as Clock, UsersIcon as Users } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface MealCardProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { RotateCcw, X } from 'lucide-react';
+import { ArrowCounterClockwiseIcon as RotateCcw, XIcon as X } from '@phosphor-icons/react';
 import { ClientCredentialsModal } from '@/features/client-credentials';
 import type {
   ClientCredentials,

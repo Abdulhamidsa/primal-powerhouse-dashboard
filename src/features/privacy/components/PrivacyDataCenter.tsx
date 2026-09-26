@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download, LogOut, Shield, Trash2 } from 'lucide-react';
+import { DownloadIcon as Download, SignOutIcon as LogOut, ShieldIcon as Shield, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { privacyConsentSchema, privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';

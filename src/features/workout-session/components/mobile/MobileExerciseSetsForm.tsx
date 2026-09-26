@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Minus, Check } from 'lucide-react';
+import { PlusIcon as Plus, MinusIcon as Minus, CheckIcon as Check } from '@phosphor-icons/react';
 import type { WorkoutPlanExercise } from '@/features/workout-plans/types/workoutPlan.types';
 import type { LocalExerciseState, LocalSetEntry } from '../../types/workoutSession.types';
 

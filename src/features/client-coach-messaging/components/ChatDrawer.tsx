@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { XIcon as X } from '@phosphor-icons/react';
 import { ChatPanel } from '@/features/client-coach-messaging/components/ChatPanel';
 
 export function ChatDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {

@@ -9,7 +9,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import { Upload, X, Image as ImageIcon } from '../../node_modules/lucide-react';
+import { UploadSimpleIcon as Upload, XIcon as X, ImageIcon as ImageIcon } from '@phosphor-icons/react/ssr';
 
 interface ImageUploadProps {
   onFileSelectAction: (file: File | null) => void;

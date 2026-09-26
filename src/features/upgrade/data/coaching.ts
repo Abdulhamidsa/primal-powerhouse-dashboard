@@ -1,4 +1,4 @@
-import { ChartNoAxesCombined, ClipboardCheck, Dumbbell, UtensilsCrossed } from 'lucide-react';
+import { ChartLineUpIcon as ChartNoAxesCombined, ClipboardTextIcon as ClipboardCheck, BarbellIcon as Dumbbell, ForkKnifeIcon as UtensilsCrossed } from '@phosphor-icons/react/ssr';
 import type { CoachingDifference } from '@/features/upgrade/types/upgrade.types';
 
 export const SELF_GUIDED_ITEMS = [

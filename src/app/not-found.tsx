@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Home, Compass } from 'lucide-react';
+import { HouseIcon as Home, CompassIcon as Compass } from '@phosphor-icons/react/ssr';
 
 export default function NotFound() {
   return (

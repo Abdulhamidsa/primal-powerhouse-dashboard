@@ -1,4 +1,4 @@
-import { Activity, ClipboardList, Dumbbell, Eye, Salad, UserSquare2 } from 'lucide-react';
+import { PulseIcon as Activity, ClipboardTextIcon as ClipboardList, BarbellIcon as Dumbbell, EyeIcon as Eye, BowlFoodIcon as Salad, UserSquareIcon as UserSquare2 } from '@phosphor-icons/react/ssr';
 import { cx } from '@/lib/ui';
 import type { DashboardTabKey } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 

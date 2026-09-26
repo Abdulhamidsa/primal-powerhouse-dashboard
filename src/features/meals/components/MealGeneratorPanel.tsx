@@ -1,7 +1,7 @@
 // 'use client';
 
 // import React, { useState } from 'react';
-// // import { ChefHat, ImageIcon, Layers3, RefreshCw, Save, Sparkles } from 'lucide-react';
+// // import { ChefHatIcon as ChefHat, ImageIcon as ImageIcon, StackIcon as Layers3, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react/ssr';
 // import useMealGenerator from '@/features/meals/hooks/useMealGenerator';
 // import type {
 //   MealType,

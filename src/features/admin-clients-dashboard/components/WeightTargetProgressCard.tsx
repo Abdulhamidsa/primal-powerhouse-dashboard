@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+import { ArrowDownRightIcon as ArrowDownRight, ArrowUpRightIcon as ArrowUpRight, MinusIcon as Minus } from '@phosphor-icons/react/ssr';
 
 function toNumber(value: number | null): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Meal, MealIngredient, MealInstruction } from '@/types/meal';
-import { Utensils, Sunrise, Sun, Moon, Apple, Save, X } from 'lucide-react';
+import { ForkKnifeIcon as Utensils, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, FloppyDiskIcon as Save, XIcon as X } from '@phosphor-icons/react';
 import IngredientSearch from './IngredientSearch';
 import FoodForm from '@/features/foods/components/FoodForm';
 import type { SelectedIngredient } from '@/types/openFoodFacts';

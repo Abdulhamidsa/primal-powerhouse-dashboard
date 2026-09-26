@@ -1,4 +1,4 @@
-import { Activity, BarChart, Film, Utensils } from 'lucide-react';
+import { PulseIcon as Activity, ChartBarIcon as BarChart, FilmSlateIcon as Film, ForkKnifeIcon as Utensils } from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '@/lib/ui';
 import { JSX } from 'react';
 export function ClientQuickStats({

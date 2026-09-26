@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Play, Pause, Dumbbell } from 'lucide-react';
+import { PlayIcon as Play, PauseIcon as Pause, BarbellIcon as Dumbbell } from '@phosphor-icons/react';
 import type { WorkoutPlanExercise } from '@/features/workout-plans/types/workoutPlan.types';
 
 interface Props {

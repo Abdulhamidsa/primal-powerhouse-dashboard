@@ -10,7 +10,7 @@ import {
   DIFFICULTY_LEVELS,
 } from '@/types/video';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Clock, Tag, Award, Dumbbell, Activity, Play, Plus, X, Info, VideoIcon } from 'lucide-react';
+import { ClockIcon as Clock, TagIcon as Tag, MedalIcon as Award, BarbellIcon as Dumbbell, PulseIcon as Activity, PlayIcon as Play, PlusIcon as Plus, XIcon as X, InfoIcon as Info, VideoCameraIcon as VideoIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 
 interface AddVideoModalProps {

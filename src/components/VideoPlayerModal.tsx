@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
+import { XIcon as X, PlayIcon as Play, PauseIcon as Pause, SpeakerHighIcon as Volume2, SpeakerXIcon as VolumeX, CornersOutIcon as Maximize, ArrowCounterClockwiseIcon as RotateCcw } from '@phosphor-icons/react';
 
 interface VideoPlayerModalProps {
   isOpen: boolean;

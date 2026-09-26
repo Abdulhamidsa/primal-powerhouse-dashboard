@@ -1,4 +1,4 @@
-import { CalendarDays, Utensils, FileText, PlusCircle, Trash2, Edit, EllipsisVertical, Leaf } from 'lucide-react';
+import { CalendarDotsIcon as CalendarDays, ForkKnifeIcon as Utensils, FileTextIcon as FileText, PlusCircleIcon as PlusCircle, TrashIcon as Trash2, PencilSimpleIcon as Edit, DotsThreeVerticalIcon as EllipsisVertical, LeafIcon as Leaf } from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { ActiveMealPlanSummary, MealAssignment } from '@/lib/client-page/types';
 import { JSX, useState } from 'react';

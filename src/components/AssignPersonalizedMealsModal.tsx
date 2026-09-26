@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Meal, Client } from '@/types/meal';
-import { X, Search, Calendar, Edit, User, Check } from 'lucide-react';
+import { XIcon as X, MagnifyingGlassIcon as Search, CalendarIcon as Calendar, PencilSimpleIcon as Edit, UserIcon as User, CheckIcon as Check } from '@phosphor-icons/react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 import { clientApi } from '@/lib/client-api';
 

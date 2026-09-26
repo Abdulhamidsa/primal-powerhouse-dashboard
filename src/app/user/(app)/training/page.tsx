@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRight, ChevronDown, Dumbbell, Play } from 'lucide-react';
+import { ArrowRightIcon as ArrowRight, CaretDownIcon as ChevronDown, BarbellIcon as Dumbbell, PlayIcon as Play } from '@phosphor-icons/react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';

@@ -1,19 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Dumbbell,
-  Flag,
-  ImageIcon,
-  ListChecks,
-  Loader2,
-  Play,
-  Square,
-  X,
-} from 'lucide-react';
+import { CheckIcon as Check, CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, BarbellIcon as Dumbbell, FlagIcon as Flag, ImageIcon as ImageIcon, ListChecksIcon as ListChecks, CircleNotchIcon as Loader2, PlayIcon as Play, SquareIcon as Square, XIcon as X } from '@phosphor-icons/react';
 import type { TrainingSessionDTO, TrainingSessionSetDTO } from '@/features/training/types/clientTraining.types';
 import {
   useTrainingPreviousPerformance,

@@ -7,7 +7,7 @@ import UserVideos from '@/components/UserVideos';
 import CoachContact from '@/components/CoachContact';
 
 // @ts-ignore - lucide-react type definitions issue
-import { Home, Utensils, Play, User, LogOut } from 'lucide-react';
+import { HouseIcon as Home, ForkKnifeIcon as Utensils, PlayIcon as Play, UserIcon as User, SignOutIcon as LogOut } from '@phosphor-icons/react';
 
 interface User {
   id: string;

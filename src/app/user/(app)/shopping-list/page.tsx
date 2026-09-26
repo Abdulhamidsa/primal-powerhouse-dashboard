@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { Check, RefreshCcw, Share2, ShoppingBag } from 'lucide-react';
+import { CheckIcon as Check, ArrowCounterClockwiseIcon as RefreshCcw, ShareNetworkIcon as Share2, ShoppingBagIcon as ShoppingBag } from '@phosphor-icons/react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { Button } from '@/components/ui/button';

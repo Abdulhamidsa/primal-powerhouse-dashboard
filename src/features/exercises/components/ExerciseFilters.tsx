@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { CaretDownIcon as ChevronDown, XIcon as X } from '@phosphor-icons/react';
 import type { RapidAPIFilters } from '@/features/exercises/types/rapidapi-filters.types';
 
 interface ExerciseFiltersProps {

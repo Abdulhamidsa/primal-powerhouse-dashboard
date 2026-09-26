@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, ChevronDown, Palette } from 'lucide-react';
+import { CheckIcon as Check, CaretDownIcon as ChevronDown, PaletteIcon as Palette } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { ThemeOption, ThemePreference } from '@/features/theme-preference/types/themePreference.types';
 

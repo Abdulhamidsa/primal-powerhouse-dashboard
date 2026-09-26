@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronLeft, Shield } from 'lucide-react';
+import { CaretLeftIcon as ChevronLeft, ShieldIcon as Shield } from '@phosphor-icons/react/ssr';
 import { PrivacyDataCenter } from '@/features/privacy/components/PrivacyDataCenter';
 
 export default function UserPrivacyPage() {

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Check, LockKeyhole, Send } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, CheckIcon as Check, LockKeyIcon as LockKeyhole, PaperPlaneTiltIcon as Send } from '@phosphor-icons/react';
 import { useCoachingInterest } from '@/features/coaching-interest/hooks/useCoachingInterest';
 
 export function CoachingInterestScreen() {

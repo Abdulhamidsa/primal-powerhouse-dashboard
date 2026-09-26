@@ -2,7 +2,7 @@
 
 import { Meal } from '@/types/meal';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Clock, Users, Utensils, Sunrise, Sun, Moon, Apple, Sparkles, Pencil, Trash2 } from 'lucide-react';
+import { ClockIcon as Clock, UsersIcon as Users, ForkKnifeIcon as Utensils, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, ArrowsClockwiseIcon as Sparkles, PencilIcon as Pencil, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Utensils } from 'lucide-react';
+import { CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, ForkKnifeIcon as Utensils } from '@phosphor-icons/react';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 interface Meal {

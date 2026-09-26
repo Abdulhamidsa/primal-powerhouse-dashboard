@@ -2,7 +2,7 @@
 
 import { Video } from '@/types/video';
 import { DIFFICULTY_LEVELS, VIDEO_CATEGORIES } from '@/types/video';
-import { CheckSquare, Square, Play, Eye, Tag, Clock, Activity } from 'lucide-react';
+import { CheckSquareIcon as CheckSquare, SquareIcon as Square, PlayIcon as Play, EyeIcon as Eye, TagIcon as Tag, ClockIcon as Clock, PulseIcon as Activity } from '@phosphor-icons/react';
 import Image from 'next/image';
 
 interface VideoCardProps {

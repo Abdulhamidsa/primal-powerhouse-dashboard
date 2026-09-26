@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowRight, Check, CircleDot } from 'lucide-react';
+import { ArrowRightIcon as ArrowRight, CheckIcon as Check, RadioButtonIcon as CircleDot } from '@phosphor-icons/react';
 import { COACHED_ITEMS, COACHING_DIFFERENCES, SELF_GUIDED_ITEMS } from '@/features/upgrade/data/coaching';
 
 export function UpgradeExperience() {

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { DataService, Client } from '@/services/dataService';
 import EditMealModal from '@/components/EditMealModal';
-import { Utensils, Flame, Clock, Users, Edit, ArrowLeft, Sparkles } from 'lucide-react';
+import { ForkKnifeIcon as Utensils, FlameIcon as Flame, ClockIcon as Clock, UsersIcon as Users, PencilSimpleIcon as Edit, ArrowLeftIcon as ArrowLeft, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
 interface PersonalizedMeal {

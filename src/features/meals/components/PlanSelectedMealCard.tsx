@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Check, CheckCircle2, Clock3, Flame, RefreshCcw, Wheat, X } from 'lucide-react';
+import { CheckIcon as Check, CheckCircleIcon as CheckCircle2, ClockIcon as Clock3, FlameIcon as Flame, ArrowCounterClockwiseIcon as RefreshCcw, GrainsIcon as Wheat, XIcon as X } from '@phosphor-icons/react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 

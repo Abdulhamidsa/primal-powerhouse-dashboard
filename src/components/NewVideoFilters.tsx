@@ -1,7 +1,7 @@
 'use client';
 
 import { VideoCategory, DifficultyLevel, VIDEO_CATEGORIES, DIFFICULTY_LEVELS } from '@/types/video';
-import { Search, X, Video } from 'lucide-react';
+import { MagnifyingGlassIcon as Search, XIcon as X, VideoIcon as Video } from '@phosphor-icons/react';
 
 interface VideoFiltersProps {
   filters: {

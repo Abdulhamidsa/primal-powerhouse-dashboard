@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { MinusIcon as Minus, TrendDownIcon as TrendingDown, TrendUpIcon as TrendingUp } from '@phosphor-icons/react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 type Props = {

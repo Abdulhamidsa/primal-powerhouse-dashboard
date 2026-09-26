@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ArrowRight, CheckCircle2, CalendarCheck2, Flame, MessageSquare, UtensilsCrossed } from 'lucide-react';
+import { ArrowRightIcon as ArrowRight, CheckCircleIcon as CheckCircle2, CalendarCheckIcon as CalendarCheck2, FlameIcon as Flame, ChatTextIcon as MessageSquare, ForkKnifeIcon as UtensilsCrossed } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { TodayMissionSummary, TodayMissionTone } from '@/features/today-mission/types/todayMission.types';

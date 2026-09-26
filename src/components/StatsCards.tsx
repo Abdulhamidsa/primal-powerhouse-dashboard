@@ -1,7 +1,7 @@
 'use client';
 
 import { Meal } from '@/types/meal';
-import { Utensils, Flame, Dumbbell, Clock, Sunrise, Sun, Moon, Apple } from 'lucide-react';
+import { ForkKnifeIcon as Utensils, FlameIcon as Flame, BarbellIcon as Dumbbell, ClockIcon as Clock, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple } from '@phosphor-icons/react';
 
 interface StatsCardsProps {
   meals: Meal[];

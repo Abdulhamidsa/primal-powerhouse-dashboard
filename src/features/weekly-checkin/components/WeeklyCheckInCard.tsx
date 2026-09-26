@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Activity, CalendarCheck2, CheckCircle2, PencilLine } from 'lucide-react';
+import { PulseIcon as Activity, CalendarCheckIcon as CalendarCheck2, CheckCircleIcon as CheckCircle2, PencilLineIcon as PencilLine } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { useWeeklyCheckInCurrentWeek } from '@/features/weekly-checkin/hooks/useWeeklyCheckIn';
 import { formatDateLabel } from '@/features/weekly-checkin/utils/week';

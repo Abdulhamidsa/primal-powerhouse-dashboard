@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Download, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { CheckCircleIcon as CheckCircle2, DownloadIcon as Download, CircleNotchIcon as Loader2, ArrowsClockwiseIcon as RefreshCw, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
 import { useAppUpdate } from '@/components/AppUpdateManager';
 
 type UpdateState = 'idle' | 'updating' | 'success';

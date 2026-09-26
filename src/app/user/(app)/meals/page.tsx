@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Save, Undo2 } from 'lucide-react';
+import { WarningCircleIcon as AlertCircle, FloppyDiskIcon as Save, ArrowCounterClockwiseIcon as Undo2 } from '@phosphor-icons/react';
 import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';

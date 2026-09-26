@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, ChefHat, Filter, Flame, Leaf } from 'lucide-react';
+import { ChartBarIcon as BarChart3, ChefHatIcon as ChefHat, FunnelIcon as Filter, FlameIcon as Flame, LeafIcon as Leaf } from '@phosphor-icons/react/ssr';
 import { StatsCard } from './StatsCard';
 
 type Meal = {

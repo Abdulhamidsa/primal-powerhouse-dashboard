@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bell, ChevronLeft, Smartphone } from 'lucide-react';
+import { BellIcon as Bell, CaretLeftIcon as ChevronLeft, DeviceMobileIcon as Smartphone } from '@phosphor-icons/react';
 import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 

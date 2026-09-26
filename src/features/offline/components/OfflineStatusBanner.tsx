@@ -1,6 +1,6 @@
 'use client';
 
-import { CloudOff, RefreshCw } from 'lucide-react';
+import { CloudSlashIcon as CloudOff, ArrowsClockwiseIcon as RefreshCw } from '@phosphor-icons/react';
 import { useOfflineStatus } from '@/features/offline/components/OfflineProvider';
 
 function formatSavedAt(value: string | null): string {

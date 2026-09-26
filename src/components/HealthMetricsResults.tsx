@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle, Beef, Droplets, ShieldAlert, Target, Trash2, Wheat } from 'lucide-react';
+import { WarningCircleIcon as AlertCircle, CowIcon as Beef, DropIcon as Droplets, ShieldWarningIcon as ShieldAlert, TargetIcon as Target, TrashIcon as Trash2, GrainsIcon as Wheat } from '@phosphor-icons/react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { useHealthMetricsNotes } from '@/features/health-metrics/hooks/useHealthMetricsNotes';

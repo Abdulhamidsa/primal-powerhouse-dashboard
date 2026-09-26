@@ -3,18 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  Bell,
-  Camera,
-  ChevronRight,
-  KeyRound,
-  LogOut,
-  MessageSquare,
-  Palette,
-  Ruler,
-  Shield,
-  User,
-} from 'lucide-react';
+import { BellIcon as Bell, CameraIcon as Camera, CaretRightIcon as ChevronRight, KeyIcon as KeyRound, SignOutIcon as LogOut, ChatTextIcon as MessageSquare, PaletteIcon as Palette, RulerIcon as Ruler, ShieldIcon as Shield, UserIcon as User } from '@phosphor-icons/react';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import UpdateAppButton from '@/components/UpdateAppButton';

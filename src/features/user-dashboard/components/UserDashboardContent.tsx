@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { ArrowRight, CheckCircle2, ClipboardCheck, Dumbbell, Flame, MessageCircle, Moon, Salad, Sun } from 'lucide-react';
+import { ArrowRightIcon as ArrowRight, CheckCircleIcon as CheckCircle2, ClipboardTextIcon as ClipboardCheck, BarbellIcon as Dumbbell, FlameIcon as Flame, ChatCircleIcon as MessageCircle, MoonIcon as Moon, BowlFoodIcon as Salad, SunIcon as Sun } from '@phosphor-icons/react';
 import { UserPageHero } from '@/components/UserPageHero';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';

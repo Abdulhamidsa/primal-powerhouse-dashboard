@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, X } from 'lucide-react';
+import { ChatCircleIcon as MessageCircle, XIcon as X } from '@phosphor-icons/react';
 import { useMessageNotifications } from '@/features/client-coach-messaging/hooks/useMessageNotifications';
 import type { MessageNotification } from '@/features/client-coach-messaging/types/messaging.types';
 

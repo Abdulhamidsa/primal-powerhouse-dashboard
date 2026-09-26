@@ -9,24 +9,7 @@ import { MealAssignmentService } from '@/services/mealAssignmentService';
 import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
 import type { SideItem } from '@/features/sides/types/side.types';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
-import {
-  X,
-  Search,
-  Calendar,
-  Edit,
-  User,
-  Check,
-  Clock,
-  Users,
-  Utensils,
-  Save,
-  Sunrise,
-  Sun,
-  Moon,
-  Apple,
-  AlertCircle,
-  Leaf,
-} from 'lucide-react';
+import { XIcon as X, MagnifyingGlassIcon as Search, CalendarIcon as Calendar, PencilSimpleIcon as Edit, UserIcon as User, CheckIcon as Check, ClockIcon as Clock, UsersIcon as Users, ForkKnifeIcon as Utensils, FloppyDiskIcon as Save, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, WarningCircleIcon as AlertCircle, LeafIcon as Leaf } from '@phosphor-icons/react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 
 // Days of week configuration

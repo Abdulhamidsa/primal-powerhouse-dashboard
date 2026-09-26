@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Handshake, Plus, TrendingUp } from 'lucide-react';
+import { HandshakeIcon as Handshake, PlusIcon as Plus, TrendUpIcon as TrendingUp } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
 import { ClientLeadsTable } from '@/features/client-leads/components/ClientLeadsTable';

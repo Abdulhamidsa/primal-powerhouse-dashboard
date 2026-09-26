@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { XIcon as X } from '@phosphor-icons/react';
 import ImageUpload from '@/components/ImageUpload';
 import { useProfileAvatarEdit } from '@/features/profile-avatar-edit/hooks/useProfileAvatarEdit';
 import type { ProfileAvatarResponse } from '@/features/profile-avatar-edit/types/profileAvatar.types';

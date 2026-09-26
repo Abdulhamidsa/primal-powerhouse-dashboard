@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
-import { Users, ChevronLeft, Film, Utensils, BarChart, Info, Activity, User, MessageSquare } from 'lucide-react';
+import { UsersIcon as Users, CaretLeftIcon as ChevronLeft, FilmSlateIcon as Film, ForkKnifeIcon as Utensils, ChartBarIcon as BarChart, InfoIcon as Info, PulseIcon as Activity, UserIcon as User, ChatTextIcon as MessageSquare } from '@phosphor-icons/react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, TabKey } from '@/lib/client-page/types';
 import { calculateBMI } from '@/lib/health/calculators';

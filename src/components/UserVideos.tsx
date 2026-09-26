@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Play, Clock, X, CheckCircle, Filter, Dumbbell, Heart, Zap, User } from 'lucide-react';
+import { PlayIcon as Play, ClockIcon as Clock, XIcon as X, CheckCircleIcon as CheckCircle, FunnelIcon as Filter, BarbellIcon as Dumbbell, HeartIcon as Heart, LightningIcon as Zap, UserIcon as User } from '@phosphor-icons/react';
 
 interface Video {
   id: string;

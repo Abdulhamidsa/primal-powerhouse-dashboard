@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, KeyRound, Mail, Phone, CreditCard, FileText, Calendar, Eye, EyeOff } from 'lucide-react';
+import { XIcon as X, KeyIcon as KeyRound, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, CreditCardIcon as CreditCard, FileTextIcon as FileText, CalendarIcon as Calendar, EyeIcon as Eye, EyeSlashIcon as EyeOff } from '@phosphor-icons/react';
 import { LeadStatusBadge } from '@/features/client-leads/components/LeadStatusBadge';
 import { getClientLead } from '@/features/client-leads/api/clientLead.api';
 import type { ClientLead } from '@/features/client-leads/types/clientLead.types';

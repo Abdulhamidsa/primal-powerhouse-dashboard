@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { CaretDownIcon as ChevronDown, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react';
 import { FAQ_ENTRIES } from '@/features/learn/data/faq';
 import { filterFaqEntries } from '@/features/learn/lib/handbook';
 import { cn } from '@/lib/utils';

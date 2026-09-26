@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { CalendarDays, Clock, Film, FileText, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarDotsIcon as CalendarDays, ClockIcon as Clock, FilmSlateIcon as Film, FileTextIcon as FileText, PlusCircleIcon as PlusCircle, TrashIcon as Trash2 } from '@phosphor-icons/react/ssr';
 import { cx, iosCardStyle, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { VideoAssignment } from '@/types/video';
 import { formatDuration } from '@/helpers';

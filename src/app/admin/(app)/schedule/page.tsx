@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar } from 'lucide-react';
+import { CalendarIcon as Calendar } from '@phosphor-icons/react';
 
 export default function SchedulePage() {
   return (

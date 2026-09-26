@@ -4,22 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSWRConfig } from 'swr';
-import {
-  Archive,
-  Calculator,
-  ClipboardList,
-  Dumbbell,
-  Mail,
-  MessageSquare,
-  NotebookText,
-  Search,
-  Settings2,
-  Trash2,
-  Undo2,
-  UserPen,
-  Users,
-  X,
-} from 'lucide-react';
+import { ArchiveIcon as Archive, CalculatorIcon as Calculator, ClipboardTextIcon as ClipboardList, BarbellIcon as Dumbbell, EnvelopeSimpleIcon as Mail, ChatTextIcon as MessageSquare, NotebookIcon as NotebookText, MagnifyingGlassIcon as Search, GearSixIcon as Settings2, TrashIcon as Trash2, ArrowCounterClockwiseIcon as Undo2, UserCircleGearIcon as UserPen, UsersIcon as Users, XIcon as X } from '@phosphor-icons/react';
 import AssignContentModal from '@/components/AssignContentModal';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import NewAddClientModal from '@/components/NewAddClientModal';

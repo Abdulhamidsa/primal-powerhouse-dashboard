@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Inbox, MessageSquare, Search, UserRound } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, TrayIcon as Inbox, ChatTextIcon as MessageSquare, MagnifyingGlassIcon as Search, UserCircleIcon as UserRound } from '@phosphor-icons/react';
 import { MessageList } from '@/features/client-coach-messaging/components/MessageList';
 import { MessageComposer } from '@/features/client-coach-messaging/components/MessageComposer';
 import {

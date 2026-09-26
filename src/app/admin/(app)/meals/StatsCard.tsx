@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import type { Icon as LucideIcon } from '@phosphor-icons/react';
 
 type StatsCardProps = {
   title: string;

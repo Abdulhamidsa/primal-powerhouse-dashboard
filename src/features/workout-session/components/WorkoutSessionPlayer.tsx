@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Plus, Minus, Timer, MessageSquare } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, CheckCircleIcon as CheckCircle2, CaretRightIcon as ChevronRight, CaretLeftIcon as ChevronLeft, PlusIcon as Plus, MinusIcon as Minus, TimerIcon as Timer, ChatTextIcon as MessageSquare } from '@phosphor-icons/react';
 import type { WorkoutPlanAssignmentWithPlan } from '@/features/workout-plans/types/workoutPlan.types';
 import type { LocalExerciseState, LocalSetEntry, ExerciseFeedbackType } from '../types/workoutSession.types';
 import { buildInitialExerciseState } from '../lib/progression';

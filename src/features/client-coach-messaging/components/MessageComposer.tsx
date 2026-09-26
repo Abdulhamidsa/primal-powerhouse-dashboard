@@ -1,20 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  Camera,
-  FileUp,
-  ImagePlus,
-  Loader2,
-  Mic,
-  Paperclip,
-  Plus,
-  SendHorizontal,
-  Square,
-  Trash2,
-  Video,
-  X,
-} from 'lucide-react';
+import { CameraIcon as Camera, FileArrowUpIcon as FileUp, ImagesSquareIcon as ImagePlus, CircleNotchIcon as Loader2, MicrophoneIcon as Mic, PaperclipIcon as Paperclip, PlusIcon as Plus, PaperPlaneRightIcon as SendHorizontal, SquareIcon as Square, TrashIcon as Trash2, VideoIcon as Video, XIcon as X } from '@phosphor-icons/react';
 import { useMessageUpload } from '@/features/client-coach-messaging/hooks/useMessageUpload';
 import { useVideoRecorder } from '@/features/client-coach-messaging/hooks/useVideoRecorder';
 import { useVoiceRecorder } from '@/features/client-coach-messaging/hooks/useVoiceRecorder';

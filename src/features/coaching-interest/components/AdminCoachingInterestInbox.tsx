@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Clock3, Mail, Phone, RotateCcw, Search, Send, UserRound } from 'lucide-react';
+import { CheckIcon as Check, ClockIcon as Clock3, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, ArrowCounterClockwiseIcon as RotateCcw, MagnifyingGlassIcon as Search, PaperPlaneTiltIcon as Send, UserCircleIcon as UserRound } from '@phosphor-icons/react';
 import { useAdminCoachingInterests } from '@/features/coaching-interest/hooks/useAdminCoachingInterests';
 import type {
   AdminCoachingInterest,

@@ -1,20 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import {
-  Calendar,
-  ChevronDown,
-  FileText,
-  Handshake,
-  KeyRound,
-  Mail,
-  Pencil,
-  Phone,
-  Search,
-  Trash2,
-  UserCheck,
-  Users,
-} from 'lucide-react';
+import { CalendarIcon as Calendar, CaretDownIcon as ChevronDown, FileTextIcon as FileText, HandshakeIcon as Handshake, KeyIcon as KeyRound, EnvelopeSimpleIcon as Mail, PencilIcon as Pencil, PhoneIcon as Phone, MagnifyingGlassIcon as Search, TrashIcon as Trash2, UserCheckIcon as UserCheck, UsersIcon as Users } from '@phosphor-icons/react';
 import type { ElementType, FormEvent } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LeadDetailDrawer } from '@/features/client-leads/components/LeadDetailDrawer';

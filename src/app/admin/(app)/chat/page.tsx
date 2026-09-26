@@ -1,7 +1,7 @@
 
 import { AdminChatWorkspace } from '@/features/coaching-interest/components/AdminChatWorkspace';
 import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
-import { Radio } from 'lucide-react';
+import { RadioIcon as Radio } from '@phosphor-icons/react/ssr';
 
 export default function AdminChatPage() {
   return (

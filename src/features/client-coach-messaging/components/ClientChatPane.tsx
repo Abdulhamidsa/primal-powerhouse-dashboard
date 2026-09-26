@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, NotebookText } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, NotebookIcon as NotebookText } from '@phosphor-icons/react';
 import { ClientScopedChatPanel } from '@/features/client-coach-messaging/components/ClientScopedChatPanel';
 import { useConversationClientPresence } from '@/features/client-coach-messaging/hooks/useConversationClientPresence';
 

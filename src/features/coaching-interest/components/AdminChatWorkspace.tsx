@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Inbox, MessageSquareText } from 'lucide-react';
+import { TrayIcon as Inbox, ChatCenteredTextIcon as MessageSquareText } from '@phosphor-icons/react';
 import { ChatPanel } from '@/features/client-coach-messaging/components/ChatPanel';
 import { AdminCoachingInterestInbox } from '@/features/coaching-interest/components/AdminCoachingInterestInbox';
 import { useAdminCoachingInterests } from '@/features/coaching-interest/hooks/useAdminCoachingInterests';

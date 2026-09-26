@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity } from 'lucide-react';
+import { PulseIcon as Activity } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 
 type DailyCompletionRingProps = {

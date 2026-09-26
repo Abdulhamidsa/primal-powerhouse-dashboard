@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, useRef, useState } from 'react';
-import { Loader2, RefreshCcw } from 'lucide-react';
+import { CircleNotchIcon as Loader2, ArrowCounterClockwiseIcon as RefreshCcw } from '@phosphor-icons/react';
 
 const PULL_THRESHOLD = 86;
 const MAX_PULL = 118;

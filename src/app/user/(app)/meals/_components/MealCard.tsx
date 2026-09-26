@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { ChefHat, Clock, Users } from 'lucide-react';
+import { ChefHatIcon as ChefHat, ClockIcon as Clock, UsersIcon as Users } from '@phosphor-icons/react/ssr';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 export function MealCard({

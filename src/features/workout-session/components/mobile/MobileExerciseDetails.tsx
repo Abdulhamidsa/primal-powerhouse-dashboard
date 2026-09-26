@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, ChevronDown } from 'lucide-react';
+import { ChatTextIcon as MessageSquare, CaretDownIcon as ChevronDown } from '@phosphor-icons/react';
 import type { WorkoutPlanExercise } from '@/features/workout-plans/types/workoutPlan.types';
 
 interface Props {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle, Check, Copy, Eye, EyeOff } from 'lucide-react';
+import { WarningCircleIcon as AlertCircle, CheckIcon as Check, CopyIcon as Copy, EyeIcon as Eye, EyeSlashIcon as EyeOff } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { CredentialDisplayMode, ClientCredentials } from '@/features/client-credentials/types/clientCredentials.types';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Wand2, AlertCircle } from 'lucide-react';
+import { CaretDownIcon as ChevronDown, PencilSimpleIcon as Wand2, WarningCircleIcon as AlertCircle } from '@phosphor-icons/react';
 import { useMealAiAssist } from '@/features/meals/hooks/useMealAiAssist';
 import type { SuggestIngredientsResult } from '@/features/meals/hooks/useMealAiAssist';
 

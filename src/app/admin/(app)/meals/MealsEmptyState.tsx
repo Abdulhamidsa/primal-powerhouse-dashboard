@@ -1,5 +1,5 @@
 import React from 'react';
-import { Utensils } from 'lucide-react';
+import { ForkKnifeIcon as Utensils } from '@phosphor-icons/react/ssr';
 
 type MealsEmptyStateProps = {
   selectedType: string;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import NextImage from 'next/image';
-import { ChefHat, ChevronDown, ChevronUp, Copy, Sparkles, X } from 'lucide-react';
+import { ChefHatIcon as ChefHat, CaretDownIcon as ChevronDown, CaretUpIcon as ChevronUp, CopyIcon as Copy, ArrowsClockwiseIcon as Sparkles, XIcon as X } from '@phosphor-icons/react';
 import { DataService } from '@/services/dataService';
 import ImageUpload from '@/components/ImageUpload';
 import IngredientSearch from '@/components/IngredientSearch';

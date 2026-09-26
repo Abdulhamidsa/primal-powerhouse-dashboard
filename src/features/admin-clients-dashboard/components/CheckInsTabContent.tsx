@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Camera, Eye, Scale, Trash2, RotateCcw, FileText } from 'lucide-react';
+import { CameraIcon as Camera, EyeIcon as Eye, ScalesIcon as Scale, TrashIcon as Trash2, ArrowCounterClockwiseIcon as RotateCcw, FileTextIcon as FileText } from '@phosphor-icons/react/ssr';
 import { toDateKeyLocal } from '@/features/daily-checkin/utils/date';
 import type {
   AdminClientDailyCheckInsResponse,

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Clock, Sparkles, Users, Wheat, Flame } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, ClockIcon as Clock, ArrowsClockwiseIcon as Sparkles, UsersIcon as Users, GrainsIcon as Wheat, FlameIcon as Flame } from '@phosphor-icons/react';
 import { useMealDetail } from '@/features/meals/hooks/useMealDetail';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';

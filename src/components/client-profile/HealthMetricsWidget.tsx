@@ -1,4 +1,4 @@
-import { Flame, Beef, Wheat, Droplets, AlertCircle } from 'lucide-react';
+import { FlameIcon as Flame, CowIcon as Beef, GrainsIcon as Wheat, DropIcon as Droplets, WarningCircleIcon as AlertCircle } from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '@/lib/ui';
 
 interface HealthMetricsWidgetProps {

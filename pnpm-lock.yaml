@@ -213,6 +213,9 @@ importers:
       expo-video:
         specifier: ~55.0.21
         version: 55.0.21(expo@55.0.31)(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0))(react@19.2.0)
+      phosphor-react-native:
+        specifier: 3.0.6
+        version: 3.0.6(react-native-svg@15.15.3(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0))(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0))(react@19.2.0)
       pusher-js:
         specifier: 8.4.0
         version: 8.4.0
@@ -4890,6 +4893,13 @@ packages:
 
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
+
+  phosphor-react-native@3.0.6:
+    resolution: {integrity: sha512-mIhv+hBbDWz3yLbTOq/esVUkrMoKzEvLIcSeZo3YTdT+sbOBxzxKg5WZN3wpqt3pkkhKf0wVpOyZ3d9mNBNRhg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+      react-native-svg: '*'
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -11309,6 +11319,12 @@ snapshots:
   pathe@2.0.3: {}
 
   perfect-debounce@1.0.0: {}
+
+  phosphor-react-native@3.0.6(react-native-svg@15.15.3(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0))(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0))(react@19.2.0):
+    dependencies:
+      react: 19.2.0
+      react-native: 0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0)
+      react-native-svg: 15.15.3(react-native@0.83.10(@babel/core@7.29.7)(@types/react@19.2.2)(react@19.2.0))(react@19.2.0)
 
   picocolors@1.1.1: {}
 

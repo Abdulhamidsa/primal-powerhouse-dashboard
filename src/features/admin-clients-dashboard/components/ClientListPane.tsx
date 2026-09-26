@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Plus, Search, Users } from 'lucide-react';
+import { PlusIcon as Plus, MagnifyingGlassIcon as Search, UsersIcon as Users } from '@phosphor-icons/react/ssr';
 import type { AdminClientListItem, AdminClientStatus } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export function ClientListPane({

@@ -1,20 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import {
-  Apple,
-  Clock,
-  Drumstick,
-  Droplets,
-  Edit,
-  Flame,
-  Leaf,
-  Moon,
-  Sun,
-  Sunrise,
-  Trash2,
-  Users,
-  Wheat,
-} from 'lucide-react';
+import { OrangeIcon as Apple, ClockIcon as Clock, BoneIcon as Drumstick, DropIcon as Droplets, PencilSimpleIcon as Edit, FlameIcon as Flame, LeafIcon as Leaf, MoonIcon as Moon, SunIcon as Sun, SunHorizonIcon as Sunrise, TrashIcon as Trash2, UsersIcon as Users, GrainsIcon as Wheat } from '@phosphor-icons/react/ssr';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 import { MealListItem } from '@/lib/meal-planner/types';
 import { Button } from '@/components/ui/button';

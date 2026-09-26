@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Dumbbell, ChevronRight } from 'lucide-react';
+import { BarbellIcon as Dumbbell, CaretRightIcon as ChevronRight } from '@phosphor-icons/react';
 import { useUserWorkoutAssignments } from '@/features/workout-session/hooks/useUserWorkoutAssignments';
 
 export default function WorkoutPlansSection() {

@@ -1,4 +1,4 @@
-import { ChefHat, X } from 'lucide-react';
+import { ChefHatIcon as ChefHat, XIcon as X } from '@phosphor-icons/react/ssr';
 
 interface AddMealModalHeaderProps {
   handleClose: () => void;

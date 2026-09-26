@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, X } from 'lucide-react';
+import { TrashIcon as Trash2, XIcon as X } from '@phosphor-icons/react/ssr';
 
 type DeleteMealModalProps = {
   isOpen: boolean;

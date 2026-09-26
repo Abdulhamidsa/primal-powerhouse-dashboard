@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Mail, Phone, CreditCard, FileText, Wand2, X } from 'lucide-react';
+import { UserIcon as User, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, CreditCardIcon as CreditCard, FileTextIcon as FileText, PencilSimpleIcon as Wand2, XIcon as X } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAddClientLead } from '@/features/client-leads/hooks/useAddClientLead';
 import { addClientLeadSchema } from '@/features/client-leads/schemas/clientLead.schemas';

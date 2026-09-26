@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { BookOpenText, ChevronLeft, ChevronRight, List, X } from 'lucide-react';
+import { BookOpenTextIcon as BookOpenText, CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, ListIcon as List, XIcon as X } from '@phosphor-icons/react';
 import { HANDBOOK_PAGES } from '@/features/learn/data/handbook';
 import { getHandbookProgress } from '@/features/learn/lib/handbook';
 import { HandbookPage } from '@/features/learn/components/HandbookPage';

@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { CheckCircle2, Clock3, PlusCircle } from 'lucide-react';
+import { CheckCircleIcon as CheckCircle2, ClockIcon as Clock3, PlusCircleIcon as PlusCircle } from '@phosphor-icons/react/ssr';
 import type { MealOption } from '@/features/meals/types/mealSelection.types';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronRight, Dumbbell, Flag, RefreshCcw, Sparkles } from 'lucide-react';
+import { CheckIcon as Check, CaretRightIcon as ChevronRight, BarbellIcon as Dumbbell, FlagIcon as Flag, ArrowCounterClockwiseIcon as RefreshCcw, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
 import { WorkoutSessionPlayer } from '@/features/training/components/WorkoutSessionPlayer';
 import { useTrainingPlan } from '@/features/training/hooks/useTrainingPlan';
 import { useTrainingSession, useTrainingSessionActions } from '@/features/training/hooks/useTrainingSession';

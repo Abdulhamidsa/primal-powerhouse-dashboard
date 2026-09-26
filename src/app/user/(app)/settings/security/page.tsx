@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronLeft, KeyRound, Mail } from 'lucide-react';
+import { CaretLeftIcon as ChevronLeft, KeyIcon as KeyRound, EnvelopeSimpleIcon as Mail } from '@phosphor-icons/react';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { useUserPasswordLink, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 

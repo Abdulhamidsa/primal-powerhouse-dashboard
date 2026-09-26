@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MessageSquare, X, Check } from 'lucide-react';
+import { ChatTextIcon as MessageSquare, XIcon as X, CheckIcon as Check } from '@phosphor-icons/react';
 
 interface FeedbackModalProps {
   isOpen: boolean;

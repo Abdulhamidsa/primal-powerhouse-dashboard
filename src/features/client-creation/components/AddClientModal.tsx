@@ -1,23 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  AlertCircle,
-  Calendar,
-  Check,
-  Copy,
-  FileText,
-  Mail,
-  Phone,
-  Plus,
-  Ruler,
-  Scale,
-  Target,
-  User,
-  UtensilsCrossed,
-  X,
-  Activity,
-} from 'lucide-react';
+import { WarningCircleIcon as AlertCircle, CalendarIcon as Calendar, CheckIcon as Check, CopyIcon as Copy, FileTextIcon as FileText, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, PlusIcon as Plus, RulerIcon as Ruler, ScalesIcon as Scale, TargetIcon as Target, UserIcon as User, ForkKnifeIcon as UtensilsCrossed, XIcon as X, PulseIcon as Activity } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { createClientSchema } from '@/features/client-creation/schemas/clientCreation.schema';
 import { useAddClient } from '@/features/client-creation/hooks/useAddClient';

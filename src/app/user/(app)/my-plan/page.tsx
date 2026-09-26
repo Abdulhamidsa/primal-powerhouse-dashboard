@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, CircleAlert, Plus, Salad, X } from 'lucide-react';
+import { WarningCircleIcon as AlertCircle, WarningCircleIcon as CircleAlert, PlusIcon as Plus, BowlFoodIcon as Salad, XIcon as X } from '@phosphor-icons/react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { SkeletonMealGrid } from '@/components/Skeletons';

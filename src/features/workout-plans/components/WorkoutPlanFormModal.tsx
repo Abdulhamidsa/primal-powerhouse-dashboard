@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Trash2, GripVertical, Search } from 'lucide-react';
+import { XIcon as X, PlusIcon as Plus, TrashIcon as Trash2, DotsSixVerticalIcon as GripVertical, MagnifyingGlassIcon as Search } from '@phosphor-icons/react';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
 import type { WorkoutPlan } from '../types/workoutPlan.types';
 import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';

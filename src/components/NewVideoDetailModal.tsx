@@ -3,7 +3,7 @@
 import { Video } from '@/types/video';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Clock } from 'lucide-react';
+import { ClockIcon as Clock } from '@phosphor-icons/react';
 
 interface VideoDetailModalProps {
   isOpen: boolean;

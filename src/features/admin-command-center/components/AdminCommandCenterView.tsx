@@ -2,17 +2,7 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import {
-  Activity,
-  ArrowRight,
-  CheckCircle2,
-  Clock3,
-  Gauge,
-  MessageSquare,
-  ShieldAlert,
-  Sparkles,
-  Users,
-} from 'lucide-react';
+import { PulseIcon as Activity, ArrowRightIcon as ArrowRight, CheckCircleIcon as CheckCircle2, ClockIcon as Clock3, GaugeIcon as Gauge, ChatTextIcon as MessageSquare, ShieldWarningIcon as ShieldAlert, ArrowsClockwiseIcon as Sparkles, UsersIcon as Users } from '@phosphor-icons/react';
 import { AdminPage, AdminPageHeader, AdminPanel, AdminPanelHeader } from '@/features/admin-shell/components/AdminPage';
 import type {
   AdminCommandCenterResponse,

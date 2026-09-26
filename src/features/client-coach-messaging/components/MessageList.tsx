@@ -1,7 +1,7 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { WarningIcon as AlertTriangle, ArrowCounterClockwiseIcon as RotateCcw } from '@phosphor-icons/react';
 import { usePathname } from 'next/navigation';
 import type { ChatMessage, ConversationSummary } from '@/features/client-coach-messaging/types/messaging.types';
 

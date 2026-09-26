@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { X, CheckCircle } from 'lucide-react';
+import { XIcon as X, CheckCircleIcon as CheckCircle } from '@phosphor-icons/react';
 import {
   useAdminWorkoutSession,
   useAdminWorkoutSessionActions,

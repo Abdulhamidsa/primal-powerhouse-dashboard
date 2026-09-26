@@ -1,4 +1,4 @@
-import { Archive, Mail, Phone, Ruler, Scale, Timer, Undo2 } from 'lucide-react';
+import { ArchiveIcon as Archive, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, RulerIcon as Ruler, ScalesIcon as Scale, TimerIcon as Timer, ArrowCounterClockwiseIcon as Undo2 } from '@phosphor-icons/react/ssr';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 // @ts-ignore - lucide-react type definitions issue
-import { X } from 'lucide-react';
+import { XIcon as X } from '@phosphor-icons/react';
 
 interface EditMotivationalMessageModalProps {
   isOpen: boolean;

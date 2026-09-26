@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Activity, Gauge, Target, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { PulseIcon as Activity, GaugeIcon as Gauge, TargetIcon as Target, TrendDownIcon as TrendingDown, TrendUpIcon as TrendingUp, XIcon as X } from '@phosphor-icons/react';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { useHealthMetricsCalculator } from '@/features/health-metrics/hooks/useHealthMetricsCalculator';
 import type {

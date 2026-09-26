@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, BookOpenText, CalendarCheck2, Check, Dumbbell, Flame, Utensils } from 'lucide-react';
+import { ArrowRightIcon as ArrowRight, BookOpenTextIcon as BookOpenText, CalendarCheckIcon as CalendarCheck2, CheckIcon as Check, BarbellIcon as Dumbbell, FlameIcon as Flame, ForkKnifeIcon as Utensils } from '@phosphor-icons/react';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
 import { UserPageHero } from '@/components/UserPageHero';

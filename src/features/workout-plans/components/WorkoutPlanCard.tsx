@@ -1,6 +1,6 @@
 'use client';
 
-import { Dumbbell, Trash2, Edit2, Users } from 'lucide-react';
+import { BarbellIcon as Dumbbell, TrashIcon as Trash2, PencilSimpleIcon as Edit2, UsersIcon as Users } from '@phosphor-icons/react';
 import type { WorkoutPlan } from '../types/workoutPlan.types';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
 import { KeyedMutator } from 'swr';

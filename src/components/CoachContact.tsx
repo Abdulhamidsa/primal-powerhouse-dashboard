@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User as UserIcon, Check, Star } from 'lucide-react';
+import { UserIcon as UserIcon, CheckIcon as Check, StarIcon as Star } from '@phosphor-icons/react';
 
 interface CoachContactProps {
   userId: string;

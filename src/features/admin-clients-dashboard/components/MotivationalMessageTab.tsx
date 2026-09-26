@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare } from 'lucide-react';
+import { ChatTextIcon as MessageSquare } from '@phosphor-icons/react';
 import { useClientMotivationalMessage } from '@/features/admin-clients-dashboard/hooks/useClientMotivationalMessage';
 
 export function MotivationalMessageTab({

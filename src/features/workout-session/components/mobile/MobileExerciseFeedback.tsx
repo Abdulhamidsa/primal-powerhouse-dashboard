@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { CaretDownIcon as ChevronDown } from '@phosphor-icons/react';
 import type { ExerciseFeedbackType } from '../../types/workoutSession.types';
 
 interface Props {

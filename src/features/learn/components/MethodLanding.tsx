@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowUpRight, BookOpenText } from 'lucide-react';
+import { ArrowUpRightIcon as ArrowUpRight, BookOpenTextIcon as BookOpenText } from '@phosphor-icons/react';
 import { HANDBOOK_PAGES } from '@/features/learn/data/handbook';
 import { UserPageHero } from '@/components/UserPageHero';
 import { getHandbookProgress } from '@/features/learn/lib/handbook';

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Cake, ChevronLeft, Ruler, Scale } from 'lucide-react';
+import { CakeIcon as Cake, CaretLeftIcon as ChevronLeft, RulerIcon as Ruler, ScalesIcon as Scale } from '@phosphor-icons/react';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 

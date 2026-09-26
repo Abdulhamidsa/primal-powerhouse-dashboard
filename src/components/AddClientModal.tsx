@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { DataService } from '@/services/dataService';
-import { AlertCircle, Check, Copy } from 'lucide-react';
+import { WarningCircleIcon as AlertCircle, CheckIcon as Check, CopyIcon as Copy } from '@phosphor-icons/react';
 
 interface AddClientModalProps {
   isOpen: boolean;

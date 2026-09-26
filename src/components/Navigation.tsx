@@ -1,31 +1,33 @@
 'use client';
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
-import type { LucideIcon } from 'lucide-react';
+import type { Icon } from '@phosphor-icons/react';
 import {
-  BarChart2,
-  Utensils,
-  Users,
-  Activity,
-  Flame,
-  User,
-  Shield,
-  MessageSquare,
-  ClipboardCheck,
-  CalendarCheck2,
-  ShoppingBag,
-  Handshake,
-  Dumbbell,
-  KeyRound,
-  Bell,
-  LogOut,
-  ChevronRight,
-  X,
-} from 'lucide-react';
+  BarbellIcon,
+  BellIcon,
+  BookOpenTextIcon,
+  CalendarCheckIcon,
+  CaretRightIcon,
+  ChatCircleDotsIcon,
+  ClipboardTextIcon,
+  ForkKnifeIcon,
+  GaugeIcon,
+  HandshakeIcon,
+  HouseIcon,
+  KeyIcon,
+  ListChecksIcon,
+  PlayCircleIcon,
+  ShieldCheckIcon,
+  ShoppingBagIcon,
+  SignOutIcon,
+  UserCircleIcon,
+  UsersThreeIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { ChatDrawer } from '@/features/client-coach-messaging/components/ChatDrawer.tsx';
 import { cn } from '@/lib/utils';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
@@ -41,7 +43,7 @@ type NavItem = {
   name: string;
   mobileName?: string;
   href: string;
-  icon: LucideIcon;
+  icon: Icon;
   description: string;
 };
 
@@ -49,13 +51,13 @@ const adminNavItems: NavItem[] = [
   {
     name: 'Dashboard',
     href: '/admin/dashboard',
-    icon: BarChart2,
+    icon: GaugeIcon,
     description: 'Overview & stats',
   },
   {
     name: 'Meals',
     href: '/admin/meals',
-    icon: Utensils,
+    icon: ForkKnifeIcon,
     description: 'Manage meal library',
   },
   // {
@@ -67,37 +69,37 @@ const adminNavItems: NavItem[] = [
   {
     name: 'Videos',
     href: '/admin/videos',
-    icon: Flame,
+    icon: PlayCircleIcon,
     description: 'Training videos',
   },
   {
     name: 'Chat',
     href: '/admin/chat',
-    icon: MessageSquare,
+    icon: ChatCircleDotsIcon,
     description: 'Realtime messaging',
   },
   {
     name: 'Clients',
     href: '/admin/clients',
-    icon: Users,
+    icon: UsersThreeIcon,
     description: 'Client management',
   },
   {
     name: 'Deals',
     href: '/admin/deals',
-    icon: Handshake,
+    icon: HandshakeIcon,
     description: 'Client pipeline',
   },
   {
     name: 'Workoutsddd',
     href: '/admin/workout-plans',
-    icon: Dumbbell,
+    icon: ListChecksIcon,
     description: 'Workout plan library',
   },
   {
     name: 'Training',
     href: '/admin/training',
-    icon: Activity,
+    icon: BarbellIcon,
     description: 'New training system',
   },
 ];
@@ -107,21 +109,21 @@ const userNavItems: NavItem[] = [
     name: 'Today',
     mobileName: 'Today',
     href: '/user/dashboard',
-    icon: BarChart2,
+    icon: HouseIcon,
     description: 'Your day at a glance',
   },
   {
     name: 'Plan',
     mobileName: 'Plan',
     href: '/user/my-plan',
-    icon: CalendarCheck2,
+    icon: CalendarCheckIcon,
     description: 'Meals and swaps',
   },
   {
     name: 'Check-Ins',
     mobileName: 'Check-ins',
     href: '/user/check-ins',
-    icon: ClipboardCheck,
+    icon: ClipboardTextIcon,
     description: 'Daily and weekly tracking',
   },
   // Temporarily hidden to simplify the mobile dock.
@@ -135,23 +137,23 @@ const userNavItems: NavItem[] = [
     name: 'Training',
     mobileName: 'Train',
     href: '/user/training',
-    icon: Activity,
+    icon: BarbellIcon,
     description: 'Workout plans and videos',
   },
   {
     name: 'Shopping',
     mobileName: 'Shop',
     href: '/user/shopping-list',
-    icon: ShoppingBag,
+    icon: ShoppingBagIcon,
     description: 'Groceries and prep',
   },
 ];
 
 const selfServiceNavItems: NavItem[] = [
   userNavItems[0],
-  { name: 'Meal Plan', mobileName: 'Plan', href: '/user/my-plan', icon: CalendarCheck2, description: 'Your starter meal plan' },
-  { name: 'Training Plan', mobileName: 'Train', href: '/user/training', icon: Activity, description: 'Your starter training plan' },
-  { name: 'Method', mobileName: 'Method', href: '/user/learn', icon: Flame, description: 'Handbook and practical guidance' },
+  { name: 'Meal Plan', mobileName: 'Plan', href: '/user/my-plan', icon: CalendarCheckIcon, description: 'Your starter meal plan' },
+  { name: 'Training Plan', mobileName: 'Train', href: '/user/training', icon: BarbellIcon, description: 'Your starter training plan' },
+  { name: 'Method', mobileName: 'Method', href: '/user/learn', icon: BookOpenTextIcon, description: 'Handbook and practical guidance' },
   userNavItems[4],
 ];
 
@@ -159,25 +161,25 @@ const userAccountMenuItems: NavItem[] = [
   {
     name: 'Profile',
     href: '/user/profile',
-    icon: User,
+    icon: UserCircleIcon,
     description: 'Account details',
   },
   {
     name: 'Privacy & Data',
     href: '/user/privacy',
-    icon: Shield,
+    icon: ShieldCheckIcon,
     description: 'Privacy & data',
   },
   {
     name: 'Account Security',
     href: '/user/settings/security',
-    icon: KeyRound,
+    icon: KeyIcon,
     description: 'Password and login',
   },
   {
     name: 'Notifications',
     href: '/user/settings/notifications',
-    icon: Bell,
+    icon: BellIcon,
     description: 'Message alerts',
   },
 ];
@@ -186,7 +188,7 @@ const selfServiceAccountMenuItems: NavItem[] = [
   userAccountMenuItems[0],
   userAccountMenuItems[1],
   userAccountMenuItems[2],
-  { name: 'Upgrade', href: '/user/upgrade', icon: Handshake, description: 'Explore personal guidance' },
+  { name: 'Upgrade', href: '/user/upgrade', icon: HandshakeIcon, description: 'Explore personal guidance' },
 ];
 
 function isActivePath(pathname: string, href: string): boolean {
@@ -216,7 +218,7 @@ const DesktopTopNavItem = React.memo(function DesktopTopNavItem({
           : 'border-transparent text-muted-foreground hover:border-border/60 hover:bg-card/70 hover:text-foreground',
       ].join(' ')}
     >
-      <Icon size={17} className={active ? 'text-primary' : ''} />
+      <Icon size={18} weight={active ? 'fill' : 'regular'} aria-hidden="true" className={active ? 'text-primary' : ''} />
       <span className="text-sm font-medium">{item.name}</span>
 
       {unreadCount > 0 ? (
@@ -240,14 +242,12 @@ const MobileTabItem = React.memo(function MobileTabItem({
   active,
   pending,
   unreadCount,
-  tabRef,
   onPrime,
 }: {
   item: NavItem;
   active: boolean;
   pending: boolean;
   unreadCount: number;
-  tabRef: (node: HTMLAnchorElement | null) => void;
   onPrime: (href: string) => void;
 }) {
   const Icon = item.icon;
@@ -256,7 +256,6 @@ const MobileTabItem = React.memo(function MobileTabItem({
   return (
     <Link
       href={item.href}
-      ref={tabRef}
       prefetch
       onPointerEnter={() => onPrime(item.href)}
       onTouchStart={() => onPrime(item.href)}
@@ -273,7 +272,7 @@ const MobileTabItem = React.memo(function MobileTabItem({
         )}
         style={{ transform: visuallyActive ? 'translateY(-1px) scale(1.08)' : 'translateY(0) scale(1)' }}
       >
-        <Icon size={21} />
+        <Icon size={24} weight={visuallyActive ? 'fill' : 'regular'} aria-hidden="true" />
       </div>
 
       {unreadCount > 0 ? (
@@ -314,9 +313,6 @@ export default function Navigation({
   const [isMounted, setIsMounted] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
-  const mobileNavRef = useRef<HTMLDivElement | null>(null);
-  const mobileTabRefs = useRef(new Map<string, HTMLAnchorElement | null>());
-  const [mobileIndicator, setMobileIndicator] = useState({ x: 0, width: 0, ready: false });
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
   const navItems = useMemo(
@@ -353,58 +349,6 @@ export default function Navigation({
     setPendingHref(href);
     router.prefetch(href);
   };
-
-  useLayoutEffect(() => {
-    if (userType !== 'user') return;
-
-    const updateIndicator = () => {
-      const nav = mobileNavRef.current;
-      const activeItem = navItems.find(item => item.href === pendingHref) ?? navItems.find(item => isActivePath(pathname, item.href));
-      const activeLink = activeItem ? mobileTabRefs.current.get(activeItem.href) : null;
-
-      if (!nav || !activeLink) return;
-
-      const navRect = nav.getBoundingClientRect();
-      const linkRect = activeLink.getBoundingClientRect();
-
-      setMobileIndicator({
-        x: linkRect.left - navRect.left,
-        width: linkRect.width,
-        ready: true,
-      });
-    };
-
-    const raf = window.requestAnimationFrame(updateIndicator);
-
-    if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', updateIndicator);
-
-      return () => {
-        window.cancelAnimationFrame(raf);
-        window.removeEventListener('resize', updateIndicator);
-      };
-    }
-
-    const observer = new ResizeObserver(() => {
-      window.requestAnimationFrame(updateIndicator);
-    });
-
-    if (mobileNavRef.current) {
-      observer.observe(mobileNavRef.current);
-    }
-
-    mobileTabRefs.current.forEach(link => {
-      if (link) observer.observe(link);
-    });
-
-    window.addEventListener('resize', updateIndicator);
-
-    return () => {
-      window.cancelAnimationFrame(raf);
-      observer.disconnect();
-      window.removeEventListener('resize', updateIndicator);
-    };
-  }, [navItems, pathname, pendingHref, userType]);
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -480,7 +424,7 @@ export default function Navigation({
                   aria-label="Open chat"
                   className="relative inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <MessageSquare size={18} />
+                  <ChatCircleDotsIcon size={18} aria-hidden="true" />
                   {safeUnreadTotal > 0 ? (
                     <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
                       {safeUnreadTotal}
@@ -495,7 +439,7 @@ export default function Navigation({
                     aria-label="Open account menu"
                     className="inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <User size={18} />
+                    <UserCircleIcon size={18} aria-hidden="true" />
                   </button>
 
                   {accountMenuOpen && (
@@ -543,7 +487,7 @@ export default function Navigation({
                 aria-label="Open chat"
                 className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
               >
-                <MessageSquare size={18} />
+                <ChatCircleDotsIcon size={18} aria-hidden="true" />
                 {safeUnreadTotal > 0 ? (
                   <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
                 ) : null}
@@ -564,7 +508,7 @@ export default function Navigation({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <User size={18} />
+                  <UserCircleIcon size={18} aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -599,7 +543,7 @@ export default function Navigation({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <User size={22} className="text-muted-foreground" />
+                    <UserCircleIcon size={22} aria-hidden="true" className="text-muted-foreground" />
                   )}
                 </div>
 
@@ -614,7 +558,7 @@ export default function Navigation({
                   aria-label="Close"
                   className="grid h-10 w-10 place-items-center rounded-full border border-border/80 bg-background/60 text-muted-foreground"
                 >
-                  <X size={18} />
+                  <XIcon size={18} aria-hidden="true" />
                 </button>
               </div>
 
@@ -635,13 +579,13 @@ export default function Navigation({
                       )}
                     >
                       <span className="grid h-10 w-10 place-items-center rounded-2xl bg-muted/45 text-foreground">
-                        <Icon size={18} />
+                        <Icon size={18} weight={active ? 'fill' : 'regular'} aria-hidden="true" />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-semibold text-foreground">{item.name}</span>
                         <span className="block text-xs text-muted-foreground">{item.description}</span>
                       </span>
-                      <ChevronRight size={17} className="text-muted-foreground/70" />
+                      <CaretRightIcon size={17} aria-hidden="true" className="text-muted-foreground/70" />
                     </Link>
                   );
                 })}
@@ -653,7 +597,7 @@ export default function Navigation({
                 className="mt-3 flex min-h-[56px] w-full items-center gap-3 rounded-3xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-left text-destructive transition-colors active:bg-destructive/10"
               >
                 <span className="grid h-10 w-10 place-items-center rounded-2xl bg-destructive/10">
-                  <LogOut size={18} />
+                  <SignOutIcon size={18} aria-hidden="true" />
                 </span>
                 <span className="flex-1 text-sm font-semibold">Sign out</span>
               </button>
@@ -679,35 +623,7 @@ export default function Navigation({
           className="fixed inset-x-3 bottom-6 z-40 mx-auto max-w-xl rounded-[28px] border border-border/70 bg-card/85 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl lg:hidden"
           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
-          <div ref={mobileNavRef} className="relative grid grid-cols-5 items-stretch gap-1 px-2 py-2">
-            <div
-              aria-hidden="true"
-              className="absolute inset-y-1 rounded-[22px] border transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-              style={{
-                left: 7,
-                width: Math.max(mobileIndicator.width - 16, 0),
-                transform: `translate3d(${mobileIndicator.x}px, 0, 0)`,
-                opacity: mobileIndicator.ready ? 1 : 0,
-                background:
-                  'radial-gradient(circle at 50% 15%, rgba(255,255,255,0.24), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.04) 75%, rgba(255,255,255,0.02) 100%)',
-                borderColor: 'rgba(255,255,255,0.10)',
-                boxShadow: '0 12px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10)',
-                willChange: 'transform, width, opacity',
-              }}
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 rounded-[20px] blur-xl transition-[transform,width,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-              style={{
-                left: 7,
-                width: Math.max(mobileIndicator.width - 16, 0),
-                transform: `translate3d(${mobileIndicator.x}px, 0, 0) scale(1.08)`,
-                opacity: mobileIndicator.ready ? 0.45 : 0,
-                background:
-                  'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.16), rgba(255,255,255,0.05) 62%, transparent 100%)',
-                willChange: 'transform, width, opacity',
-              }}
-            />
+          <div className="relative grid grid-cols-5 items-stretch gap-1 px-2 py-2">
             {safeNavItems.map(item => (
               <MobileTabItem
                 key={item.href}
@@ -716,9 +632,6 @@ export default function Navigation({
                 pending={pendingHref === item.href}
                 unreadCount={item.href.endsWith('/chat') ? safeUnreadTotal : 0}
                 onPrime={primeRoute}
-                tabRef={node => {
-                  mobileTabRefs.current.set(item.href, node);
-                }}
               />
             ))}
           </div>

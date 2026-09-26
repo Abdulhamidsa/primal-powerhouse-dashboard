@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Clock3, Leaf, X } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, ClockIcon as Clock3, LeafIcon as Leaf, XIcon as X } from '@phosphor-icons/react';
 import { SkeletonMealGrid } from '@/components/Skeletons';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';

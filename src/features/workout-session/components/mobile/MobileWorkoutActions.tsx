@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, CheckIcon as Check } from '@phosphor-icons/react';
 
 interface Props {
   onDone: () => void;

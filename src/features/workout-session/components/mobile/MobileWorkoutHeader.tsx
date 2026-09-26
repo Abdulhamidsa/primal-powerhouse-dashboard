@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { XIcon as X } from '@phosphor-icons/react';
 
 interface Props {
   workoutName: string;

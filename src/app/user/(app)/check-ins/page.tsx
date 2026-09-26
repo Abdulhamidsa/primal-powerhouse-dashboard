@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Activity, ArrowRight, ChevronDown, Scale } from 'lucide-react';
+import { PulseIcon as Activity, ArrowRightIcon as ArrowRight, CaretDownIcon as ChevronDown, ScalesIcon as Scale } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';

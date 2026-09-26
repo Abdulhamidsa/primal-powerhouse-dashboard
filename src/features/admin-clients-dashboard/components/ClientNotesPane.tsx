@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ArrowLeft, SendHorizontal } from 'lucide-react';
+import { ArrowLeftIcon as ArrowLeft, PaperPlaneRightIcon as SendHorizontal } from '@phosphor-icons/react/ssr';
 import type { ClientNoteEntry } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
 export function ClientNotesPane({

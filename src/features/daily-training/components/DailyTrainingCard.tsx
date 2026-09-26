@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Dumbbell, CheckCircle2 } from 'lucide-react';
+import { BarbellIcon as Dumbbell, CheckCircleIcon as CheckCircle2 } from '@phosphor-icons/react';
 import { useDailyTrainingToday, useUpsertDailyTraining } from '@/features/daily-training/hooks/useDailyTraining';
 import type { DailyTrainingStatus } from '@/features/daily-training/types/dailyTraining.types';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { ChevronDown, Copy, Sparkles, Wand2, X } from 'lucide-react';
+import { CaretDownIcon as ChevronDown, CopyIcon as Copy, ArrowsClockwiseIcon as Sparkles, PencilSimpleIcon as Wand2, XIcon as X } from '@phosphor-icons/react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
 import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 import { useGenerateMealTemplate } from '@/features/meals/hooks/useGenerateMealTemplate';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { PlusIcon as Plus } from '@phosphor-icons/react';
 import { useWorkoutPlans } from '@/features/workout-plans/hooks/useWorkoutPlans';
 import WorkoutPlanCard from '@/features/workout-plans/components/WorkoutPlanCard';
 import WorkoutPlanFormModal from '@/features/workout-plans/components/WorkoutPlanFormModal';

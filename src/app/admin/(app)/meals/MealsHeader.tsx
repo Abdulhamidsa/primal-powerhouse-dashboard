@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, ChefHat } from 'lucide-react';
+import { PlusIcon as Plus, ChefHatIcon as ChefHat } from '@phosphor-icons/react/ssr';
 import { Button } from '@/components/ui/button';
 
 type MealsHeaderProps = {

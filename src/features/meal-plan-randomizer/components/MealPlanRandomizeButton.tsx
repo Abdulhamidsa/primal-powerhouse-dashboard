@@ -1,6 +1,6 @@
 'use client';
 
-import { Shuffle } from 'lucide-react';
+import { ShuffleIcon as Shuffle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

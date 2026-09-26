@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Flame, Beef, Wheat, Droplets } from 'lucide-react';
+import { FlameIcon as Flame, CowIcon as Beef, GrainsIcon as Wheat, DropIcon as Droplets } from '@phosphor-icons/react';
 import { useClientNutritionComparison } from '@/features/client-nutrition-comparison/hooks/useClientNutritionComparison';
 import type {
   DailyNutritionComparison,

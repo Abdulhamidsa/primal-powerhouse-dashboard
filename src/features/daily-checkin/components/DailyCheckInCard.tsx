@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ComponentType, type CSSProperties } from 'react';
-import { CheckCircle2, Dumbbell, Flame, Moon, PenLine, Salad, Utensils } from 'lucide-react';
+import { CheckCircleIcon as CheckCircle2, BarbellIcon as Dumbbell, FlameIcon as Flame, MoonIcon as Moon, PencilLineIcon as PenLine, BowlFoodIcon as Salad, ForkKnifeIcon as Utensils } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';

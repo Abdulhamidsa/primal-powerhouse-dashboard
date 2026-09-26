@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { KeyRound, RotateCcw } from 'lucide-react';
+import { KeyIcon as KeyRound, ArrowCounterClockwiseIcon as RotateCcw } from '@phosphor-icons/react';
 import type { Client } from '@/lib/client-page/types';
 import { ClientCredentialsModal } from '@/features/client-credentials';
 import { useClientCredentials } from '@/features/client-credentials/hooks/useClientCredentials';

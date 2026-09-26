@@ -1,7 +1,7 @@
  'use client';
 
 import { useMemo } from 'react';
-import { CalendarClock, ChevronRight, LineChart as LineChartIcon, Target } from 'lucide-react';
+import { CalendarDotsIcon as CalendarClock, CaretRightIcon as ChevronRight, ChartLineIcon as LineChartIcon, TargetIcon as Target } from '@phosphor-icons/react';
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { buildWeightProjectionTimeline } from '@/lib/health/weightProjection';
 import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Dumbbell, Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { BarbellIcon as Dumbbell, PlusIcon as Plus, TrashIcon as Trash2, ToggleLeftIcon as ToggleLeft, ToggleRightIcon as ToggleRight, CaretDownIcon as ChevronDown, CaretUpIcon as ChevronUp } from '@phosphor-icons/react';
 import { useAdminClientWorkoutSessions } from '@/features/workout-session/hooks/useAdminWorkoutSessions';
 import { WorkoutSessionReviewDrawer } from '@/features/workout-session/components/admin/WorkoutSessionReviewDrawer';
 import {
