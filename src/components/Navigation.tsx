@@ -91,7 +91,7 @@ const adminNavItems: NavItem[] = [
     description: 'Client pipeline',
   },
   {
-    name: 'Workoutsddd',
+    name: 'Legacy Workouts',
     href: '/admin/workout-plans',
     icon: ListChecksIcon,
     description: 'Workout plan library',
@@ -151,9 +151,27 @@ const userNavItems: NavItem[] = [
 
 const selfServiceNavItems: NavItem[] = [
   userNavItems[0],
-  { name: 'Meal Plan', mobileName: 'Plan', href: '/user/my-plan', icon: CalendarCheckIcon, description: 'Your starter meal plan' },
-  { name: 'Training Plan', mobileName: 'Train', href: '/user/training', icon: BarbellIcon, description: 'Your starter training plan' },
-  { name: 'Method', mobileName: 'Method', href: '/user/learn', icon: BookOpenTextIcon, description: 'Handbook and practical guidance' },
+  {
+    name: 'Meal Plan',
+    mobileName: 'Plan',
+    href: '/user/my-plan',
+    icon: CalendarCheckIcon,
+    description: 'Your starter meal plan',
+  },
+  {
+    name: 'Training Plan',
+    mobileName: 'Train',
+    href: '/user/training',
+    icon: BarbellIcon,
+    description: 'Your starter training plan',
+  },
+  {
+    name: 'Method',
+    mobileName: 'Method',
+    href: '/user/learn',
+    icon: BookOpenTextIcon,
+    description: 'Handbook and practical guidance',
+  },
   userNavItems[4],
 ];
 
@@ -218,7 +236,12 @@ const DesktopTopNavItem = React.memo(function DesktopTopNavItem({
           : 'border-transparent text-muted-foreground hover:border-border/60 hover:bg-card/70 hover:text-foreground',
       ].join(' ')}
     >
-      <Icon size={18} weight={active ? 'fill' : 'regular'} aria-hidden="true" className={active ? 'text-primary' : ''} />
+      <Icon
+        size={18}
+        weight={active ? 'fill' : 'regular'}
+        aria-hidden="true"
+        className={active ? 'text-primary' : ''}
+      />
       <span className="text-sm font-medium">{item.name}</span>
 
       {unreadCount > 0 ? (
@@ -316,7 +339,12 @@ export default function Navigation({
   const isChatRoute = pathname === '/user/chat' || pathname === '/admin/chat';
 
   const navItems = useMemo(
-    () => userType === 'admin' ? adminNavItems : profileUser?.accessMode === 'SELF_SERVICE' ? selfServiceNavItems : userNavItems,
+    () =>
+      userType === 'admin'
+        ? adminNavItems
+        : profileUser?.accessMode === 'SELF_SERVICE'
+          ? selfServiceNavItems
+          : userNavItems,
     [profileUser?.accessMode, userType],
   );
   const safeNavItems = navItems;
@@ -418,19 +446,21 @@ export default function Navigation({
           <div className="flex items-center gap-3">
             {userType === 'user' ? (
               <>
-                {!isSelfService ? <button
-                  type="button"
-                  onClick={() => setChatDrawerOpen(true)}
-                  aria-label="Open chat"
-                  className="relative inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <ChatCircleDotsIcon size={18} aria-hidden="true" />
-                  {safeUnreadTotal > 0 ? (
-                    <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                      {safeUnreadTotal}
-                    </span>
-                  ) : null}
-                </button> : null}
+                {!isSelfService ? (
+                  <button
+                    type="button"
+                    onClick={() => setChatDrawerOpen(true)}
+                    aria-label="Open chat"
+                    className="relative inline-flex items-center rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <ChatCircleDotsIcon size={18} aria-hidden="true" />
+                    {safeUnreadTotal > 0 ? (
+                      <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                        {safeUnreadTotal}
+                      </span>
+                    ) : null}
+                  </button>
+                ) : null}
 
                 <div ref={accountMenuRef} className="relative">
                   <button
@@ -459,7 +489,7 @@ export default function Navigation({
                                 : 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
                             ].join(' ')}
                           >
-                            <Icon size={15} />
+                            <Icon aria-hidden="true" focusable="false" size={15} />
                             {item.name}
                           </Link>
                         );
@@ -480,18 +510,22 @@ export default function Navigation({
           style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
         >
           <div className="mx-auto flex w-full max-w-xl items-center justify-end">
-
             <div className="flex items-center gap-2">
-              {!isSelfService ? <Link
-                href="/user/chat"
-                aria-label="Open chat"
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ChatCircleDotsIcon size={18} aria-hidden="true" />
-                {safeUnreadTotal > 0 ? (
-                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
-                ) : null}
-              </Link> : null}
+              {!isSelfService ? (
+                <Link
+                  href="/user/chat"
+                  aria-label="Open chat"
+                  className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-background/70 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <ChatCircleDotsIcon size={18} aria-hidden="true" />
+                  {safeUnreadTotal > 0 ? (
+                    <span
+                      className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </Link>
+              ) : null}
 
               <button
                 type="button"
@@ -607,10 +641,7 @@ export default function Navigation({
       ) : null}
       <main
         data-app-scroll-main
-        className={cn(
-          'w-full flex-1 min-h-0 overflow-y-auto',
-          isChatRoute ? 'overflow-hidden' : 'pb-28 lg:pb-0',
-        )}
+        className={cn('w-full flex-1 min-h-0 overflow-y-auto', isChatRoute ? 'overflow-hidden' : 'pb-28 lg:pb-0')}
       >
         {children ?? (
           <div id="page-content" className="flex min-h-[300px] items-center justify-center">

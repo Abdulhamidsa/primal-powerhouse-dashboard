@@ -84,7 +84,10 @@ export function MealCard({
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <MetaChip icon={<Clock aria-hidden="true" focusable="false" size={12} />} label={`${totalTime}m`} />
-          <MetaChip icon={<Users aria-hidden="true" focusable="false" size={12} />} label={`${assignment.meal.servings} servings`} />
+          <MetaChip
+            icon={<Users aria-hidden="true" focusable="false" size={12} />}
+            label={`${assignment.meal.servings} servings`}
+          />
           <MetaChip label={assignment.meal.difficulty} />
         </div>
       </div>

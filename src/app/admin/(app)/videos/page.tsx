@@ -1,7 +1,6 @@
 'use client';
 
-
-import { PlusIcon, VideoCameraIcon } from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Video } from '@/types/video';
 import NewAddVideoModal from '@/components/NewAddVideoModal';

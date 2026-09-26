@@ -2,7 +2,12 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { PulseIcon as Activity, ArrowRightIcon as ArrowRight, CaretDownIcon as ChevronDown, ScalesIcon as Scale } from '@phosphor-icons/react';
+import {
+  PulseIcon as Activity,
+  ArrowRightIcon as ArrowRight,
+  CaretDownIcon as ChevronDown,
+  ScalesIcon as Scale,
+} from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -29,7 +34,9 @@ const DailyCheckInInsightsCard = dynamic(
 export default function UserCheckInsPage() {
   const router = useRouter();
   const { user, isLoading: profileLoading } = useUserProfile();
-  useEffect(() => { if (!profileLoading && user?.accessMode === 'SELF_SERVICE') router.replace('/user/dashboard'); }, [profileLoading, router, user?.accessMode]);
+  useEffect(() => {
+    if (!profileLoading && user?.accessMode === 'SELF_SERVICE') router.replace('/user/dashboard');
+  }, [profileLoading, router, user?.accessMode]);
   const { mutate } = useSWRConfig();
   const { visibility } = useClientSelfFeatureVisibility();
   const { entry: dailyEntry } = useDailyCheckInToday();
@@ -129,43 +136,53 @@ export default function UserCheckInsPage() {
             ) : null}
           </UserPageHero>
 
-        {dailyEnabled ? (
-          <section className="space-y-3">
-            <div className="px-1">
-              <p className="text-sm font-semibold text-[var(--color-text)]">Daily Check-In</p>
-              <p className="text-xs text-[var(--color-text-muted)]">A quick update about how your day is going.</p>
-            </div>
-            <DailyCheckInCard />
-          </section>
-        ) : null}
-
-        {dailyEnabled && visibility?.dailyWeightEnabled ? (
-          <section className="overflow-hidden rounded-[26px] border shadow-sm" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
-            <button
-              type="button"
-              onClick={() => setShowWeightProgress(previous => !previous)}
-              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-bg-alt)] sm:px-5"
-              aria-expanded={showWeightProgress}
-            >
-              <span className="flex min-w-0 items-center gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
-                  <Scale aria-hidden="true" focusable="false" size={15} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Optional</span>
-                  <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Weight progress</span>
-                </span>
-              </span>
-              <ChevronDown aria-hidden="true" focusable="false" size={16} className={`shrink-0 text-muted-foreground transition-transform ${showWeightProgress ? 'rotate-180' : ''}`} />
-            </button>
-
-            {showWeightProgress ? (
-              <div className="border-t border-border/70 p-3 sm:p-4">
-                <DailyCheckInInsightsCard />
+          {dailyEnabled ? (
+            <section className="space-y-3">
+              <div className="px-1">
+                <p className="text-sm font-semibold text-[var(--color-text)]">Daily Check-In</p>
+                <p className="text-xs text-[var(--color-text-muted)]">A quick update about how your day is going.</p>
               </div>
-            ) : null}
-          </section>
-        ) : null}
+              <DailyCheckInCard />
+            </section>
+          ) : null}
+
+          {dailyEnabled && visibility?.dailyWeightEnabled ? (
+            <section
+              className="overflow-hidden rounded-[26px] border shadow-sm"
+              style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowWeightProgress(previous => !previous)}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-bg-alt)] sm:px-5"
+                aria-expanded={showWeightProgress}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+                    <Scale aria-hidden="true" focusable="false" size={15} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Optional
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Weight progress</span>
+                  </span>
+                </span>
+                <ChevronDown
+                  aria-hidden="true"
+                  focusable="false"
+                  size={16}
+                  className={`shrink-0 text-muted-foreground transition-transform ${showWeightProgress ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {showWeightProgress ? (
+                <div className="border-t border-border/70 p-3 sm:p-4">
+                  <DailyCheckInInsightsCard />
+                </div>
+              ) : null}
+            </section>
+          ) : null}
         </div>
       </div>
     </PullToRefresh>

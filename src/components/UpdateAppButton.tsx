@@ -1,7 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CheckCircleIcon as CheckCircle2, DownloadIcon as Download, CircleNotchIcon as Loader2, ArrowsClockwiseIcon as RefreshCw, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon as CheckCircle2,
+  DownloadIcon as Download,
+  CircleNotchIcon as Loader2,
+  ArrowsClockwiseIcon as RefreshCw,
+} from '@phosphor-icons/react';
 import { useAppUpdate } from '@/components/AppUpdateManager';
 
 type UpdateState = 'idle' | 'updating' | 'success';
@@ -62,7 +67,11 @@ export default function UpdateAppButton() {
               hasUpdate ? 'bg-accent text-accent-foreground' : 'bg-muted/50 text-foreground'
             }`}
           >
-            {hasUpdate ? <Download aria-hidden="true" focusable="false" className="h-4 w-4" /> : <RefreshCw aria-hidden="true" focusable="false" className="h-4 w-4" />}
+            {hasUpdate ? (
+              <Download aria-hidden="true" focusable="false" className="h-4 w-4" />
+            ) : (
+              <RefreshCw aria-hidden="true" focusable="false" className="h-4 w-4" />
+            )}
           </div>
 
           <div className="min-w-0 flex-1">
@@ -99,7 +108,7 @@ export default function UpdateAppButton() {
                     ) : isUpdating ? (
                       <Loader2 aria-hidden="true" focusable="false" className="h-6 w-6 animate-spin text-accent" />
                     ) : hasUpdate ? (
-                      <Sparkles aria-hidden="true" focusable="false" className="h-6 w-6 text-accent" />
+                      <Download aria-hidden="true" focusable="false" className="h-6 w-6 text-accent" />
                     ) : (
                       <RefreshCw aria-hidden="true" focusable="false" className="h-6 w-6 text-foreground" />
                     )}
@@ -133,18 +142,14 @@ export default function UpdateAppButton() {
                 <div className="rounded-2xl border border-border bg-background/60 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        Installed
-                      </p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Installed</p>
                       <p className="mt-1 text-sm font-medium text-foreground">v{currentInstalledVersion}</p>
                     </div>
 
                     <div className="h-px flex-1 bg-border" />
 
                     <div className="text-right">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        Available
-                      </p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Available</p>
                       <p className="mt-1 text-sm font-medium text-foreground">v{availableVersion}</p>
                     </div>
                   </div>

@@ -1,10 +1,17 @@
 'use client';
 
-
 import { EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { Meal } from '@/types/meal';
-import { SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, ForkKnifeIcon as Utensils, ClockIcon as Clock, UsersIcon as Users } from '@phosphor-icons/react';
+import {
+  SunHorizonIcon as Sunrise,
+  SunIcon as Sun,
+  MoonIcon as Moon,
+  OrangeIcon as Apple,
+  ForkKnifeIcon as Utensils,
+  ClockIcon as Clock,
+  UsersIcon as Users,
+} from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface MealCardProps {
@@ -103,7 +110,11 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
                 className="p-2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-zinc-800 transition-colors"
                 title="Edit meal"
               >
-                <PencilSimpleIcon className="h-4 w-4 text-blue-600 dark:text-blue-500" aria-hidden="true" focusable="false" />
+                <PencilSimpleIcon
+                  className="h-4 w-4 text-blue-600 dark:text-blue-500"
+                  aria-hidden="true"
+                  focusable="false"
+                />
               </button>
             )}
 
@@ -261,17 +272,29 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
               <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Preparation</h4>
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg flex flex-col items-center justify-center">
-                  <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
+                  <Clock
+                    aria-hidden="true"
+                    focusable="false"
+                    className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1"
+                  />
                   <div className="text-sm font-semibold">{meal.prepTime} min</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">Prep Time</div>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg flex flex-col items-center justify-center">
-                  <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
+                  <Clock
+                    aria-hidden="true"
+                    focusable="false"
+                    className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1"
+                  />
                   <div className="text-sm font-semibold">{meal.cookTime} min</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">Cook Time</div>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg flex flex-col items-center justify-center">
-                  <Users aria-hidden="true" focusable="false" className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1" />
+                  <Users
+                    aria-hidden="true"
+                    focusable="false"
+                    className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mb-1"
+                  />
                   <div className="text-sm font-semibold">{meal.servings}</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">Servings</div>
                 </div>
@@ -305,8 +328,7 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
                 onClick={() => onEdit(meal)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-md border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
               >
-                <PencilSimpleIcon className="h-4 w-4" aria-hidden="true" focusable="false" />{' '}
-                Edit
+                <PencilSimpleIcon className="h-4 w-4" aria-hidden="true" focusable="false" /> Edit
               </button>
             )}
           </div>

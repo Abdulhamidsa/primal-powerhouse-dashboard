@@ -1,7 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CameraIcon as Camera, FileArrowUpIcon as FileUp, ImagesSquareIcon as ImagePlus, CircleNotchIcon as Loader2, MicrophoneIcon as Mic, PaperclipIcon as Paperclip, PlusIcon as Plus, PaperPlaneRightIcon as SendHorizontal, SquareIcon as Square, TrashIcon as Trash2, VideoIcon as Video, XIcon as X } from '@phosphor-icons/react';
+import {
+  CameraIcon as Camera,
+  FileArrowUpIcon as FileUp,
+  ImagesSquareIcon as ImagePlus,
+  CircleNotchIcon as Loader2,
+  MicrophoneIcon as Mic,
+  PaperclipIcon as Paperclip,
+  PlusIcon as Plus,
+  PaperPlaneRightIcon as SendHorizontal,
+  SquareIcon as Square,
+  TrashIcon as Trash2,
+  VideoIcon as Video,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useMessageUpload } from '@/features/client-coach-messaging/hooks/useMessageUpload';
 import { useVideoRecorder } from '@/features/client-coach-messaging/hooks/useVideoRecorder';
 import { useVoiceRecorder } from '@/features/client-coach-messaging/hooks/useVoiceRecorder';
@@ -159,7 +172,11 @@ export function MessageComposer({
                 color: 'var(--color-text)',
               }}
             >
-              {attachment.type === 'image' ? <ImagePlus aria-hidden="true" focusable="false" size={11} /> : <Paperclip aria-hidden="true" focusable="false" size={11} />}
+              {attachment.type === 'image' ? (
+                <ImagePlus aria-hidden="true" focusable="false" size={11} />
+              ) : (
+                <Paperclip aria-hidden="true" focusable="false" size={11} />
+              )}
               {attachment.type}
               <X aria-hidden="true" focusable="false" size={12} />
             </button>
@@ -378,13 +395,20 @@ export function MessageComposer({
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95 disabled:opacity-50"
           style={{
             borderColor: actionMenuOpen ? 'var(--color-accent)' : 'var(--color-border)',
-            background: actionMenuOpen ? 'color-mix(in srgb, var(--color-accent) 16%, var(--color-bg))' : 'var(--color-bg)',
+            background: actionMenuOpen
+              ? 'color-mix(in srgb, var(--color-accent) 16%, var(--color-bg))'
+              : 'var(--color-bg)',
             color: actionMenuOpen ? 'var(--color-accent)' : 'var(--color-text-muted)',
           }}
           aria-label="Open message actions"
           title="Open message actions"
         >
-          <Plus aria-hidden="true" focusable="false" size={18} className={actionMenuOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
+          <Plus
+            aria-hidden="true"
+            focusable="false"
+            size={18}
+            className={actionMenuOpen ? 'rotate-45 transition-transform' : 'transition-transform'}
+          />
         </button>
 
         <button
@@ -431,7 +455,11 @@ export function MessageComposer({
           aria-label={isSending ? 'Sending message' : isUploading ? 'Uploading attachment' : 'Send message'}
           title={isSending ? 'Sending message' : isUploading ? 'Uploading attachment' : 'Send message'}
         >
-          {isUploading || isSending ? <Loader2 aria-hidden="true" focusable="false" size={16} className="animate-spin" /> : <SendHorizontal aria-hidden="true" focusable="false" size={16} />}
+          {isUploading || isSending ? (
+            <Loader2 aria-hidden="true" focusable="false" size={16} className="animate-spin" />
+          ) : (
+            <SendHorizontal aria-hidden="true" focusable="false" size={16} />
+          )}
         </button>
       </div>
     </form>

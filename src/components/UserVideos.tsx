@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { PlayIcon as Play, ClockIcon as Clock, XIcon as X, CheckCircleIcon as CheckCircle, FunnelIcon as Filter, BarbellIcon as Dumbbell, HeartIcon as Heart, LightningIcon as Zap, UserIcon as User } from '@phosphor-icons/react';
+import {
+  PlayIcon as Play,
+  ClockIcon as Clock,
+  XIcon as X,
+  CheckCircleIcon as CheckCircle,
+  FunnelIcon as Filter,
+  BarbellIcon as Dumbbell,
+  HeartIcon as Heart,
+  LightningIcon as Zap,
+  UserIcon as User,
+} from '@phosphor-icons/react';
 
 interface Video {
   id: string;
@@ -110,8 +120,8 @@ export default function UserVideos({ userId }: UserVideosProps) {
           prev.map(assignment =>
             assignment.id === assignmentId
               ? { ...assignment, isCompleted: true, completedAt: new Date().toISOString(), progress: 100 }
-              : assignment
-          )
+              : assignment,
+          ),
         );
       }
     } catch (error) {

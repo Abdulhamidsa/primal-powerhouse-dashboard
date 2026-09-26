@@ -1,6 +1,5 @@
 'use client';
 
-
 import { VideoCameraIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -129,7 +128,10 @@ export function UserTrainingAssignments({ showHeader = true }: { showHeader?: bo
                     className="shrink-0 self-start"
                     aria-label={`Open ${assignment.video.title}`}
                   >
-                    <Thumb src={assignment.video.thumbnailUrl || assignment.video.videoUrl} alt={assignment.video.title} />
+                    <Thumb
+                      src={assignment.video.thumbnailUrl || assignment.video.videoUrl}
+                      alt={assignment.video.title}
+                    />
                   </Link>
 
                   <div className="min-w-0 flex-1">
@@ -142,7 +144,9 @@ export function UserTrainingAssignments({ showHeader = true }: { showHeader?: bo
 
                         <h3 className="mt-0.5 font-semibold text-foreground truncate">{assignment.video.title}</h3>
 
-                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{assignment.video.description}</p>
+                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                          {assignment.video.description}
+                        </p>
                       </div>
 
                       {assignment.isCompleted ? (

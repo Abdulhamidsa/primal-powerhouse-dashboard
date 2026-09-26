@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-// @ts-ignore - lucide-react type definitions issue
 import { XIcon as X } from '@phosphor-icons/react';
 
 interface EditMotivationalMessageModalProps {

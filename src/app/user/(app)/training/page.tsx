@@ -3,7 +3,12 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRightIcon as ArrowRight, CaretDownIcon as ChevronDown, BarbellIcon as Dumbbell, PlayIcon as Play } from '@phosphor-icons/react';
+import {
+  ArrowRightIcon as ArrowRight,
+  CaretDownIcon as ChevronDown,
+  BarbellIcon as Dumbbell,
+  PlayIcon as Play,
+} from '@phosphor-icons/react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { TrainingDashboard } from '@/features/training/components/TrainingDashboard';
@@ -32,79 +37,127 @@ export default function UserTrainingPage() {
     <PullToRefresh onRefreshAction={refreshTraining}>
       <div className="px-4 pb-8 pt-4 md:px-6">
         <div className="mx-auto w-full max-w-4xl space-y-4 md:space-y-5">
-        <UserPageHero
-          eyebrow="Training"
-          title="Train with focus"
-          description="See today’s workout, continue a session, or review your weekly plan."
-          icon={<Dumbbell aria-hidden="true" focusable="false" size={17} />}
-          statusItems={[
-            {
-              label: 'Plan',
-              value: plan ? 'Active' : trainingPlanLoading ? 'Loading' : 'Legacy',
-              tone: plan ? 'good' : 'neutral',
-            },
-            {
-              label: 'Videos',
-              value: `${assignments.length} assigned`,
-              tone: assignments.length ? 'neutral' : 'warn',
-            },
-          ]}
-        />
+          <UserPageHero
+            eyebrow="Training"
+            title="Train with focus"
+            description="See today’s workout, continue a session, or review your weekly plan."
+            icon={<Dumbbell aria-hidden="true" focusable="false" size={17} />}
+            statusItems={[
+              {
+                label: 'Plan',
+                value: plan ? 'Active' : trainingPlanLoading ? 'Loading' : 'Legacy',
+                tone: plan ? 'good' : 'neutral',
+              },
+              {
+                label: 'Videos',
+                value: `${assignments.length} assigned`,
+                tone: assignments.length ? 'neutral' : 'warn',
+              },
+            ]}
+          />
 
-        {trainingPlanLoading ? <div className="h-56 animate-pulse rounded-[30px] border border-border bg-card/70" /> : null}
-        {plan ? <TrainingDashboard /> : !trainingPlanLoading ? <section className="rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]"><Dumbbell aria-hidden="true" focusable="false" size={18} /></div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next workout</p>
-              <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-foreground">
-                {nextWorkout ? nextWorkout.workoutPlan.name : 'No workout assigned yet'}
-              </h2>
-              <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                {nextWorkout
-                  ? `${nextWorkout.workoutPlan.exercises.length} exercise${nextWorkout.workoutPlan.exercises.length === 1 ? '' : 's'} ready when you are.`
-                  : 'Your coach will add your next workout plan here.'}
-              </p>
-            </div>
-          </div>
-
-          {nextWorkout ? <Link href={`/user/workout/${encodeURIComponent(nextWorkout.id)}`} className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><span>Start workout</span><ArrowRight aria-hidden="true" focusable="false" size={16} /></Link> : null}
-
-        </section> : null}
-
-        {!plan && !trainingPlanLoading ? <section className="rounded-[30px] border p-4 shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground">
-                <Dumbbell aria-hidden="true" focusable="false" size={16} />
+          {trainingPlanLoading ? (
+            <div className="h-56 animate-pulse rounded-[30px] border border-border bg-card/70" />
+          ) : null}
+          {plan ? (
+            <TrainingDashboard />
+          ) : !trainingPlanLoading ? (
+            <section
+              className="rounded-[30px] border p-4 shadow-sm backdrop-blur-xl sm:p-5"
+              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-accent-translucent)] text-[var(--color-accent)]">
+                  <Dumbbell aria-hidden="true" focusable="false" size={18} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Next workout
+                  </p>
+                  <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-foreground">
+                    {nextWorkout ? nextWorkout.workoutPlan.name : 'No workout assigned yet'}
+                  </h2>
+                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                    {nextWorkout
+                      ? `${nextWorkout.workoutPlan.exercises.length} exercise${nextWorkout.workoutPlan.exercises.length === 1 ? '' : 's'} ready when you are.`
+                      : 'Your coach will add your next workout plan here.'}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Your plans</p>
-                <h2 className="mt-1 text-base font-semibold text-foreground">Workout plans</h2>
+
+              {nextWorkout ? (
+                <Link
+                  href={`/user/workout/${encodeURIComponent(nextWorkout.id)}`}
+                  className="mt-4 flex min-h-11 items-center justify-between gap-3 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+                >
+                  <span>Start workout</span>
+                  <ArrowRight aria-hidden="true" focusable="false" size={16} />
+                </Link>
+              ) : null}
+            </section>
+          ) : null}
+
+          {!plan && !trainingPlanLoading ? (
+            <section
+              className="rounded-[30px] border p-4 shadow-sm"
+              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground">
+                    <Dumbbell aria-hidden="true" focusable="false" size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Your plans
+                    </p>
+                    <h2 className="mt-1 text-base font-semibold text-foreground">Workout plans</h2>
+                  </div>
+                </div>
+                <span className="shrink-0 text-xs text-muted-foreground">{assignments.length} assigned</span>
               </div>
-            </div>
-            <span className="shrink-0 text-xs text-muted-foreground">{assignments.length} assigned</span>
-          </div>
 
-          <div className="mt-3">
-            <WorkoutPlansSection />
-          </div>
-        </section> : null}
+              <div className="mt-3">
+                <WorkoutPlansSection />
+              </div>
+            </section>
+          ) : null}
 
-        <section className="overflow-hidden rounded-[26px] border shadow-sm" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <button type="button" onClick={() => setShowVideos(previous => !previous)} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--color-bg-alt)]" aria-expanded={showVideos}>
-            <span className="flex min-w-0 items-center gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground"><Play aria-hidden="true" focusable="false" size={15} /></span>
-              <span className="min-w-0">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Optional reference</span>
-                <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Exercise videos</span>
+          <section
+            className="overflow-hidden rounded-[26px] border shadow-sm"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowVideos(previous => !previous)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--color-bg-alt)]"
+              aria-expanded={showVideos}
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-alt)] text-muted-foreground">
+                  <Play aria-hidden="true" focusable="false" size={15} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Optional reference
+                  </span>
+                  <span className="mt-0.5 block truncate text-sm font-semibold text-foreground">Exercise videos</span>
+                </span>
               </span>
-            </span>
-            <ChevronDown aria-hidden="true" focusable="false" size={16} className={`shrink-0 text-muted-foreground transition-transform ${showVideos ? 'rotate-180' : ''}`} />
-          </button>
+              <ChevronDown
+                aria-hidden="true"
+                focusable="false"
+                size={16}
+                className={`shrink-0 text-muted-foreground transition-transform ${showVideos ? 'rotate-180' : ''}`}
+              />
+            </button>
 
-          {showVideos ? <div className="border-t border-border/70 p-4"><UserTrainingAssignments /></div> : null}
-        </section>
+            {showVideos ? (
+              <div className="border-t border-border/70 p-4">
+                <UserTrainingAssignments />
+              </div>
+            ) : null}
+          </section>
         </div>
       </div>
     </PullToRefresh>

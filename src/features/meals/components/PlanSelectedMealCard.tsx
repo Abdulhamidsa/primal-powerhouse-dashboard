@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { CheckIcon as Check, CheckCircleIcon as CheckCircle2, ClockIcon as Clock3, FlameIcon as Flame, ArrowCounterClockwiseIcon as RefreshCcw, GrainsIcon as Wheat, XIcon as X } from '@phosphor-icons/react';
+import {
+  CheckIcon as Check,
+  CheckCircleIcon as CheckCircle2,
+  ClockIcon as Clock3,
+  FlameIcon as Flame,
+  ArrowCounterClockwiseIcon as RefreshCcw,
+  GrainsIcon as Wheat,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
@@ -105,7 +113,9 @@ export function PlanSelectedMealCard({
                 {badgeLabel}
               </span>
               <p className="mt-2 line-clamp-1 text-base font-semibold text-[var(--color-text)]">{name}</p>
-              {description ? <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">{description}</p> : null}
+              {description ? (
+                <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">{description}</p>
+              ) : null}
               {helperText ? <p className="mt-1 text-xs text-[var(--color-text-muted)]">{helperText}</p> : null}
               {visibleMetaItems.length > 0 ? (
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -245,7 +255,10 @@ function MealDetailModal({
             {metaItems?.length ? (
               <div className="mt-2 flex flex-wrap gap-2">
                 {metaItems.map(item => (
-                  <span key={item} className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm">
+                  <span
+                    key={item}
+                    className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm"
+                  >
                     <Clock3 aria-hidden="true" focusable="false" size={11} />
                     {item}
                   </span>

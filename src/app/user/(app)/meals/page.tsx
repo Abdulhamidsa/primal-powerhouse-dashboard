@@ -2,10 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { WarningCircleIcon as AlertCircle, FloppyDiskIcon as Save, ArrowCounterClockwiseIcon as Undo2 } from '@phosphor-icons/react';
+import {
+  WarningCircleIcon as AlertCircle,
+  FloppyDiskIcon as Save,
+  ArrowCounterClockwiseIcon as Undo2,
+} from '@phosphor-icons/react';
 import { PageHeader } from '@/components/PageHeader';
 import { SkeletonMealGrid } from '@/components/Skeletons';
-import { Button } from '@/components/ui/button';
 import { MealOptionCard } from '@/features/meals/components/MealOptionCard';
 import { MealSelectionSummaryCard } from '@/features/meals/components/MealSelectionSummaryCard';
 import { useMealSelectionPlanner } from '@/features/meals/hooks/useMealSelectionPlanner';
@@ -62,10 +65,7 @@ export default function UserMealsPage() {
   return (
     <div className="px-4 md:px-6">
       <div className="mx-auto max-w-6xl space-y-5 pb-24">
-        <PageHeader
-          title="My Meals"
-          description="Assign your current meal set and save when ready."
-        />
+        <PageHeader title="My Meals" description="Assign your current meal set and save when ready." />
 
         <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
           <SlotState label="Breakfast" count={selectedByType.BREAKFAST.length} max={1} required />

@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeftIcon as ArrowLeft, CheckCircleIcon as CheckCircle2, CaretRightIcon as ChevronRight, CaretLeftIcon as ChevronLeft, PlusIcon as Plus, MinusIcon as Minus, TimerIcon as Timer, ChatTextIcon as MessageSquare } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon as ArrowLeft,
+  CheckCircleIcon as CheckCircle2,
+  CaretRightIcon as ChevronRight,
+  CaretLeftIcon as ChevronLeft,
+  PlusIcon as Plus,
+  MinusIcon as Minus,
+  TimerIcon as Timer,
+  ChatTextIcon as MessageSquare,
+} from '@phosphor-icons/react';
 import type { WorkoutPlanAssignmentWithPlan } from '@/features/workout-plans/types/workoutPlan.types';
 import type { LocalExerciseState, LocalSetEntry, ExerciseFeedbackType } from '../types/workoutSession.types';
 import { buildInitialExerciseState } from '../lib/progression';
@@ -226,7 +235,9 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                 borderColor: active ? 'var(--color-accent)' : 'var(--color-border)',
               }}
             >
-              {done && <CheckCircle2 aria-hidden="true" focusable="false" size={12} style={{ color: 'var(--color-accent)' }} />}
+              {done && (
+                <CheckCircle2 aria-hidden="true" focusable="false" size={12} style={{ color: 'var(--color-accent)' }} />
+              )}
               {ex.video.title.length > 16 ? ex.video.title.slice(0, 15) + '…' : ex.video.title}
             </button>
           );
@@ -314,7 +325,9 @@ export default function WorkoutSessionPlayer({ assignment, onDone }: Props) {
                   onClick={() => updateSet(currentIdx, si, { completed: !set.completed })}
                   className="flex items-center justify-center"
                 >
-                  <CheckCircle2 aria-hidden="true" focusable="false"
+                  <CheckCircle2
+                    aria-hidden="true"
+                    focusable="false"
                     size={18}
                     style={{ color: set.completed ? 'var(--color-accent)' : 'var(--color-border)' }}
                   />

@@ -51,7 +51,12 @@ function FilterDropdown({ label, options, selectedValues, onChange }: FilterDrop
             {selectedValues.length}
           </span>
         )}
-        <ChevronDown aria-hidden="true" focusable="false" size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          aria-hidden="true"
+          focusable="false"
+          size={14}
+          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (

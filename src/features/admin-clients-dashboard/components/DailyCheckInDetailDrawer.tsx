@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CheckCircleIcon as CheckCircle, ClockIcon as Clock3, BarbellIcon as Dumbbell, FileTextIcon as FileText, BowlFoodIcon as Salad, XIcon as X } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon as CheckCircle,
+  ClockIcon as Clock3,
+  BarbellIcon as Dumbbell,
+  FileTextIcon as FileText,
+  BowlFoodIcon as Salad,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import type { AdminDailyCheckInListItem } from '@/features/daily-checkin/types/adminDailyCheckIn.types';
 import { formatShortDateLabel } from '@/features/daily-checkin/utils/date';
 

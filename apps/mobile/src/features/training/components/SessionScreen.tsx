@@ -3,15 +3,7 @@ import { Button, Card, Choices, Copy, Field, Label, Screen, Status } from '@/com
 import { VideoPlayer } from '@/features/media/components/VideoPlayer';
 import { useSet, useTrainingSession } from '../hooks/useTraining';
 import type { TrainingSet } from '../types/training.types';
-function SetEditor({
-  sessionId,
-  set,
-  restSeconds,
-}: {
-  sessionId: string;
-  set: TrainingSet;
-  restSeconds: number;
-}) {
+function SetEditor({ sessionId, set, restSeconds }: { sessionId: string; set: TrainingSet; restSeconds: number }) {
   const m = useSet(sessionId, set, restSeconds);
   return (
     <Card>
@@ -39,8 +31,17 @@ function SetEditor({
       <Status error={m.action.error} />
       <>
         <>
-          <Button title="Save set" onPress={() => m.save()} disabled={!m.draft.ready || m.offline || m.action.pending} />
-          <Button secondary title="Skip set" onPress={() => m.save(true)} disabled={!m.draft.ready || m.offline || m.action.pending} />
+          <Button
+            title="Save set"
+            onPress={() => m.save()}
+            disabled={!m.draft.ready || m.offline || m.action.pending}
+          />
+          <Button
+            secondary
+            title="Skip set"
+            onPress={() => m.save(true)}
+            disabled={!m.draft.ready || m.offline || m.action.pending}
+          />
         </>
       </>
       {m.remaining ? (
@@ -65,21 +66,20 @@ export default function SessionScreen() {
           <Copy muted>{e.notesSnapshot}</Copy>
           {e.exercise?.videoUrl ? <VideoPlayer url={e.exercise.videoUrl} /> : null}
           <Copy muted>{e.exercise?.instructions}</Copy>
-          {e.sets.map(s => session.status === 'IN_PROGRESS' ? (
-            <SetEditor
-              key={s.id}
-              sessionId={id}
-              set={s}
-              restSeconds={e.plannedRestSeconds}
-            />
-          ) : (
-            <Card key={s.id}>
-              <Label>Set {s.setNumber} · {s.completed ? 'Completed' : s.skipped ? 'Skipped' : 'Not completed'}</Label>
-              <Copy>Reps · {s.actualReps ?? 'Not recorded'}</Copy>
-              <Copy>Weight (kg) · {s.actualWeightKg ?? 'Not recorded'}</Copy>
-              {s.feedback ? <Copy>{s.feedback}</Copy> : null}
-            </Card>
-          ))}
+          {e.sets.map(s =>
+            session.status === 'IN_PROGRESS' ? (
+              <SetEditor key={s.id} sessionId={id} set={s} restSeconds={e.plannedRestSeconds} />
+            ) : (
+              <Card key={s.id}>
+                <Label>
+                  Set {s.setNumber} · {s.completed ? 'Completed' : s.skipped ? 'Skipped' : 'Not completed'}
+                </Label>
+                <Copy>Reps · {s.actualReps ?? 'Not recorded'}</Copy>
+                <Copy>Weight (kg) · {s.actualWeightKg ?? 'Not recorded'}</Copy>
+                {s.feedback ? <Copy>{s.feedback}</Copy> : null}
+              </Card>
+            ),
+          )}
         </Card>
       ))}
       {session?.status === 'IN_PROGRESS' ? (
@@ -108,13 +108,15 @@ export default function SessionScreen() {
             disabled={!m.draft.ready || m.offline || m.action.pending}
           />
         </Card>
-      ) : (
-        session ? <Card>
+      ) : session ? (
+        <Card>
           <Label>{session.status.replaceAll('_', ' ')}</Label>
-          {session.perceivedDifficulty ? <Copy>Difficulty · {session.perceivedDifficulty.replaceAll('_', ' ')}</Copy> : null}
+          {session.perceivedDifficulty ? (
+            <Copy>Difficulty · {session.perceivedDifficulty.replaceAll('_', ' ')}</Copy>
+          ) : null}
           {session.overallFeedback ? <Copy>{session.overallFeedback}</Copy> : null}
-        </Card> : null
-      )}
+        </Card>
+      ) : null}
     </Screen>
   );
 }

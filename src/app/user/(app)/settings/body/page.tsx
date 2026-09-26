@@ -1,7 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { CakeIcon as Cake, CaretLeftIcon as ChevronLeft, RulerIcon as Ruler, ScalesIcon as Scale } from '@phosphor-icons/react';
+import {
+  CakeIcon as Cake,
+  CaretLeftIcon as ChevronLeft,
+  RulerIcon as Ruler,
+  ScalesIcon as Scale,
+} from '@phosphor-icons/react';
 import { SkeletonUserProfile } from '@/components/Skeletons';
 import { useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
@@ -32,7 +37,10 @@ export default function UserBodySettingsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md space-y-6 px-4 pb-32 pt-5">
-        <Link href="/user/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+        <Link
+          href="/user/profile"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground"
+        >
           <ChevronLeft aria-hidden="true" focusable="false" className="h-4 w-4" />
           Profile
         </Link>
@@ -40,15 +48,29 @@ export default function UserBodySettingsPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Settings</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">Body Metrics</h1>
-          <p className="mt-2 text-sm text-muted-foreground">These values are currently read-only and managed by your coach.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            These values are currently read-only and managed by your coach.
+          </p>
         </div>
 
         <section className="overflow-hidden rounded-3xl border border-border bg-card">
-          <MetricRow icon={<Cake aria-hidden="true" focusable="false" className="h-4 w-4" />} label="Age" value={user?.age ? `${user.age} years` : 'Not set'} />
+          <MetricRow
+            icon={<Cake aria-hidden="true" focusable="false" className="h-4 w-4" />}
+            label="Age"
+            value={user?.age ? `${user.age} years` : 'Not set'}
+          />
           <div className="ml-16 h-px bg-border/60" />
-          <MetricRow icon={<Ruler aria-hidden="true" focusable="false" className="h-4 w-4" />} label="Height" value={user?.height ? `${user.height} cm` : 'Not set'} />
+          <MetricRow
+            icon={<Ruler aria-hidden="true" focusable="false" className="h-4 w-4" />}
+            label="Height"
+            value={user?.height ? `${user.height} cm` : 'Not set'}
+          />
           <div className="ml-16 h-px bg-border/60" />
-          <MetricRow icon={<Scale aria-hidden="true" focusable="false" className="h-4 w-4" />} label="Weight" value={weight} />
+          <MetricRow
+            icon={<Scale aria-hidden="true" focusable="false" className="h-4 w-4" />}
+            label="Weight"
+            value={weight}
+          />
         </section>
       </div>
     </div>

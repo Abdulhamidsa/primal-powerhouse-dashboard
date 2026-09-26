@@ -1,4 +1,13 @@
-import { CalendarDotsIcon as CalendarDays, ForkKnifeIcon as Utensils, FileTextIcon as FileText, PlusCircleIcon as PlusCircle, TrashIcon as Trash2, PencilSimpleIcon as Edit, DotsThreeVerticalIcon as EllipsisVertical, LeafIcon as Leaf } from '@phosphor-icons/react/ssr';
+import {
+  CalendarDotsIcon as CalendarDays,
+  ForkKnifeIcon as Utensils,
+  FileTextIcon as FileText,
+  PlusCircleIcon as PlusCircle,
+  TrashIcon as Trash2,
+  PencilSimpleIcon as Edit,
+  DotsThreeVerticalIcon as EllipsisVertical,
+  LeafIcon as Leaf,
+} from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { ActiveMealPlanSummary, MealAssignment } from '@/lib/client-page/types';
 import { JSX, useState } from 'react';
@@ -271,7 +280,12 @@ export function MealsTab({
                               className="w-full h-full flex items-center justify-center"
                               style={{ background: 'linear-gradient(135deg, var(--color-bg-alt), var(--color-bg))' }}
                             >
-                              <Leaf aria-hidden="true" focusable="false" className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
+                              <Leaf
+                                aria-hidden="true"
+                                focusable="false"
+                                className="w-12 h-12"
+                                style={{ color: 'var(--color-text-muted)' }}
+                              />
                             </div>
                           )}
                           {/* Badge */}
@@ -362,7 +376,12 @@ export function MealsTab({
                             className="w-full h-full flex items-center justify-center"
                             style={{ background: 'linear-gradient(135deg, var(--color-bg-alt), var(--color-bg))' }}
                           >
-                            <Utensils aria-hidden="true" focusable="false" className="w-12 h-12" style={{ color: 'var(--color-text-muted)' }} />
+                            <Utensils
+                              aria-hidden="true"
+                              focusable="false"
+                              className="w-12 h-12"
+                              style={{ color: 'var(--color-text-muted)' }}
+                            />
                           </div>
                         )}
 
@@ -465,7 +484,12 @@ export function MealsTab({
                             }}
                           >
                             <div className="flex items-start gap-2">
-                              <FileText aria-hidden="true" focusable="false" size={12} className="mt-0.5 flex-shrink-0" />
+                              <FileText
+                                aria-hidden="true"
+                                focusable="false"
+                                size={12}
+                                className="mt-0.5 flex-shrink-0"
+                              />
                               <span className="leading-relaxed">{a.notes}</span>
                             </div>
                           </div>
@@ -524,9 +548,19 @@ export function MealsTab({
               }}
             >
               {selectedFilter === 'SIDES' ? (
-                <Leaf aria-hidden="true" focusable="false" size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+                <Leaf
+                  aria-hidden="true"
+                  focusable="false"
+                  size={48}
+                  style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }}
+                />
               ) : (
-                <Utensils aria-hidden="true" focusable="false" size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }} />
+                <Utensils
+                  aria-hidden="true"
+                  focusable="false"
+                  size={48}
+                  style={{ color: 'var(--color-text-muted)', margin: '0 auto 12px' }}
+                />
               )}
               <p className="text-base font-medium mb-1" style={{ color: 'var(--color-text)' }}>
                 No{' '}
@@ -545,7 +579,9 @@ export function MealsTab({
         </>
       ) : (
         <EmptyState
-          icon={<Utensils aria-hidden="true" focusable="false" size={56} style={{ color: 'var(--color-text-muted)' }} />}
+          icon={
+            <Utensils aria-hidden="true" focusable="false" size={56} style={{ color: 'var(--color-text-muted)' }} />
+          }
           title="No Meals Assigned"
           subtitle="This client does not have any assigned meals yet."
           buttonLabel="Assign First Meal"

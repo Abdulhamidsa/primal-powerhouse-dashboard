@@ -1,4 +1,9 @@
-import { PulseIcon as Activity, ChartBarIcon as BarChart, FilmSlateIcon as Film, ForkKnifeIcon as Utensils } from '@phosphor-icons/react/ssr';
+import {
+  PulseIcon as Activity,
+  ChartBarIcon as BarChart,
+  FilmSlateIcon as Film,
+  ForkKnifeIcon as Utensils,
+} from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '@/lib/ui';
 import { JSX } from 'react';
 export function ClientQuickStats({
@@ -25,7 +30,11 @@ export function ClientQuickStats({
           value={mealsCount}
           icon={<Utensils aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />}
         />
-        <Stat title="BMI" value={bmi} icon={<BarChart aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />} />
+        <Stat
+          title="BMI"
+          value={bmi}
+          icon={<BarChart aria-hidden="true" focusable="false" size={22} style={{ color: 'var(--color-accent)' }} />}
+        />
         <Stat
           title="Sessions"
           value={sessions}

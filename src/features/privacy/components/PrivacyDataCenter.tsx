@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DownloadIcon as Download, SignOutIcon as LogOut, ShieldIcon as Shield, TrashIcon as Trash2 } from '@phosphor-icons/react';
+import { DownloadIcon as Download, SignOutIcon as LogOut, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { privacyConsentSchema, privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
@@ -42,7 +42,9 @@ function SwitchRow({
         {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
       </div>
       <span className={`relative inline-flex h-7 w-12 shrink-0 rounded-full ${checked ? 'bg-accent' : 'bg-muted'}`}>
-        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+        />
       </span>
     </button>
   );

@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { CaretDownIcon as ChevronDown, CopyIcon as Copy, ArrowsClockwiseIcon as Sparkles, PencilSimpleIcon as Wand2, XIcon as X } from '@phosphor-icons/react';
+import {
+  CaretDownIcon as ChevronDown,
+  CopyIcon as Copy,
+  ArrowsClockwiseIcon,
+  PencilSimpleIcon,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useMealBuilder } from '@/hooks/useMealBuilder';
 import { useMealPromptGenerator } from '@/features/meals/hooks/useMealPromptGenerator';
 import { useGenerateMealTemplate } from '@/features/meals/hooks/useGenerateMealTemplate';
@@ -713,7 +719,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
-                  <Wand2 aria-hidden="true" focusable="false" size={20} />
+                  <PencilSimpleIcon aria-hidden="true" focusable="false" size={20} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
@@ -894,7 +900,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       disabled={loading || aiGenerating}
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <Sparkles aria-hidden="true" focusable="false" size={16} />
+                      <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
                       {aiGenerating
                         ? 'Generating With AI...'
                         : isSideMode
@@ -953,7 +959,9 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       </p>
                     </div>
 
-                    <ChevronDown aria-hidden="true" focusable="false"
+                    <ChevronDown
+                      aria-hidden="true"
+                      focusable="false"
                       size={18}
                       className={`mt-1 text-[var(--color-text-muted)] transition-transform ${
                         isIngredientSearchOpen ? 'rotate-180' : 'rotate-0'
@@ -1150,7 +1158,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   disabled={loading || !state.name.trim()}
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Sparkles aria-hidden="true" focusable="false" size={16} />
+                  <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
                   {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
                 </button>
               </section>

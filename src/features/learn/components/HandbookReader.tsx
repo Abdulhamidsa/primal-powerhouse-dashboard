@@ -3,7 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { BookOpenTextIcon as BookOpenText, CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, ListIcon as List, XIcon as X } from '@phosphor-icons/react';
+import {
+  BookOpenTextIcon as BookOpenText,
+  CaretLeftIcon as ChevronLeft,
+  CaretRightIcon as ChevronRight,
+  ListIcon as List,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { HANDBOOK_PAGES } from '@/features/learn/data/handbook';
 import { getHandbookProgress } from '@/features/learn/lib/handbook';
 import { HandbookPage } from '@/features/learn/components/HandbookPage';
@@ -31,7 +37,9 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
   const progress = getHandbookProgress(pageIndex);
 
   useEffect(() => setMounted(true), []);
-  useEffect(() => { previousIndexRef.current = pageIndex; }, [pageIndex]);
+  useEffect(() => {
+    previousIndexRef.current = pageIndex;
+  }, [pageIndex]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -51,16 +59,37 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
-      if (event.key === 'ArrowRight') { event.preventDefault(); onNext(); return; }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); onPrevious(); return; }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        onNext();
+        return;
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        onPrevious();
+        return;
+      }
       if (event.key !== 'Tab' || !dialogRef.current) return;
       const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
-      if (!focusable.length) { event.preventDefault(); dialogRef.current.focus(); return; }
+      if (!focusable.length) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -88,15 +117,37 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
           <header className="relative z-20 flex min-h-14 items-center gap-3 border-b border-white/10 px-4 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <BookOpenText aria-hidden="true" focusable="false" size={18} className="shrink-0 text-[#c17a5d]" />
-              <div className="min-w-0"><p className="truncate text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">Chapter {page.chapterNumber ?? '—'}</p><p className="truncate text-sm font-semibold">{page.chapterLabel}</p></div>
+              <div className="min-w-0">
+                <p className="truncate text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+                  Chapter {page.chapterNumber ?? '—'}
+                </p>
+                <p className="truncate text-sm font-semibold">{page.chapterLabel}</p>
+              </div>
             </div>
-            <button type="button" onClick={() => onNavigate('contents')} aria-label="Open table of contents" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><List aria-hidden="true" focusable="false" size={18} /></button>
-            <button type="button" onClick={onClose} aria-label="Close handbook" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><X aria-hidden="true" focusable="false" size={18} /></button>
+            <button
+              type="button"
+              onClick={() => onNavigate('contents')}
+              aria-label="Open table of contents"
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"
+            >
+              <List aria-hidden="true" focusable="false" size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close handbook"
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/65 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"
+            >
+              <X aria-hidden="true" focusable="false" size={18} />
+            </button>
           </header>
 
           <div
             className="relative z-10 flex min-h-0 flex-1 overflow-hidden"
-            onTouchStart={event => { const touch = event.touches[0]; touchStartRef.current = { x: touch.clientX, y: touch.clientY }; }}
+            onTouchStart={event => {
+              const touch = event.touches[0];
+              touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            }}
             onTouchEnd={event => {
               const start = touchStartRef.current;
               const touch = event.changedTouches[0];
@@ -105,7 +156,8 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
               const dx = touch.clientX - start.x;
               const dy = touch.clientY - start.y;
               if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
-              if (dx < 0) onNext(); else onPrevious();
+              if (dx < 0) onNext();
+              else onPrevious();
             }}
           >
             <div className="relative h-full w-full max-w-[780px]">
@@ -127,15 +179,43 @@ export function HandbookReader({ isOpen, pageIndex, onClose, onNext, onPrevious,
 
           <footer className="relative z-20 border-t border-white/10 px-4 pb-2 pt-2 sm:px-6">
             <div className="mx-auto flex max-w-[780px] items-center gap-3">
-              <button type="button" onClick={onPrevious} disabled={pageIndex === 0} aria-label="Previous page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronLeft aria-hidden="true" focusable="false" size={20} /></button>
+              <button
+                type="button"
+                onClick={onPrevious}
+                disabled={pageIndex === 0}
+                aria-label="Previous page"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"
+              >
+                <ChevronLeft aria-hidden="true" focusable="false" size={20} />
+              </button>
               <div className="min-w-0 flex-1">
-                <div className="h-px overflow-hidden bg-white/15"><div className="h-full bg-[#c17a5d] transition-[width] duration-300" style={{ width: `${progress}%` }} /></div>
-                <div className="mt-2 flex justify-between text-[9px] font-bold uppercase tracking-[0.18em] text-white/40"><span>{progress}% read</span><span>{pageIndex + 1} / {HANDBOOK_PAGES.length}</span></div>
+                <div className="h-px overflow-hidden bg-white/15">
+                  <div
+                    className="h-full bg-[#c17a5d] transition-[width] duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex justify-between text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
+                  <span>{progress}% read</span>
+                  <span>
+                    {pageIndex + 1} / {HANDBOOK_PAGES.length}
+                  </span>
+                </div>
               </div>
-              <button type="button" onClick={onNext} disabled={pageIndex === HANDBOOK_PAGES.length - 1} aria-label="Next page" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"><ChevronRight aria-hidden="true" focusable="false" size={20} /></button>
+              <button
+                type="button"
+                onClick={onNext}
+                disabled={pageIndex === HANDBOOK_PAGES.length - 1}
+                aria-label="Next page"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition-colors enabled:hover:text-white disabled:opacity-25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c17a5d]"
+              >
+                <ChevronRight aria-hidden="true" focusable="false" size={20} />
+              </button>
             </div>
           </footer>
-          <p className="sr-only" aria-live="polite">Page {pageIndex + 1} of {HANDBOOK_PAGES.length}: {page.title}</p>
+          <p className="sr-only" aria-live="polite">
+            Page {pageIndex + 1} of {HANDBOOK_PAGES.length}: {page.title}
+          </p>
         </motion.div>
       ) : null}
     </AnimatePresence>,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChefHatIcon as ChefHat, PlusIcon as Plus, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react';
+import { ChefHatIcon as ChefHat, PlusIcon as Plus, SlidersHorizontalIcon } from '@phosphor-icons/react';
 import AddMealModal from '@/components/AddMealModal';
 import MealBuilderModal from '@/components/MealBuilderModal';
 import EditMealModal from '@/components/EditMealModal';
@@ -208,7 +208,7 @@ export default function MealsPage() {
 
       <AdminPanel className="overflow-hidden">
         <AdminPanelHeader
-          icon={<Sparkles aria-hidden="true" focusable="false" size={18} />}
+          icon={<SlidersHorizontalIcon aria-hidden="true" focusable="false" size={18} />}
           title="Library workbench"
           description="Use quick controls to find meals by type, name, ingredients, tags, macro profile, image status, or prep speed."
           meta={

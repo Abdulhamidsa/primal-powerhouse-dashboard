@@ -1,6 +1,11 @@
 'use client';
 
-import { BarbellIcon as Dumbbell, TrashIcon as Trash2, PencilSimpleIcon as Edit2, UsersIcon as Users } from '@phosphor-icons/react';
+import {
+  BarbellIcon as Dumbbell,
+  TrashIcon as Trash2,
+  PencilSimpleIcon as Edit2,
+  UsersIcon as Users,
+} from '@phosphor-icons/react';
 import type { WorkoutPlan } from '../types/workoutPlan.types';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
 import { KeyedMutator } from 'swr';
@@ -27,7 +32,12 @@ export default function WorkoutPlanCard({ plan, onEdit, onMutate }: Props) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Dumbbell aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+          <Dumbbell
+            aria-hidden="true"
+            focusable="false"
+            size={18}
+            style={{ color: 'var(--color-accent)', flexShrink: 0 }}
+          />
           <span className="font-semibold text-[var(--color-text-primary)] truncate">{plan.name}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">

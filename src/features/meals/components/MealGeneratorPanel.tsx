@@ -1,7 +1,7 @@
 // 'use client';
 
 // import React, { useState } from 'react';
-// // import { ChefHatIcon as ChefHat, ImageIcon as ImageIcon, StackIcon as Layers3, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save, ArrowsClockwiseIcon as Sparkles } from '@phosphor-icons/react/ssr';
+// // import { ChefHatIcon as ChefHat, ImageIcon as ImageIcon, StackIcon as Layers3, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save } from '@phosphor-icons/react/ssr';
 // import useMealGenerator from '@/features/meals/hooks/useMealGenerator';
 // import type {
 //   MealType,
@@ -151,7 +151,7 @@
 //               className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
 //               disabled={loading}
 //             >
-//               <Sparkles aria-hidden="true" focusable="false" className="h-4 w-4" />
+//               <RefreshCw aria-hidden="true" focusable="false" className="h-4 w-4" />
 //               {loading ? 'Generating...' : 'Generate'}
 //             </button>
 //             <button

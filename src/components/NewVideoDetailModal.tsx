@@ -1,7 +1,16 @@
 'use client';
 
-
-import { BarbellIcon, CircleNotchIcon, MedalIcon, PencilSimpleIcon, PlayIcon, PulseIcon, TagIcon, TrashIcon, UserIcon } from '@phosphor-icons/react';
+import {
+  BarbellIcon,
+  CircleNotchIcon,
+  MedalIcon,
+  PencilSimpleIcon,
+  PlayIcon,
+  PulseIcon,
+  TagIcon,
+  TrashIcon,
+  UserIcon,
+} from '@phosphor-icons/react';
 import { Video } from '@/types/video';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -69,15 +78,11 @@ export default function NewVideoDetailModal({
       case 'STRENGTH_TRAINING':
         return <BarbellIcon className="h-5 w-5" aria-hidden="true" />;
       case 'CARDIO':
-        return (
-          <PulseIcon className="h-5 w-5" aria-hidden="true" focusable="false" />
-        );
+        return <PulseIcon className="h-5 w-5" aria-hidden="true" focusable="false" />;
       case 'MOBILITY':
       case 'YOGA':
       case 'PILATES':
-        return (
-          <UserIcon className="h-5 w-5" aria-hidden="true" focusable="false" />
-        );
+        return <UserIcon className="h-5 w-5" aria-hidden="true" focusable="false" />;
       default:
         return <PlayIcon className="h-5 w-5" aria-hidden="true" />;
     }
@@ -201,7 +206,12 @@ export default function NewVideoDetailModal({
                     className="text-lg font-semibold mb-3 flex items-center gap-2"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <Clock aria-hidden="true" focusable="false" className="w-5 h-5" style={{ color: 'var(--color-accent)' }} />
+                    <Clock
+                      aria-hidden="true"
+                      focusable="false"
+                      className="w-5 h-5"
+                      style={{ color: 'var(--color-accent)' }}
+                    />
                     Instructions
                   </h3>
                   <ol className="space-y-3">

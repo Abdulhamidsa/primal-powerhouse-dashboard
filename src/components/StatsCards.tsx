@@ -1,7 +1,16 @@
 'use client';
 
 import { Meal } from '@/types/meal';
-import { ForkKnifeIcon as Utensils, FlameIcon as Flame, BarbellIcon as Dumbbell, ClockIcon as Clock, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple } from '@phosphor-icons/react';
+import {
+  ForkKnifeIcon as Utensils,
+  FlameIcon as Flame,
+  BarbellIcon as Dumbbell,
+  ClockIcon as Clock,
+  SunHorizonIcon as Sunrise,
+  SunIcon as Sun,
+  MoonIcon as Moon,
+  OrangeIcon as Apple,
+} from '@phosphor-icons/react';
 
 interface StatsCardsProps {
   meals: Meal[];
@@ -15,7 +24,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
       acc[meal.type] = (acc[meal.type] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   const averageCalories =
@@ -36,7 +45,7 @@ export default function StatsCards({ meals }: StatsCardsProps) {
         acc[tag] = (acc[tag] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     );
 
   const topTag = Object.entries(mostCommonTags).sort(([, a], [, b]) => b - a)[0]?.[0] || 'None';

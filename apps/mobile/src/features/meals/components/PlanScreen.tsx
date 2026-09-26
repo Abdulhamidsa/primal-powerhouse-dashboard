@@ -47,7 +47,11 @@ export default function PlanScreen() {
                 {item.side ? (
                   <>
                     <Copy>Side: {item.side.name}</Copy>
-                    <Button secondary title="View side details" onPress={() => model.setSideDetail(item.side ?? null)} />
+                    <Button
+                      secondary
+                      title="View side details"
+                      onPress={() => model.setSideDetail(item.side ?? null)}
+                    />
                   </>
                 ) : null}
                 <Button
@@ -57,7 +61,11 @@ export default function PlanScreen() {
                 />
                 <Button secondary title="Swap meal" onPress={() => model.setPicker({ type, slot: item.slotIndex })} />
                 {type === 'LUNCH' || type === 'DINNER' ? (
-                  <Button secondary title="Change side" onPress={() => model.setPicker({ type, slot: item.slotIndex, sidesOnly: true })} />
+                  <Button
+                    secondary
+                    title="Change side"
+                    onPress={() => model.setPicker({ type, slot: item.slotIndex, sidesOnly: true })}
+                  />
                 ) : null}
               </View>
             ))}
@@ -82,7 +90,11 @@ export default function PlanScreen() {
       >
         <Screen title={model.picker?.sidesOnly ? 'Choose a side' : 'Choose a meal'}>
           <Button secondary title="Cancel" onPress={() => model.setPicker(null)} />
-          <Status loading={model.options.isLoading} error={model.options.error || model.action.error} cachedAt={model.options.cachedAt} />
+          <Status
+            loading={model.options.isLoading}
+            error={model.options.error || model.action.error}
+            cachedAt={model.options.cachedAt}
+          />
           {model.picker
             ? model.optionCards.map(option => (
                 <Card key={option.sourceAssignmentId}>
@@ -91,7 +103,9 @@ export default function PlanScreen() {
                   {option.side ? (
                     <>
                       <Copy>Side · {option.side.name}</Copy>
-                      <Copy muted>{option.side.type === 'SOUP' ? 'Soup' : 'Salad'} · {Math.round(option.side.calories)} kcal</Copy>
+                      <Copy muted>
+                        {option.side.type === 'SOUP' ? 'Soup' : 'Salad'} · {Math.round(option.side.calories)} kcal
+                      </Copy>
                       <Copy muted>{option.side.ingredients.join(', ')}</Copy>
                     </>
                   ) : null}
@@ -104,7 +118,11 @@ export default function PlanScreen() {
               ))
             : null}
           {model.picker && !model.options.isLoading && model.optionCards.length === 0 ? (
-            <Copy muted>{model.picker.sidesOnly ? 'No side options are assigned yet.' : 'No meal options are assigned for this slot.'}</Copy>
+            <Copy muted>
+              {model.picker.sidesOnly
+                ? 'No side options are assigned yet.'
+                : 'No meal options are assigned for this slot.'}
+            </Copy>
           ) : null}
         </Screen>
       </Modal>
@@ -116,15 +134,35 @@ export default function PlanScreen() {
       >
         <Screen title={model.sideDetail?.name ?? 'Side'}>
           <Button secondary title="Close" onPress={() => model.setSideDetail(null)} />
-          {model.sideDetail?.imageUrl ? <Image accessibilityLabel={model.sideDetail.name} source={{ uri: model.sideDetail.imageUrl }} style={{ width: '100%', height: 220, borderRadius: 20 }} /> : null}
+          {model.sideDetail?.imageUrl ? (
+            <Image
+              accessibilityLabel={model.sideDetail.name}
+              source={{ uri: model.sideDetail.imageUrl }}
+              style={{ width: '100%', height: 220, borderRadius: 20 }}
+            />
+          ) : null}
           <Card>
             <Copy>{model.sideDetail?.type === 'SOUP' ? 'Soup' : 'Salad'}</Copy>
             {model.sideDetail?.foodOrigin ? <Copy muted>{model.sideDetail.foodOrigin}</Copy> : null}
-            <Copy>{model.sideDetail ? `${Math.round(model.sideDetail.calories)} kcal · ${Math.round(model.sideDetail.protein)}g protein · ${Math.round(model.sideDetail.carbs)}g carbs · ${Math.round(model.sideDetail.fat)}g fat` : ''}</Copy>
+            <Copy>
+              {model.sideDetail
+                ? `${Math.round(model.sideDetail.calories)} kcal · ${Math.round(model.sideDetail.protein)}g protein · ${Math.round(model.sideDetail.carbs)}g carbs · ${Math.round(model.sideDetail.fat)}g fat`
+                : ''}
+            </Copy>
             <Label>Ingredients</Label>
             <Copy>{model.sideDetail?.ingredients.join('\n')}</Copy>
-            {model.sideDetail?.spices.length ? <><Label>Spices</Label><Copy>{model.sideDetail.spices.join('\n')}</Copy></> : null}
-            {model.sideDetail?.instructions.length ? <><Label>Instructions</Label><Copy>{model.sideDetail.instructions.map((step, index) => `${index + 1}. ${step}`).join('\n')}</Copy></> : null}
+            {model.sideDetail?.spices.length ? (
+              <>
+                <Label>Spices</Label>
+                <Copy>{model.sideDetail.spices.join('\n')}</Copy>
+              </>
+            ) : null}
+            {model.sideDetail?.instructions.length ? (
+              <>
+                <Label>Instructions</Label>
+                <Copy>{model.sideDetail.instructions.map((step, index) => `${index + 1}. ${step}`).join('\n')}</Copy>
+              </>
+            ) : null}
           </Card>
         </Screen>
       </Modal>
@@ -136,15 +174,39 @@ export default function PlanScreen() {
       >
         <Screen title={model.detail?.name ?? 'Meal'}>
           <Button secondary title="Close" onPress={() => model.setDetail(null)} />
-          {model.detail?.imageUrl ? <Image accessibilityLabel={model.detail.name} source={{ uri: model.detail.imageUrl }} style={{ width: '100%', height: 240, borderRadius: 20 }} /> : null}
+          {model.detail?.imageUrl ? (
+            <Image
+              accessibilityLabel={model.detail.name}
+              source={{ uri: model.detail.imageUrl }}
+              style={{ width: '100%', height: 240, borderRadius: 20 }}
+            />
+          ) : null}
           <Card>
             <Copy>{model.detail?.description}</Copy>
-            {model.detail ? <Copy>{Math.round(model.detail.calories)} kcal · {Math.round(model.detail.protein)}g protein · {Math.round(model.detail.carbs)}g carbs · {Math.round(model.detail.fat)}g fat</Copy> : null}
-            {model.detail && ((model.detail.prepTime ?? 0) + (model.detail.cookTime ?? 0) > 0) ? <Copy muted>Prep {model.detail.prepTime ?? 0} min · Cook {model.detail.cookTime ?? 0} min</Copy> : null}
-            {model.detail?.servings ? <Copy muted>{model.detail.servings} serving{model.detail.servings === 1 ? '' : 's'}</Copy> : null}
+            {model.detail ? (
+              <Copy>
+                {Math.round(model.detail.calories)} kcal · {Math.round(model.detail.protein)}g protein ·{' '}
+                {Math.round(model.detail.carbs)}g carbs · {Math.round(model.detail.fat)}g fat
+              </Copy>
+            ) : null}
+            {model.detail && (model.detail.prepTime ?? 0) + (model.detail.cookTime ?? 0) > 0 ? (
+              <Copy muted>
+                Prep {model.detail.prepTime ?? 0} min · Cook {model.detail.cookTime ?? 0} min
+              </Copy>
+            ) : null}
+            {model.detail?.servings ? (
+              <Copy muted>
+                {model.detail.servings} serving{model.detail.servings === 1 ? '' : 's'}
+              </Copy>
+            ) : null}
             <Label>Ingredients</Label>
             <Copy>{formatMealText(model.detail?.ingredients) || 'No ingredients listed.'}</Copy>
-            {model.detail?.spices ? <><Label>Spices</Label><Copy>{formatMealText(model.detail.spices)}</Copy></> : null}
+            {model.detail?.spices ? (
+              <>
+                <Label>Spices</Label>
+                <Copy>{formatMealText(model.detail.spices)}</Copy>
+              </>
+            ) : null}
             <Label>Instructions</Label>
             <Copy>{formatMealText(model.detail?.instructions) || 'No instructions listed.'}</Copy>
           </Card>

@@ -23,7 +23,13 @@ export default function SchedulePage() {
           className="rounded-xl border p-12 text-center"
           style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
         >
-          <Calendar aria-hidden="true" focusable="false" size={64} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+          <Calendar
+            aria-hidden="true"
+            focusable="false"
+            size={64}
+            style={{ margin: '0 auto', color: 'var(--color-text-muted)' }}
+            className="mb-4"
+          />
           <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
             Schedule Coming Soon
           </h2>

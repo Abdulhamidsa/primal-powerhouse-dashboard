@@ -2,7 +2,18 @@
 
 import { Meal } from '@/types/meal';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { ClockIcon as Clock, UsersIcon as Users, ForkKnifeIcon as Utensils, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, ArrowsClockwiseIcon as Sparkles, PencilIcon as Pencil, TrashIcon as Trash2 } from '@phosphor-icons/react';
+import {
+  ClockIcon as Clock,
+  UsersIcon as Users,
+  ForkKnifeIcon as Utensils,
+  SunHorizonIcon as Sunrise,
+  SunIcon as Sun,
+  MoonIcon as Moon,
+  OrangeIcon as Apple,
+  PencilSimpleIcon,
+  PencilIcon as Pencil,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
@@ -173,7 +184,7 @@ export default function NewMealDetailModal({
                       {meal.ingredients.map((ingredient, index) => (
                         <li
                           key={index}
-                            className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
+                          className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
                         >
                           <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-sm font-medium text-[var(--color-accent)]">
                             {index + 1}
@@ -239,7 +250,7 @@ export default function NewMealDetailModal({
                       onClick={() => setPersonalizeModalOpen(true)}
                       className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent-translucent)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent-translucent)]/80"
                     >
-                      <Sparkles aria-hidden="true" focusable="false" className="h-4 w-4" />
+                      <PencilSimpleIcon aria-hidden="true" focusable="false" className="h-4 w-4" />
                       Personalize
                     </button>
 

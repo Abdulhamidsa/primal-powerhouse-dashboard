@@ -1,4 +1,11 @@
-import { PulseIcon as Activity, ClipboardTextIcon as ClipboardList, BarbellIcon as Dumbbell, EyeIcon as Eye, BowlFoodIcon as Salad, UserSquareIcon as UserSquare2 } from '@phosphor-icons/react/ssr';
+import {
+  PulseIcon as Activity,
+  ClipboardTextIcon as ClipboardList,
+  BarbellIcon as Dumbbell,
+  EyeIcon as Eye,
+  BowlFoodIcon as Salad,
+  UserSquareIcon as UserSquare2,
+} from '@phosphor-icons/react/ssr';
 import { cx } from '@/lib/ui';
 import type { DashboardTabKey } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 
@@ -48,7 +55,7 @@ export function ClientDetailTabs({
                   borderColor: isActive ? 'var(--color-accent)' : 'var(--color-border)',
                 }}
               >
-                <Icon size={16} />
+                <Icon aria-hidden="true" size={16} />
                 {tab.label}
               </button>
             );

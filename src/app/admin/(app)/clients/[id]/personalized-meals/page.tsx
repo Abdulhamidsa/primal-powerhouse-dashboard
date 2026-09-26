@@ -5,7 +5,18 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { DataService, Client } from '@/services/dataService';
 import EditMealModal from '@/components/EditMealModal';
-import { ForkKnifeIcon as Utensils, FlameIcon as Flame, ClockIcon as Clock, UsersIcon as Users, PencilSimpleIcon as Edit, ArrowLeftIcon as ArrowLeft, ArrowsClockwiseIcon as Sparkles, MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon } from '@phosphor-icons/react';
+import {
+  ForkKnifeIcon as Utensils,
+  FlameIcon as Flame,
+  ClockIcon as Clock,
+  UsersIcon as Users,
+  PencilSimpleIcon as Edit,
+  ArrowLeftIcon as ArrowLeft,
+  MoonIcon,
+  OrangeIcon,
+  SunHorizonIcon,
+  SunIcon,
+} from '@phosphor-icons/react';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 
 interface PersonalizedMeal {
@@ -157,7 +168,7 @@ export default function ClientPersonalizedMealsPage() {
             )}
             <div>
               <h1 className="text-3xl font-bold text-zinc-100 flex items-center gap-2">
-                <Sparkles aria-hidden="true" focusable="false" className="w-8 h-8 text-blue-500" />
+                <Utensils aria-hidden="true" focusable="false" className="w-8 h-8 text-blue-500" />
                 Personalized Meals
               </h1>
               <p className="text-zinc-400">
@@ -168,7 +179,7 @@ export default function ClientPersonalizedMealsPage() {
 
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
             <p className="text-blue-400 text-sm flex items-center gap-2">
-              <Sparkles aria-hidden="true" focusable="false" className="w-4 h-4" />
+              <Edit aria-hidden="true" focusable="false" className="w-4 h-4" />
               <span>
                 These are personalized copies you can edit independently without affecting the original meal templates.
               </span>
@@ -211,7 +222,7 @@ export default function ClientPersonalizedMealsPage() {
                   </div>
                   <div className="absolute top-4 right-4">
                     <span className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-blue-500/90 text-white border border-blue-400">
-                      <Sparkles aria-hidden="true" focusable="false" className="w-3 h-3" />
+                      <Edit aria-hidden="true" focusable="false" className="w-3 h-3" />
                       Personalized
                     </span>
                   </div>
@@ -280,7 +291,7 @@ export default function ClientPersonalizedMealsPage() {
           </div>
         ) : (
           <div className="text-center py-16 bg-zinc-900 rounded-2xl border border-zinc-800">
-            <Sparkles aria-hidden="true" focusable="false" className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+            <Utensils aria-hidden="true" focusable="false" className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2 text-zinc-100">No personalized meals yet</h3>
             <p className="text-zinc-400 mb-6">
               Assign meals to {client?.name} to create personalized copies that can be customized.

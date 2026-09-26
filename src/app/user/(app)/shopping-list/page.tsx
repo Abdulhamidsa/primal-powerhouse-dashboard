@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { CheckIcon as Check, ArrowCounterClockwiseIcon as RefreshCcw, ShareNetworkIcon as Share2, ShoppingBagIcon as ShoppingBag } from '@phosphor-icons/react';
+import {
+  CheckIcon as Check,
+  ArrowCounterClockwiseIcon as RefreshCcw,
+  ShareNetworkIcon as Share2,
+  ShoppingBagIcon as ShoppingBag,
+} from '@phosphor-icons/react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { Button } from '@/components/ui/button';
@@ -69,7 +74,7 @@ export default function ShoppingListPage() {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-  const displayedData = isOffline ? savedShoppingListSWR.data ?? data : data ?? savedShoppingListSWR.data;
+  const displayedData = isOffline ? (savedShoppingListSWR.data ?? data) : (data ?? savedShoppingListSWR.data);
 
   const savedItems = useMemo(() => {
     return (selectionSWR.data?.selection?.items ?? []).map(item => ({
@@ -155,7 +160,9 @@ export default function ShoppingListPage() {
   // const progress = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const hasItems = !!displayedData && displayedData.sections.some(s => s.items.length > 0);
-  const isPageLoading = isOffline ? !displayedData && savedShoppingListSWR.isLoading : isLoading || selectionSWR.isLoading;
+  const isPageLoading = isOffline
+    ? !displayedData && savedShoppingListSWR.isLoading
+    : isLoading || selectionSWR.isLoading;
   const completionPct = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const toggleItem = (id: string) => setCheckedById(prev => ({ ...prev, [id]: !prev[id] }));
@@ -202,170 +209,185 @@ export default function ShoppingListPage() {
     <PullToRefresh onRefreshAction={refreshShoppingList}>
       <div className="min-h-screen bg-background pb-20">
         <div className="mx-auto w-full max-w-xl px-4 pb-10 pt-4">
-        <UserPageHero
-          eyebrow="Shopping List"
-          title="Everything in one place"
-          description="Ingredients, spices, and meal notes pulled from your selected plan."
-          icon={<ShoppingBag aria-hidden="true" focusable="false" size={17} />}
-          statusItems={[
-            { label: 'Checked', value: `${checkedCount}/${totalCount || 0}`, tone: checkedCount ? 'good' : 'neutral' },
-            { label: 'Complete', value: `${completionPct}%`, tone: completionPct === 100 ? 'good' : 'neutral' },
-          ]}
-        >
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleGenerate}
-              disabled={isPageLoading}
-              className="h-8 rounded-full flex gap-2 border-border bg-background px-3 text-xs text-foreground"
-            >
-              <RefreshCcw aria-hidden="true" focusable="false" size={12} className={isPageLoading ? 'animate-spin' : ''} />
-              Refresh
-            </Button>
-            <button
-              type="button"
-              onClick={() => void shareList()}
-              disabled={!hasItems}
-              className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Share shopping list"
-              title="Share list"
-            >
-              <Share2 aria-hidden="true" focusable="false" size={13} />
-              Share
-            </button>
-            <button
-              type="button"
-              onClick={() => void copyAsText()}
-              disabled={!hasItems}
-              className="inline-flex min-h-8 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
-              title={copiedLabel}
-            >
-              Copy text
-            </button>
-          </div>
+          <UserPageHero
+            eyebrow="Shopping List"
+            title="Everything in one place"
+            description="Ingredients, spices, and meal notes pulled from your selected plan."
+            icon={<ShoppingBag aria-hidden="true" focusable="false" size={17} />}
+            statusItems={[
+              {
+                label: 'Checked',
+                value: `${checkedCount}/${totalCount || 0}`,
+                tone: checkedCount ? 'good' : 'neutral',
+              },
+              { label: 'Complete', value: `${completionPct}%`, tone: completionPct === 100 ? 'good' : 'neutral' },
+            ]}
+          >
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleGenerate}
+                disabled={isPageLoading}
+                className="h-8 rounded-full flex gap-2 border-border bg-background px-3 text-xs text-foreground"
+              >
+                <RefreshCcw
+                  aria-hidden="true"
+                  focusable="false"
+                  size={12}
+                  className={isPageLoading ? 'animate-spin' : ''}
+                />
+                Refresh
+              </Button>
+              <button
+                type="button"
+                onClick={() => void shareList()}
+                disabled={!hasItems}
+                className="inline-flex min-h-8 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Share shopping list"
+                title="Share list"
+              >
+                <Share2 aria-hidden="true" focusable="false" size={13} />
+                Share
+              </button>
+              <button
+                type="button"
+                onClick={() => void copyAsText()}
+                disabled={!hasItems}
+                className="inline-flex min-h-8 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
+                title={copiedLabel}
+              >
+                Copy text
+              </button>
+            </div>
 
-          {copied ? (
-            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-foreground">
-              Shopping list copied.
+            {copied ? (
+              <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-foreground">
+                Shopping list copied.
+              </div>
+            ) : null}
+
+            {shared ? (
+              <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-foreground">
+                Shopping list shared.
+              </div>
+            ) : null}
+          </UserPageHero>
+
+          {error && !isPageLoading ? (
+            <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error.message}
             </div>
           ) : null}
 
-          {shared ? (
-            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-foreground">
-              Shopping list shared.
+          {isPageLoading ? (
+            <div className="mt-4">
+              <ShoppingListSkeleton />
             </div>
           ) : null}
-        </UserPageHero>
 
-        {error && !isPageLoading ? (
-          <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error.message}
-          </div>
-        ) : null}
+          {!isPageLoading && !error && !hasItems ? (
+            <section className="mt-5 rounded-[30px] border border-border bg-card px-5 py-8 text-center shadow-sm">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/40 text-muted-foreground">
+                <ShoppingBag aria-hidden="true" focusable="false" size={26} />
+              </div>
+              <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">No shopping list yet</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Select meals in My Plan, then come back here to see your list.
+              </p>
+              <Button
+                type="button"
+                onClick={() => router.push('/user/my-plan')}
+                className="mt-5 h-11 rounded-full px-5"
+              >
+                Go to My Plan
+              </Button>
+            </section>
+          ) : null}
 
-        {isPageLoading ? (
-          <div className="mt-4">
-            <ShoppingListSkeleton />
-          </div>
-        ) : null}
+          {!isPageLoading &&
+            displayedData?.sections.map(section => {
+              if (section.items.length === 0) return null;
+              const sectionChecked = section.items.filter(item => checkedById[item.id]).length;
+              const allSectionChecked = sectionChecked === section.items.length;
 
-        {!isPageLoading && !error && !hasItems ? (
-          <section className="mt-5 rounded-[30px] border border-border bg-card px-5 py-8 text-center shadow-sm">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted/40 text-muted-foreground">
-              <ShoppingBag aria-hidden="true" focusable="false" size={26} />
-            </div>
-            <p className="mt-4 text-sm font-semibold tracking-tight text-foreground">No shopping list yet</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Select meals in My Plan, then come back here to see your list.
-            </p>
-            <Button type="button" onClick={() => router.push('/user/my-plan')} className="mt-5 h-11 rounded-full px-5">
-              Go to My Plan
-            </Button>
-          </section>
-        ) : null}
+              return (
+                <section key={section.key} className="mt-5">
+                  <div className="mb-2 flex items-center justify-between gap-3 px-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-tight text-foreground">{section.title}</h2>
+                      <span className="rounded-full bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                        {section.items.length}
+                      </span>
+                    </div>
 
-        {!isPageLoading &&
-          displayedData?.sections.map(section => {
-            if (section.items.length === 0) return null;
-            const sectionChecked = section.items.filter(item => checkedById[item.id]).length;
-            const allSectionChecked = sectionChecked === section.items.length;
-
-            return (
-              <section key={section.key} className="mt-5">
-                <div className="mb-2 flex items-center justify-between gap-3 px-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-semibold tracking-tight text-foreground">{section.title}</h2>
-                    <span className="rounded-full bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                      {section.items.length}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => markAllInSection(section.items, !allSectionChecked)}
+                      className="text-xs font-semibold text-primary transition-opacity active:opacity-60"
+                    >
+                      {allSectionChecked ? 'Uncheck all' : 'Mark all'}
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => markAllInSection(section.items, !allSectionChecked)}
-                    className="text-xs font-semibold text-primary transition-opacity active:opacity-60"
-                  >
-                    {allSectionChecked ? 'Uncheck all' : 'Mark all'}
-                  </button>
-                </div>
+                  <div className="overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+                    {section.items.map((item, index) => {
+                      const isChecked = Boolean(checkedById[item.id]);
 
-                <div className="overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
-                  {section.items.map((item, index) => {
-                    const isChecked = Boolean(checkedById[item.id]);
-
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => toggleItem(item.id)}
-                        className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors active:opacity-70"
-                        style={{
-                          borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
-                        }}
-                      >
-                        <span
-                          className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full transition-all duration-150"
-                          style={
-                            isChecked
-                              ? { background: 'var(--color-accent)', border: 'none' }
-                              : { background: 'transparent', border: '2px solid var(--color-border)' }
-                          }
-                        >
-                          {isChecked && <Check aria-hidden="true" focusable="false" size={12} color="white" strokeWidth={3.5} />}
-                        </span>
-
-                        <span
-                          className="flex-1 text-[15px] leading-snug transition-all duration-150"
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => toggleItem(item.id)}
+                          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors active:opacity-70"
                           style={{
-                            color: isChecked ? 'var(--color-text-muted)' : 'var(--color-text)',
-                            textDecoration: isChecked ? 'line-through' : 'none',
-                            opacity: isChecked ? 0.55 : 1,
+                            borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                           }}
                         >
-                          {item.label}
-                        </span>
-
-                        {item.quantity ? (
                           <span
-                            className="ml-3 shrink-0 rounded-lg px-2 py-0.5 text-[12px] font-semibold tabular-nums transition-opacity"
+                            className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full transition-all duration-150"
+                            style={
+                              isChecked
+                                ? { background: 'var(--color-accent)', border: 'none' }
+                                : { background: 'transparent', border: '2px solid var(--color-border)' }
+                            }
+                          >
+                            {isChecked && (
+                              <Check aria-hidden="true" focusable="false" size={12} color="white" weight="bold" />
+                            )}
+                          </span>
+
+                          <span
+                            className="flex-1 text-[15px] leading-snug transition-all duration-150"
                             style={{
-                              background: isChecked ? 'var(--color-bg)' : 'var(--color-bg-alt)',
-                              color: isChecked ? 'var(--color-text-muted)' : 'var(--color-accent)',
-                              opacity: isChecked ? 0.4 : 1,
+                              color: isChecked ? 'var(--color-text-muted)' : 'var(--color-text)',
+                              textDecoration: isChecked ? 'line-through' : 'none',
+                              opacity: isChecked ? 0.55 : 1,
                             }}
                           >
-                            {item.quantity}
+                            {item.label}
                           </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
+
+                          {item.quantity ? (
+                            <span
+                              className="ml-3 shrink-0 rounded-lg px-2 py-0.5 text-[12px] font-semibold tabular-nums transition-opacity"
+                              style={{
+                                background: isChecked ? 'var(--color-bg)' : 'var(--color-bg-alt)',
+                                color: isChecked ? 'var(--color-text-muted)' : 'var(--color-accent)',
+                                opacity: isChecked ? 0.4 : 1,
+                              }}
+                            >
+                              {item.quantity}
+                            </span>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
         </div>
       </div>
     </PullToRefresh>

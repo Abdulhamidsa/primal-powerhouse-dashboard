@@ -1,5 +1,14 @@
 import React from 'react';
-import { ClockIcon as Clock, FlameIcon as Flame, ImageIcon as ImageIcon, LeafIcon as Leaf, MagnifyingGlassIcon as Search, SlidersHorizontalIcon as SlidersHorizontal, ArrowsClockwiseIcon as Sparkles, XIcon as X } from '@phosphor-icons/react/ssr';
+import {
+  ClockIcon as Clock,
+  FlameIcon as Flame,
+  ImageIcon as ImageIcon,
+  LeafIcon as Leaf,
+  MagnifyingGlassIcon as Search,
+  SlidersHorizontalIcon as SlidersHorizontal,
+  BarbellIcon,
+  XIcon as X,
+} from '@phosphor-icons/react/ssr';
 import { Button } from '@/components/ui/button';
 import { MealFilterType } from '@/lib/meal-planner/types';
 
@@ -32,7 +41,7 @@ const sortOptions: Array<{ value: MealSortOption; label: string }> = [
 ];
 
 const smartFilters: Array<{ value: MealSmartFilter; label: string; helper: string; icon: React.ElementType }> = [
-  { value: 'highProtein', label: 'High protein', helper: '30g+', icon: Sparkles },
+  { value: 'highProtein', label: 'High protein', helper: '30g+', icon: BarbellIcon },
   { value: 'lowCalorie', label: 'Low calorie', helper: '≤500 kcal', icon: Flame },
   { value: 'quick', label: 'Quick', helper: '≤25 min', icon: Clock },
   { value: 'hasImage', label: 'Has image', helper: 'ready cards', icon: ImageIcon },
@@ -63,7 +72,11 @@ export const MealFilters = ({
     <div className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="relative min-w-0 flex-1">
-          <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            aria-hidden="true"
+            focusable="false"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          />
           <input
             value={searchQuery}
             onChange={event => onSearchChange(event.target.value)}
@@ -157,7 +170,7 @@ export const MealFilters = ({
                     : 'border-white/10 bg-white/[0.04] text-muted-foreground',
                 ].join(' ')}
               >
-                <Icon size={16} />
+                <Icon aria-hidden="true" focusable="false" size={16} />
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold">{filter.label}</span>

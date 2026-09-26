@@ -1,9 +1,24 @@
 'use client';
 
-
 import { ImageIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
-import { WarningCircleIcon as AlertCircle, CalendarIcon as Calendar, CheckIcon as Check, CopyIcon as Copy, FileTextIcon as FileText, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, PlusIcon as Plus, RulerIcon as Ruler, ScalesIcon as Scale, TargetIcon as Target, UserIcon as User, ForkKnifeIcon as UtensilsCrossed, XIcon as X, PulseIcon as Activity } from '@phosphor-icons/react';
+import {
+  WarningCircleIcon as AlertCircle,
+  CalendarIcon as Calendar,
+  CheckIcon as Check,
+  CopyIcon as Copy,
+  FileTextIcon as FileText,
+  EnvelopeSimpleIcon as Mail,
+  PhoneIcon as Phone,
+  PlusIcon as Plus,
+  RulerIcon as Ruler,
+  ScalesIcon as Scale,
+  TargetIcon as Target,
+  UserIcon as User,
+  ForkKnifeIcon as UtensilsCrossed,
+  XIcon as X,
+  PulseIcon as Activity,
+} from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { createClientSchema } from '@/features/client-creation/schemas/clientCreation.schema';
 import { useAddClient } from '@/features/client-creation/hooks/useAddClient';
@@ -107,7 +122,7 @@ export default function AddClientModal({
   };
 
   const handleInputChange = (field: keyof FormState, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value } as FormState));
+    setFormData(prev => ({ ...prev, [field]: value }) as FormState);
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -195,10 +210,7 @@ export default function AddClientModal({
     try {
       const response: CreateClientResponse = await addClient({
         ...validated,
-        avatar:
-          validated.avatar && validated.avatar.trim()
-            ? validated.avatar.trim()
-            : buildAvatarUrl(validated.name),
+        avatar: validated.avatar && validated.avatar.trim() ? validated.avatar.trim() : buildAvatarUrl(validated.name),
       });
 
       if (response?.credentials?.email && response?.credentials?.password) {
@@ -241,7 +253,11 @@ export default function AddClientModal({
             <div className="p-6">
               <div className="flex items-start gap-3 mb-4">
                 <div className="p-2 rounded-lg" style={{ background: 'var(--color-accent-muted)' }}>
-                  <AlertCircle aria-hidden="true" focusable="false" style={{ color: 'var(--color-accent)', width: 20, height: 20 }} />
+                  <AlertCircle
+                    aria-hidden="true"
+                    focusable="false"
+                    style={{ color: 'var(--color-accent)', width: 20, height: 20 }}
+                  />
                 </div>
                 <div>
                   <DialogTitle className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
@@ -294,7 +310,11 @@ export default function AddClientModal({
                       }}
                       title="Copy email"
                     >
-                      {copiedField === 'email' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
+                      {copiedField === 'email' ? (
+                        <Check aria-hidden="true" focusable="false" className="w-4 h-4" />
+                      ) : (
+                        <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -325,7 +345,11 @@ export default function AddClientModal({
                       }}
                       title="Copy password"
                     >
-                      {copiedField === 'password' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
+                      {copiedField === 'password' ? (
+                        <Check aria-hidden="true" focusable="false" className="w-4 h-4" />
+                      ) : (
+                        <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -408,7 +432,11 @@ export default function AddClientModal({
                     }}
                     placeholder="e.g., John Smith"
                   />
-                  {errors.name && <p className="mt-1 text-sm" style={{ color: 'var(--color-accent)' }}>{errors.name}</p>}
+                  {errors.name && (
+                    <p className="mt-1 text-sm" style={{ color: 'var(--color-accent)' }}>
+                      {errors.name}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -430,7 +458,11 @@ export default function AddClientModal({
                     }}
                     placeholder="john.smith@email.com"
                   />
-                  {errors.email && <p className="mt-1 text-sm" style={{ color: 'var(--color-accent)' }}>{errors.email}</p>}
+                  {errors.email && (
+                    <p className="mt-1 text-sm" style={{ color: 'var(--color-accent)' }}>
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -452,7 +484,11 @@ export default function AddClientModal({
                     }}
                     placeholder="+1 (555) 123-4567"
                   />
-                  {errors.phone && <p className="mt-1 text-sm" style={{ color: 'var(--color-accent)' }}>{errors.phone}</p>}
+                  {errors.phone && (
+                    <p className="mt-1 text-sm" style={{ color: 'var(--color-accent)' }}>
+                      {errors.phone}
+                    </p>
+                  )}
                 </div>
 
                 <div>

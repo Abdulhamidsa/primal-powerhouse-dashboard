@@ -1,7 +1,15 @@
 'use client';
 
-
-import { CheckIcon, CircleNotchIcon, MagnifyingGlassIcon, SlidersHorizontalIcon, UsersIcon, VideoCameraIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
+import {
+  CheckIcon,
+  CircleNotchIcon,
+  MagnifyingGlassIcon,
+  SlidersHorizontalIcon,
+  UsersIcon,
+  VideoCameraIcon,
+  WarningCircleIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { Video } from '@/types/video';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -73,7 +81,7 @@ export default function AssignVideosModal({
   const filteredClients = clients.filter(
     client =>
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase())
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleClientToggle = (clientId: string) => {
@@ -184,7 +192,11 @@ export default function AssignVideosModal({
                           />
                         ) : (
                           <div className="w-16 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
-                            <WarningCircleIcon className="w-6 h-6 text-purple-500" aria-hidden="true" focusable="false" />
+                            <WarningCircleIcon
+                              className="w-6 h-6 text-purple-500"
+                              aria-hidden="true"
+                              focusable="false"
+                            />
                           </div>
                         )}
                       </div>
@@ -219,7 +231,11 @@ export default function AssignVideosModal({
 
               {/* Client Search */}
               <div className="relative mb-4">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" focusable="false" />
+                <MagnifyingGlassIcon
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                  aria-hidden="true"
+                  focusable="false"
+                />
                 <input
                   type="text"
                   placeholder="Search clients..."

@@ -1,7 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CheckIcon as Check, CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, BarbellIcon as Dumbbell, FlagIcon as Flag, ImageIcon as ImageIcon, ListChecksIcon as ListChecks, CircleNotchIcon as Loader2, PlayIcon as Play, SquareIcon as Square, XIcon as X } from '@phosphor-icons/react';
+import {
+  CheckIcon as Check,
+  CaretLeftIcon as ChevronLeft,
+  CaretRightIcon as ChevronRight,
+  BarbellIcon as Dumbbell,
+  FlagIcon as Flag,
+  ImageIcon as ImageIcon,
+  ListChecksIcon as ListChecks,
+  CircleNotchIcon as Loader2,
+  PlayIcon as Play,
+  SquareIcon as Square,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import type { TrainingSessionDTO, TrainingSessionSetDTO } from '@/features/training/types/clientTraining.types';
 import {
   useTrainingPreviousPerformance,
@@ -442,7 +454,9 @@ export function WorkoutSessionPlayer({
                   type="button"
                   onClick={() => void moveToExercise(index)}
                   className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-left transition-colors ${
-                    index === activeIndex ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-muted/60'
+                    index === activeIndex
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-background hover:bg-muted/60'
                   }`}
                 >
                   <span className="min-w-0">
@@ -498,7 +512,9 @@ export function WorkoutSessionPlayer({
             </label>
 
             <label className="space-y-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Overall feedback</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Overall feedback
+              </span>
               <textarea
                 value={overallFeedback}
                 onChange={event => setOverallFeedback(event.target.value)}
@@ -546,7 +562,11 @@ export function WorkoutSessionPlayer({
             disabled={saving || completing || !canComplete}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            {completing ? <Loader2 aria-hidden="true" focusable="false" size={15} className="animate-spin" /> : <Play aria-hidden="true" focusable="false" size={15} />}
+            {completing ? (
+              <Loader2 aria-hidden="true" focusable="false" size={15} className="animate-spin" />
+            ) : (
+              <Play aria-hidden="true" focusable="false" size={15} />
+            )}
             Complete
           </button>
         </div>

@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
-import { CameraIcon as Camera, EyeIcon as Eye, ScalesIcon as Scale, TrashIcon as Trash2, ArrowCounterClockwiseIcon as RotateCcw, FileTextIcon as FileText } from '@phosphor-icons/react/ssr';
+import {
+  CameraIcon as Camera,
+  EyeIcon as Eye,
+  ScalesIcon as Scale,
+  TrashIcon as Trash2,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  FileTextIcon as FileText,
+} from '@phosphor-icons/react/ssr';
 import { toDateKeyLocal } from '@/features/daily-checkin/utils/date';
 import type {
   AdminClientDailyCheckInsResponse,
@@ -44,7 +51,7 @@ function StatChip({ icon: Icon, label, value }: { icon: React.ElementType; label
       className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs"
       style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
     >
-      <Icon size={11} style={{ color: 'var(--color-text-muted)' }} />
+      <Icon aria-hidden="true" focusable="false" size={11} style={{ color: 'var(--color-text-muted)' }} />
       <span style={{ color: 'var(--color-text-muted)' }}>{label}</span>
       <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
         {value}

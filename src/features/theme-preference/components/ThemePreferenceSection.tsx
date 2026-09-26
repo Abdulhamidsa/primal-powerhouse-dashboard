@@ -14,10 +14,7 @@ type ThemePreferenceSectionProps = {
 export function ThemePreferenceSection({ value, options, onChangeAction }: ThemePreferenceSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const selectedOption = useMemo(
-    () => options.find(option => option.value === value) ?? options[0],
-    [options, value],
-  );
+  const selectedOption = useMemo(() => options.find(option => option.value === value) ?? options[0], [options, value]);
 
   return (
     <section className="space-y-2">
@@ -45,7 +42,9 @@ export function ThemePreferenceSection({ value, options, onChangeAction }: Theme
               style={{ backgroundColor: `var(${selectedOption.swatchVarName})` }}
             />
             <span className="text-sm font-medium text-foreground">{selectedOption.label}</span>
-            <ChevronDown aria-hidden="true" focusable="false"
+            <ChevronDown
+              aria-hidden="true"
+              focusable="false"
               className={cn('h-4 w-4 text-muted-foreground transition-transform', isOpen ? 'rotate-180' : '')}
             />
           </div>
@@ -85,7 +84,9 @@ export function ThemePreferenceSection({ value, options, onChangeAction }: Theme
 
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">{option.label}</p>
-                      <p className="text-xs text-muted-foreground/90">Accent preview for cards, buttons, and highlights</p>
+                      <p className="text-xs text-muted-foreground/90">
+                        Accent preview for cards, buttons, and highlights
+                      </p>
                     </div>
 
                     <span

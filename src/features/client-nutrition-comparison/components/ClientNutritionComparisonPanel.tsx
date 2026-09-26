@@ -72,7 +72,12 @@ function nutrientRows(_today: DailyNutritionComparison | undefined): Array<{
   suffix: string;
 }> {
   return [
-    { key: 'calories', label: 'Calories', icon: <Flame aria-hidden="true" focusable="false" size={16} />, suffix: ' kcal' },
+    {
+      key: 'calories',
+      label: 'Calories',
+      icon: <Flame aria-hidden="true" focusable="false" size={16} />,
+      suffix: ' kcal',
+    },
     { key: 'protein', label: 'Protein', icon: <Beef aria-hidden="true" focusable="false" size={16} />, suffix: ' g' },
     { key: 'carbs', label: 'Carbs', icon: <Wheat aria-hidden="true" focusable="false" size={16} />, suffix: ' g' },
     { key: 'fat', label: 'Fat', icon: <Droplets aria-hidden="true" focusable="false" size={16} />, suffix: ' g' },

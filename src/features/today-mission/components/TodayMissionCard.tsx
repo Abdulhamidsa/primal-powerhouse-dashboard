@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ArrowRightIcon as ArrowRight, CheckCircleIcon as CheckCircle2, CalendarCheckIcon as CalendarCheck2, FlameIcon as Flame, ChatTextIcon as MessageSquare, ForkKnifeIcon as UtensilsCrossed } from '@phosphor-icons/react';
+import {
+  ArrowRightIcon as ArrowRight,
+  CheckCircleIcon as CheckCircle2,
+  CalendarCheckIcon as CalendarCheck2,
+  FlameIcon as Flame,
+  ChatTextIcon as MessageSquare,
+  ForkKnifeIcon as UtensilsCrossed,
+} from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { TodayMissionSummary, TodayMissionTone } from '@/features/today-mission/types/todayMission.types';
@@ -70,15 +77,7 @@ function MissionSkeleton() {
   );
 }
 
-function MissionChip({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: TodayMissionTone;
-}) {
+function MissionChip({ label, value, tone }: { label: string; value: string; tone: TodayMissionTone }) {
   const toneStyles = TONE_STYLES[tone];
 
   return (
@@ -129,7 +128,10 @@ export function TodayMissionCard({
     >
       <div
         className="pointer-events-none absolute inset-x-10 top-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-border) 55%, transparent), transparent)' }}
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-border) 55%, transparent), transparent)',
+        }}
       />
 
       <div className="flex items-start justify-between gap-4">
@@ -147,7 +149,9 @@ export function TodayMissionCard({
         </div>
 
         <span
-          className={cn('inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold')}
+          className={cn(
+            'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold',
+          )}
           style={{
             background:
               summary.badgeTone === 'good'
@@ -210,7 +214,9 @@ export function TodayMissionCard({
         <MissionChip
           label="Meals"
           value={`${summary.mealProgress.completed}/${summary.mealProgress.total}`}
-          tone={summary.mealProgress.percentage === 100 ? 'good' : summary.mealProgress.completed > 0 ? 'warn' : 'neutral'}
+          tone={
+            summary.mealProgress.percentage === 100 ? 'good' : summary.mealProgress.completed > 0 ? 'warn' : 'neutral'
+          }
         />
         <MissionChip
           label="Coach"

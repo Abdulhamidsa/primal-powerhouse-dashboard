@@ -101,7 +101,9 @@ export function MessageList({
       <div className="flex min-h-full items-center justify-center px-6 text-center">
         <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-5 py-6 shadow-sm backdrop-blur-xl">
           <p className="text-sm font-semibold text-[var(--color-text)]">No messages yet</p>
-          <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">Start the conversation with your coach.</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
+            Start the conversation with your coach.
+          </p>
         </div>
       </div>
     );
@@ -142,9 +144,7 @@ export function MessageList({
             <div className={`max-w-[78%] ${ownMessage ? 'items-end' : 'items-start'} flex flex-col`}>
               <article
                 className={`w-fit px-4 py-2.5 shadow-sm backdrop-blur-xl ${
-                  ownMessage
-                    ? 'self-end rounded-[24px] rounded-br-[9px]'
-                    : 'self-start rounded-[24px] rounded-bl-[9px]'
+                  ownMessage ? 'self-end rounded-[24px] rounded-br-[9px]' : 'self-start rounded-[24px] rounded-bl-[9px]'
                 }`}
                 style={{
                   border: `1px solid ${message.deliveryStatus === 'failed' ? 'var(--color-danger)' : 'var(--color-border)'}`,

@@ -1,10 +1,13 @@
 import Image from 'next/image';
-import { CheckCircleIcon as CheckCircle2, ClockIcon as Clock3, PlusCircleIcon as PlusCircle } from '@phosphor-icons/react/ssr';
+import {
+  CheckCircleIcon as CheckCircle2,
+  ClockIcon as Clock3,
+  PlusCircleIcon as PlusCircle,
+} from '@phosphor-icons/react/ssr';
 import type { MealOption } from '@/features/meals/types/mealSelection.types';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
-const fallbackImage =
-  'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
+const fallbackImage = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1200&q=60';
 
 export function MealOptionCard({
   option,
@@ -68,7 +71,9 @@ export function MealOptionCard({
         <div className="block w-full text-left">
           <p className="line-clamp-1 text-sm font-semibold text-[var(--color-text)]">{option.meal.name}</p>
           {option.meal.description ? (
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-text-muted)]">{option.meal.description}</p>
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-text-muted)]">
+              {option.meal.description}
+            </p>
           ) : null}
           {totalTime > 0 ? <p className="text-xs text-[var(--color-text-muted)]">{totalTime} min total</p> : null}
         </div>
@@ -102,7 +107,11 @@ export function MealOptionCard({
             disabled ? 'cursor-not-allowed opacity-60' : '',
           ].join(' ')}
         >
-          {selected ? <CheckCircle2 aria-hidden="true" focusable="false" size={16} /> : <PlusCircle aria-hidden="true" focusable="false" size={16} />}
+          {selected ? (
+            <CheckCircle2 aria-hidden="true" focusable="false" size={16} />
+          ) : (
+            <PlusCircle aria-hidden="true" focusable="false" size={16} />
+          )}
           {selected ? 'Selected' : 'Select'}
         </button>
       </div>

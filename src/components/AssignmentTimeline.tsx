@@ -1,6 +1,5 @@
 'use client';
 
-
 import { CalendarIcon, ForkKnifeIcon, NotePencilIcon, TrashIcon, VideoCameraIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -175,7 +174,9 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-          <span className="text-xl"><CalendarIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
+          <span className="text-xl">
+            <CalendarIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+          </span>
           Assignment Timeline
         </h3>
         <div className="text-sm text-gray-500">{timeline.length} total assignments</div>
@@ -215,21 +216,27 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                       {/* Action buttons */}
                       <div className="flex items-center gap-2 ml-4">
                         <button
+                          type="button"
                           onClick={() => setShowAddNote(showAddNote === event.id ? null : event.id)}
                           className="text-blue-600 hover:text-blue-800 text-sm font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                           title="Add/Edit Notes"
+                          aria-label="Add or edit notes"
                         >
-                          </button>
+                          <NotePencilIcon size={16} aria-hidden="true" />
+                        </button>
 
                         {event.type.includes('assigned') && (
                           <button
+                            type="button"
                             onClick={() =>
                               handleRemoveAssignment(event.type.includes('video') ? 'video' : 'meal', event.item.id)
                             }
                             className="text-red-600 hover:text-red-800 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
                             title="Remove Assignment"
+                            aria-label="Remove assignment"
                           >
-                            </button>
+                            <TrashIcon size={16} aria-hidden="true" />
+                          </button>
                         )}
                       </div>
                     </div>
@@ -238,7 +245,9 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                     {event.notes && (
                       <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <div className="flex items-start gap-2">
-                          <span className="text-blue-600"><NotePencilIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
+                          <span className="text-blue-600">
+                            <NotePencilIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                          </span>
                           <p className="text-sm text-blue-800">{event.notes}</p>
                         </div>
                       </div>
@@ -260,7 +269,7 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                               handleUpdateNotes(
                                 event.type.includes('video') ? 'video' : 'meal',
                                 event.item.id,
-                                newNote || event.notes || ''
+                                newNote || event.notes || '',
                               )
                             }
                             className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
@@ -294,7 +303,9 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
                             />
                           ) : (
                             <div className="w-16 h-12 bg-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <span className="text-purple-600"><VideoCameraIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
+                              <span className="text-purple-600">
+                                <VideoCameraIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                              </span>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -355,7 +366,9 @@ export default function AssignmentTimeline({ assignments, type, onUpdateAction }
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4"><CalendarIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
+          <div className="text-6xl mb-4">
+            <CalendarIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+          </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assignments Yet</h3>
           <p className="text-gray-500">Start assigning videos and meals to see the timeline here.</p>
         </div>

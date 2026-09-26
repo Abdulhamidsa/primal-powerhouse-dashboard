@@ -1,7 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { XIcon as X, PlusIcon as Plus, TrashIcon as Trash2, DotsSixVerticalIcon as GripVertical, MagnifyingGlassIcon as Search } from '@phosphor-icons/react';
+import {
+  XIcon as X,
+  PlusIcon as Plus,
+  TrashIcon as Trash2,
+  DotsSixVerticalIcon as GripVertical,
+  MagnifyingGlassIcon as Search,
+} from '@phosphor-icons/react';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
 import type { WorkoutPlan } from '../types/workoutPlan.types';
 import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
@@ -202,7 +208,12 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <GripVertical aria-hidden="true" focusable="false" size={16} className="text-[var(--color-text-secondary)] shrink-0" />
+                    <GripVertical
+                      aria-hidden="true"
+                      focusable="false"
+                      size={16}
+                      className="text-[var(--color-text-secondary)] shrink-0"
+                    />
                     <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">
                       {idx + 1}. {ex.videoTitle}
                     </span>
@@ -312,7 +323,12 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border"
                 style={{ borderColor: 'var(--color-border)' }}
               >
-                <Search aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-secondary)' }} />
+                <Search
+                  aria-hidden="true"
+                  focusable="false"
+                  size={14}
+                  style={{ color: 'var(--color-text-secondary)' }}
+                />
                 <input
                   autoFocus
                   value={videoSearch}

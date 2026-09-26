@@ -13,7 +13,10 @@ export function OfflineStatusBanner() {
   if (!isOffline) return null;
 
   return (
-    <div className="sticky top-0 z-[60] border-b border-amber-500/30 bg-amber-500/15 px-4 py-2 text-amber-950 backdrop-blur dark:text-amber-100" role="status">
+    <div
+      className="sticky top-0 z-[60] border-b border-amber-500/30 bg-amber-500/15 px-4 py-2 text-amber-950 backdrop-blur dark:text-amber-100"
+      role="status"
+    >
       <div className="mx-auto flex max-w-xl items-center gap-2 text-xs font-medium">
         <CloudOff aria-hidden="true" focusable="false" size={16} className="shrink-0" />
         <span className="min-w-0 flex-1">Offline — showing data saved {formatSavedAt(lastSyncedAt)}.</span>

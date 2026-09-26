@@ -1,7 +1,11 @@
- 'use client';
+'use client';
 
 import { useMemo } from 'react';
-import { CalendarDotsIcon as CalendarClock, CaretRightIcon as ChevronRight, ChartLineIcon as LineChartIcon, TargetIcon as Target } from '@phosphor-icons/react';
+import {
+  CalendarDotsIcon as CalendarClock,
+  ChartLineIcon as LineChartIcon,
+  TargetIcon as Target,
+} from '@phosphor-icons/react';
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { buildWeightProjectionTimeline } from '@/lib/health/weightProjection';
 import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
@@ -22,7 +26,10 @@ function TimelineTooltip({ active, payload }: any) {
   const projected = payload.find((entry: any) => entry.dataKey === 'projectedWeightKg')?.value ?? null;
 
   return (
-    <div className="rounded-xl border bg-background px-3 py-2 text-xs shadow-lg" style={{ borderColor: 'var(--color-border)' }}>
+    <div
+      className="rounded-xl border bg-background px-3 py-2 text-xs shadow-lg"
+      style={{ borderColor: 'var(--color-border)' }}
+    >
       <p className="font-medium text-foreground">{payload[0]?.payload?.label ?? 'Date'}</p>
       {actual != null ? <p className="mt-1 text-muted-foreground">Actual: {Number(actual).toFixed(1)} kg</p> : null}
       {projected != null ? (
@@ -70,7 +77,10 @@ export function WeightProjectionTimelineCard({
   const isLossPlan = summary.direction === 'lose';
 
   return (
-    <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+    <div
+      className="rounded-2xl border p-5"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
           <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -80,19 +90,24 @@ export function WeightProjectionTimelineCard({
             Projected weekly path for {clientName} based on the current calorie target.
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}>
+        <div
+          className="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+          style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
+        >
           <Target aria-hidden="true" focusable="false" size={12} />
           {summary.direction === 'lose' ? 'Fat-loss plan' : summary.direction === 'gain' ? 'Gain plan' : 'Maintenance'}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Metric label="Estimated arrival" value={estimatedTargetLabel} helper={summary.estimatedWeeks != null ? `${summary.estimatedWeeks} weeks` : 'No clear projection'} />
+        <Metric
+          label="Estimated arrival"
+          value={estimatedTargetLabel}
+          helper={summary.estimatedWeeks != null ? `${summary.estimatedWeeks} weeks` : 'No clear projection'}
+        />
         <Metric
           label="Expected pace"
-          value={
-            summary.weeklyChangeKg > 0 ? `${summary.weeklyChangeKg.toFixed(1)} kg / week` : '—'
-          }
+          value={summary.weeklyChangeKg > 0 ? `${summary.weeklyChangeKg.toFixed(1)} kg / week` : '—'}
           helper={
             healthMetrics?.tdee != null && healthMetrics?.recommendedCalories != null
               ? `${Math.abs(healthMetrics.tdee - healthMetrics.recommendedCalories)} kcal daily gap`
@@ -170,7 +185,10 @@ export function WeightProjectionTimelineCard({
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex h-full items-center justify-center rounded-2xl border border-dashed" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+          <div
+            className="flex h-full items-center justify-center rounded-2xl border border-dashed"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+          >
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
               Not enough data yet to build a timeline.
             </p>
@@ -179,8 +197,14 @@ export function WeightProjectionTimelineCard({
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+        <div
+          className="rounded-xl border p-4"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+        >
+          <div
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
             <LineChartIcon aria-hidden="true" focusable="false" size={12} />
             Plan snapshot
           </div>
@@ -190,8 +214,14 @@ export function WeightProjectionTimelineCard({
               : 'Run a health calculation to generate a projected timeline.'}
           </p>
         </div>
-        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
+        <div
+          className="rounded-xl border p-4"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+        >
+          <div
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
             <CalendarClock aria-hidden="true" focusable="false" size={12} />
             Full timeline
           </div>
@@ -208,7 +238,10 @@ export function WeightProjectionTimelineCard({
 
 function Metric({ label, value, helper }: { label: string; value: string; helper: string }) {
   return (
-    <div className="rounded-xl border px-4 py-3" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+    <div
+      className="rounded-xl border px-4 py-3"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+    >
       <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
         {label}
       </p>

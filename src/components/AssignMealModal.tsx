@@ -1,10 +1,10 @@
-import { CheckIcon, EyeIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react/ssr';
+'use client';
+
+import { CheckIcon, EyeIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 /**
  * AssignMealModal Component
  * Modal for assigning meals to clients with search and confirmation
  */
-
-'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { DataService } from '@/services/dataService';
@@ -63,7 +63,7 @@ export default function AssignMealModal({
 
     const query = searchQuery.toLowerCase();
     return clients.filter(
-      client => client.name.toLowerCase().includes(query) || client.email.toLowerCase().includes(query)
+      client => client.name.toLowerCase().includes(query) || client.email.toLowerCase().includes(query),
     );
   }, [clients, searchQuery]);
 
@@ -114,7 +114,11 @@ export default function AssignMealModal({
           {/* Search Bar */}
           <div className="p-4 border-b border-zinc-700">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-500" aria-hidden="true" focusable="false" />
+              <MagnifyingGlassIcon
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-500"
+                aria-hidden="true"
+                focusable="false"
+              />
               <input
                 type="text"
                 placeholder="Search by name or email..."

@@ -1,7 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ArrowDownIcon as ArrowDown, ArrowRightIcon as ArrowRight, ArrowUpIcon as ArrowUp, MagnifyingGlassIcon as Search } from '@phosphor-icons/react';
+import {
+  ArrowDownIcon as ArrowDown,
+  ArrowRightIcon as ArrowRight,
+  ArrowUpIcon as ArrowUp,
+  MagnifyingGlassIcon as Search,
+} from '@phosphor-icons/react';
 import { useClientHealth } from '@/features/client-health/hooks/useClientHealth';
 import type {
   DailyComplianceBreakdown,
@@ -142,7 +147,13 @@ export function ClientHealthTab({ clientId }: { clientId: string }) {
             Daily Compliance History
           </h3>
           <div className="relative">
-            <Search aria-hidden="true" focusable="false" size={14} className="absolute left-2.5 top-2.5" style={{ color: 'var(--color-text-muted)' }} />
+            <Search
+              aria-hidden="true"
+              focusable="false"
+              size={14}
+              className="absolute left-2.5 top-2.5"
+              style={{ color: 'var(--color-text-muted)' }}
+            />
             <input
               value={query}
               onChange={event => setQuery(event.target.value)}

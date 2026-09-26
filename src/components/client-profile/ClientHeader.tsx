@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { JSX, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { CaretLeftIcon as ChevronLeft, FilmSlateIcon as Film, ForkKnifeIcon as Utensils, ChatCircleIcon as MessageCircle } from '@phosphor-icons/react';
+import {
+  CaretLeftIcon as ChevronLeft,
+  FilmSlateIcon as Film,
+  ForkKnifeIcon as Utensils,
+  ChatCircleIcon as MessageCircle,
+} from '@phosphor-icons/react';
 import type { Client, TabKey } from '@/lib/client-page/types';
 import { cx } from '@/lib/ui';
 

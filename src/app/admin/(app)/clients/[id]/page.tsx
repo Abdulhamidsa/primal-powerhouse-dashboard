@@ -1,13 +1,22 @@
 'use client';
 
-
 import { WarningCircleIcon } from '@phosphor-icons/react';
 import { useState, useEffect, JSX } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
 import { VideoAssignment } from '@/types/video';
-import { UsersIcon as Users, CaretLeftIcon as ChevronLeft, FilmSlateIcon as Film, ForkKnifeIcon as Utensils, ChartBarIcon as BarChart, InfoIcon as Info, PulseIcon as Activity, UserIcon as User, ChatTextIcon as MessageSquare } from '@phosphor-icons/react';
+import {
+  UsersIcon as Users,
+  CaretLeftIcon as ChevronLeft,
+  FilmSlateIcon as Film,
+  ForkKnifeIcon as Utensils,
+  ChartBarIcon as BarChart,
+  InfoIcon as Info,
+  PulseIcon as Activity,
+  UserIcon as User,
+  ChatTextIcon as MessageSquare,
+} from '@phosphor-icons/react';
 import EditMotivationalMessageModal from '@/components/EditMotivationalMessageModal';
 import { Client, TabKey } from '@/lib/client-page/types';
 import { calculateBMI } from '@/lib/health/calculators';
@@ -235,7 +244,9 @@ export default function ClientProfilePage() {
                   borderColor: 'var(--color-danger)',
                 }}
               >
-                <div className="text-4xl mb-4"><WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
+                <div className="text-4xl mb-4">
+                  <WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                </div>
                 <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-danger)' }}>
                   Connection Error
                 </h2>
@@ -270,7 +281,13 @@ export default function ClientProfilePage() {
               </div>
             ) : (
               <>
-                <Users aria-hidden="true" focusable="false" size={44} style={{ margin: '0 auto', color: 'var(--color-text-muted)' }} className="mb-4" />
+                <Users
+                  aria-hidden="true"
+                  focusable="false"
+                  size={44}
+                  style={{ margin: '0 auto', color: 'var(--color-text-muted)' }}
+                  className="mb-4"
+                />
                 <p className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
                   Loading client...
                 </p>

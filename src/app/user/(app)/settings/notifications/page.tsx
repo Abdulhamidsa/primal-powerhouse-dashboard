@@ -14,7 +14,11 @@ function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: 'neutra
         ? 'border-amber-500/20 bg-amber-500/10 text-amber-600'
         : 'border-border bg-muted/50 text-muted-foreground';
 
-  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${toneClassName}`}>{label}</span>;
+  return (
+    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium ${toneClassName}`}>
+      {label}
+    </span>
+  );
 }
 
 export default function UserNotificationSettingsPage() {
@@ -69,7 +73,9 @@ export default function UserNotificationSettingsPage() {
     }
 
     if (result.result.status === 'sent' || result.result.status === 'partial') {
-      setTestFeedback('Test notification sent. If nothing appears, check your phone notification settings and Home Screen install.');
+      setTestFeedback(
+        'Test notification sent. If nothing appears, check your phone notification settings and Home Screen install.',
+      );
       return;
     }
 
@@ -94,7 +100,10 @@ export default function UserNotificationSettingsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md space-y-6 px-4 pb-32 pt-5">
-        <Link href="/user/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+        <Link
+          href="/user/profile"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground"
+        >
           <ChevronLeft aria-hidden="true" focusable="false" className="h-4 w-4" />
           Profile
         </Link>

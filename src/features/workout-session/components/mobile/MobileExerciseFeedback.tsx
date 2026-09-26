@@ -62,7 +62,9 @@ export default function MobileExerciseFeedback({
         className="mt-4 flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         Add a note
-        <ChevronDown aria-hidden="true" focusable="false"
+        <ChevronDown
+          aria-hidden="true"
+          focusable="false"
           size={14}
           className="transition-transform duration-200"
           style={{ transform: notesExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}

@@ -3,7 +3,14 @@
 import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeftIcon as ArrowLeft, ClockIcon as Clock, ArrowsClockwiseIcon as Sparkles, UsersIcon as Users, GrainsIcon as Wheat, FlameIcon as Flame } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon as ArrowLeft,
+  ClockIcon as Clock,
+  LeafIcon,
+  UsersIcon as Users,
+  GrainsIcon as Wheat,
+  FlameIcon as Flame,
+} from '@phosphor-icons/react';
 import { useMealDetail } from '@/features/meals/hooks/useMealDetail';
 import { normalizeMealTextList } from '@/features/meals/utils/mealText';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
@@ -131,9 +138,18 @@ export default function MealDetailPage() {
           <div className="p-6">
             {/* Meta chips */}
             <div className="flex flex-wrap gap-2">
-              <MetaChip icon={<Clock aria-hidden="true" focusable="false" size={12} />} label={`Prep ${formatDuration(meal.prepTime)}`} />
-              <MetaChip icon={<Clock aria-hidden="true" focusable="false" size={12} />} label={`Cook ${formatDuration(meal.cookTime)}`} />
-              <MetaChip icon={<Users aria-hidden="true" focusable="false" size={12} />} label={`${meal.servings} servings`} />
+              <MetaChip
+                icon={<Clock aria-hidden="true" focusable="false" size={12} />}
+                label={`Prep ${formatDuration(meal.prepTime)}`}
+              />
+              <MetaChip
+                icon={<Clock aria-hidden="true" focusable="false" size={12} />}
+                label={`Cook ${formatDuration(meal.cookTime)}`}
+              />
+              <MetaChip
+                icon={<Users aria-hidden="true" focusable="false" size={12} />}
+                label={`${meal.servings} servings`}
+              />
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -180,7 +196,7 @@ export default function MealDetailPage() {
                   background: activeTab === 'spices' ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',
                 }}
               >
-                <Sparkles aria-hidden="true" focusable="false" size={14} />
+                <LeafIcon aria-hidden="true" focusable="false" size={14} />
                 Spices
               </button>
             ) : null}

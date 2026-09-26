@@ -1,5 +1,12 @@
 import Image from 'next/image';
-import { CalendarDotsIcon as CalendarDays, ClockIcon as Clock, FilmSlateIcon as Film, FileTextIcon as FileText, PlusCircleIcon as PlusCircle, TrashIcon as Trash2 } from '@phosphor-icons/react/ssr';
+import {
+  CalendarDotsIcon as CalendarDays,
+  ClockIcon as Clock,
+  FilmSlateIcon as Film,
+  FileTextIcon as FileText,
+  PlusCircleIcon as PlusCircle,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react/ssr';
 import { cx, iosCardStyle, iosPanel, iosPanelStyle } from '../../lib/ui';
 import { VideoAssignment } from '@/types/video';
 import { formatDuration } from '@/helpers';
@@ -57,7 +64,12 @@ export function VideosTab({
                       className="w-20 h-16 rounded-xl flex items-center justify-center flex-shrink-0 border"
                       style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
-                      <Film aria-hidden="true" focusable="false" className="w-8 h-8" style={{ color: 'var(--color-accent)' }} />
+                      <Film
+                        aria-hidden="true"
+                        focusable="false"
+                        className="w-8 h-8"
+                        style={{ color: 'var(--color-accent)' }}
+                      />
                     </div>
                   )}
 
@@ -81,7 +93,8 @@ export function VideosTab({
 
                     <div className="mt-2 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
                       <span className="inline-flex items-center gap-1">
-                        <CalendarDays aria-hidden="true" focusable="false" size={10} /> Assigned: {new Date(a.assignedDate).toLocaleDateString()}
+                        <CalendarDays aria-hidden="true" focusable="false" size={10} /> Assigned:{' '}
+                        {new Date(a.assignedDate).toLocaleDateString()}
                       </span>
                     </div>
 

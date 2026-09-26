@@ -1,11 +1,5 @@
 import { Link, Tabs } from 'expo-router';
-import {
-  BarbellIcon,
-  CalendarCheckIcon,
-  ClipboardTextIcon,
-  HouseIcon,
-  ShoppingBagIcon,
-} from 'phosphor-react-native';
+import { BarbellIcon, CalendarCheckIcon, ClipboardTextIcon, HouseIcon, ShoppingBagIcon } from 'phosphor-react-native';
 import { View } from 'react-native';
 import { useTheme } from '@/features/theme/hooks/useTheme';
 

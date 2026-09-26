@@ -1,6 +1,5 @@
 'use client';
 
-
 import { ClockIcon, EnvelopeSimpleIcon, PhoneIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { UserIcon as UserIcon, CheckIcon as Check, StarIcon as Star } from '@phosphor-icons/react';
@@ -104,7 +103,7 @@ export default function CoachContact({ userId }: CoachContactProps) {
           <p className="text-slate-400">Your Personal Coach</p>
           <div className="flex items-center justify-center gap-1 mt-2">
             {[...Array(5)].map((_, i) => (
-              <Star aria-hidden="true" focusable="false" key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              <Star aria-hidden="true" focusable="false" key={i} className="w-4 h-4 text-yellow-400" weight="fill" />
             ))}
           </div>
         </div>

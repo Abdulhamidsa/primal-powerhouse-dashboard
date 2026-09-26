@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Meal, Client } from '@/types/meal';
-import { XIcon as X, MagnifyingGlassIcon as Search, CalendarIcon as Calendar, PencilSimpleIcon as Edit, UserIcon as User, CheckIcon as Check } from '@phosphor-icons/react';
+import {
+  XIcon as X,
+  MagnifyingGlassIcon as Search,
+  CalendarIcon as Calendar,
+  PencilSimpleIcon as Edit,
+  UserIcon as User,
+  CheckIcon as Check,
+} from '@phosphor-icons/react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 import { clientApi } from '@/lib/client-api';
 
@@ -379,7 +386,9 @@ export default function AssignPersonalizedMealsModal({
                       color: 'var(--color-text)',
                     }}
                   />
-                  <Search aria-hidden="true" focusable="false"
+                  <Search
+                    aria-hidden="true"
+                    focusable="false"
                     size={18}
                     className="absolute left-3 top-1/2 transform -translate-y-1/2"
                     style={{ color: 'var(--color-text-muted)' }}
@@ -514,7 +523,12 @@ export default function AssignPersonalizedMealsModal({
                               className="w-10 h-10 rounded-full flex items-center justify-center"
                               style={{ background: 'var(--color-bg)' }}
                             >
-                              <User aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-text-muted)' }} />
+                              <User
+                                aria-hidden="true"
+                                focusable="false"
+                                size={20}
+                                style={{ color: 'var(--color-text-muted)' }}
+                              />
                             </div>
                             <div>
                               <div className="font-medium">{client.name}</div>

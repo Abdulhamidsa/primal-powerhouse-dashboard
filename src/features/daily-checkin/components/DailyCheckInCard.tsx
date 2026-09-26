@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ComponentType, type CSSProperties } from 'react';
-import { CheckCircleIcon as CheckCircle2, BarbellIcon as Dumbbell, FlameIcon as Flame, MoonIcon as Moon, PencilLineIcon as PenLine, BowlFoodIcon as Salad, ForkKnifeIcon as Utensils } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon as CheckCircle2,
+  BarbellIcon as Dumbbell,
+  FlameIcon as Flame,
+  MoonIcon as Moon,
+  PencilLineIcon as PenLine,
+  BowlFoodIcon as Salad,
+  ForkKnifeIcon as Utensils,
+} from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { calculateCompletionPercentage, getCompletionCount } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
@@ -66,7 +74,7 @@ function SectionTitle({
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-bg-alt)] text-[var(--color-text)]">
-        <Icon size={16} />
+        <Icon aria-hidden="true" size={16} />
       </div>
       <div className="min-w-0">
         <p className="text-sm font-semibold tracking-tight text-[var(--color-text)]">{title}</p>
@@ -106,7 +114,7 @@ function SegmentedControl<T extends string>({
               'min-h-11 rounded-2xl px-2 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-60',
               selected
                 ? 'bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm'
-                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]',
             )}
           >
             {option.label}
@@ -388,7 +396,9 @@ export function DailyCheckInCard() {
               All done for today.
             </p>
           ) : (
-            <p className="text-xs text-[var(--color-text-muted)]">{completionData.remaining} items left to complete today.</p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {completionData.remaining} items left to complete today.
+            </p>
           )}
         </div>
       </div>

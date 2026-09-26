@@ -29,9 +29,7 @@ export default function MobileExerciseDetails({ exercise, isTransitioning }: Pro
       }}
     >
       {/* Title */}
-      <h2 className="text-2xl font-bold text-foreground tracking-tight leading-tight">
-        {exercise.video.title}
-      </h2>
+      <h2 className="text-2xl font-bold text-foreground tracking-tight leading-tight">{exercise.video.title}</h2>
 
       {/* Stats row */}
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -47,11 +45,7 @@ export default function MobileExerciseDetails({ exercise, isTransitioning }: Pro
       </div>
 
       {/* Muscle groups */}
-      {muscleGroups && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          {muscleGroups}
-        </p>
-      )}
+      {muscleGroups && <p className="mt-3 text-sm text-muted-foreground">{muscleGroups}</p>}
 
       {/* Notes (collapsible) */}
       {exercise.notes && (
@@ -60,11 +54,18 @@ export default function MobileExerciseDetails({ exercise, isTransitioning }: Pro
           className="mt-3 w-full text-left p-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors"
         >
           <div className="flex items-start gap-2">
-            <MessageSquare aria-hidden="true" focusable="false" size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+            <MessageSquare
+              aria-hidden="true"
+              focusable="false"
+              size={14}
+              className="mt-0.5 text-muted-foreground shrink-0"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-foreground">Coach notes</p>
-                <ChevronDown aria-hidden="true" focusable="false"
+                <ChevronDown
+                  aria-hidden="true"
+                  focusable="false"
                   size={14}
                   className="text-muted-foreground transition-transform duration-200"
                   style={{ transform: notesExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}

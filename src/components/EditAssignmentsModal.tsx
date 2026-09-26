@@ -1,6 +1,5 @@
 'use client';
 
-
 import { CheckIcon, CircleNotchIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { Video, VideoAssignment } from '@/types/video';
@@ -73,7 +72,7 @@ export default function EditAssignmentsModal({
       fetchAllContent();
       // Initialize selected items with current assignments
       const currentIds = currentAssignments.map(assignment =>
-        type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId
+        type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId,
       );
       setSelectedItems(currentIds);
     } else {
@@ -117,7 +116,7 @@ export default function EditAssignmentsModal({
     try {
       // Get current assignment IDs
       const currentIds = currentAssignments.map(assignment =>
-        type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId
+        type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId,
       );
 
       // Find items to add and remove
@@ -127,7 +126,7 @@ export default function EditAssignmentsModal({
       // Remove assignments
       for (const itemId of toRemove) {
         const assignment = currentAssignments.find(a =>
-          type === 'videos' ? (a as VideoAssignment).videoId === itemId : (a as MealAssignment).mealId === itemId
+          type === 'videos' ? (a as VideoAssignment).videoId === itemId : (a as MealAssignment).mealId === itemId,
         );
         if (assignment) {
           const endpoint =
@@ -186,7 +185,7 @@ export default function EditAssignmentsModal({
   if (!isOpen) return null;
 
   const currentIds = currentAssignments.map(assignment =>
-    type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId
+    type === 'videos' ? (assignment as VideoAssignment).videoId : (assignment as MealAssignment).mealId,
   );
 
   const toAdd = selectedItems.filter(id => !currentIds.includes(id));
@@ -226,7 +225,11 @@ export default function EditAssignmentsModal({
         <div className="p-6">
           {/* Search */}
           <div className="relative mb-6">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" focusable="false" />
+            <MagnifyingGlassIcon
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              aria-hidden="true"
+              focusable="false"
+            />
             <input
               type="text"
               placeholder={`Search ${type}...`}
@@ -243,12 +246,12 @@ export default function EditAssignmentsModal({
               <div className="flex items-center gap-6 text-sm">
                 {toAdd.length > 0 && (
                   <span className="text-green-700">
-                     Adding {toAdd.length} {type}
+                    Adding {toAdd.length} {type}
                   </span>
                 )}
                 {toRemove.length > 0 && (
                   <span className="text-red-700">
-                     Removing {toRemove.length} {type}
+                    Removing {toRemove.length} {type}
                   </span>
                 )}
               </div>

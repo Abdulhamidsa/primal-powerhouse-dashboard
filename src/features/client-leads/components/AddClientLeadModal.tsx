@@ -1,7 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { UserIcon as User, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, CreditCardIcon as CreditCard, FileTextIcon as FileText, PencilSimpleIcon as Wand2, XIcon as X } from '@phosphor-icons/react';
+import {
+  UserIcon as User,
+  EnvelopeSimpleIcon as Mail,
+  PhoneIcon as Phone,
+  CreditCardIcon as CreditCard,
+  FileTextIcon as FileText,
+  ArrowsClockwiseIcon,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAddClientLead } from '@/features/client-leads/hooks/useAddClientLead';
 import { addClientLeadSchema } from '@/features/client-leads/schemas/clientLead.schemas';
@@ -79,13 +87,13 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent
-        className="max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
-      >
+      <DialogContent className="max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
         <div className="border-b border-white/10 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <DialogHeader>
-              <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">Add New Lead</DialogTitle>
+              <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+                Add New Lead
+              </DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
                 Track a new prospect in your pipeline.
               </DialogDescription>
@@ -117,11 +125,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
               className={`w-full rounded-2xl border bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none focus:border-[var(--color-accent)]/45 ${errors.name ? 'border-red-500/60' : 'border-white/10'}`}
               placeholder="John Smith"
             />
-            {errors.name && (
-              <p className="mt-1 text-xs text-red-300">
-                {errors.name}
-              </p>
-            )}
+            {errors.name && <p className="mt-1 text-xs text-red-300">{errors.name}</p>}
           </div>
 
           {/* Email */}
@@ -148,19 +152,13 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
                 title="Generate @primalpowerhouse.com email from name"
                 className="flex items-center gap-1.5 whitespace-nowrap rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:opacity-40"
               >
-                <Wand2 aria-hidden="true" focusable="false" size={13} />
+                <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={13} />
                 Generate
               </button>
             </div>
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-300">
-                {errors.email}
-              </p>
-            )}
+            {errors.email && <p className="mt-1 text-xs text-red-300">{errors.email}</p>}
             {formData.email.includes('@primalpowerhouse.com') && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Server will verify uniqueness and adjust if needed.
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Server will verify uniqueness and adjust if needed.</p>
             )}
           </div>
 

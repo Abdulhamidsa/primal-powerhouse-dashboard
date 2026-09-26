@@ -1,7 +1,14 @@
 'use client';
 
-
-import { CheckIcon, CircleNotchIcon, EyeIcon, ImageIcon, MagnifyingGlassIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
+import {
+  CheckIcon,
+  CircleNotchIcon,
+  EyeIcon,
+  ImageIcon,
+  MagnifyingGlassIcon,
+  VideoCameraIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import * as React from 'react';
 import Image from 'next/image';
 import { Video } from '@/types/video';
@@ -103,7 +110,7 @@ export default function AssignContentModal({
 
   const handleItemToggle = (itemId: string) => {
     setSelectedItems((prev: string[]) =>
-      prev.includes(itemId) ? prev.filter((id: string) => id !== itemId) : [...prev, itemId]
+      prev.includes(itemId) ? prev.filter((id: string) => id !== itemId) : [...prev, itemId],
     );
   };
 
@@ -271,7 +278,11 @@ export default function AssignContentModal({
         <div className="p-6">
           {/* Search */}
           <div className="relative mb-6">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" aria-hidden="true" focusable="false" />
+            <MagnifyingGlassIcon
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5"
+              aria-hidden="true"
+              focusable="false"
+            />
             <input
               type="text"
               placeholder={`Search ${type}...`}

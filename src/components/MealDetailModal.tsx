@@ -1,8 +1,14 @@
 'use client';
 
-
-
-import { CookingPotIcon, ForkKnifeIcon, MoonIcon, OrangeIcon, ShoppingCartIcon, SunHorizonIcon, SunIcon } from '@phosphor-icons/react';
+import {
+  CookingPotIcon,
+  ForkKnifeIcon,
+  MoonIcon,
+  OrangeIcon,
+  ShoppingCartIcon,
+  SunHorizonIcon,
+  SunIcon,
+} from '@phosphor-icons/react';
 import { ClockIcon, FlameIcon, GearIcon, PencilSimpleIcon, TrashIcon, UsersIcon, XIcon } from '@phosphor-icons/react';
 import React, { useState } from 'react';
 import Image from 'next/image';
@@ -175,7 +181,9 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
               {/* Ingredients */}
               <div>
                 <h2 className="text-xl font-semibold text-zinc-100 mb-4 flex items-center gap-2">
-                  <span className="text-2xl"><ShoppingCartIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
+                  <span className="text-2xl">
+                    <ShoppingCartIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                  </span>
                   Ingredients
                 </h2>
                 <ul className="space-y-2">
@@ -197,7 +205,9 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
               {/* Instructions */}
               <div>
                 <h2 className="text-xl font-semibold text-zinc-100 mb-4 flex items-center gap-2">
-                  <span className="text-2xl"><CookingPotIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
+                  <span className="text-2xl">
+                    <CookingPotIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                  </span>
                   Instructions
                 </h2>
                 <ol className="space-y-3">

@@ -1,7 +1,5 @@
 'use client';
 
-
-
 import { TargetIcon } from '@phosphor-icons/react';
 import { CalendarIcon, ClockIcon, LightningIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
@@ -90,7 +88,9 @@ export default function UserVideosPage() {
       {/* Video List */}
       {filteredAssignments.length === 0 ? (
         <div className="bg-card p-8 rounded-lg border border-border text-center">
-          <div className="text-4xl mb-4"><TargetIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
+          <div className="text-4xl mb-4">
+            <TargetIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+          </div>
           <h3 className="text-lg font-semibold mb-2 text-foreground">
             {filter === 'all'
               ? 'No videos assigned yet'

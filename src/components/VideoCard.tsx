@@ -1,6 +1,5 @@
 'use client';
 
-
 import { CheckIcon, EyeIcon, PlayIcon, VideoCameraIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { Video } from '@/types/video';

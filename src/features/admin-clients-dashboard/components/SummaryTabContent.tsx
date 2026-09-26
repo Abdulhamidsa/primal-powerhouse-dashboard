@@ -1,4 +1,12 @@
-import { ArchiveIcon as Archive, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, RulerIcon as Ruler, ScalesIcon as Scale, TimerIcon as Timer, ArrowCounterClockwiseIcon as Undo2 } from '@phosphor-icons/react/ssr';
+import {
+  ArchiveIcon as Archive,
+  EnvelopeSimpleIcon as Mail,
+  PhoneIcon as Phone,
+  RulerIcon as Ruler,
+  ScalesIcon as Scale,
+  TimerIcon as Timer,
+  ArrowCounterClockwiseIcon as Undo2,
+} from '@phosphor-icons/react/ssr';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { HealthMetricsResults } from '@/components/HealthMetricsResults';
 import { HealthMetricsWidget } from '@/components/client-profile/HealthMetricsWidget';
@@ -105,7 +113,11 @@ export function SummaryTabContent({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <MetricTile label="Status" value={client.status} />
           <MetricTile label="BMI" value={bmi == null ? 'N/A' : bmi.toFixed(1)} />
-          <MetricTile label="Age" value={client.age == null ? 'N/A' : `${client.age}`} icon={<Timer aria-hidden="true" focusable="false" size={14} />} />
+          <MetricTile
+            label="Age"
+            value={client.age == null ? 'N/A' : `${client.age}`}
+            icon={<Timer aria-hidden="true" focusable="false" size={14} />}
+          />
           <MetricTile
             label="Sessions"
             value={client.sessionsCompleted == null ? '0' : `${client.sessionsCompleted}`}

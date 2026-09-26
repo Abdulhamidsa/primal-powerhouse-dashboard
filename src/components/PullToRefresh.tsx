@@ -102,7 +102,9 @@ export function PullToRefresh({
           {refreshing ? (
             <Loader2 aria-hidden="true" focusable="false" size={19} className="animate-spin" />
           ) : (
-            <RefreshCcw aria-hidden="true" focusable="false"
+            <RefreshCcw
+              aria-hidden="true"
+              focusable="false"
               size={18}
               style={{
                 transform: `rotate(${progress * 220}deg) scale(${0.82 + progress * 0.18})`,

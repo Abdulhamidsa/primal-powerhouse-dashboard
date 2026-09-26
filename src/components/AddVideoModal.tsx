@@ -1,7 +1,16 @@
 'use client';
 
-
-import { CaretLeftIcon, CaretRightIcon, CheckIcon, CircleNotchIcon, PlusIcon, TrashIcon, VideoCameraIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
+import {
+  CaretLeftIcon,
+  CaretRightIcon,
+  CheckIcon,
+  CircleNotchIcon,
+  PlusIcon,
+  TrashIcon,
+  VideoCameraIcon,
+  WarningIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import {
   Video,
@@ -202,7 +211,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
           formData.equipment &&
             formData.equipment.length > 0 &&
             formData.muscleGroups &&
-            formData.muscleGroups.length > 0
+            formData.muscleGroups.length > 0,
         );
       default:
         return false;
@@ -367,7 +376,11 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                          <VideoCameraIcon className="w-16 h-16 mb-3 text-gray-400" aria-hidden="true" focusable="false" />
+                          <VideoCameraIcon
+                            className="w-16 h-16 mb-3 text-gray-400"
+                            aria-hidden="true"
+                            focusable="false"
+                          />
                           <p className="text-sm font-medium">Video Preview</p>
                           <p className="text-xs text-gray-400 mt-1">Enter a video URL to see preview</p>
                         </div>
@@ -524,7 +537,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                     Equipment Required *
+                    Equipment Required *
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {EQUIPMENT_OPTIONS.map(equipment => (
@@ -550,7 +563,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                     Muscle Groups Targeted *
+                    Muscle Groups Targeted *
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {MUSCLE_GROUPS.map(muscle => (

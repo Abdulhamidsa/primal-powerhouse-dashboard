@@ -15,10 +15,7 @@ export default function DealsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [convertingLead, setConvertingLead] = useState<ClientLead | null>(null);
 
-  const activeCount = useMemo(
-    () => leads.filter(lead => lead.status !== 'CONVERTED').length,
-    [leads],
-  );
+  const activeCount = useMemo(() => leads.filter(lead => lead.status !== 'CONVERTED').length, [leads]);
 
   return (
     <AdminPage className="max-w-none">
@@ -52,7 +49,9 @@ export default function DealsPage() {
             </div>
             <div>
               <h2 className="text-base font-semibold text-foreground">Lead board</h2>
-              <p className="mt-1 text-xs text-muted-foreground">Move leads with status controls. Convert only after a deal is made.</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Move leads with status controls. Convert only after a deal is made.
+              </p>
             </div>
           </div>
         </div>

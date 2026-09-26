@@ -2,7 +2,17 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { PulseIcon as Activity, ArrowRightIcon as ArrowRight, CheckCircleIcon as CheckCircle2, ClockIcon as Clock3, GaugeIcon as Gauge, ChatTextIcon as MessageSquare, ShieldWarningIcon as ShieldAlert, ArrowsClockwiseIcon as Sparkles, UsersIcon as Users } from '@phosphor-icons/react';
+import {
+  PulseIcon as Activity,
+  ArrowRightIcon as ArrowRight,
+  CheckCircleIcon as CheckCircle2,
+  ClockIcon as Clock3,
+  GaugeIcon as Gauge,
+  ChatTextIcon as MessageSquare,
+  ShieldWarningIcon as ShieldAlert,
+  TrendUpIcon,
+  UsersIcon as Users,
+} from '@phosphor-icons/react';
 import { AdminPage, AdminPageHeader, AdminPanel, AdminPanelHeader } from '@/features/admin-shell/components/AdminPage';
 import type {
   AdminCommandCenterResponse,
@@ -114,15 +124,7 @@ function IssueChip({ issue }: { issue: CommandCenterIssue }) {
   );
 }
 
-function ActionLink({
-  href,
-  children,
-  muted = false,
-}: {
-  href: string;
-  children: ReactNode;
-  muted?: boolean;
-}) {
+function ActionLink({ href, children, muted = false }: { href: string; children: ReactNode; muted?: boolean }) {
   return (
     <Link
       href={href}
@@ -162,7 +164,9 @@ function AttentionRow({
       <div className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone.text}`}>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone.text}`}
+            >
               <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
               {severityLabel(item.severity)}
             </span>
@@ -212,8 +216,16 @@ function AttentionRow({
             </button>
           ) : null}
 
-          {assignMealAction?.href ? <ActionLink href={assignMealAction.href} muted>Meal</ActionLink> : null}
-          {assignWorkoutAction?.href ? <ActionLink href={assignWorkoutAction.href} muted>Workout</ActionLink> : null}
+          {assignMealAction?.href ? (
+            <ActionLink href={assignMealAction.href} muted>
+              Meal
+            </ActionLink>
+          ) : null}
+          {assignWorkoutAction?.href ? (
+            <ActionLink href={assignWorkoutAction.href} muted>
+              Workout
+            </ActionLink>
+          ) : null}
           {openClientAction?.href ? (
             <ActionLink href={openClientAction.href} muted>
               Open <ArrowRight aria-hidden="true" focusable="false" size={12} />
@@ -387,7 +399,9 @@ export function AdminCommandCenterView({
                           <p className="mt-1 text-sm text-foreground/90">{action.title}</p>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
                         </div>
-                        <span className="shrink-0 text-xs text-muted-foreground">{relativeTimeLabel(action.dueAt)}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {relativeTimeLabel(action.dueAt)}
+                        </span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {quickMessageAction ? (
@@ -416,12 +430,19 @@ export function AdminCommandCenterView({
                 })}
               </div>
             ) : (
-              <EmptyPanel title="No pending actions" description="Everything that needed a coach action today is clear." />
+              <EmptyPanel
+                title="No pending actions"
+                description="Everything that needed a coach action today is clear."
+              />
             )}
           </AdminPanel>
 
           <AdminPanel className="overflow-hidden">
-            <AdminPanelHeader icon={<Sparkles aria-hidden="true" focusable="false" size={17} />} title="Momentum" description="Positive signals worth reinforcing." />
+            <AdminPanelHeader
+              icon={<TrendUpIcon aria-hidden="true" focusable="false" size={17} />}
+              title="Momentum"
+              description="Positive signals worth reinforcing."
+            />
 
             {data.momentum.length ? (
               <div className="divide-y divide-white/10">

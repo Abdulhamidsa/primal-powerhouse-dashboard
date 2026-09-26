@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { WarningCircleIcon as AlertCircle, WarningCircleIcon as CircleAlert, PlusIcon as Plus, BowlFoodIcon as Salad, XIcon as X } from '@phosphor-icons/react';
+import {
+  WarningCircleIcon as AlertCircle,
+  WarningCircleIcon as CircleAlert,
+  PlusIcon as Plus,
+  BowlFoodIcon as Salad,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { UserPageHero } from '@/components/UserPageHero';
 import { SkeletonMealGrid } from '@/components/Skeletons';
@@ -126,9 +132,16 @@ function MealSwapConfirmModal({
   onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="meal-swap-confirm-title">
+    <div
+      className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="meal-swap-confirm-title"
+    >
       <section className="w-full max-w-sm rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-center shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">{TYPE_LABEL[mealType]}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+          {TYPE_LABEL[mealType]}
+        </p>
         <h2 id="meal-swap-confirm-title" className="mt-2 text-xl font-semibold tracking-tight text-[var(--color-text)]">
           {currentMealName ? 'Swap this meal?' : 'Choose this meal?'}
         </h2>
@@ -146,10 +159,20 @@ function MealSwapConfirmModal({
         </p>
 
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <button type="button" onClick={onCancel} disabled={isSaving} className="min-h-11 rounded-full border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-50">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSaving}
+            className="min-h-11 rounded-full border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-50"
+          >
             Cancel
           </button>
-          <button type="button" onClick={onConfirm} disabled={isSaving} className="min-h-11 rounded-full bg-[var(--color-accent)] px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60">
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isSaving}
+            className="min-h-11 rounded-full bg-[var(--color-accent)] px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
             {isSaving ? 'Saving…' : 'Yes, save'}
           </button>
         </div>
@@ -240,13 +263,16 @@ export default function UserMyPlanPage() {
       items: selectedByType[type],
     }));
   }, [selectedByType]);
-  const selectedMealCount = useMemo(() => orderedSections.reduce((sum, section) => sum + section.items.length, 0), [orderedSections]);
+  const selectedMealCount = useMemo(
+    () => orderedSections.reduce((sum, section) => sum + section.items.length, 0),
+    [orderedSections],
+  );
   const priorityMealKeys = useMemo(() => {
     return new Set(
       orderedSections
         .flatMap(section => section.items)
         .slice(0, 2)
-        .map(item => `${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`)
+        .map(item => `${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`),
     );
   }, [orderedSections]);
 
@@ -347,240 +373,242 @@ export default function UserMyPlanPage() {
   return (
     <PullToRefresh onRefreshAction={refresh} disabled={Boolean(swapState || pendingSwap || helpOpen)}>
       <div className="px-4 pb-6 pt-4 md:px-6">
-      <div className="mx-auto max-w-6xl space-y-4 pb-6 md:space-y-5">
-        <UserPageHero
-          eyebrow="Plan"
-          title="Meal Plan"
-          description="Choose your meals for today and mark them done after eating."
-          icon={<Salad aria-hidden="true" focusable="false" size={17} />}
-          statusItems={[
-            { label: 'Selected', value: `${selectedMealCount}`, tone: selectedMealCount ? 'good' : 'warn' },
-            { label: 'Completed', value: `${completedMealCount}`, tone: completedMealCount ? 'good' : 'neutral' },
-          ]}
-        >
-          <button
-            type="button"
-            onClick={() => setHelpOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
-            aria-label="How the meal plan works"
+        <div className="mx-auto max-w-6xl space-y-4 pb-6 md:space-y-5">
+          <UserPageHero
+            eyebrow="Plan"
+            title="Meal Plan"
+            description="Choose your meals for today and mark them done after eating."
+            icon={<Salad aria-hidden="true" focusable="false" size={17} />}
+            statusItems={[
+              { label: 'Selected', value: `${selectedMealCount}`, tone: selectedMealCount ? 'good' : 'warn' },
+              { label: 'Completed', value: `${completedMealCount}`, tone: completedMealCount ? 'good' : 'neutral' },
+            ]}
           >
-            <CircleAlert aria-hidden="true" focusable="false" size={15} />
-            How it works
-          </button>
-        </UserPageHero>
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+              aria-label="How the meal plan works"
+            >
+              <CircleAlert aria-hidden="true" focusable="false" size={15} />
+              How it works
+            </button>
+          </UserPageHero>
 
-        {loading ? <SkeletonMealGrid /> : null}
+          {loading ? <SkeletonMealGrid /> : null}
 
-        {error ? (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
-            Failed to load your selected meals: {error.message}
-          </div>
-        ) : null}
+          {error ? (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+              Failed to load your selected meals: {error.message}
+            </div>
+          ) : null}
 
-        {adherenceError ? (
-          <div className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-3 text-sm text-red-300">
-            <AlertCircle aria-hidden="true" focusable="false" size={16} />
-            <span>{adherenceError.message}</span>
-          </div>
-        ) : null}
+          {adherenceError ? (
+            <div className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-3 text-sm text-red-300">
+              <AlertCircle aria-hidden="true" focusable="false" size={16} />
+              <span>{adherenceError.message}</span>
+            </div>
+          ) : null}
 
-        {!loading && !error
-          ? orderedSections.map(section => (
-              <section
-                key={section.type}
-                className="space-y-3 rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.10)]"
-                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold text-[var(--color-text)]">{TYPE_LABEL[section.type]}</h2>
+          {!loading && !error
+            ? orderedSections.map(section => (
+                <section
+                  key={section.type}
+                  className="space-y-3 rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.10)]"
+                  style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold text-[var(--color-text)]">{TYPE_LABEL[section.type]}</h2>
+                    </div>
+
+                    <span className="text-xs font-medium text-[var(--color-text-muted)]">
+                      {section.type === 'SNACK' ? `Optional · up to ${snackMax}` : 'Choose 1'}
+                    </span>
                   </div>
 
-                  <span className="text-xs font-medium text-[var(--color-text-muted)]">
-                    {section.type === 'SNACK' ? `Optional · up to ${snackMax}` : 'Choose 1'}
+                  {section.items.length === 0 ? (
+                    renderEmptyMealState(section.type)
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {section.items.map(item => (
+                        <PlanSelectedMealCard
+                          key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
+                          badgeLabel={TYPE_LABEL[section.type]}
+                          name={item.meal.name}
+                          imageUrl={item.meal.imageUrl ?? undefined}
+                          ingredientsSource={item.meal.ingredients}
+                          instructionsSource={item.meal.instructions}
+                          description={item.meal.description ?? undefined}
+                          imagePriority={priorityMealKeys.has(
+                            `${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`,
+                          )}
+                          metaItems={[
+                            (item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0) > 0
+                              ? `${(item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0)} min total`
+                              : null,
+                            item.meal.category ?? null,
+                            item.meal.difficulty ?? null,
+                          ].filter((meta): meta is string => Boolean(meta))}
+                          isCompleted={isCompleted(item)}
+                          completedAt={completedAtByKey.get(`${item.mealType}:${item.slotIndex}:${item.mealId}`)}
+                          isPending={isPending(item)}
+                          onToggleCompletionAction={() => toggleCompletion(item)}
+                          onSwapAction={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              ))
+            : null}
+
+          {!loading && !error && selectedSides.length > 0 ? (
+            <section
+              className="space-y-3 rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.10)]"
+              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-[var(--color-text)]">Sides</h2>
+                  <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+                    {selectedSides.length}
                   </span>
                 </div>
+              </div>
 
-                {section.items.length === 0 ? (
-                  renderEmptyMealState(section.type)
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {selectedSides.map(item => (
+                  <PlanSelectedMealCard
+                    key={`${item.mealType}_${item.side.id}`}
+                    badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
+                    name={item.side.name}
+                    imageUrl={item.side.imageUrl ?? undefined}
+                    ingredientsSource={item.side.ingredients}
+                    instructionsSource={item.side.instructions}
+                    helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
+                    metaItems={[
+                      item.side.foodOrigin ?? null,
+                      item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
+                    ].filter((meta): meta is string => Boolean(meta))}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
+
+        <MealPlanHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+        {saveNotice ? (
+          <div
+            role="status"
+            className="fixed inset-x-4 bottom-24 z-[150] mx-auto max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-[0_16px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl lg:bottom-6"
+            style={{
+              background: 'var(--color-surface)',
+              borderColor: saveNotice === 'saved' ? 'var(--color-accent)' : 'var(--color-danger)',
+              color: saveNotice === 'saved' ? 'var(--color-text)' : 'var(--color-danger)',
+            }}
+          >
+            {saveNotice === 'saved'
+              ? 'Meal saved'
+              : 'Something went wrong saving the meal. Your previous meal was restored.'}
+          </div>
+        ) : null}
+
+        {swapState ? (
+          <div
+            className="fixed inset-0 z-[70] bg-black/60 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="meal-picker-title"
+            onClick={() => setSwapState(null)}
+          >
+            <div className="flex min-h-full items-center justify-center">
+              <section
+                className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-5"
+                onClick={event => event.stopPropagation()}
+              >
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <h2 id="meal-picker-title" className="text-lg font-semibold text-[var(--color-text)]">
+                      {swapState.mode === 'swap'
+                        ? `Swap ${TYPE_LABEL[swapState.mealType]}`
+                        : `Add ${TYPE_LABEL[swapState.mealType]}`}
+                    </h2>
+                    {swapState.mode === 'swap' ? (
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        Current selection: {swapState.currentMealName}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        Choose a meal for today from your coach&apos;s options.
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingSwap(null);
+                      setSwapState(null);
+                    }}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+                    aria-label="Close meal options"
+                  >
+                    <X aria-hidden="true" focusable="false" size={16} />
+                  </button>
+                </div>
+
+                {swapOptions.length === 0 ? (
+                  <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 text-sm text-[var(--color-text-muted)]">
+                    No {swapState.mode === 'swap' ? 'alternatives' : 'options'} available for this meal type.
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {section.items.map(item => (
-                      <PlanSelectedMealCard
-                        key={`${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`}
-                        badgeLabel={TYPE_LABEL[section.type]}
-                        name={item.meal.name}
-                        imageUrl={item.meal.imageUrl ?? undefined}
-                        ingredientsSource={item.meal.ingredients}
-                        instructionsSource={item.meal.instructions}
-                        description={item.meal.description ?? undefined}
-                        imagePriority={priorityMealKeys.has(
-                          `${item.mealType}_${item.slotIndex}_${item.mealId}_${item.sourceAssignmentId ?? ''}`
-                        )}
-                        metaItems={[
-                          (item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0) > 0
-                            ? `${(item.meal.prepTime ?? 0) + (item.meal.cookTime ?? 0)} min total`
-                            : null,
-                          item.meal.category ?? null,
-                          item.meal.difficulty ?? null,
-                        ].filter((meta): meta is string => Boolean(meta))}
-                        isCompleted={isCompleted(item)}
-                        completedAt={completedAtByKey.get(`${item.mealType}:${item.slotIndex}:${item.mealId}`)}
-                        isPending={isPending(item)}
-                        onToggleCompletionAction={() => toggleCompletion(item)}
-                        onSwapAction={() => onSwapOptionSelect(section.type, item.meal.id, item.meal.name)}
-                      />
-                    ))}
+                  <div className="space-y-3">
+                    <p className="text-sm text-[var(--color-text-muted)]">
+                      Swipe sideways to browse all {TYPE_LABEL[swapState.mealType].toLowerCase()} options (
+                      {swapOptions.length}).
+                    </p>
+
+                    <div className="-mx-1 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <div className="flex snap-x snap-mandatory gap-3 px-1">
+                        {swapOptions.map(option => (
+                          <div
+                            key={`${option.meal.id}:${option.sourceAssignmentId ?? 'default'}`}
+                            className="w-[85vw] max-w-[330px] shrink-0 snap-start"
+                          >
+                            <MealOptionCard
+                              option={option}
+                              selected={isSelected(option.mealType, option.meal.id, option.sourceAssignmentId)}
+                              onSelect={() => handleSelectReplacement(option)}
+                              disabled={
+                                option.mealType === 'SNACK' &&
+                                !isSelected('SNACK', option.meal.id, option.sourceAssignmentId) &&
+                                isSnackFull
+                              }
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </section>
-            ))
-          : null}
-
-        {!loading && !error && selectedSides.length > 0 ? (
-          <section
-            className="space-y-3 rounded-[30px] border px-4 py-4 shadow-[0_16px_50px_rgba(0,0,0,0.10)]"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-[var(--color-text)]">Sides</h2>
-                <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)]">
-                  {selectedSides.length}
-                </span>
-              </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {selectedSides.map(item => (
-                <PlanSelectedMealCard
-                  key={`${item.mealType}_${item.side.id}`}
-                  badgeLabel={item.side.type === 'SOUP' ? 'Soup' : 'Salad'}
-                  name={item.side.name}
-                  imageUrl={item.side.imageUrl ?? undefined}
-                  ingredientsSource={item.side.ingredients}
-                  instructionsSource={item.side.instructions}
-                  helperText={`Linked to ${item.mealType.toLowerCase()}: ${item.mealName}`}
-                  metaItems={[
-                    item.side.foodOrigin ?? null,
-                    item.side.fiber !== undefined && item.side.fiber !== null ? `Fiber ${item.side.fiber}g` : null,
-                  ].filter((meta): meta is string => Boolean(meta))}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null}
-      </div>
-
-      <MealPlanHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
-
-      {saveNotice ? (
-        <div
-          role="status"
-          className="fixed inset-x-4 bottom-24 z-[150] mx-auto max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-[0_16px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl lg:bottom-6"
-          style={{
-            background: 'var(--color-surface)',
-            borderColor: saveNotice === 'saved' ? 'var(--color-accent)' : 'var(--color-danger)',
-            color: saveNotice === 'saved' ? 'var(--color-text)' : 'var(--color-danger)',
-          }}
-        >
-          {saveNotice === 'saved' ? 'Meal saved' : 'Something went wrong saving the meal. Your previous meal was restored.'}
-        </div>
-      ) : null}
-
-      {swapState ? (
-        <div
-          className="fixed inset-0 z-[70] bg-black/60 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="meal-picker-title"
-          onClick={() => setSwapState(null)}
-        >
-          <div className="flex min-h-full items-center justify-center">
-            <section
-              className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-5"
-              onClick={event => event.stopPropagation()}
-            >
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <h2 id="meal-picker-title" className="text-lg font-semibold text-[var(--color-text)]">
-                    {swapState.mode === 'swap'
-                      ? `Swap ${TYPE_LABEL[swapState.mealType]}`
-                      : `Add ${TYPE_LABEL[swapState.mealType]}`}
-                  </h2>
-                  {swapState.mode === 'swap' ? (
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                      Current selection: {swapState.currentMealName}
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                      Choose a meal for today from your coach&apos;s options.
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPendingSwap(null);
-                    setSwapState(null);
-                  }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
-                  aria-label="Close meal options"
-                >
-                  <X aria-hidden="true" focusable="false" size={16} />
-                </button>
-              </div>
-
-              {swapOptions.length === 0 ? (
-                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-4 text-sm text-[var(--color-text-muted)]">
-                  No {swapState.mode === 'swap' ? 'alternatives' : 'options'} available for this meal type.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    Swipe sideways to browse all {TYPE_LABEL[swapState.mealType].toLowerCase()} options (
-                    {swapOptions.length}).
-                  </p>
-
-                  <div className="-mx-1 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex snap-x snap-mandatory gap-3 px-1">
-                      {swapOptions.map(option => (
-                        <div
-                          key={`${option.meal.id}:${option.sourceAssignmentId ?? 'default'}`}
-                          className="w-[85vw] max-w-[330px] shrink-0 snap-start"
-                        >
-                          <MealOptionCard
-                            option={option}
-                            selected={isSelected(option.mealType, option.meal.id, option.sourceAssignmentId)}
-                            onSelect={() => handleSelectReplacement(option)}
-                            disabled={
-                              option.mealType === 'SNACK' &&
-                              !isSelected('SNACK', option.meal.id, option.sourceAssignmentId) &&
-                              isSnackFull
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </section>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      {swapState && pendingSwap ? (
-        <MealSwapConfirmModal
-          mealType={swapState.mealType}
-          currentMealName={swapState.mode === 'swap' ? swapState.currentMealName : undefined}
-          nextMealName={pendingSwap.meal.name}
-          isSaving={isSaving}
-          onCancel={() => setPendingSwap(null)}
-          onConfirm={() => void handleConfirmSwap()}
-        />
-      ) : null}
+        {swapState && pendingSwap ? (
+          <MealSwapConfirmModal
+            mealType={swapState.mealType}
+            currentMealName={swapState.mode === 'swap' ? swapState.currentMealName : undefined}
+            nextMealName={pendingSwap.meal.name}
+            isSaving={isSaving}
+            onCancel={() => setPendingSwap(null)}
+            onConfirm={() => void handleConfirmSwap()}
+          />
+        ) : null}
       </div>
     </PullToRefresh>
   );

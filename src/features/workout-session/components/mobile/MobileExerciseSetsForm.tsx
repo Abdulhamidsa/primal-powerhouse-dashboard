@@ -56,12 +56,7 @@ export default function MobileExerciseSetsForm({
       {/* Sets list */}
       <div className="space-y-2">
         {state.sets.map((set, si) => (
-          <SetRow
-            key={si}
-            index={si}
-            set={set}
-            onUpdate={(updated) => onUpdateSet(currentIdx, si, updated)}
-          />
+          <SetRow key={si} index={si} set={set} onUpdate={updated => onUpdateSet(currentIdx, si, updated)} />
         ))}
       </div>
 
@@ -106,21 +101,10 @@ function SetRow({
       </div>
 
       {/* Reps stepper */}
-      <Stepper
-        value={set.reps}
-        step={1}
-        min={0}
-        onChange={(v) => onUpdate({ reps: v })}
-      />
+      <Stepper value={set.reps} step={1} min={0} onChange={v => onUpdate({ reps: v })} />
 
       {/* Weight stepper */}
-      <Stepper
-        value={set.weightKg}
-        step={2.5}
-        min={0}
-        decimals={1}
-        onChange={(v) => onUpdate({ weightKg: v })}
-      />
+      <Stepper value={set.weightKg} step={2.5} min={0} decimals={1} onChange={v => onUpdate({ weightKg: v })} />
 
       {/* Done toggle */}
       <button
@@ -135,7 +119,9 @@ function SetRow({
             border: `2px solid ${set.completed ? 'var(--color-accent)' : 'var(--color-border)'}`,
           }}
         >
-          {set.completed && <Check aria-hidden="true" focusable="false" size={16} className="text-white" strokeWidth={3} />}
+          {set.completed && (
+            <Check aria-hidden="true" focusable="false" size={16} className="text-white" weight="bold" />
+          )}
         </div>
       </button>
     </div>
@@ -170,7 +156,7 @@ function Stepper({
         type="text"
         inputMode="decimal"
         value={formatted}
-        onChange={(e) => {
+        onChange={e => {
           const num = Number(e.target.value);
           if (!isNaN(num)) onChange(Math.max(min, num));
         }}

@@ -40,7 +40,9 @@ export default function NewVideoFilters({ filters, onFiltersChangeAction, videos
         {/* Search */}
         <div className="flex-1 max-w-md">
           <div className="relative">
-            <Search aria-hidden="true" focusable="false"
+            <Search
+              aria-hidden="true"
+              focusable="false"
               className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4"
               style={{ color: 'var(--color-text-muted)' }}
             />

@@ -1,10 +1,10 @@
 import React from 'react';
-import type { Icon as LucideIcon } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 
 type StatsCardProps = {
   title: string;
   value: string | number;
-  icon: LucideIcon;
+  icon: Icon;
 };
 
 export const StatsCard = ({ title, value, icon: Icon }: StatsCardProps) => {
@@ -17,7 +17,7 @@ export const StatsCard = ({ title, value, icon: Icon }: StatsCardProps) => {
       </div>
 
       <div className="grid h-11 w-11 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)]">
-        <Icon size={20} className="text-[var(--color-accent)]" />
+        <Icon aria-hidden="true" focusable="false" size={20} className="text-[var(--color-accent)]" />
       </div>
     </div>
   );

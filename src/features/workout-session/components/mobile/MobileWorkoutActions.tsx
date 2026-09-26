@@ -1,6 +1,10 @@
 'use client';
 
-import { CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, CheckIcon as Check } from '@phosphor-icons/react';
+import {
+  CaretLeftIcon as ChevronLeft,
+  CaretRightIcon as ChevronRight,
+  CheckIcon as Check,
+} from '@phosphor-icons/react';
 
 interface Props {
   onDone: () => void;
@@ -26,10 +30,7 @@ export default function MobileWorkoutActions({
   onFinish,
 }: Props) {
   return (
-    <div
-      className="px-5 pt-3 pb-6 space-y-3"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
-    >
+    <div className="px-5 pt-3 pb-6 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
       {/* Primary action: Done with exercise */}
       {!isDone && (
         <button
@@ -37,7 +38,7 @@ export default function MobileWorkoutActions({
           className="w-full py-3.5 rounded-2xl text-sm font-semibold text-white active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-sm"
           style={{ background: 'var(--color-accent)' }}
         >
-          <Check aria-hidden="true" focusable="false" size={18} strokeWidth={3} />
+          <Check aria-hidden="true" focusable="false" size={18} weight="bold" />
           Done with this exercise
         </button>
       )}

@@ -6,7 +6,10 @@ export default function UserPrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md space-y-6 px-4 pb-32 pt-5">
-        <Link href="/user/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+        <Link
+          href="/user/profile"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground"
+        >
           <ChevronLeft aria-hidden="true" focusable="false" className="h-4 w-4" />
           Profile
         </Link>

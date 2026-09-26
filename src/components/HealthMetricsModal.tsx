@@ -1,7 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PulseIcon as Activity, GaugeIcon as Gauge, TargetIcon as Target, TrendDownIcon as TrendingDown, TrendUpIcon as TrendingUp, XIcon as X } from '@phosphor-icons/react';
+import {
+  PulseIcon as Activity,
+  GaugeIcon as Gauge,
+  TargetIcon as Target,
+  TrendDownIcon as TrendingDown,
+  TrendUpIcon as TrendingUp,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { useHealthMetricsCalculator } from '@/features/health-metrics/hooks/useHealthMetricsCalculator';
 import type {
@@ -298,7 +305,7 @@ export default function HealthMetricsModal({
                     >
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-sm font-semibold">{card.label}</span>
-                        <Icon className="h-4 w-4" />
+                        <Icon aria-hidden="true" focusable="false" className="h-4 w-4" />
                       </div>
                       <p className="text-xs opacity-80">{card.subtitle}</p>
                     </button>

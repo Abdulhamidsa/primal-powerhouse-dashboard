@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { CheckIcon as Check, ClockIcon as Clock3, EnvelopeSimpleIcon as Mail, PhoneIcon as Phone, ArrowCounterClockwiseIcon as RotateCcw, MagnifyingGlassIcon as Search, PaperPlaneTiltIcon as Send, UserCircleIcon as UserRound } from '@phosphor-icons/react';
+import {
+  CheckIcon as Check,
+  ClockIcon as Clock3,
+  EnvelopeSimpleIcon as Mail,
+  PhoneIcon as Phone,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  MagnifyingGlassIcon as Search,
+  PaperPlaneTiltIcon as Send,
+  UserCircleIcon as UserRound,
+} from '@phosphor-icons/react';
 import { useAdminCoachingInterests } from '@/features/coaching-interest/hooks/useAdminCoachingInterests';
 import type {
   AdminCoachingInterest,
@@ -92,7 +101,11 @@ export function AdminCoachingInterestInbox() {
           </div>
 
           <div className="relative mt-3">
-            <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              aria-hidden="true"
+              focusable="false"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
             <input
               value={search}
               onChange={event => setSearch(event.target.value)}
@@ -232,7 +245,11 @@ export function AdminCoachingInterestInbox() {
                 onClick={() => void setContacted(selected.id, !selected.contactedAt)}
                 className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[var(--color-accent)] px-4 text-sm font-semibold text-[var(--color-text-on-accent)] disabled:opacity-60"
               >
-                {selected.contactedAt ? <RotateCcw aria-hidden="true" focusable="false" size={16} /> : <Check aria-hidden="true" focusable="false" size={16} />}
+                {selected.contactedAt ? (
+                  <RotateCcw aria-hidden="true" focusable="false" size={16} />
+                ) : (
+                  <Check aria-hidden="true" focusable="false" size={16} />
+                )}
                 {updatingId === selected.id
                   ? 'Updating…'
                   : selected.contactedAt

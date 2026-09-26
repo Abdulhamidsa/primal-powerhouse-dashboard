@@ -1,7 +1,20 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CalendarIcon as Calendar, CaretDownIcon as ChevronDown, FileTextIcon as FileText, HandshakeIcon as Handshake, KeyIcon as KeyRound, EnvelopeSimpleIcon as Mail, PencilIcon as Pencil, PhoneIcon as Phone, MagnifyingGlassIcon as Search, TrashIcon as Trash2, UserCheckIcon as UserCheck, UsersIcon as Users } from '@phosphor-icons/react';
+import {
+  CalendarIcon as Calendar,
+  CaretDownIcon as ChevronDown,
+  FileTextIcon as FileText,
+  HandshakeIcon as Handshake,
+  KeyIcon as KeyRound,
+  EnvelopeSimpleIcon as Mail,
+  PencilIcon as Pencil,
+  PhoneIcon as Phone,
+  MagnifyingGlassIcon as Search,
+  TrashIcon as Trash2,
+  UserCheckIcon as UserCheck,
+  UsersIcon as Users,
+} from '@phosphor-icons/react';
 import type { ElementType, FormEvent } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LeadDetailDrawer } from '@/features/client-leads/components/LeadDetailDrawer';
@@ -38,15 +51,7 @@ function getInitials(name: string) {
   return parts.map(part => part[0]?.toUpperCase() ?? '').join('') || '?';
 }
 
-function PipelineStat({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string | number;
-  icon: ElementType;
-}) {
+function PipelineStat({ label, value, icon: Icon }: { label: string; value: string | number; icon: ElementType }) {
   return (
     <div className="flex items-center justify-between rounded-[22px] border border-white/10 bg-white/[0.035] p-4">
       <div>
@@ -54,7 +59,7 @@ function PipelineStat({
         <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
       </div>
       <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
-        <Icon size={18} />
+        <Icon aria-hidden="true" focusable="false" size={18} />
       </div>
     </div>
   );
@@ -145,7 +150,9 @@ function LeadCard({
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-sm font-semibold text-foreground">{lead.name}</h3>
-          <p className="mt-1 truncate text-xs text-muted-foreground">{lead.subscriptionType || 'No subscription type'}</p>
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {lead.subscriptionType || 'No subscription type'}
+          </p>
         </div>
       </div>
 
@@ -307,7 +314,11 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
             <p className="mt-1 text-xs text-muted-foreground">Find prospects by name, email, or phone.</p>
           </div>
           <div className="relative w-full lg:max-w-sm">
-            <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              aria-hidden="true"
+              focusable="false"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
             <input
               value={search}
               onChange={event => setSearch(event.target.value)}
@@ -331,7 +342,10 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
         ) : (
           <div className="grid gap-4 xl:grid-cols-4">
             {ALL_STATUSES.map(status => (
-              <section key={status} className="flex min-h-[420px] flex-col rounded-[24px] border border-white/10 bg-white/[0.025]">
+              <section
+                key={status}
+                className="flex min-h-[420px] flex-col rounded-[24px] border border-white/10 bg-white/[0.025]"
+              >
                 <div className="border-b border-white/10 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -395,7 +409,9 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
           <DialogContent className="max-w-md overflow-hidden rounded-[28px] border border-red-500/20 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
             <div className="border-b border-white/10 px-6 py-5">
               <DialogHeader>
-                <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">Delete lead?</DialogTitle>
+                <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+                  Delete lead?
+                </DialogTitle>
                 <DialogDescription className="text-sm leading-6 text-muted-foreground">
                   This action cannot be undone. The lead record will be permanently removed.
                 </DialogDescription>
@@ -534,7 +550,9 @@ function CredentialsModal({
       <DialogContent className="max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
         <div className="border-b border-white/10 px-6 py-5">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">Client Credentials</DialogTitle>
+            <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+              Client Credentials
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               Login credentials for {credentials.name}
             </DialogDescription>

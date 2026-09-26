@@ -49,7 +49,7 @@ export default function ShoppingScreen() {
                 <Button
                   secondary
                   key={item.id}
-                  title={`${model.checked.includes(item.id) ? '' : ''}${item.quantity ?? ''} ${item.label}`}
+                  title={`${item.quantity ?? ''} ${item.label}`.trim()}
                   disabled={!model.ready}
                   onPress={() => model.toggle(item.id)}
                 />

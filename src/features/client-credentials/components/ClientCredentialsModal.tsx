@@ -1,9 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { WarningCircleIcon as AlertCircle, CheckIcon as Check, CopyIcon as Copy, EyeIcon as Eye, EyeSlashIcon as EyeOff } from '@phosphor-icons/react';
+import {
+  WarningCircleIcon as AlertCircle,
+  CheckIcon as Check,
+  CopyIcon as Copy,
+  EyeIcon as Eye,
+  EyeSlashIcon as EyeOff,
+} from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { CredentialDisplayMode, ClientCredentials } from '@/features/client-credentials/types/clientCredentials.types';
+import type {
+  CredentialDisplayMode,
+  ClientCredentials,
+} from '@/features/client-credentials/types/clientCredentials.types';
 
 type Props = {
   open: boolean;
@@ -37,7 +46,11 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
         <div className="p-6">
           <div className="flex items-start gap-3 mb-4">
             <div className="p-2 rounded-lg" style={{ background: 'var(--color-accent-muted)' }}>
-              <AlertCircle aria-hidden="true" focusable="false" style={{ color: 'var(--color-accent)', width: 20, height: 20 }} />
+              <AlertCircle
+                aria-hidden="true"
+                focusable="false"
+                style={{ color: 'var(--color-accent)', width: 20, height: 20 }}
+              />
             </div>
             <div>
               <DialogTitle className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
@@ -92,7 +105,11 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
                   }}
                   title="Copy email"
                 >
-                  {copiedField === 'email' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
+                  {copiedField === 'email' ? (
+                    <Check aria-hidden="true" focusable="false" className="w-4 h-4" />
+                  ) : (
+                    <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -124,7 +141,11 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
                   }}
                   title={showPassword ? 'Hide password' : 'Reveal password'}
                 >
-                  {showPassword ? <EyeOff aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Eye aria-hidden="true" focusable="false" className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff aria-hidden="true" focusable="false" className="w-4 h-4" />
+                  ) : (
+                    <Eye aria-hidden="true" focusable="false" className="w-4 h-4" />
+                  )}
                 </button>
                 <button
                   type="button"
@@ -136,7 +157,11 @@ export function ClientCredentialsModal({ open, mode, credentials, onCloseAction 
                   }}
                   title="Copy password"
                 >
-                  {copiedField === 'password' ? <Check aria-hidden="true" focusable="false" className="w-4 h-4" /> : <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />}
+                  {copiedField === 'password' ? (
+                    <Check aria-hidden="true" focusable="false" className="w-4 h-4" />
+                  ) : (
+                    <Copy aria-hidden="true" focusable="false" className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>

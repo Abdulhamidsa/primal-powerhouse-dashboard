@@ -1,4 +1,10 @@
-import { FlameIcon as Flame, CowIcon as Beef, GrainsIcon as Wheat, DropIcon as Droplets, WarningCircleIcon as AlertCircle } from '@phosphor-icons/react/ssr';
+import {
+  FlameIcon as Flame,
+  CowIcon as Beef,
+  GrainsIcon as Wheat,
+  DropIcon as Droplets,
+  WarningCircleIcon as AlertCircle,
+} from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '@/lib/ui';
 
 interface HealthMetricsWidgetProps {
@@ -52,7 +58,7 @@ export function HealthMetricsWidget({
             color: 'var(--color-text-on-accent)',
           }}
         >
-           Calculate Now
+          Calculate Now
         </button>
       </div>
     );

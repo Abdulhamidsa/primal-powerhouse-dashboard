@@ -1,7 +1,5 @@
 'use client';
 
-
-
 import { XIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Meal, MealType } from '@/types/meal';
@@ -85,7 +83,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
 
   const removeField = (
     field: 'ingredients' | 'instructions' | 'tags' | 'equipment' | 'tips' | 'allergens',
-    index: number
+    index: number,
   ) => {
     setFormData(prev => ({
       ...prev,
@@ -96,7 +94,7 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
   const updateField = (
     field: 'ingredients' | 'instructions' | 'tags' | 'equipment' | 'tips' | 'allergens',
     index: number,
-    value: string
+    value: string,
   ) => {
     setFormData(prev => ({
       ...prev,
@@ -363,7 +361,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                       type="button"
                       onClick={() => removeField('ingredients', index)}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                    ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                    >
+                      <XIcon className="h-4 w-4" aria-hidden="true" />
+                    </button>
                   )}
                 </div>
               ))}
@@ -400,7 +400,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                       type="button"
                       onClick={() => removeField('instructions', index)}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors self-start"
-                    ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                    >
+                      <XIcon className="h-4 w-4" aria-hidden="true" />
+                    </button>
                   )}
                 </div>
               ))}
@@ -434,7 +436,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                       type="button"
                       onClick={() => removeField('equipment', index)}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                    ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                    >
+                      <XIcon className="h-4 w-4" aria-hidden="true" />
+                    </button>
                   )}
                 </div>
               ))}
@@ -468,7 +472,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                       type="button"
                       onClick={() => removeField('tips', index)}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                    ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                    >
+                      <XIcon className="h-4 w-4" aria-hidden="true" />
+                    </button>
                   )}
                 </div>
               ))}
@@ -501,7 +507,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     type="button"
                     onClick={() => removeField('allergens', index)}
                     className="w-6 h-6 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors text-xs"
-                  ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                  >
+                    <XIcon className="h-4 w-4" aria-hidden="true" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -533,7 +541,9 @@ export default function AddMealForm({ onAddMeal, onClose }: AddMealFormProps) {
                     type="button"
                     onClick={() => removeField('tags', index)}
                     className="w-6 h-6 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors text-xs"
-                  ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                  >
+                    <XIcon className="h-4 w-4" aria-hidden="true" />
+                  </button>
                 </div>
               ))}
             </div>

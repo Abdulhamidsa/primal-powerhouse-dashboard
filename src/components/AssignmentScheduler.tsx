@@ -1,6 +1,5 @@
 'use client';
 
-
 import { CaretLeftIcon, CaretRightIcon, ForkKnifeIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { VideoAssignment } from '@/types/video';

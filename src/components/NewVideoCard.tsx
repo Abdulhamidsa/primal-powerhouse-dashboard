@@ -2,7 +2,15 @@
 
 import { Video } from '@/types/video';
 import { DIFFICULTY_LEVELS, VIDEO_CATEGORIES } from '@/types/video';
-import { CheckSquareIcon as CheckSquare, SquareIcon as Square, PlayIcon as Play, EyeIcon as Eye, TagIcon as Tag, ClockIcon as Clock, PulseIcon as Activity } from '@phosphor-icons/react';
+import {
+  CheckSquareIcon as CheckSquare,
+  SquareIcon as Square,
+  PlayIcon as Play,
+  EyeIcon as Eye,
+  TagIcon as Tag,
+  ClockIcon as Clock,
+  PulseIcon as Activity,
+} from '@phosphor-icons/react';
 import Image from 'next/image';
 
 interface VideoCardProps {
@@ -43,9 +51,19 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
       <div className="select-checkbox absolute top-3 left-3 z-10" onClick={handleCheckboxClick}>
         <div className="w-6 h-6 rounded-lg flex items-center justify-center">
           {isSelected ? (
-            <CheckSquare aria-hidden="true" focusable="false" className="w-5 h-5" style={{ color: 'var(--color-accent)' }} />
+            <CheckSquare
+              aria-hidden="true"
+              focusable="false"
+              className="w-5 h-5"
+              style={{ color: 'var(--color-accent)' }}
+            />
           ) : (
-            <Square aria-hidden="true" focusable="false" className="w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
+            <Square
+              aria-hidden="true"
+              focusable="false"
+              className="w-5 h-5"
+              style={{ color: 'var(--color-text-muted)' }}
+            />
           )}
         </div>
       </div>
@@ -166,7 +184,12 @@ export default function NewVideoCard({ video, isSelected, onSelect, onClick, for
         {/* Muscle Groups */}
         {video.muscleGroups && video.muscleGroups.length > 0 && (
           <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            <Activity aria-hidden="true" focusable="false" className="w-4 h-4" style={{ color: 'var(--color-accent)' }} />
+            <Activity
+              aria-hidden="true"
+              focusable="false"
+              className="w-4 h-4"
+              style={{ color: 'var(--color-accent)' }}
+            />
             <span>
               {video.muscleGroups.slice(0, 2).join(', ')}
               {video.muscleGroups.length > 2 && ' +more'}

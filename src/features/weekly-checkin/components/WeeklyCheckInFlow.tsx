@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon as ArrowLeft, ArrowRightIcon as ArrowRight, CheckIcon as Check, CircleNotchIcon as Loader2, UploadSimpleIcon as Upload, XIcon as X } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon as ArrowLeft,
+  ArrowRightIcon as ArrowRight,
+  CheckIcon as Check,
+  CircleNotchIcon as Loader2,
+  UploadSimpleIcon as Upload,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useDailyCheckInInsights } from '@/features/daily-checkin/hooks/useDailyCheckIn';
 import { WeeklyWeightLivePreview } from '@/features/weekly-checkin/components/WeeklyWeightLivePreview';
 import { useWeeklyCheckInPhotoUpload } from '@/features/weekly-checkin/hooks/useWeeklyCheckInPhotoUpload';
@@ -123,7 +130,11 @@ function PhotoUploadTile({
           color: 'var(--color-text)',
         }}
       >
-        {isUploading ? <Loader2 aria-hidden="true" focusable="false" size={14} className="animate-spin" /> : <Upload aria-hidden="true" focusable="false" size={14} />}
+        {isUploading ? (
+          <Loader2 aria-hidden="true" focusable="false" size={14} className="animate-spin" />
+        ) : (
+          <Upload aria-hidden="true" focusable="false" size={14} />
+        )}
         {isUploading ? 'Uploading...' : value ? 'Replace photo' : 'Upload photo'}
         <input
           ref={fileInputRef}

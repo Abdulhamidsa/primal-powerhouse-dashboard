@@ -1,4 +1,11 @@
-import { FlameIcon as Flame, CowIcon as Beef, GrainsIcon as Wheat, DropIcon as Droplets, LeafIcon as Leaf, ForkKnifeIcon as Utensils } from '@phosphor-icons/react/ssr';
+import {
+  FlameIcon as Flame,
+  CowIcon as Beef,
+  GrainsIcon as Wheat,
+  DropIcon as Droplets,
+  LeafIcon as Leaf,
+  ForkKnifeIcon as Utensils,
+} from '@phosphor-icons/react/ssr';
 import { cx, iosPanel, iosPanelStyle } from '@/lib/ui';
 import { MealAssignment } from '@/lib/client-page/types';
 import { calculateNutritionStats, getMacroPercentages } from '@/lib/nutrition-calculations';
@@ -19,7 +26,13 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
   if (assignments.length === 0) {
     return (
       <div className={cx(iosPanel, 'p-6 text-center')} style={iosPanelStyle}>
-        <Utensils aria-hidden="true" focusable="false" size={40} className="mx-auto mb-3" style={{ color: 'var(--color-text-muted)' }} />
+        <Utensils
+          aria-hidden="true"
+          focusable="false"
+          size={40}
+          className="mx-auto mb-3"
+          style={{ color: 'var(--color-text-muted)' }}
+        />
         <p style={{ color: 'var(--color-text-muted)' }}>
           No meals assigned yet. Assign meals to see nutrition analytics.
         </p>
@@ -32,7 +45,7 @@ export function NutritionAnalytics({ assignments }: { assignments: MealAssignmen
       {/* Weekly Summary */}
       <div className={cx(iosPanel, 'p-6')} style={iosPanelStyle}>
         <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--color-text)' }}>
-           Weekly Nutrition Overview
+          Weekly Nutrition Overview
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

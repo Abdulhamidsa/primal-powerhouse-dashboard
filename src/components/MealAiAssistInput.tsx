@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { CaretDownIcon as ChevronDown, PencilSimpleIcon as Wand2, WarningCircleIcon as AlertCircle } from '@phosphor-icons/react';
+import {
+  CaretDownIcon as ChevronDown,
+  PencilSimpleIcon,
+  WarningCircleIcon as AlertCircle,
+} from '@phosphor-icons/react';
 import { useMealAiAssist } from '@/features/meals/hooks/useMealAiAssist';
 import type { SuggestIngredientsResult } from '@/features/meals/hooks/useMealAiAssist';
 
@@ -64,10 +68,12 @@ export default function MealAiAssistInput({ mealType, onSuggestionsAccepted, onH
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-[var(--color-surface-hover)]"
       >
         <div className="flex items-center gap-2">
-          <Wand2 aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
+          <PencilSimpleIcon aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
           <span className="text-sm font-medium text-[var(--color-text-primary)]">AI Meal Assist (Optional)</span>
         </div>
-        <ChevronDown aria-hidden="true" focusable="false"
+        <ChevronDown
+          aria-hidden="true"
+          focusable="false"
           size={16}
           style={{
             color: 'var(--color-text-secondary)',
@@ -126,7 +132,13 @@ export default function MealAiAssistInput({ mealType, onSuggestionsAccepted, onH
 
               {error && (
                 <div className="flex items-start gap-2 p-2 rounded-lg bg-red-500/10">
-                  <AlertCircle aria-hidden="true" focusable="false" size={14} className="shrink-0 mt-0.5" style={{ color: '#ff6b6b' }} />
+                  <AlertCircle
+                    aria-hidden="true"
+                    focusable="false"
+                    size={14}
+                    className="shrink-0 mt-0.5"
+                    style={{ color: '#ff6b6b' }}
+                  />
                   <p className="text-xs text-red-400">{error}</p>
                 </div>
               )}
@@ -166,7 +178,13 @@ export default function MealAiAssistInput({ mealType, onSuggestionsAccepted, onH
                 {/* Unmatched items warning */}
                 {suggestions.unmatched.length > 0 && (
                   <div className="flex items-start gap-2 p-2 rounded-lg bg-yellow-500/10">
-                    <AlertCircle aria-hidden="true" focusable="false" size={14} className="shrink-0 mt-0.5" style={{ color: '#ffd43b' }} />
+                    <AlertCircle
+                      aria-hidden="true"
+                      focusable="false"
+                      size={14}
+                      className="shrink-0 mt-0.5"
+                      style={{ color: '#ffd43b' }}
+                    />
                     <div className="text-xs text-yellow-400">
                       <p className="font-medium">{suggestions.unmatched.length} item(s) not in database:</p>
                       <p className="text-xs mt-1 opacity-90">{suggestions.unmatched.map(u => u.name).join(', ')}</p>

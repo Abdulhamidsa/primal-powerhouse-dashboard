@@ -1,4 +1,4 @@
-import type { Icon as LucideIcon } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 
 export type CoachingDifference = {
   number: string;
@@ -6,5 +6,5 @@ export type CoachingDifference = {
   title: string;
   copy: string;
   signal: string;
-  icon: LucideIcon;
+  icon: Icon;
 };

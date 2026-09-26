@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, ListBulletsIcon as LayoutList, ScalesIcon as Scale } from '@phosphor-icons/react';
+import {
+  CaretLeftIcon as ChevronLeft,
+  CaretRightIcon as ChevronRight,
+  ListBulletsIcon as LayoutList,
+  ScalesIcon as Scale,
+} from '@phosphor-icons/react';
 import {
   CartesianGrid,
   Line,

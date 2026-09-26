@@ -1,4 +1,8 @@
-import { ArrowDownRightIcon as ArrowDownRight, ArrowUpRightIcon as ArrowUpRight, MinusIcon as Minus } from '@phosphor-icons/react/ssr';
+import {
+  ArrowDownRightIcon as ArrowDownRight,
+  ArrowUpRightIcon as ArrowUpRight,
+  MinusIcon as Minus,
+} from '@phosphor-icons/react/ssr';
 
 function toNumber(value: number | null): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -6,7 +10,7 @@ function toNumber(value: number | null): number | null {
 
 function getState(
   currentWeight: number | null,
-  targetWeight: number | null
+  targetWeight: number | null,
 ): 'on-target' | 'lose' | 'gain' | 'no-data' {
   if (currentWeight == null || targetWeight == null) return 'no-data';
   const diff = currentWeight - targetWeight;

@@ -1,6 +1,5 @@
 'use client';
 
-
 import { MagnifyingGlassIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
 import { VideoCategory, DifficultyLevel, VIDEO_CATEGORIES, DIFFICULTY_LEVELS } from '@/types/video';
 
@@ -38,7 +37,11 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
         {/* Search */}
         <div className="flex-1 max-w-md">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" focusable="false" />
+            <MagnifyingGlassIcon
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              aria-hidden="true"
+              focusable="false"
+            />
             <input
               type="text"
               placeholder="Search training videos..."
@@ -117,7 +120,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
             <div className="flex flex-wrap items-center gap-2">
               {filters.search && (
                 <span className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm px-3 py-1.5 rounded-full font-medium">
-                   &quot;{filters.search}&quot;
+                  &quot;{filters.search}&quot;
                   <button
                     onClick={() => handleFilterChange('search', '')}
                     className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
@@ -129,7 +132,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
 
               {filters.category !== 'all' && (
                 <span className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 text-sm px-3 py-1.5 rounded-full font-medium">
-                   {VIDEO_CATEGORIES.find(c => c.value === filters.category)?.label}
+                  {VIDEO_CATEGORIES.find(c => c.value === filters.category)?.label}
                   <button
                     onClick={() => handleFilterChange('category', 'all')}
                     className="hover:bg-purple-200 rounded-full p-0.5 transition-colors"
@@ -141,7 +144,7 @@ export default function VideoFilters({ filters, onFiltersChange, videosCount }: 
 
               {filters.difficulty !== 'all' && (
                 <span className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-green-200 text-green-800 text-sm px-3 py-1.5 rounded-full font-medium">
-                   {DIFFICULTY_LEVELS.find(d => d.value === filters.difficulty)?.label}
+                  {DIFFICULTY_LEVELS.find(d => d.value === filters.difficulty)?.label}
                   <button
                     onClick={() => handleFilterChange('difficulty', 'all')}
                     className="hover:bg-green-200 rounded-full p-0.5 transition-colors"

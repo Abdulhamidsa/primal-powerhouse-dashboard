@@ -1,9 +1,16 @@
 'use client';
 
-
 import { WarningCircleIcon } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
-import { XIcon as X, PlayIcon as Play, PauseIcon as Pause, SpeakerHighIcon as Volume2, SpeakerXIcon as VolumeX, CornersOutIcon as Maximize, ArrowCounterClockwiseIcon as RotateCcw } from '@phosphor-icons/react';
+import {
+  XIcon as X,
+  PlayIcon as Play,
+  PauseIcon as Pause,
+  SpeakerHighIcon as Volume2,
+  SpeakerXIcon as VolumeX,
+  CornersOutIcon as Maximize,
+  ArrowCounterClockwiseIcon as RotateCcw,
+} from '@phosphor-icons/react';
 
 interface VideoPlayerModalProps {
   isOpen: boolean;
@@ -216,7 +223,9 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
           {videoError && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
               <div className="text-center text-white">
-                <div className="text-4xl mb-4"><WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" /></div>
+                <div className="text-4xl mb-4">
+                  <WarningCircleIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                </div>
                 <h3 className="text-xl font-semibold mb-2">Video Unavailable</h3>
                 <p className="text-gray-300 mb-4">This video cannot be played at the moment.</p>
                 <a
@@ -293,10 +302,18 @@ export default function VideoPlayerModal({ isOpen, onCloseAction, video, onCompl
                   <RotateCcw aria-hidden="true" focusable="false" size={20} />
                 </button>
                 <button onClick={togglePlay} className="text-white hover:text-gray-300 transition-colors">
-                  {isPlaying ? <Pause aria-hidden="true" focusable="false" size={24} /> : <Play aria-hidden="true" focusable="false" size={24} />}
+                  {isPlaying ? (
+                    <Pause aria-hidden="true" focusable="false" size={24} />
+                  ) : (
+                    <Play aria-hidden="true" focusable="false" size={24} />
+                  )}
                 </button>
                 <button onClick={toggleMute} className="text-white hover:text-gray-300 transition-colors">
-                  {isMuted ? <VolumeX aria-hidden="true" focusable="false" size={20} /> : <Volume2 aria-hidden="true" focusable="false" size={20} />}
+                  {isMuted ? (
+                    <VolumeX aria-hidden="true" focusable="false" size={20} />
+                  ) : (
+                    <Volume2 aria-hidden="true" focusable="false" size={20} />
+                  )}
                 </button>
               </div>
 

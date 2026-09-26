@@ -1,6 +1,5 @@
 'use client';
 
-
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { MealType } from '@/types/meal';
@@ -76,7 +75,11 @@ export default function MealFilters({ onFilterChangeAction, totalMeals }: MealFi
               placeholder="Search by name..."
               className="w-full pl-10 pr-4 py-2 border border-zinc-700 bg-zinc-800 text-zinc-100 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
             />
-            <MagnifyingGlassIcon className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" aria-hidden="true" focusable="false" />
+            <MagnifyingGlassIcon
+              className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500"
+              aria-hidden="true"
+              focusable="false"
+            />
           </div>
         </div>
 
@@ -143,7 +146,7 @@ export default function MealFilters({ onFilterChangeAction, totalMeals }: MealFi
               >
                 {tag}
               </button>
-            )
+            ),
           )}
         </div>
       </div>

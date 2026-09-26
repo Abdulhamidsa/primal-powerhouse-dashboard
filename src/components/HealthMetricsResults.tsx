@@ -1,7 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { WarningCircleIcon as AlertCircle, CowIcon as Beef, DropIcon as Droplets, ShieldWarningIcon as ShieldAlert, TargetIcon as Target, TrashIcon as Trash2, GrainsIcon as Wheat } from '@phosphor-icons/react';
+import {
+  WarningCircleIcon as AlertCircle,
+  CowIcon as Beef,
+  DropIcon as Droplets,
+  ShieldWarningIcon as ShieldAlert,
+  TargetIcon as Target,
+  TrashIcon as Trash2,
+  GrainsIcon as Wheat,
+} from '@phosphor-icons/react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import { useHealthMetricsNotes } from '@/features/health-metrics/hooks/useHealthMetricsNotes';
@@ -15,11 +23,7 @@ interface HealthMetricsResultsProps {
 
 const MACRO_CHART_COLORS = ['var(--color-accent)', 'rgba(184, 106, 78, 0.68)', 'rgba(245, 245, 245, 0.38)'];
 
-export function HealthMetricsResults({
-  clientId,
-  metrics,
-  onSaveNotesAction,
-}: HealthMetricsResultsProps) {
+export function HealthMetricsResults({ clientId, metrics, onSaveNotesAction }: HealthMetricsResultsProps) {
   const [notes, setNotes] = useState<string[]>(metrics.notes || []);
   const [newNote, setNewNote] = useState('');
   const { saveNotes, isSaving } = useHealthMetricsNotes(clientId);
@@ -79,7 +83,12 @@ export function HealthMetricsResults({
           className="mb-6 flex items-start gap-3 rounded-2xl border px-4 py-4"
           style={{ borderColor: 'var(--color-accent)', background: 'var(--color-accent-translucent)' }}
         >
-          <ShieldAlert aria-hidden="true" focusable="false" size={18} style={{ color: 'var(--color-accent)', marginTop: 2 }} />
+          <ShieldAlert
+            aria-hidden="true"
+            focusable="false"
+            size={18}
+            style={{ color: 'var(--color-accent)', marginTop: 2 }}
+          />
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
               Coach review required
@@ -300,7 +309,12 @@ export function HealthMetricsResults({
             className="rounded-xl border px-4 py-6 text-center"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
-            <AlertCircle aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }} />
+            <AlertCircle
+              aria-hidden="true"
+              focusable="false"
+              size={20}
+              style={{ color: 'var(--color-text-muted)', margin: '0 auto 8px' }}
+            />
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
               No notes added yet.
             </p>

@@ -60,7 +60,10 @@ function AdminSidebarItem({ item, active }: { item: AdminNavItem; active: boolea
         size={18}
         weight={active ? 'fill' : 'regular'}
         aria-hidden="true"
-        className={cn('shrink-0 transition-colors', active ? 'text-[var(--color-accent)]' : 'text-muted-foreground group-hover:text-foreground')}
+        className={cn(
+          'shrink-0 transition-colors',
+          active ? 'text-[var(--color-accent)]' : 'text-muted-foreground group-hover:text-foreground',
+        )}
       />
       <span className="min-w-0">
         <span className="block truncate font-medium">{item.name}</span>

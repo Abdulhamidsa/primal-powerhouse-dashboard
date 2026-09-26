@@ -10,12 +10,7 @@ type DailyCompletionRingProps = {
   className?: string;
 };
 
-export function DailyCompletionRing({
-  percentage,
-  size = 96,
-  strokeWidth = 8,
-  className,
-}: DailyCompletionRingProps) {
+export function DailyCompletionRing({ percentage, size = 96, strokeWidth = 8, className }: DailyCompletionRingProps) {
   const normalizedPercentage = Math.min(Math.max(percentage, 0), 100);
 
   return (
@@ -89,14 +84,15 @@ function ProgressRing({ value, size = 96, strokeWidth = 8 }: ProgressRingProps) 
               height: centerSize,
               background: 'linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-alt) 100%)',
               borderColor: 'var(--color-border)',
-              boxShadow:
-                '0 10px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
             }}
           >
-            <Activity aria-hidden="true" focusable="false"
+            <Activity
+              aria-hidden="true"
+              focusable="false"
               size={Math.max(18, size * 0.18)}
               className="text-[var(--color-accent)]"
-              strokeWidth={2.2}
+              weight="regular"
             />
           </div>
         </div>

@@ -1,11 +1,14 @@
 'use client';
 
-
 import { ForkKnifeIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { CaretLeftIcon as ChevronLeft, CaretRightIcon as ChevronRight, ForkKnifeIcon as Utensils } from '@phosphor-icons/react';
+import {
+  CaretLeftIcon as ChevronLeft,
+  CaretRightIcon as ChevronRight,
+  ForkKnifeIcon as Utensils,
+} from '@phosphor-icons/react';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
 
 interface Meal {

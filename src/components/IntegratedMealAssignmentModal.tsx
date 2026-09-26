@@ -1,7 +1,5 @@
 'use client';
 
-
-import { ThumbsUpIcon } from '@phosphor-icons/react';
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Meal, Client } from '@/types/meal';
@@ -11,7 +9,24 @@ import { MealAssignmentService } from '@/services/mealAssignmentService';
 import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
 import type { SideItem } from '@/features/sides/types/side.types';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
-import { XIcon as X, MagnifyingGlassIcon as Search, CalendarIcon as Calendar, PencilSimpleIcon as Edit, UserIcon as User, CheckIcon as Check, ClockIcon as Clock, UsersIcon as Users, ForkKnifeIcon as Utensils, FloppyDiskIcon as Save, SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, WarningCircleIcon as AlertCircle, LeafIcon as Leaf } from '@phosphor-icons/react';
+import {
+  XIcon as X,
+  MagnifyingGlassIcon as Search,
+  CalendarIcon as Calendar,
+  PencilSimpleIcon as Edit,
+  UserIcon as User,
+  CheckIcon as Check,
+  ClockIcon as Clock,
+  UsersIcon as Users,
+  ForkKnifeIcon as Utensils,
+  FloppyDiskIcon as Save,
+  SunHorizonIcon as Sunrise,
+  SunIcon as Sun,
+  MoonIcon as Moon,
+  OrangeIcon as Apple,
+  WarningCircleIcon as AlertCircle,
+  LeafIcon as Leaf,
+} from '@phosphor-icons/react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 
 // Days of week configuration
@@ -30,14 +45,7 @@ function OptimizedSideThumbnail({ src, alt }: { src: string; alt: string }) {
 
   return (
     <span className="relative block w-10 h-10 overflow-hidden rounded shrink-0">
-      <Image
-        src={image.src}
-        alt={alt}
-        fill
-        className="object-cover"
-        sizes="40px"
-        unoptimized={image.unoptimized}
-      />
+      <Image src={image.src} alt={alt} fill className="object-cover" sizes="40px" unoptimized={image.unoptimized} />
     </span>
   );
 }
@@ -1572,7 +1580,13 @@ export default function IntegratedMealAssignmentModal({
                       </div>
                     </div>
                     {selectedSides[slotKey] === side.id && (
-                      <Check aria-hidden="true" focusable="false" size={12} className="shrink-0" style={{ color: 'var(--color-accent)' }} />
+                      <Check
+                        aria-hidden="true"
+                        focusable="false"
+                        size={12}
+                        className="shrink-0"
+                        style={{ color: 'var(--color-accent)' }}
+                      />
                     )}
                   </button>
                 ))
@@ -1697,7 +1711,12 @@ export default function IntegratedMealAssignmentModal({
                         className="w-10 h-10 rounded-full flex items-center justify-center"
                         style={{ background: 'var(--color-bg)' }}
                       >
-                        <User aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-text-muted)' }} />
+                        <User
+                          aria-hidden="true"
+                          focusable="false"
+                          size={20}
+                          style={{ color: 'var(--color-text-muted)' }}
+                        />
                       </div>
                       <div>
                         <div className="font-medium">{client.name}</div>
@@ -1816,7 +1835,7 @@ export default function IntegratedMealAssignmentModal({
                               >
                                 <div className="flex items-center justify-between mb-2 gap-2">
                                   <span className="font-medium text-sm flex items-center gap-2 min-w-0">
-                                    <MealTypeIcon size={14} className="shrink-0" />
+                                    <MealTypeIcon aria-hidden="true" focusable="false" size={14} className="shrink-0" />
                                     <span className="truncate">{mealType.label}</span>
                                   </span>
                                   {meal && selectedMeals[`${day.value}_${mealType.value}`]?.isPersonalized && (
@@ -1925,7 +1944,7 @@ export default function IntegratedMealAssignmentModal({
                                 }}
                               >
                                 <div className="flex items-center justify-center gap-2">
-                                  <MealTypeIcon size={14} />
+                                  <MealTypeIcon aria-hidden="true" focusable="false" size={14} />
                                   <span>{mealType.label}</span>
                                 </div>
                               </th>
@@ -2097,7 +2116,12 @@ export default function IntegratedMealAssignmentModal({
                   style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
                 >
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <AlertCircle aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
+                    <AlertCircle
+                      aria-hidden="true"
+                      focusable="false"
+                      size={16}
+                      style={{ color: 'var(--color-accent)' }}
+                    />
                     Ready To Save
                   </h4>
                   <div className="space-y-2 text-sm">
@@ -2171,7 +2195,9 @@ export default function IntegratedMealAssignmentModal({
                     color: 'var(--color-text)',
                   }}
                 />
-                <Search aria-hidden="true" focusable="false"
+                <Search
+                  aria-hidden="true"
+                  focusable="false"
                   size={18}
                   className="absolute left-3 top-1/2 transform -translate-y-1/2"
                   style={{ color: 'var(--color-text-muted)' }}
@@ -2223,7 +2249,7 @@ export default function IntegratedMealAssignmentModal({
                             borderColor: mealTypeFilter === type.value ? 'var(--color-accent)' : 'var(--color-border)',
                           }}
                         >
-                          <TypeIcon size={14} />
+                          <TypeIcon aria-hidden="true" focusable="false" size={14} />
                           <span>{type.label}</span>
                         </button>
                       );
@@ -2296,13 +2322,23 @@ export default function IntegratedMealAssignmentModal({
 
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2 text-sm">
-                            <Clock aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
+                            <Clock
+                              aria-hidden="true"
+                              focusable="false"
+                              size={14}
+                              style={{ color: 'var(--color-text-muted)' }}
+                            />
                             <span style={{ color: 'var(--color-text-muted)' }}>
                               {meal.prepTime + meal.cookTime} min
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
-                            <Users aria-hidden="true" focusable="false" size={14} style={{ color: 'var(--color-text-muted)' }} />
+                            <Users
+                              aria-hidden="true"
+                              focusable="false"
+                              size={14}
+                              style={{ color: 'var(--color-text-muted)' }}
+                            />
                             <span style={{ color: 'var(--color-text-muted)' }}>
                               {meal.servings} {meal.servings === 1 ? 'serving' : 'servings'}
                             </span>

@@ -1,6 +1,5 @@
 'use client';
 
-
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,8 +7,13 @@ import UserMeals from '@/components/UserMeals';
 import UserVideos from '@/components/UserVideos';
 import CoachContact from '@/components/CoachContact';
 
-// @ts-ignore - lucide-react type definitions issue
-import { HouseIcon as Home, ForkKnifeIcon as Utensils, PlayIcon as Play, UserIcon as User, SignOutIcon as LogOut } from '@phosphor-icons/react';
+import {
+  HouseIcon as Home,
+  ForkKnifeIcon as Utensils,
+  PlayIcon as Play,
+  UserIcon as User,
+  SignOutIcon as LogOut,
+} from '@phosphor-icons/react';
 
 interface User {
   id: string;
@@ -96,7 +100,9 @@ export default function UserDashboard() {
             <div className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30">
               <div className="text-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl"><ArrowsClockwiseIcon className="h-[1em] w-[1em]" aria-hidden="true" /></span>
+                  <span className="text-2xl">
+                    <ArrowsClockwiseIcon className="h-[1em] w-[1em]" aria-hidden="true" />
+                  </span>
                 </div>
                 <blockquote className="text-lg font-medium text-white mb-2">
                   &quot;Success is the sum of small efforts repeated day in and day out.&quot;

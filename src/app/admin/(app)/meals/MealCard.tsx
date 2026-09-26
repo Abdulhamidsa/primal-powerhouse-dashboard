@@ -1,6 +1,20 @@
 import React from 'react';
 import Image from 'next/image';
-import { OrangeIcon as Apple, ClockIcon as Clock, BoneIcon as Drumstick, DropIcon as Droplets, PencilSimpleIcon as Edit, FlameIcon as Flame, LeafIcon as Leaf, MoonIcon as Moon, SunIcon as Sun, SunHorizonIcon as Sunrise, TrashIcon as Trash2, UsersIcon as Users, GrainsIcon as Wheat } from '@phosphor-icons/react/ssr';
+import {
+  OrangeIcon as Apple,
+  ClockIcon as Clock,
+  BoneIcon as Drumstick,
+  DropIcon as Droplets,
+  PencilSimpleIcon as Edit,
+  FlameIcon as Flame,
+  LeafIcon as Leaf,
+  MoonIcon as Moon,
+  SunIcon as Sun,
+  SunHorizonIcon as Sunrise,
+  TrashIcon as Trash2,
+  UsersIcon as Users,
+  GrainsIcon as Wheat,
+} from '@phosphor-icons/react/ssr';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 import { MealListItem } from '@/lib/meal-planner/types';
 import { Button } from '@/components/ui/button';
@@ -52,11 +66,21 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
 
         <div className="absolute top-3 left-3">
           <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-            {meal.type === 'BREAKFAST' && <Sunrise aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'LUNCH' && <Sun aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'DINNER' && <Moon aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'SNACK' && <Apple aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
-            {meal.type === 'SIDES' && <Leaf aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />}
+            {meal.type === 'BREAKFAST' && (
+              <Sunrise aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            )}
+            {meal.type === 'LUNCH' && (
+              <Sun aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            )}
+            {meal.type === 'DINNER' && (
+              <Moon aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            )}
+            {meal.type === 'SNACK' && (
+              <Apple aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            )}
+            {meal.type === 'SIDES' && (
+              <Leaf aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            )}
             {meal.type.charAt(0) + meal.type.slice(1).toLowerCase()}
           </div>
         </div>
@@ -71,7 +95,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
             return (
               <div key={m.label} className="rounded-2xl border border-white/10 bg-black/18 px-2 py-2">
                 <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                  <Icon className={`h-3 w-3 ${m.color}`} />
+                  <Icon aria-hidden="true" focusable="false" className={`h-3 w-3 ${m.color}`} />
                   <span className="truncate">{m.label === 'Calories' ? 'Kcal' : m.label}</span>
                 </div>
                 <p className={`truncate text-sm font-semibold ${m.color}`}>{m.value}</p>

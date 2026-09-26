@@ -4,7 +4,22 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSWRConfig } from 'swr';
-import { ArchiveIcon as Archive, CalculatorIcon as Calculator, ClipboardTextIcon as ClipboardList, BarbellIcon as Dumbbell, EnvelopeSimpleIcon as Mail, ChatTextIcon as MessageSquare, NotebookIcon as NotebookText, MagnifyingGlassIcon as Search, GearSixIcon as Settings2, TrashIcon as Trash2, ArrowCounterClockwiseIcon as Undo2, UserCircleGearIcon as UserPen, UsersIcon as Users, XIcon as X } from '@phosphor-icons/react';
+import {
+  ArchiveIcon as Archive,
+  CalculatorIcon as Calculator,
+  ClipboardTextIcon as ClipboardList,
+  BarbellIcon as Dumbbell,
+  EnvelopeSimpleIcon as Mail,
+  ChatTextIcon as MessageSquare,
+  NotebookIcon as NotebookText,
+  MagnifyingGlassIcon as Search,
+  GearSixIcon as Settings2,
+  TrashIcon as Trash2,
+  ArrowCounterClockwiseIcon as Undo2,
+  UserCircleGearIcon as UserPen,
+  UsersIcon as Users,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import AssignContentModal from '@/components/AssignContentModal';
 import HealthMetricsModal from '@/components/HealthMetricsModal';
 import NewAddClientModal from '@/components/NewAddClientModal';
@@ -52,7 +67,10 @@ import TrainingTabContent from '@/features/admin-clients-dashboard/components/Tr
 import { ClientFeatureVisibilityTab } from '@/features/client-feature-visibility/components/ClientFeatureVisibilityTab';
 import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
-import type { AdminClientDetail, DashboardTabKey } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import type {
+  AdminClientDetail,
+  DashboardTabKey,
+} from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import { getWorkoutPlans } from '@/features/workout-plans/api/workoutPlan.api';
 import { getAdminClientWorkoutSessions } from '@/features/workout-session/api/adminWorkoutSession.api';
 import { httpClient } from '@/lib/http/client';
@@ -83,7 +101,12 @@ function ClientStatusPill({ status }: { status: string }) {
             : 'border-amber-400/25 bg-amber-500/10 text-amber-200',
       ].join(' ')}
     >
-      <span className={['h-1.5 w-1.5 rounded-full', isActive ? 'bg-emerald-400' : isArchived ? 'bg-slate-400' : 'bg-amber-400'].join(' ')} />
+      <span
+        className={[
+          'h-1.5 w-1.5 rounded-full',
+          isActive ? 'bg-emerald-400' : isArchived ? 'bg-slate-400' : 'bg-amber-400',
+        ].join(' ')}
+      />
       {status}
     </span>
   );
@@ -130,7 +153,11 @@ function ClientCommandHeader({
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="truncate text-2xl font-semibold tracking-[-0.03em] text-foreground">{client.name}</h2>
               <ClientStatusPill status={client.status} />
-              {client.isSystemTemplate ? <span className="rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">System template</span> : null}
+              {client.isSystemTemplate ? (
+                <span className="rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">
+                  System template
+                </span>
+              ) : null}
             </div>
             <p className="mt-1 flex items-center gap-2 truncate text-sm text-muted-foreground">
               <Mail aria-hidden="true" focusable="false" size={14} />
@@ -143,51 +170,77 @@ function ClientCommandHeader({
             ) : null}
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               <ClientMetric label="Current weight" value={summaryWeightKg == null ? 'N/A' : `${summaryWeightKg} kg`} />
-              <ClientMetric label="Target weight" value={client.targetWeight == null ? 'N/A' : `${client.targetWeight} kg`} />
-              <ClientMetric label="Calories" value={client.goalCalories == null ? 'N/A' : `${client.goalCalories} kcal`} />
+              <ClientMetric
+                label="Target weight"
+                value={client.targetWeight == null ? 'N/A' : `${client.targetWeight} kg`}
+              />
+              <ClientMetric
+                label="Calories"
+                value={client.goalCalories == null ? 'N/A' : `${client.goalCalories} kcal`}
+              />
               <ClientMetric label="Sessions" value={`${client.sessionsCompleted ?? 0}`} />
             </div>
           </div>
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
-         {!client.isSystemTemplate && client.status === 'ACTIVE' ? <button
-            type="button"
-            onClick={onEditProfileAction}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
-          >
-            <UserPen aria-hidden="true" focusable="false" size={15} />
-            Edit profile
-          </button> : null}
-           {!client.isSystemTemplate && client.status === 'ACTIVE' ? <button
-            type="button"
-            onClick={onOpenHealthMetricsAction}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
-          >
-            <Calculator aria-hidden="true" focusable="false" size={15} />
-            Health metrics
-          </button> : null}
-           {!client.isSystemTemplate && client.status !== 'INACTIVE' ? <button
-            type="button"
-            onClick={onArchiveClientAction}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
-          >
-            {client.status === 'ARCHIVED' ? <Undo2 aria-hidden="true" focusable="false" size={15} /> : <Archive aria-hidden="true" focusable="false" size={15} />}
-            {client.status === 'ARCHIVED' ? 'Restore' : 'Archive'}
-          </button> : null}
+          {!client.isSystemTemplate && client.status === 'ACTIVE' ? (
+            <button
+              type="button"
+              onClick={onEditProfileAction}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
+            >
+              <UserPen aria-hidden="true" focusable="false" size={15} />
+              Edit profile
+            </button>
+          ) : null}
+          {!client.isSystemTemplate && client.status === 'ACTIVE' ? (
+            <button
+              type="button"
+              onClick={onOpenHealthMetricsAction}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.07]"
+            >
+              <Calculator aria-hidden="true" focusable="false" size={15} />
+              Health metrics
+            </button>
+          ) : null}
+          {!client.isSystemTemplate && client.status !== 'INACTIVE' ? (
+            <button
+              type="button"
+              onClick={onArchiveClientAction}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+            >
+              {client.status === 'ARCHIVED' ? (
+                <Undo2 aria-hidden="true" focusable="false" size={15} />
+              ) : (
+                <Archive aria-hidden="true" focusable="false" size={15} />
+              )}
+              {client.status === 'ARCHIVED' ? 'Restore' : 'Archive'}
+            </button>
+          ) : null}
         </div>
       </div>
-      {!client.isSystemTemplate ? <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-3">
-        <span className="text-xs font-medium text-muted-foreground">Access mode</span>
-        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
-          {(['COACHING', 'SELF_SERVICE'] as const).map(mode => (
-            <button key={mode} type="button" onClick={() => onAccessModeChangeAction(mode)}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${client.accessMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-              {mode === 'COACHING' ? 'Coaching' : 'Self-service'}
-            </button>
-          ))}
+      {!client.isSystemTemplate ? (
+        <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-3">
+          <span className="text-xs font-medium text-muted-foreground">Access mode</span>
+          <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+            {(['COACHING', 'SELF_SERVICE'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => onAccessModeChangeAction(mode)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${client.accessMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                {mode === 'COACHING' ? 'Coaching' : 'Self-service'}
+              </button>
+            ))}
+          </div>
         </div>
-      </div> : <p className="mt-4 border-t border-white/10 pt-3 text-xs text-violet-200/80">Template source is protected from login, activation, archive, and deletion.</p>}
+      ) : (
+        <p className="mt-4 border-t border-white/10 pt-3 text-xs text-violet-200/80">
+          Template source is protected from login, activation, archive, and deletion.
+        </p>
+      )}
     </div>
   );
 }
@@ -263,24 +316,27 @@ export default function ClientsPage() {
     error: noteError,
   } = useClientNotes(selectedClientId, client?.notes ?? selectedClientFromList?.notes ?? null, 'Coach');
 
-  const { meals: mealAssignments, activeMealPlan, refresh: refreshMeals } = useClientMeals(
-    activeTab === 'nutrition' || activeTab === 'assignments' ? selectedClientId : null,
-  );
+  const {
+    meals: mealAssignments,
+    activeMealPlan,
+    refresh: refreshMeals,
+  } = useClientMeals(activeTab === 'nutrition' || activeTab === 'assignments' ? selectedClientId : null);
 
-  const { assignments: videoAssignments, refresh: refreshVideoAssignments } =
-    useClientVideoAssignments(activeTab === 'assignments' ? selectedClientId : null);
+  const { assignments: videoAssignments, refresh: refreshVideoAssignments } = useClientVideoAssignments(
+    activeTab === 'assignments' ? selectedClientId : null,
+  );
   const { removeAssignment: removeVideoAssignment } = useClientVideoAssignmentActions(selectedClientId);
 
   const {
     data: weeklyCheckIns,
     isLoading: isWeeklyCheckInsLoading,
     error: weeklyCheckInsError,
-  } = useAdminClientWeeklyCheckIns(activeTab === 'check-ins' ? selectedClientId ?? '' : '');
+  } = useAdminClientWeeklyCheckIns(activeTab === 'check-ins' ? (selectedClientId ?? '') : '');
   const {
     data: dailyCheckIns,
     isLoading: isDailyCheckInsLoading,
     error: dailyCheckInsError,
-  } = useAdminClientDailyCheckIns(activeTab === 'check-ins' ? selectedClientId ?? '' : '');
+  } = useAdminClientDailyCheckIns(activeTab === 'check-ins' ? (selectedClientId ?? '') : '');
 
   const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(selectedClientId ?? '');
   const { markReviewed: markDailyReviewed } = useAdminDailyCheckInActions(selectedClientId ?? '');
@@ -589,8 +645,8 @@ export default function ClientsPage() {
         eyebrow="Client operations"
         title="Clients Workbench"
         description="Review client progress, handle coaching tasks, and keep chat and notes close while you work."
-         actions={
-           <button
+        actions={
+          <button
             type="button"
             onClick={() => setShowAddClientModal(true)}
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
@@ -605,7 +661,9 @@ export default function ClientsPage() {
         <AdminPanel className="min-h-[420px] overflow-hidden lg:sticky lg:top-4 lg:h-[calc(100dvh-170px)]">
           <aside ref={leftPaneRef} className="h-full">
             {isClientsLoading ? (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading clients...</div>
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                Loading clients...
+              </div>
             ) : clientsError ? (
               <div className="h-full space-y-3 p-4">
                 <p className="text-sm text-red-200">Failed to load clients.</p>
@@ -672,30 +730,45 @@ export default function ClientsPage() {
                     onTabPrefetchAction={prefetchDashboardTab}
                     actions={
                       <>
-                        {!client.isSystemTemplate ? <button
-                          type="button"
-                          onClick={() => { setActiveRailTab('chat'); setShowCommunicationDrawer(true); }}
-                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
-                        >
-                          <MessageSquare aria-hidden="true" focusable="false" size={14} />
-                          Chat
-                        </button> : null}
-                        {!client.isSystemTemplate ? <button
-                          type="button"
-                          onClick={() => { setActiveRailTab('notes'); setShowCommunicationDrawer(true); }}
-                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
-                        >
-                          <NotebookText aria-hidden="true" focusable="false" size={14} />
-                          Notes
-                        </button> : null}
-                        {!client.isSystemTemplate ? <button
-                          type="button"
-                          onClick={() => { setActiveRailTab('actions'); setShowCommunicationDrawer(true); }}
-                          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
-                        >
-                          <Settings2 aria-hidden="true" focusable="false" size={14} />
-                          Actions
-                        </button> : null}
+                        {!client.isSystemTemplate ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveRailTab('chat');
+                              setShowCommunicationDrawer(true);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+                          >
+                            <MessageSquare aria-hidden="true" focusable="false" size={14} />
+                            Chat
+                          </button>
+                        ) : null}
+                        {!client.isSystemTemplate ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveRailTab('notes');
+                              setShowCommunicationDrawer(true);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+                          >
+                            <NotebookText aria-hidden="true" focusable="false" size={14} />
+                            Notes
+                          </button>
+                        ) : null}
+                        {!client.isSystemTemplate ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveRailTab('actions');
+                              setShowCommunicationDrawer(true);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-white/[0.06]"
+                          >
+                            <Settings2 aria-hidden="true" focusable="false" size={14} />
+                            Actions
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           onClick={() => setShowChangeUserDrawer(true)}
@@ -725,15 +798,28 @@ export default function ClientsPage() {
         </AdminPanel>
 
         {client && showCommunicationDrawer && !client.isSystemTemplate ? (
-          <div className="fixed inset-0 z-40 bg-black/60 lg:bg-black/30" onClick={() => setShowCommunicationDrawer(false)}>
-            <aside className="absolute right-0 top-0 flex h-full w-full max-w-[440px] min-h-0 flex-col border-l border-white/10 bg-[rgba(16,16,18,0.98)] shadow-2xl" onClick={event => event.stopPropagation()}>
+          <div
+            className="fixed inset-0 z-40 bg-black/60 lg:bg-black/30"
+            onClick={() => setShowCommunicationDrawer(false)}
+          >
+            <aside
+              className="absolute right-0 top-0 flex h-full w-full max-w-[440px] min-h-0 flex-col border-l border-white/10 bg-[rgba(16,16,18,0.98)] shadow-2xl"
+              onClick={event => event.stopPropagation()}
+            >
               <div className="border-b border-white/10 p-3">
                 <div className="mb-3 flex items-center justify-between px-1">
                   <div>
                     <p className="text-sm font-semibold text-foreground">Coach workspace</p>
                     <p className="text-xs text-muted-foreground">{client.name}</p>
                   </div>
-                  <button type="button" aria-label="Close coach workspace" onClick={() => setShowCommunicationDrawer(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X aria-hidden="true" focusable="false" size={17} /></button>
+                  <button
+                    type="button"
+                    aria-label="Close coach workspace"
+                    onClick={() => setShowCommunicationDrawer(false)}
+                    className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+                  >
+                    <X aria-hidden="true" focusable="false" size={17} />
+                  </button>
                 </div>
                 <div className="grid grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
                   {[
@@ -747,7 +833,7 @@ export default function ClientsPage() {
                       <button
                         key={item.key}
                         type="button"
-                          onClick={() => setActiveRailTab(item.key)}
+                        onClick={() => setActiveRailTab(item.key)}
                         className={[
                           'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-semibold transition-colors',
                           active
@@ -755,7 +841,7 @@ export default function ClientsPage() {
                             : 'text-muted-foreground hover:text-foreground',
                         ].join(' ')}
                       >
-                        <Icon size={13} />
+                        <Icon aria-hidden="true" focusable="false" size={13} />
                         {item.label}
                       </button>
                     );
@@ -784,68 +870,96 @@ export default function ClientsPage() {
                     <p className="text-xs leading-5 text-muted-foreground">
                       Common actions for {client.name}. These use the existing modals and refresh behavior.
                     </p>
-                    {client.status === 'ACTIVE' ? <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAssignModalType('meals');
-                        setShowAssignModal(true);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
-                    >
-                      <ClipboardList aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
-                      Assign meals
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAssignModalType('videos');
-                        setShowAssignModal(true);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
-                    >
-                      <Dumbbell aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
-                      Assign videos
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowProfileEditModal(true)}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
-                    >
-                      <UserPen aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
-                      Edit profile
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowHealthMetricsModal(true)}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
-                    >
-                      <Calculator aria-hidden="true" focusable="false" size={16} className="text-[var(--color-accent)]" />
-                      Update health metrics
-                    </button>
-                    </> : null}
-                    {client.status !== 'INACTIVE' ? <button
-                      type="button"
-                      onClick={handleArchiveClient}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
-                    >
-                      {client.status === 'ARCHIVED' ? <Undo2 aria-hidden="true" focusable="false" size={16} /> : <Archive aria-hidden="true" focusable="false" size={16} />}
-                      {client.status === 'ARCHIVED' ? 'Restore client' : 'Archive client'}
-                    </button> : null}
-                     {client.status === 'ACTIVE' ? (
-                       <button
-                         type="button"
-                         onClick={() => {
-                           setDeleteClientError(null);
-                           setDeleteConfirmation('');
-                           setShowDeleteClientDialog(true);
-                         }}
-                         className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.04] px-3 py-3 text-left text-sm text-red-200 transition-colors hover:bg-red-500/[0.09]"
-                       >
-                         <Trash2 aria-hidden="true" focusable="false" size={16} />
-                         Delete client
-                       </button>
-                     ) : null}
+                    {client.status === 'ACTIVE' ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignModalType('meals');
+                            setShowAssignModal(true);
+                          }}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                        >
+                          <ClipboardList
+                            aria-hidden="true"
+                            focusable="false"
+                            size={16}
+                            className="text-[var(--color-accent)]"
+                          />
+                          Assign meals
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignModalType('videos');
+                            setShowAssignModal(true);
+                          }}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                        >
+                          <Dumbbell
+                            aria-hidden="true"
+                            focusable="false"
+                            size={16}
+                            className="text-[var(--color-accent)]"
+                          />
+                          Assign videos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowProfileEditModal(true)}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                        >
+                          <UserPen
+                            aria-hidden="true"
+                            focusable="false"
+                            size={16}
+                            className="text-[var(--color-accent)]"
+                          />
+                          Edit profile
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowHealthMetricsModal(true)}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 text-left text-sm text-foreground transition-colors hover:bg-white/[0.06]"
+                        >
+                          <Calculator
+                            aria-hidden="true"
+                            focusable="false"
+                            size={16}
+                            className="text-[var(--color-accent)]"
+                          />
+                          Update health metrics
+                        </button>
+                      </>
+                    ) : null}
+                    {client.status !== 'INACTIVE' ? (
+                      <button
+                        type="button"
+                        onClick={handleArchiveClient}
+                        className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
+                      >
+                        {client.status === 'ARCHIVED' ? (
+                          <Undo2 aria-hidden="true" focusable="false" size={16} />
+                        ) : (
+                          <Archive aria-hidden="true" focusable="false" size={16} />
+                        )}
+                        {client.status === 'ARCHIVED' ? 'Restore client' : 'Archive client'}
+                      </button>
+                    ) : null}
+                    {client.status === 'ACTIVE' ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteClientError(null);
+                          setDeleteConfirmation('');
+                          setShowDeleteClientDialog(true);
+                        }}
+                        className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.04] px-3 py-3 text-left text-sm text-red-200 transition-colors hover:bg-red-500/[0.09]"
+                      >
+                        <Trash2 aria-hidden="true" focusable="false" size={16} />
+                        Delete client
+                      </button>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -991,17 +1105,32 @@ export default function ClientsPage() {
       ) : null}
 
       {client && showDeleteClientDialog ? (
-        <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-client-title">
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-client-title"
+        >
           <div className="w-full max-w-md rounded-3xl border border-red-400/20 bg-[rgba(22,16,18,0.98)] p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">Danger zone</p>
-                <h2 id="delete-client-title" className="mt-2 text-xl font-semibold text-foreground">Delete {client.name}?</h2>
+                <h2 id="delete-client-title" className="mt-2 text-xl font-semibold text-foreground">
+                  Delete {client.name}?
+                </h2>
               </div>
-              <button type="button" aria-label="Close delete dialog" onClick={() => setShowDeleteClientDialog(false)} className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"><X aria-hidden="true" focusable="false" size={17} /></button>
+              <button
+                type="button"
+                aria-label="Close delete dialog"
+                onClick={() => setShowDeleteClientDialog(false)}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+              >
+                <X aria-hidden="true" focusable="false" size={17} />
+              </button>
             </div>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              This immediately removes access and anonymizes the client. Permanent deletion will be scheduled using the existing privacy grace period.
+              This immediately removes access and anonymizes the client. Permanent deletion will be scheduled using the
+              existing privacy grace period.
             </p>
             <label className="mt-5 block text-xs font-semibold text-foreground" htmlFor="delete-client-confirmation">
               Type DELETE to confirm
@@ -1016,7 +1145,13 @@ export default function ClientsPage() {
             />
             {deleteClientError ? <p className="mt-3 text-sm text-red-300">{deleteClientError}</p> : null}
             <div className="mt-5 flex justify-end gap-2">
-              <button type="button" onClick={() => setShowDeleteClientDialog(false)} className="rounded-xl border border-white/10 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">Cancel</button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteClientDialog(false)}
+                className="rounded-xl border border-white/10 px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </button>
               <button
                 type="button"
                 onClick={handleDeleteClient}

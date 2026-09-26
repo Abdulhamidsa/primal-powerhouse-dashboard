@@ -2,7 +2,13 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { XIcon as X, ScalesIcon as Scale, CameraIcon as Camera, FileTextIcon as FileText, CheckCircleIcon as CheckCircle } from '@phosphor-icons/react';
+import {
+  XIcon as X,
+  ScalesIcon as Scale,
+  CameraIcon as Camera,
+  FileTextIcon as FileText,
+  CheckCircleIcon as CheckCircle,
+} from '@phosphor-icons/react';
 import { markAdminWeeklyCheckInReviewed } from '@/features/weekly-checkin/api/adminWeeklyCheckIn.api';
 import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
 

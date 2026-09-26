@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeftIcon as ArrowLeft, TrayIcon as Inbox, ChatTextIcon as MessageSquare, MagnifyingGlassIcon as Search, UserCircleIcon as UserRound } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon as ArrowLeft,
+  TrayIcon as Inbox,
+  ChatTextIcon as MessageSquare,
+  MagnifyingGlassIcon as Search,
+  UserCircleIcon as UserRound,
+} from '@phosphor-icons/react';
 import { MessageList } from '@/features/client-coach-messaging/components/MessageList';
 import { MessageComposer } from '@/features/client-coach-messaging/components/MessageComposer';
 import {
@@ -112,7 +118,8 @@ export function ChatPanel({
   } = useConversationMessages(selectedConversationId);
 
   useConversationPresence(selectedConversationId, pathname.startsWith('/user'));
-  const showMessageSkeleton = isConversationsLoading || (Boolean(selectedConversationId) && isMessagesLoading && messages.length === 0);
+  const showMessageSkeleton =
+    isConversationsLoading || (Boolean(selectedConversationId) && isMessagesLoading && messages.length === 0);
 
   useEffect(() => {
     if (hideConversationList || isAdminVariant || typeof window === 'undefined') return;
@@ -288,9 +295,7 @@ export function ChatPanel({
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
                       Inbox
                     </p>
-                    <h2 className="mt-1 text-lg font-semibold tracking-[-0.02em] text-foreground">
-                      Conversations
-                    </h2>
+                    <h2 className="mt-1 text-lg font-semibold tracking-[-0.02em] text-foreground">Conversations</h2>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-right">
                     <p className="text-sm font-semibold text-foreground">{sortedConversations.length}</p>
@@ -299,7 +304,11 @@ export function ChatPanel({
                 </div>
 
                 <div className="relative">
-                  <Search aria-hidden="true" focusable="false" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search
+                    aria-hidden="true"
+                    focusable="false"
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  />
                   <input
                     value={conversationSearch}
                     onChange={event => setConversationSearch(event.target.value)}
@@ -323,7 +332,10 @@ export function ChatPanel({
               <div className={isAdminVariant ? 'space-y-3 p-4' : 'p-1'}>
                 {isAdminVariant ? (
                   [0, 1, 2, 3, 4].map(item => (
-                    <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                    <div
+                      key={item}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
+                    >
                       <div className="h-10 w-10 animate-pulse rounded-full bg-white/[0.07]" />
                       <div className="min-w-0 flex-1 space-y-2">
                         <div className="h-3 w-2/3 animate-pulse rounded-full bg-white/[0.07]" />
@@ -397,11 +409,17 @@ export function ChatPanel({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-semibold text-foreground" style={{ color: isAdminVariant ? undefined : 'var(--color-text)' }}>
+                          <p
+                            className="truncate text-sm font-semibold text-foreground"
+                            style={{ color: isAdminVariant ? undefined : 'var(--color-text)' }}
+                          >
                             {conv.clientName}
                           </p>
                           {conv.lastMessageAt ? (
-                            <span className="flex-shrink-0 text-[10px] text-muted-foreground" style={{ color: isAdminVariant ? undefined : 'var(--color-text-muted)' }}>
+                            <span
+                              className="flex-shrink-0 text-[10px] text-muted-foreground"
+                              style={{ color: isAdminVariant ? undefined : 'var(--color-text-muted)' }}
+                            >
                               {formatRelativeTime(conv.lastMessageAt)}
                             </span>
                           ) : null}
@@ -425,7 +443,7 @@ export function ChatPanel({
                   );
                 })}
               </div>
-            )} 
+            )}
           </aside>
         ) : null}
 
@@ -439,7 +457,9 @@ export function ChatPanel({
           />
         ) : null}
 
-        <section className={isAdminVariant ? 'flex min-h-0 flex-1 flex-col bg-black/10' : 'flex min-h-0 flex-1 flex-col'}>
+        <section
+          className={isAdminVariant ? 'flex min-h-0 flex-1 flex-col bg-black/10' : 'flex min-h-0 flex-1 flex-col'}
+        >
           <div
             className={
               isAdminVariant
@@ -448,10 +468,9 @@ export function ChatPanel({
             }
             style={{
               borderColor: isAdminVariant ? undefined : 'var(--color-border)',
-              background:
-                isAdminVariant
-                  ? undefined
-                  : 'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface) 88%, transparent))',
+              background: isAdminVariant
+                ? undefined
+                : 'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface) 88%, transparent))',
               paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
             }}
           >
@@ -476,14 +495,20 @@ export function ChatPanel({
                     </div>
                   ) : null}
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground" style={{ color: isAdminVariant ? undefined : 'var(--color-text)' }}>
+                    <p
+                      className="truncate text-sm font-semibold text-foreground"
+                      style={{ color: isAdminVariant ? undefined : 'var(--color-text)' }}
+                    >
                       {selectedConversation.clientName}
                     </p>
                     <div className="mt-1 flex items-center gap-2">
                       {isActive ? (
                         <span className="inline-flex flex-shrink-0 items-center gap-1.5">
                           <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                          <span className="text-xs text-muted-foreground" style={{ color: isAdminVariant ? undefined : 'var(--color-text-muted)' }}>
+                          <span
+                            className="text-xs text-muted-foreground"
+                            style={{ color: isAdminVariant ? undefined : 'var(--color-text-muted)' }}
+                          >
                             Active now
                           </span>
                         </span>
@@ -530,12 +555,13 @@ export function ChatPanel({
 
           <div
             ref={messageViewportRef}
-            className={isAdminVariant ? 'flex-1 overflow-y-auto px-5 pb-8 pt-5' : 'flex-1 overflow-y-auto px-3 pb-8 pt-4 md:px-4'}
+            className={
+              isAdminVariant ? 'flex-1 overflow-y-auto px-5 pb-8 pt-5' : 'flex-1 overflow-y-auto px-3 pb-8 pt-4 md:px-4'
+            }
             style={{
-              background:
-                isAdminVariant
-                  ? 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 36%), rgba(5,5,7,0.35)'
-                  : 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 38%), var(--color-bg)',
+              background: isAdminVariant
+                ? 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 36%), rgba(5,5,7,0.35)'
+                : 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 38%), var(--color-bg)',
             }}
           >
             {!selectedConversationId && isAdminVariant ? (
@@ -561,13 +587,16 @@ export function ChatPanel({
           </div>
 
           <div
-            className={isAdminVariant ? 'border-t border-white/10 bg-zinc-950/72 px-4 pt-3 backdrop-blur-xl' : 'border-t px-2 pt-2'}
+            className={
+              isAdminVariant
+                ? 'border-t border-white/10 bg-zinc-950/72 px-4 pt-3 backdrop-blur-xl'
+                : 'border-t px-2 pt-2'
+            }
             style={{
               borderColor: isAdminVariant ? undefined : 'var(--color-border)',
-              background:
-                isAdminVariant
-                  ? undefined
-                  : 'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), var(--color-surface))',
+              background: isAdminVariant
+                ? undefined
+                : 'linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), var(--color-surface))',
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
             }}
           >

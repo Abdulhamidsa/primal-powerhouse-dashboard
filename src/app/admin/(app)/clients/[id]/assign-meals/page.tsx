@@ -1,8 +1,15 @@
 'use client';
 
-
-
-import { CaretLeftIcon, ClockIcon, ForkKnifeIcon, MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon, XIcon } from '@phosphor-icons/react';
+import {
+  CaretLeftIcon,
+  ClockIcon,
+  ForkKnifeIcon,
+  MoonIcon,
+  OrangeIcon,
+  SunHorizonIcon,
+  SunIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Client, Meal, MealType, DailyMealPlan, AssignedMeal } from '@/types/meal';
 import Link from 'next/link';
@@ -736,7 +743,9 @@ export default function AssignMealsPage() {
                                   <button
                                     onClick={() => removeMeal(date, mealType)}
                                     className="text-red-500 hover:text-red-700"
-                                  ><XIcon className="h-4 w-4" aria-hidden="true" /></button>
+                                  >
+                                    <XIcon className="h-4 w-4" aria-hidden="true" />
+                                  </button>
                                 )}
                               </div>
                               {assignedMeal && (

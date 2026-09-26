@@ -1,7 +1,30 @@
 'use client';
 
-
-import { BarbellIcon, ChartBarIcon, CircleNotchIcon, ClipboardTextIcon, FileTextIcon, FirstAidIcon, FlameIcon, FlaskIcon, LightbulbIcon, LightningIcon, PencilSimpleIcon, PersonSimpleIcon, PersonSimpleRunIcon, PersonSimpleTaiChiIcon, PlusIcon, SnowflakeIcon, SoccerBallIcon, SunHorizonIcon, TagIcon, TargetIcon, TrashIcon, UserIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
+import {
+  BarbellIcon,
+  ChartBarIcon,
+  CircleNotchIcon,
+  ClipboardTextIcon,
+  FileTextIcon,
+  FirstAidIcon,
+  FlaskIcon,
+  LightbulbIcon,
+  LightningIcon,
+  PencilSimpleIcon,
+  PersonSimpleIcon,
+  PersonSimpleRunIcon,
+  PersonSimpleTaiChiIcon,
+  PlusIcon,
+  SnowflakeIcon,
+  SoccerBallIcon,
+  SunHorizonIcon,
+  TagIcon,
+  TargetIcon,
+  TrashIcon,
+  UserIcon,
+  VideoCameraIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { Video } from '@/types/video';
 import { useState } from 'react';
 
@@ -135,7 +158,7 @@ export default function VideoDetailModal({
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(video.difficulty)} bg-white/20 text-white`}
                 >
-                   {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
+                  {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
                 </span>
                 <span className="text-blue-200">•</span>
                 <span className="flex items-center gap-1">⏱️ {formatDuration(video.duration)}</span>
@@ -252,7 +275,11 @@ export default function VideoDetailModal({
                     {video.tips.map((tip, index) => (
                       <div key={index} className="flex gap-3 bg-yellow-50 rounded-xl p-4">
                         <div className="flex-shrink-0">
-                          <LightbulbIcon className="w-5 h-5 text-yellow-500 mt-0.5" aria-hidden="true" focusable="false" />
+                          <LightbulbIcon
+                            className="w-5 h-5 text-yellow-500 mt-0.5"
+                            aria-hidden="true"
+                            focusable="false"
+                          />
                         </div>
                         <p className="text-gray-700">{tip}</p>
                       </div>
@@ -287,7 +314,7 @@ export default function VideoDetailModal({
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(video.difficulty)}`}
                     >
-                       {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
+                      {video.difficulty.charAt(0).toUpperCase() + video.difficulty.slice(1)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -312,7 +339,7 @@ export default function VideoDetailModal({
                         key={index}
                         className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                         {item}
+                        {item}
                       </span>
                     ))}
                   </div>
@@ -332,7 +359,7 @@ export default function VideoDetailModal({
                         key={index}
                         className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                         {muscle}
+                        {muscle}
                       </span>
                     ))}
                   </div>
@@ -352,7 +379,7 @@ export default function VideoDetailModal({
                         key={index}
                         className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                         {tag}
+                        {tag}
                       </span>
                     ))}
                   </div>

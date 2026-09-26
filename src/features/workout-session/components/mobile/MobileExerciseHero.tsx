@@ -150,7 +150,11 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            {isPlaying ? <Pause aria-hidden="true" focusable="false" size={28} className="text-white" /> : <Play aria-hidden="true" focusable="false" size={28} className="text-white ml-1" />}
+            {isPlaying ? (
+              <Pause aria-hidden="true" focusable="false" size={28} className="text-white" />
+            ) : (
+              <Play aria-hidden="true" focusable="false" size={28} className="text-white ml-1" />
+            )}
           </div>
         </button>
       )}
