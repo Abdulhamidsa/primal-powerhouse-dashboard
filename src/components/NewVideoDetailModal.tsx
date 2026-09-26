@@ -1,5 +1,7 @@
 'use client';
 
+
+import { BarbellIcon, CircleNotchIcon, MedalIcon, PencilSimpleIcon, PlayIcon, PulseIcon, TagIcon, TrashIcon, UserIcon } from '@phosphor-icons/react';
 import { Video } from '@/types/video';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -65,81 +67,19 @@ export default function NewVideoDetailModal({
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'STRENGTH_TRAINING':
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-          >
-            <path d="M6 7v10"></path>
-            <path d="M18 7v10"></path>
-            <path d="M2 17h20"></path>
-            <path d="M2 7h20"></path>
-            <path d="M6 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2"></path>
-            <path d="M18 7h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2"></path>
-          </svg>
-        );
+        return <BarbellIcon className="h-5 w-5" aria-hidden="true" />;
       case 'CARDIO':
         return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-          >
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-          </svg>
+          <PulseIcon className="h-5 w-5" aria-hidden="true" focusable="false" />
         );
       case 'MOBILITY':
       case 'YOGA':
       case 'PILATES':
         return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-          >
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
+          <UserIcon className="h-5 w-5" aria-hidden="true" focusable="false" />
         );
       default:
-        return (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-          >
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-        );
+        return <PlayIcon className="h-5 w-5" aria-hidden="true" />;
     }
   };
 
@@ -187,20 +127,7 @@ export default function NewVideoDetailModal({
               className="flex flex-col items-center justify-center h-full"
               style={{ color: 'var(--color-text-muted)' }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-16 h-16 mb-4 opacity-50"
-              >
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
+              <PlayIcon className="mb-4 h-16 w-16 opacity-50" aria-hidden="true" />
               <p className="text-lg font-medium opacity-75">Video format not supported</p>
               <a
                 href={video.videoUrl}
@@ -242,21 +169,7 @@ export default function NewVideoDetailModal({
                 <span>{formatDuration(video.duration)}</span>
               </div>
               <div className="flex items-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-4 h-4"
-                >
-                  <circle cx="12" cy="8" r="6"></circle>
-                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
-                </svg>
+                <MedalIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                 <span>{video.difficulty}</span>
               </div>
             </div>
@@ -270,21 +183,7 @@ export default function NewVideoDetailModal({
                   className="text-lg font-semibold mb-3 flex items-center gap-2"
                   style={{ color: 'var(--color-text)' }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-5 h-5"
-                    style={{ color: 'var(--color-accent)' }}
-                  >
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                  </svg>
+                  <PulseIcon className="w-5 h-5" aria-hidden="true" focusable="false" />
                   Description
                 </h3>
                 <p
@@ -332,22 +231,7 @@ export default function NewVideoDetailModal({
                     className="text-lg font-semibold mb-3 flex items-center gap-2"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-5 h-5"
-                      style={{ color: 'var(--color-accent)' }}
-                    >
-                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                      <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                    </svg>
+                    <TagIcon className="w-5 h-5" aria-hidden="true" focusable="false" />
                     Form Tips
                   </h3>
                   <div className="space-y-3">
@@ -506,21 +390,7 @@ export default function NewVideoDetailModal({
                   className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                   style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
+                  <UserIcon className="h-4 w-4" aria-hidden="true" focusable="false" />
                   Assign
                 </button>
               )}
@@ -531,21 +401,7 @@ export default function NewVideoDetailModal({
                   className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                   style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                  </svg>
+                  <PencilSimpleIcon className="h-4 w-4" aria-hidden="true" focusable="false" />
                   Edit
                 </button>
               )}
@@ -556,22 +412,7 @@ export default function NewVideoDetailModal({
                   className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                   style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                  </svg>
+                  <TrashIcon className="h-4 w-4" aria-hidden="true" focusable="false" />
                   Delete
                 </button>
               )}
@@ -591,23 +432,7 @@ export default function NewVideoDetailModal({
                   className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
                   style={{ background: 'var(--color-accent-muted)' }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-6 h-6"
-                    style={{ color: 'var(--color-accent)' }}
-                  >
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                  </svg>
+                  <TrashIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
                   Delete Video
@@ -631,22 +456,7 @@ export default function NewVideoDetailModal({
                   >
                     {isDeleting ? (
                       <>
-                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
+                        <CircleNotchIcon className="h-4 w-4 animate-spin" aria-hidden="true" />
                         Deleting...
                       </>
                     ) : (

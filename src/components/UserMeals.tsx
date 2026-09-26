@@ -1,5 +1,7 @@
 'use client';
 
+
+import { ForkKnifeIcon } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -220,20 +222,7 @@ export default function UserMeals({ userId }: UserMealsProps) {
                             <OptimizedMealImage src={meal.imageUrl} alt={meal.name} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-900">
-                              <svg
-                                className="w-12 h-12 text-zinc-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M12 6.253v13m0-13C6.5 6.253 2 10.753 2 16.253v0c0 5.5 4.5 10 10 10s10-4.5 10-10v0c0-5.5-4.5-10-10-10z"
-                                />
-                              </svg>
+                              <ForkKnifeIcon className="w-12 h-12 text-zinc-500" aria-hidden="true" focusable="false" />
                             </div>
                           )}
                         </div>

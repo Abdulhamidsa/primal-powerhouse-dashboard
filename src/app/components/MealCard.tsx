@@ -1,5 +1,7 @@
 'use client';
 
+
+import { EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { Meal } from '@/types/meal';
 import { SunHorizonIcon as Sunrise, SunIcon as Sun, MoonIcon as Moon, OrangeIcon as Apple, ForkKnifeIcon as Utensils, ClockIcon as Clock, UsersIcon as Users } from '@phosphor-icons/react';
@@ -91,21 +93,7 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
                 className="p-2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-zinc-800 transition-colors"
                 title="View details"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4 text-zinc-600 dark:text-zinc-400"
-                >
-                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                <EyeIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" aria-hidden="true" focusable="false" />
               </button>
             </DialogTrigger>
 
@@ -115,21 +103,7 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
                 className="p-2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-zinc-800 transition-colors"
                 title="Edit meal"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4 text-blue-600 dark:text-blue-500"
-                >
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
+                <PencilSimpleIcon className="h-4 w-4 text-blue-600 dark:text-blue-500" aria-hidden="true" focusable="false" />
               </button>
             )}
 
@@ -139,22 +113,7 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
                 className="p-2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-zinc-800 transition-colors"
                 title="Delete meal"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4 text-red-600 dark:text-red-500"
-                >
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                </svg>
+                <TrashIcon className="h-4 w-4 text-red-600 dark:text-red-500" aria-hidden="true" focusable="false" />
               </button>
             )}
           </div>
@@ -346,21 +305,7 @@ export default function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
                 onClick={() => onEdit(meal)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm rounded-md border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>{' '}
+                <PencilSimpleIcon className="h-4 w-4" aria-hidden="true" focusable="false" />{' '}
                 Edit
               </button>
             )}

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CaretLeftIcon, CaretRightIcon, CheckIcon, CircleNotchIcon, PlusIcon, TrashIcon, VideoCameraIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import {
   Video,
@@ -260,9 +262,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
               onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
           </div>
 
@@ -310,14 +310,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                     />
                     {formData.videoUrl && !previewType && (
                       <p className="text-sm text-amber-600 mt-2 flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z"
-                          />
-                        </svg>
+                        <WarningIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                         URL format not recognized. Supported: YouTube, Vimeo, MP4/WebM/OGG
                       </p>
                     )}
@@ -339,14 +332,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
+                      <VideoCameraIcon className="w-5 h-5 text-blue-500" aria-hidden="true" focusable="false" />
                       Video Preview
                     </h3>
                     <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden border-2 border-dashed border-gray-300">
@@ -381,19 +367,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                          <svg
-                            className="w-16 h-16 mb-3 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
+                          <VideoCameraIcon className="w-16 h-16 mb-3 text-gray-400" aria-hidden="true" focusable="false" />
                           <p className="text-sm font-medium">Video Preview</p>
                           <p className="text-xs text-gray-400 mt-1">Enter a video URL to see preview</p>
                         </div>
@@ -495,14 +469,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                             className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all"
                             type="button"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
+                            <TrashIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                           </button>
                         </div>
                       ))}
@@ -511,14 +478,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2 mt-2"
                       type="button"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
+                      <PlusIcon className="h-4 w-4" aria-hidden="true" />
                       Add Instruction
                     </button>
                   </div>
@@ -540,14 +500,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                             className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all"
                             type="button"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
+                            <TrashIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                           </button>
                         </div>
                       ))}
@@ -556,14 +509,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2 mt-2"
                       type="button"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
+                      <PlusIcon className="h-4 w-4" aria-hidden="true" />
                       Add Tip
                     </button>
                   </div>
@@ -640,9 +586,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                   className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 font-medium"
                   type="button"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+                  <CaretLeftIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                   Previous
                 </button>
               )}
@@ -669,9 +613,7 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                   type="button"
                 >
                   Next
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <CaretRightIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                 </button>
               ) : (
                 <button
@@ -686,21 +628,12 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
                 >
                   {isSubmitting ? (
                     <>
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <CircleNotchIcon className="h-4 w-4 animate-spin" aria-hidden="true" />
                       Adding Video...
                     </>
                   ) : (
                     <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                      <CheckIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                       Add Video
                     </>
                   )}

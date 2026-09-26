@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CalendarIcon, ClockIcon, LightningIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -137,31 +139,15 @@ export default function UserVideosPage() {
 
               <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
                 <span className="flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <ClockIcon className="w-4 h-4 mr-1" aria-hidden="true" focusable="false" />
                   {assignment.video.duration} min
                 </span>
                 <span className="flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+                  <LightningIcon className="w-4 h-4 mr-1" aria-hidden="true" focusable="false" />
                   {assignment.video.difficulty}
                 </span>
                 <span className="flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                  <CalendarIcon className="w-4 h-4 mr-1" aria-hidden="true" focusable="false" />
                   {new Date(assignment.assignedDate).toLocaleDateString()}
                 </span>
               </div>

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CheckIcon, CircleNotchIcon, EyeIcon, ImageIcon, MagnifyingGlassIcon, VideoCameraIcon, XIcon } from '@phosphor-icons/react';
 import * as React from 'react';
 import Image from 'next/image';
 import { Video } from '@/types/video';
@@ -262,29 +264,14 @@ export default function AssignContentModal({
               onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
           </div>
         </div>
         <div className="p-6">
           {/* Search */}
           <div className="relative mb-6">
-            <svg
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" aria-hidden="true" focusable="false" />
             <input
               type="text"
               placeholder={`Search ${type}...`}
@@ -306,14 +293,11 @@ export default function AssignContentModal({
               className="text-sm font-medium flex items-center gap-2"
               style={{ color: 'var(--color-accent)' }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={selectedItems.length === filteredContent.length ? 'M6 18L18 6M6 6l12 12' : 'M5 13l4 4L19 7'}
-                />
-              </svg>
+              {selectedItems.length === filteredContent.length ? (
+                <XIcon className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <CheckIcon className="h-4 w-4" aria-hidden="true" />
+              )}
               {selectedItems.length === filteredContent.length ? 'Deselect All' : 'Select All'}
             </button>
             <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
@@ -360,19 +344,7 @@ export default function AssignContentModal({
                       color: 'white',
                     }}
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
+                    <EyeIcon size="16" aria-hidden="true" focusable="false" />
                   </button>
 
                   <div className="flex items-start gap-3">
@@ -384,9 +356,7 @@ export default function AssignContentModal({
                       }}
                     >
                       {selectedItems.includes(item.id) && (
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <CheckIcon className="w-3 h-3 text-white" aria-hidden="true" focusable="false" />
                       )}
                     </div>
 
@@ -505,21 +475,12 @@ export default function AssignContentModal({
               >
                 {assigning ? (
                   <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+                    <CircleNotchIcon className="h-4 w-4 animate-spin" aria-hidden="true" />
                     Assigning...
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <CheckIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     Assign {type} ({selectedItems.length})
                   </>
                 )}
@@ -552,9 +513,7 @@ export default function AssignContentModal({
                 onClick={handleClosePreview}
                 className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
               </button>
             </div>
 
@@ -584,19 +543,7 @@ export default function AssignContentModal({
                           className="flex flex-col items-center justify-center h-full"
                           style={{ color: 'var(--color-text-muted)' }}
                         >
-                          <svg
-                            className="w-16 h-16 mb-4 opacity-50"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
+                          <VideoCameraIcon className="w-16 h-16 mb-4 opacity-50" aria-hidden="true" focusable="false" />
                           <p className="text-lg font-medium opacity-75">Video preview not available</p>
                           <a
                             href={(previewItem as Video).videoUrl}
@@ -720,20 +667,7 @@ export default function AssignContentModal({
                           className="w-full h-full flex items-center justify-center"
                           style={{ background: 'var(--color-card)' }}
                         >
-                          <svg
-                            className="w-16 h-16"
-                            fill="none"
-                            stroke="currentColor"
-                            style={{ color: 'var(--color-text-muted)' }}
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
+                          <ImageIcon className="w-16 h-16" aria-hidden="true" focusable="false" />
                         </div>
                       )}
                     </div>

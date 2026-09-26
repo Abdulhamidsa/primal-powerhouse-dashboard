@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CaretLeftIcon, ClockIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Client, Meal, MealType, DailyMealPlan, AssignedMeal } from '@/types/meal';
 import Link from 'next/link';
@@ -527,9 +529,7 @@ export default function AssignMealsPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Link href={`/clients/${client.id}`} className="text-gray-600 hover:text-gray-900">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <CaretLeftIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
               </Link>
               <div className="text-2xl font-bold text-gray-900">Assign Meals</div>
               <div className="hidden sm:block text-sm text-gray-500">for {client.name}</div>
@@ -618,14 +618,7 @@ export default function AssignMealsPage() {
                                   <span className="font-medium text-gray-900">{meal.protein}g</span> protein
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                  </svg>
+                                  <ClockIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                                   {meal.prepTime + meal.cookTime} min
                                 </span>
                               </div>

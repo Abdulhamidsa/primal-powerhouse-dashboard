@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CheckIcon, CircleNotchIcon, MagnifyingGlassIcon, SlidersHorizontalIcon, UsersIcon, VideoCameraIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
 import { Video } from '@/types/video';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -154,9 +156,7 @@ export default function AssignVideosModal({
               onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
           </div>
         </div>
@@ -166,14 +166,7 @@ export default function AssignVideosModal({
             {/* Selected Videos Summary */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
+                <VideoCameraIcon className="w-5 h-5 text-purple-500" aria-hidden="true" focusable="false" />
                 Videos to Assign ({selectedVideos.length})
               </h3>
               <div className="bg-gray-50 rounded-xl p-4 max-h-80 overflow-y-auto">
@@ -191,19 +184,7 @@ export default function AssignVideosModal({
                           />
                         ) : (
                           <div className="w-16 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              className="w-6 h-6 text-purple-500"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-2-9a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
+                            <WarningCircleIcon className="w-6 h-6 text-purple-500" aria-hidden="true" focusable="false" />
                           </div>
                         )}
                       </div>
@@ -232,32 +213,13 @@ export default function AssignVideosModal({
             {/* Client Selection */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                  />
-                </svg>
+                <UsersIcon className="w-5 h-5 text-blue-500" aria-hidden="true" focusable="false" />
                 Select Clients
               </h3>
 
               {/* Client Search */}
               <div className="relative mb-4">
-                <svg
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" focusable="false" />
                 <input
                   type="text"
                   placeholder="Search clients..."
@@ -273,14 +235,11 @@ export default function AssignVideosModal({
                   onClick={handleSelectAll}
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={selectedClients.length === filteredClients.length ? 'M6 18L18 6M6 6l12 12' : 'M5 13l4 4L19 7'}
-                    />
-                  </svg>
+                  {selectedClients.length === filteredClients.length ? (
+                    <XIcon className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                  )}
                   {selectedClients.length === filteredClients.length ? 'Deselect All' : 'Select All'}
                 </button>
                 <span className="text-sm text-gray-500">
@@ -292,30 +251,11 @@ export default function AssignVideosModal({
               <div className="bg-gray-50 rounded-xl p-4 max-h-80 overflow-y-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <svg className="w-6 h-6 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+                    <CircleNotchIcon className="h-6 w-6 animate-spin text-blue-500" aria-hidden="true" />
                   </div>
                 ) : filteredClients.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    <svg
-                      className="w-12 h-12 mx-auto mb-3 text-gray-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                      />
-                    </svg>
+                    <UsersIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" aria-hidden="true" focusable="false" />
                     <p className="font-medium">No clients found</p>
                     <p className="text-sm">Try adjusting your search</p>
                   </div>
@@ -336,9 +276,7 @@ export default function AssignVideosModal({
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedClients.includes(client.id) ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}
                         >
                           {selectedClients.includes(client.id) && (
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
+                            <CheckIcon className="w-3 h-3 text-white" aria-hidden="true" focusable="false" />
                           )}
                         </div>
                         <div className="flex items-center gap-3 flex-1">
@@ -373,14 +311,7 @@ export default function AssignVideosModal({
           {/* Assignment Options */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
-                />
-              </svg>
+              <SlidersHorizontalIcon className="w-5 h-5 text-green-500" aria-hidden="true" focusable="false" />
               Assignment Settings
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -435,21 +366,12 @@ export default function AssignVideosModal({
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+                    <CircleNotchIcon className="h-4 w-4 animate-spin" aria-hidden="true" />
                     Assigning Videos...
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <CheckIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     Assign Videos ({selectedClients.length * selectedVideos.length})
                   </>
                 )}

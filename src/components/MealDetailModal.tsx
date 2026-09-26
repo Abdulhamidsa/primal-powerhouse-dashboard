@@ -1,5 +1,7 @@
 'use client';
 
+
+import { ClockIcon, FlameIcon, GearIcon, PencilSimpleIcon, TrashIcon, UsersIcon, XIcon } from '@phosphor-icons/react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Meal } from '@/types/meal';
@@ -78,9 +80,7 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
               onClick={onCloseAction}
               className="absolute top-4 right-4 p-2 bg-zinc-900/90 backdrop-blur-sm rounded-full hover:bg-zinc-800 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
 
             {/* Meal type badge */}
@@ -98,36 +98,15 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
                 <h1 className="text-3xl font-bold text-zinc-100 mb-2">{meal.name}</h1>
                 <div className="flex items-center gap-4 text-sm text-zinc-400">
                   <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <ClockIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     <span>Prep: {meal.prepTime} min</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-                      />
-                    </svg>
+                    <FlameIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     <span>Cook: {meal.cookTime} min</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
+                    <UsersIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     <span>
                       {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
                     </span>
@@ -140,20 +119,7 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
                   onClick={() => setShowPersonalizeModal(true)}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <GearIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                   Personalize
                 </button>
 
@@ -162,14 +128,7 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
                     onClick={() => onEdit(mealData)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
+                    <PencilSimpleIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     Edit
                   </button>
                 )}
@@ -179,14 +138,7 @@ export default function MealDetailModal({ meal, onCloseAction, onEdit, onDelete,
                     onClick={() => onDelete(mealData.id)}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
+                    <TrashIcon className="w-4 h-4" aria-hidden="true" focusable="false" />
                     Delete
                   </button>
                 )}

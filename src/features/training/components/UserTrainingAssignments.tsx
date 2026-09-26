@@ -1,5 +1,7 @@
 'use client';
 
+
+import { VideoCameraIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -52,14 +54,7 @@ function Thumb({ src, alt }: { src?: string; alt: string }) {
 
   return (
     <div className="h-20 w-28 sm:h-24 sm:w-32 overflow-hidden rounded-2xl border border-border bg-muted flex items-center justify-center">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="opacity-60">
-        <path d="M10.5 8.5V15.5L16 12L10.5 8.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-        <path
-          d="M7 4.5H17C18.3807 4.5 19.5 5.61929 19.5 7V17C19.5 18.3807 18.3807 19.5 17 19.5H7C5.61929 19.5 4.5 18.3807 4.5 17V7C4.5 5.61929 5.61929 4.5 7 4.5Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-      </svg>
+      <VideoCameraIcon className="opacity-60" size="28" aria-hidden="true" focusable="false" />
     </div>
   );
 }

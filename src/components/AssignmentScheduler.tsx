@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CaretLeftIcon, CaretRightIcon, XIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { VideoAssignment } from '@/types/video';
 
@@ -253,9 +255,7 @@ export default function AssignmentScheduler({
               onClick={onCloseAction}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
           </div>
         </div>
@@ -267,9 +267,7 @@ export default function AssignmentScheduler({
               onClick={() => navigateWeek('prev')}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+              <CaretLeftIcon className="w-5 h-5" aria-hidden="true" focusable="false" />
               Previous Week
             </button>
 
@@ -289,9 +287,7 @@ export default function AssignmentScheduler({
               className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all"
             >
               Next Week
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <CaretRightIcon className="w-5 h-5" aria-hidden="true" focusable="false" />
             </button>
           </div>
 

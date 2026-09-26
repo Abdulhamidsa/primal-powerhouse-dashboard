@@ -1,5 +1,7 @@
 'use client';
 
+
+import { CheckIcon, EyeIcon, PlayIcon, VideoCameraIcon } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { Video } from '@/types/video';
 import { DIFFICULTY_LEVELS, VIDEO_CATEGORIES } from '@/types/video';
@@ -45,13 +47,7 @@ export default function VideoCard({
           className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all backdrop-blur-sm ${isSelected ? 'bg-blue-600 border-blue-600 shadow-lg' : 'bg-zinc-800/90 border-zinc-600 group-hover:border-blue-500 group-hover:bg-blue-900/20'}`}
         >
           {isSelected && (
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <CheckIcon className="w-4 h-4 text-white" weight="fill" aria-hidden="true" focusable="false" />
           )}
         </div>
       </div>
@@ -70,14 +66,7 @@ export default function VideoCard({
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900/30 to-purple-900/30">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
+                <VideoCameraIcon className="w-8 h-8 text-white" aria-hidden="true" focusable="false" />
               </div>
               <span className="text-sm text-gray-500 font-medium">Training Video</span>
             </div>
@@ -87,9 +76,7 @@ export default function VideoCard({
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
           <div className="bg-zinc-900/95 backdrop-blur-sm rounded-full p-4 opacity-0 group-hover:opacity-100 transition-all transform scale-75 group-hover:scale-100 shadow-lg">
-            <svg className="w-8 h-8 text-blue-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M8 5v10l7-5z" />
-            </svg>
+            <PlayIcon className="w-8 h-8 text-blue-600 ml-1" weight="fill" aria-hidden="true" focusable="false" />
           </div>
         </div>
 
@@ -100,14 +87,7 @@ export default function VideoCard({
 
         {/* View Count */}
         <div className="absolute top-3 right-3 bg-black/75 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-            <path
-              fillRule="evenodd"
-              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <EyeIcon className="w-3 h-3" weight="fill" aria-hidden="true" focusable="false" />
           {video.viewCount}
         </div>
       </div>
@@ -154,13 +134,7 @@ export default function VideoCard({
         {/* Muscle Groups */}
         {video.muscleGroups && video.muscleGroups.length > 0 && (
           <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489A2 2 0 0111.85 18H8.15a2 2 0 01-1.051-1.511L7.22 15H5a2 2 0 01-2-2V5zm5.771 4.757a.75.75 0 101.498-.104L9.75 7.5A.75.75 0 101 8l.479 2.757z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <VideoCameraIcon className="w-4 h-4 text-purple-500" weight="fill" aria-hidden="true" focusable="false" />
             <span className="truncate font-medium">
               {video.muscleGroups.slice(0, 2).join(', ')}
               {video.muscleGroups.length > 2 && ' +more'}
