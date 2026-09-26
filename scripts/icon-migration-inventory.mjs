@@ -143,3 +143,26 @@ if (process.argv.includes('--apply')) {
     fs.writeFileSync(file, source);
   }
 }
+
+if (process.argv.includes('--svg')) {
+  const svgFiles = execFileSync('rg', ['-l', '<svg', 'src', '-g', '*.tsx'], { encoding: 'utf8' })
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean);
+  const groups = new Map();
+  for (const file of svgFiles) {
+    const source = fs.readFileSync(file, 'utf8');
+    for (const match of source.matchAll(/<svg\b[\s\S]*?<\/svg>/g)) {
+      const block = match[0];
+      const paths = [...block.matchAll(/\bd=["']([^"']+)["']/g)].map(item => item[1]);
+      const key = paths.join(' | ') || block.replace(/\s+/g, ' ').slice(0, 140);
+      const line = source.slice(0, match.index).split(/\r?\n/).length;
+      const rows = groups.get(key) ?? [];
+      rows.push(`${file}:${line}`);
+      groups.set(key, rows);
+    }
+  }
+  for (const [key, rows] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
+    console.log(`\n[${rows.length}] ${key}\n${rows.join('\n')}`);
+  }
+}
