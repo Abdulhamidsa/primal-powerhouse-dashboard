@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Send browser notification to the client if they have a session
     // Note: This would require WebPush or similar service for real implementation
     // For now, we'll just log it
-    console.log(`[MOTIVATIONAL] Updated message for ${client.name}: "${motivationalMessage}"`);
+    console.log(`[MOTIVATIONAL] Updated message for ${getClientDisplayName(client)}: "${motivationalMessage}"`);
 
     return NextResponse.json({
       success: true,

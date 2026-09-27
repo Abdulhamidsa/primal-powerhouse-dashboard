@@ -67,7 +67,7 @@ export class PersonalizedMealService {
       let client;
       try {
         client = await DataService.getClientById(clientId);
-        console.log('Client data retrieved:', client.name);
+        console.log('Client data retrieved:', client.name ?? 'Member');
       } catch (clientError) {
         console.error('Error getting client data:', clientError);
         // If we can't get client data, return just the meal

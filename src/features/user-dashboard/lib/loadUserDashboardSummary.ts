@@ -2,6 +2,7 @@ import { measureDashboardOperation } from './dashboardTiming';
 import { unstable_cache } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { userDashboardSummaryTag } from '@/lib/cache-tags';
 import { getWeeklyCheckInStatus } from '@/features/weekly-checkin/utils/week';
 import { getRecentDateKeys, parseDateKeyUtc, toDateKeyLocal, toDateKeyUtc } from '@/features/daily-checkin/utils/date';
@@ -56,6 +57,8 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
         select: {
           id: true,
           name: true,
+          username: true,
+          email: true,
           avatar: true,
           motivationalMessage: true,
           currentWeight: true,
@@ -329,7 +332,7 @@ export async function loadUserDashboardSummary(clientId: string): Promise<UserDa
     generatedAt: now.toISOString(),
     user: {
       id: client.id,
-      name: client.name,
+      name: getClientDisplayName(client),
       avatar: client.avatar ?? null,
       motivationalMessage: client.motivationalMessage ?? null,
       currentWeight: client.currentWeight ?? null,

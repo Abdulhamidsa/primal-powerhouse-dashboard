@@ -5,6 +5,7 @@ import { mobileLoginSchema } from '@/features/mobile-auth/schemas/mobileAuth.sch
 import { createMobileSession } from '@/features/mobile-auth/api/mobileSession.server';
 import { requiresEmailVerificationForIdentifier } from '@/lib/auth/client-verification';
 import { classifyIdentifier, findClientByIdentifier, normalizeIdentifier } from '@/features/self-signup/server/identifier.server';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export async function POST(request: NextRequest) {
   const input = mobileLoginSchema.safeParse(await request.json().catch(() => null));
@@ -14,5 +15,5 @@ export async function POST(request: NextRequest) {
   const user = await findClientByIdentifier(input.data.identifier);
   if (!user?.password || user.status === 'ARCHIVED' || user.status === 'INACTIVE' || user.deactivatedAt || !await AuthService.verifyPassword(input.data.password, user.password)) return NextResponse.json({ error: 'Invalid credentials or inactive account. Contact your coach.' }, { status: 401 });
   if (requiresEmailVerificationForIdentifier(user, classifyIdentifier(input.data.identifier))) return NextResponse.json({ error: 'Please verify your email before continuing.', requiresVerification: true, email: user.email }, { status: 403 });
-  return NextResponse.json(await createMobileSession({ id: user.id, name: user.name, email: user.email }), { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json(await createMobileSession({ id: user.id, name: user.name, username: user.username, displayName: getClientDisplayName(user), email: user.email }), { headers: { 'Cache-Control': 'no-store' } });
 }

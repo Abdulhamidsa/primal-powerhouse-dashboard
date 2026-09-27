@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/security/rate-limit';
 import { requiresEmailVerificationForIdentifier } from '@/lib/auth/client-verification';
 import { loginSchema } from '@/features/self-signup/schemas/auth.schema';
 import { classifyIdentifier, findClientByIdentifier, normalizeIdentifier } from '@/features/self-signup/server/identifier.server';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 function ip(request: NextRequest) {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      user: { id: client.id, name: client.name, email: client.email, username: client.username, coach: client.coach },
+      user: { id: client.id, name: client.name, displayName: getClientDisplayName(client), email: client.email, username: client.username, coach: client.coach },
     });
 
     AuthService.setAuthCookieOnResponse(

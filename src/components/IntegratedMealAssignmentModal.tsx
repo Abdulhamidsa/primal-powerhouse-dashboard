@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Meal, Client } from '@/types/meal';
 import { DataService } from '@/services/dataService';
 import { clientApi } from '@/lib/client-api';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { MealAssignmentService } from '@/services/mealAssignmentService';
 import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
 import type { SideItem } from '@/features/sides/types/side.types';
@@ -556,7 +557,7 @@ export default function IntegratedMealAssignmentModal({
           } as unknown as Client;
           setClients([client]);
           setSelectedClientId(clientId);
-          setPlanName(`${client.name}'s Meal Plan`);
+          setPlanName(`${getClientDisplayName(client)}'s Meal Plan`);
         } catch (error) {
           console.error('Error fetching client:', error);
           alert(`The client with ID ${clientId} could not be found. Please try again or select another client.`);
@@ -1703,7 +1704,7 @@ export default function IntegratedMealAssignmentModal({
                     }}
                     onClick={() => {
                       setSelectedClientId(client.id);
-                      setPlanName(`${client.name}'s Meal Plan`);
+                      setPlanName(`${getClientDisplayName(client)}'s Meal Plan`);
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -1719,7 +1720,7 @@ export default function IntegratedMealAssignmentModal({
                         />
                       </div>
                       <div>
-                        <div className="font-medium">{client.name}</div>
+                        <div className="font-medium">{getClientDisplayName(client)}</div>
                         <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                           {client.email ?? 'No email'}
                         </div>

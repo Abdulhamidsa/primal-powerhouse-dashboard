@@ -34,6 +34,7 @@ import { useClientMeals } from '@/hooks/useClientMeals';
 import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
 import { PersonalInfoTab } from '@/components/client-profile/PersonalInfoTab';
 import { MotivationalMessageTab } from '@/features/admin-clients-dashboard/components/MotivationalMessageTab';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import {
   useAdminClientWeeklyCheckIns,
@@ -359,7 +360,7 @@ export default function ClientProfilePage() {
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--color-text-muted)' }}>Name</span>
                   <span style={{ color: 'var(--color-text)' }} className="font-medium">
-                    {client.name}sss
+                    {getClientDisplayName(client)}
                   </span>
                 </div>
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
@@ -743,7 +744,7 @@ export default function ClientProfilePage() {
         {activeTab === 'message' && client && (
           <MotivationalMessageTab
             clientId={clientId}
-            clientName={client.name}
+            clientName={getClientDisplayName(client)}
             currentMessage={client.motivationalMessage}
             onRefreshAction={fetchClientData}
           />
@@ -770,7 +771,7 @@ export default function ClientProfilePage() {
           isOpen={showProfileEditModal}
           clientId={clientId}
           initialValues={{
-            name: client.name,
+            name: client.name ?? '',
             age: client.age ?? null,
             gender: (client.gender as 'MALE' | 'FEMALE' | null) ?? null,
             activityLevel: (client.activityLevel as 'LOW' | 'MODERATE' | 'HIGH' | null) ?? null,
@@ -805,7 +806,7 @@ export default function ClientProfilePage() {
           isOpen={showAssignModal}
           onCloseAction={() => setShowAssignModal(false)}
           clientId={clientId}
-          clientName={client.name}
+          clientName={getClientDisplayName(client)}
           type={assignModalType}
           onAssignmentCompleteAction={() => {
             if (assignModalType === 'videos') fetchVideoAssignments();
@@ -819,7 +820,7 @@ export default function ClientProfilePage() {
           isOpen={showHealthMetricsModal}
           onCloseAction={() => setShowHealthMetricsModal(false)}
           clientId={clientId}
-          clientName={client.name}
+          clientName={getClientDisplayName(client)}
           clientData={{
             currentWeight: client.currentWeight ?? null,
             height: client.height ?? null,

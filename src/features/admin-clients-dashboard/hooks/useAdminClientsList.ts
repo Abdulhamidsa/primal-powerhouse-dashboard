@@ -6,6 +6,7 @@ import type { ApiError } from '@/lib/fetcher';
 import { httpClient } from '@/lib/http/client';
 import { buildClientsListUrl } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import type { AdminClientListItem, AdminClientStatus, AdminClientsListResponse } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export function useAdminClientsList() {
   const [search, setSearch] = useState('');
@@ -24,7 +25,7 @@ export function useAdminClientsList() {
     if (!normalized) return clients;
 
     return clients.filter(client => {
-      return client.name.toLowerCase().includes(normalized) || (client.email ?? '').toLowerCase().includes(normalized) || (client.username ?? '').toLowerCase().includes(normalized);
+      return getClientDisplayName(client).toLowerCase().includes(normalized) || (client.email ?? '').toLowerCase().includes(normalized) || (client.username ?? '').toLowerCase().includes(normalized);
     });
   }, [clients, deferredSearch]);
 

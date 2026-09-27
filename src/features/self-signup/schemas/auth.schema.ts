@@ -5,14 +5,12 @@ const usernameSchema = z.string().trim().regex(/^[A-Za-z][A-Za-z0-9_]{2,23}$/, '
 
 export const emailSignupSchema = z.object({
   method: z.literal('email').optional(),
-  name: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(254).transform(value => value.toLowerCase()),
   password: passwordSchema,
 });
 
 export const usernameSignupSchema = z.object({
   method: z.literal('username'),
-  name: z.string().trim().min(2).max(120),
   username: usernameSchema,
   password: passwordSchema,
 });

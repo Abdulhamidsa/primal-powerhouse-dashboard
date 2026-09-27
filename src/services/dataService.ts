@@ -3,8 +3,8 @@
 // Types
 export interface Client {
   id: string;
-  name: string;
-  email: string;
+  name: string | null;
+  email: string | null;
   phone: string;
   avatar: string;
   status: 'ACTIVE' | 'INACTIVE';
@@ -279,7 +279,7 @@ export class DataService {
     }
 
     const client = await response.json();
-    console.log(`DataService: Successfully fetched client: ${client.name}`);
+    console.log(`DataService: Successfully fetched client: ${client.name ?? 'Member'}`);
     return client;
   }
 

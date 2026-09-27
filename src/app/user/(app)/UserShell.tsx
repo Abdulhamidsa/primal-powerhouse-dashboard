@@ -6,7 +6,7 @@ import { OfflineStatusBanner } from '@/features/offline/components/OfflineStatus
 export default function UserShell({ userId, accessMode, children }: { userId: string; accessMode: 'SELF_SERVICE' | 'COACHING'; children: React.ReactNode }) {
   return (
     <OfflineProvider userId={userId}>
-      <Navigation userType="user">
+      <Navigation userType="user" userId={userId}>
         <OfflineStatusBanner />
         {children}
         {accessMode === 'COACHING' ? <MessageNotificationBanner userId={userId} chatPath="/user/chat" /> : null}

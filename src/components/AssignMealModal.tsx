@@ -8,10 +8,11 @@ import { CheckIcon, EyeIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/
 
 import { useState, useEffect, useMemo } from 'react';
 import { DataService } from '@/services/dataService';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 interface Client {
   id: string;
-  name: string;
+  name: string | null;
   email: string | null;
   username?: string | null;
   status: string;
@@ -64,7 +65,9 @@ export default function AssignMealModal({
 
     const query = searchQuery.toLowerCase();
     return clients.filter(
-      client => client.name.toLowerCase().includes(query) || (client.email ?? '').toLowerCase().includes(query),
+      client =>
+        getClientDisplayName(client).toLowerCase().includes(query) ||
+        (client.email ?? '').toLowerCase().includes(query),
     );
   }, [clients, searchQuery]);
 
@@ -153,7 +156,7 @@ export default function AssignMealModal({
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-semibold text-zinc-100 group-hover:text-blue-400 transition-colors">
-                          {client.name}
+                          {getClientDisplayName(client)}
                         </h3>
                         <p className="text-sm text-zinc-400">{client.email ?? client.username ?? 'No email'}</p>
                       </div>
@@ -197,7 +200,9 @@ export default function AssignMealModal({
             <h3 className="text-xl font-bold text-zinc-100 mb-2">Confirm Assignment</h3>
             <p className="text-zinc-400">
               Assign <span className="font-semibold text-zinc-200">&quot;{mealName}&quot;</span> to{' '}
-              <span className="font-semibold text-zinc-200">{selectedClient?.name}</span>?
+              <span className="font-semibold text-zinc-200">
+                {selectedClient ? getClientDisplayName(selectedClient) : 'this client'}
+              </span>?
             </p>
           </div>
 

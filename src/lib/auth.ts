@@ -27,7 +27,9 @@ export interface AuthTokenPayload {
 export interface AuthUser {
   id: string;
   email: string | null;
-  name: string;
+  name: string | null;
+  username?: string | null;
+  displayName?: string;
 }
 
 function isLocalhostHost(hostname: string): boolean {

@@ -1,1 +1,1 @@
-export type Profile = { user: { id: string; name: string; email: string | null; avatar: string | null; age: number | null; height: number | null; currentWeight: number | null; targetWeight: number | null; coach: { name: string; email: string } | null } };
+export type Profile = { user: { id: string; name: string | null; displayName: string; email: string | null; avatar: string | null; age: number | null; height: number | null; currentWeight: number | null; targetWeight: number | null; coach: { name: string; email: string } | null } };

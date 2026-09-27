@@ -5,14 +5,15 @@ import { getOrCreateSystemCoachId } from './systemCoach.server';
 import { createRawToken, hashToken, hoursFromNow } from './token.server';
 import { findClientByIdentifier } from './identifier.server';
 import { normalizeUsername, validateUsername } from './username.server';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 const VERIFICATION_TOKEN_HOURS = 24;
 const RESET_TOKEN_HOURS = 1;
 export const GENERIC_FORGOT_RESPONSE = 'If recovery is available for this account, instructions have been sent.';
 
 type SignupInput =
-  | { method?: 'email'; name: string; email: string; password: string }
-  | { method: 'username'; name: string; username: string; password: string };
+  | { method?: 'email'; email: string; password: string }
+  | { method: 'username'; username: string; password: string };
 
 export async function createSelfSignupClient(input: SignupInput) {
   const isUsernameSignup = input.method === 'username';
@@ -35,7 +36,7 @@ export async function createSelfSignupClient(input: SignupInput) {
     const coachId = await getOrCreateSystemCoachId(tx as typeof prisma);
     const created = await tx.client.create({
       data: {
-        name: input.name.trim(),
+        name: null,
         email,
         username,
         usernameNormalized,
@@ -56,7 +57,7 @@ export async function createSelfSignupClient(input: SignupInput) {
     return created;
   });
 
-  if (rawToken && client.email) await sendVerificationEmail({ to: client.email, name: client.name, token: rawToken });
+  if (rawToken && client.email) await sendVerificationEmail({ to: client.email, name: getClientDisplayName(client), token: rawToken });
   return client;
 }
 
@@ -79,7 +80,7 @@ export async function resendVerificationEmail(emailInput: string) {
     return found;
   });
 
-  if (client?.email) await sendVerificationEmail({ to: client.email, name: client.name, token: rawToken });
+  if (client?.email) await sendVerificationEmail({ to: client.email, name: getClientDisplayName(client), token: rawToken });
 }
 
 export async function addRecoveryEmail(clientId: string, emailInput: string) {
@@ -110,7 +111,7 @@ export async function addRecoveryEmail(clientId: string, emailInput: string) {
     return updated;
   });
 
-  if (client.email) await sendVerificationEmail({ to: client.email, name: client.name, token: rawToken });
+  if (client.email) await sendVerificationEmail({ to: client.email, name: getClientDisplayName(client), token: rawToken });
 }
 
 export async function verifyEmailToken(rawToken: string) {
@@ -139,7 +140,7 @@ export async function sendForgotPasswordEmail(identifierInput: string) {
     await tx.passwordResetToken.updateMany({ where: { clientId: client.id, usedAt: null }, data: { usedAt: new Date() } });
     await tx.passwordResetToken.create({ data: { clientId: client.id, tokenHash, expiresAt: hoursFromNow(RESET_TOKEN_HOURS) } });
   });
-  await sendPasswordResetEmail({ to: client.email, name: client.name, token: rawToken });
+  await sendPasswordResetEmail({ to: client.email, name: getClientDisplayName(client), token: rawToken });
   return GENERIC_FORGOT_RESPONSE;
 }
 
@@ -153,7 +154,7 @@ export async function sendAuthenticatedPasswordLink(clientId: string) {
     await tx.passwordResetToken.updateMany({ where: { clientId: client.id, usedAt: null }, data: { usedAt: new Date() } });
     await tx.passwordResetToken.create({ data: { clientId: client.id, tokenHash, expiresAt: hoursFromNow(RESET_TOKEN_HOURS) } });
   });
-  await sendPasswordResetEmail({ to: client.email, name: client.name, token: rawToken });
+  await sendPasswordResetEmail({ to: client.email, name: getClientDisplayName(client), token: rawToken });
   return true;
 }
 

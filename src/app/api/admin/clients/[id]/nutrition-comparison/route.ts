@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import { toDateKeyLocal } from '@/features/weekly-checkin/utils/week';
@@ -348,7 +349,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const payload = {
       client: {
         id: client.id,
-        name: client.name,
+        name: getClientDisplayName(client),
       },
       estimationNote:
         'Actual intake is calculated from completed meals by default; manual override values are shown when present.',

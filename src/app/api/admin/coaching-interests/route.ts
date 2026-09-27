@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { resolveActor } from '@/lib/chat/conversation';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
 import {
   COACHING_INTEREST_CLIENT_TEMP_ID,
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
     items: rows.map(row => ({
       id: row.id,
       clientId: row.conversation.client.id,
-      clientName: row.conversation.client.name,
+      clientName: getClientDisplayName(row.conversation.client),
       clientAvatar: row.conversation.client.avatar,
       email: row.conversation.client.email,
       phone: readPhone(row.conversation.client),

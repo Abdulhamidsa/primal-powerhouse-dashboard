@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { findOrCreateClientConversation } from '@/lib/chat/conversation';
 import { assertSameOrigin } from '@/lib/security/csrf';
 import { encryptField } from '@/lib/security/field-crypto';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { getRequestIpAddress } from '@/lib/chat/conversation';
 import { getPusherServer, hasPusherServerConfig } from '@/lib/realtime/pusher-server';
@@ -20,7 +21,7 @@ async function requireSelfServiceClient(request: NextRequest) {
   if (!auth.ok) return auth;
   const client = await prisma.client.findUnique({
     where: { id: auth.user.userId },
-    select: { id: true, coachId: true, accessMode: true, name: true },
+    select: { id: true, coachId: true, accessMode: true, name: true, username: true, email: true },
   });
   if (!client) return { ok: false as const, res: NextResponse.json({ error: 'Client not found' }, { status: 404 }) };
   if (client.accessMode !== 'SELF_SERVICE')
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
         ...admins.map(admin =>
           getPusherServer().trigger(toUserChannel(admin.id), 'notification.message', {
             conversationId: conversation.id,
-            senderName: access.client.name,
+            senderName: getClientDisplayName(access.client),
             preview: 'Ready to be contacted about 1:1 coaching.',
             hasAttachment: false,
             createdAt: created.createdAt.toISOString(),

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { resolveActor } from '@/lib/chat/conversation';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
 import {
   COACHING_INTEREST_CLIENT_TEMP_ID,
@@ -60,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   return NextResponse.json({
     id: message.id,
     clientId: client.id,
-    clientName: client.name,
+    clientName: getClientDisplayName(client),
     clientAvatar: client.avatar,
     email: client.email,
     phone: readPhone(client),

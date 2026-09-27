@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
 import { getCurrentWeekStartDateKey } from '@/features/weekly-checkin/utils/week';
@@ -156,7 +157,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return jsonWithCache({
       client: {
         id: client.id,
-        name: client.name,
+        name: getClientDisplayName(client),
       },
       currentWeek: {
         weekStartDate: currentWeekStartDateKey,

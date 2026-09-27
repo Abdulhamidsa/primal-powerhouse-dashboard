@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { DataService, Client, MealPlan } from '@/services/dataService';
 import AssignPersonalizedMealsModal from '@/components/AssignPersonalizedMealsModal';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 const daysOfWeek = [
   { value: 0, label: 'Sunday', short: 'Sun' },
@@ -170,8 +171,8 @@ export default function ClientMealPlansPage() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Image
-              src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
-              alt={client.name}
+              src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(getClientDisplayName(client))}`}
+              alt={getClientDisplayName(client)}
               width={64}
               height={64}
               className="w-16 h-16 rounded-full object-cover"
@@ -180,7 +181,7 @@ export default function ClientMealPlansPage() {
               }}
             />
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{client.name}&apos;s Meal Plans</h1>
+              <h1 className="text-4xl font-bold text-gray-900">{getClientDisplayName(client)}&apos;s Meal Plans</h1>
               <p className="text-gray-600">Nutritional guidance and meal scheduling</p>
             </div>
           </div>

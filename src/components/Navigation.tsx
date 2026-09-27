@@ -33,6 +33,8 @@ import { cn } from '@/lib/utils';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useUserDashboardSummary } from '@/features/user-dashboard/hooks/useUserDashboardSummary';
 import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
+import { useNotifications } from '@/features/notifications/hooks/useNotifications';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 
 const LazyChatDrawer = dynamic<{ open: boolean; onClose: () => void }>(() => Promise.resolve(ChatDrawer), {
   ssr: false,
@@ -321,15 +323,18 @@ const MobileTabItem = React.memo(function MobileTabItem({
 export default function Navigation({
   children,
   userType = 'admin',
+  userId,
 }: {
   children?: React.ReactNode;
   userType?: 'admin' | 'user';
+  userId?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useUserLogout();
   const { user: profileUser } = useUserProfile({ enabled: userType === 'user' });
   const { summary: dashboardSummary } = useUserDashboardSummary(userType === 'user');
+  const notifications = useNotifications(userId, userType === 'user');
   useThemePreference({ enabled: userType === 'user' });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
@@ -446,6 +451,7 @@ export default function Navigation({
           <div className="flex items-center gap-3">
             {userType === 'user' ? (
               <>
+                <NotificationBell {...notifications} />
                 {!isSelfService ? (
                   <button
                     type="button"
@@ -511,6 +517,7 @@ export default function Navigation({
         >
           <div className="mx-auto flex w-full max-w-xl items-center justify-end">
             <div className="flex items-center gap-2">
+              <NotificationBell {...notifications} />
               {!isSelfService ? (
                 <Link
                   href="/user/chat"

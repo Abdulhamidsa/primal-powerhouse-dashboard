@@ -5,6 +5,7 @@ import { useCoachPlans } from '../hooks/useCoachPlans';
 import { planStatusEnum } from '../enums/training.enums';
 import type { ClientTrainingPlan } from '@prisma/client';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export function PlanManager() {
   const { plans, isLoading, isError, createPlan, updatePlan } = useCoachPlans();
@@ -163,7 +164,7 @@ export function PlanManager() {
                   <option value="">{isClientsLoading ? 'Loading clients...' : 'Select a client'}</option>
                   {clients.map(client => (
                     <option key={client.id} value={client.id}>
-                      {client.name} {client.email ? `(${client.email})` : ''}
+                      {getClientDisplayName(client)} {client.email ? `(${client.email})` : ''}
                     </option>
                   ))}
                 </select>

@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react';
 import type { Client, TabKey } from '@/lib/client-page/types';
 import { cx } from '@/lib/ui';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 function formatStatus(status: string) {
   const s = status?.toLowerCase?.() ?? '';
@@ -134,7 +135,8 @@ export function ClientHeader({
 
   const avatarSrc =
     client.avatar ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}&background=111827&color=fff&size=96`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(getClientDisplayName(client))}&background=111827&color=fff&size=96`;
+  const displayName = getClientDisplayName(client);
 
   return (
     <header
@@ -172,13 +174,13 @@ export function ClientHeader({
                 background: 'rgba(255,255,255,0.04)',
               }}
             >
-              <Image src={avatarSrc} alt={client.name} fill className="object-cover" sizes="56px" priority />
+              <Image src={avatarSrc} alt={displayName} fill className="object-cover" sizes="56px" priority />
             </div>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 min-w-0">
                 <h1 className=" sm:text-lg font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                  {client.name}
+                  {displayName}
                 </h1>
 
                 <span

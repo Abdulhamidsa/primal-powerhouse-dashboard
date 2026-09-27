@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest) {
       user: {
         id: client.id,
         name: client.name,
+        displayName: getClientDisplayName(client),
         email: client.email,
         username: client.username,
         emailVerifiedAt: client.emailVerifiedAt,

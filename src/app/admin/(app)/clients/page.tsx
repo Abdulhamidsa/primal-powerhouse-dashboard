@@ -74,6 +74,7 @@ import type {
 import { getWorkoutPlans } from '@/features/workout-plans/api/workoutPlan.api';
 import { getAdminClientWorkoutSessions } from '@/features/workout-session/api/adminWorkoutSession.api';
 import { httpClient } from '@/lib/http/client';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 const DASHBOARD_TAB_ORDER: DashboardTabKey[] = [
   'summary',
@@ -136,14 +137,15 @@ function ClientCommandHeader({
   onOpenHealthMetricsAction: () => void;
   onAccessModeChangeAction: (mode: 'SELF_SERVICE' | 'COACHING') => void;
 }) {
+  const displayName = getClientDisplayName(client);
   return (
     <div className="border-b border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] p-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="flex min-w-0 items-start gap-4">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04]">
             <Image
-              src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
-              alt={client.name}
+              src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`}
+              alt={displayName}
               fill
               sizes="64px"
               className="object-cover"
@@ -151,7 +153,7 @@ function ClientCommandHeader({
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate text-2xl font-semibold tracking-[-0.03em] text-foreground">{client.name}</h2>
+              <h2 className="truncate text-2xl font-semibold tracking-[-0.03em] text-foreground">{displayName}</h2>
               <ClientStatusPill status={client.status} />
               {client.isSystemTemplate ? (
                 <span className="rounded-full border border-violet-300/30 bg-violet-400/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-200">
@@ -296,7 +298,7 @@ export default function ClientsPage() {
     const normalized = changeUserSearch.trim().toLowerCase();
     if (!normalized) return filteredClients;
     return filteredClients.filter(client => {
-      return client.name.toLowerCase().includes(normalized) || (client.email ?? '').toLowerCase().includes(normalized) || (client.username ?? '').toLowerCase().includes(normalized);
+      return getClientDisplayName(client).toLowerCase().includes(normalized) || (client.email ?? '').toLowerCase().includes(normalized) || (client.username ?? '').toLowerCase().includes(normalized);
     });
   }, [changeUserSearch, filteredClients]);
 
@@ -810,7 +812,7 @@ export default function ClientsPage() {
                 <div className="mb-3 flex items-center justify-between px-1">
                   <div>
                     <p className="text-sm font-semibold text-foreground">Coach workspace</p>
-                    <p className="text-xs text-muted-foreground">{client.name}</p>
+                    <p className="text-xs text-muted-foreground">{getClientDisplayName(client)}</p>
                   </div>
                   <button
                     type="button"
@@ -854,7 +856,7 @@ export default function ClientsPage() {
                   <ClientScopedChatPanel clientId={client.id} />
                 ) : activeRailTab === 'notes' ? (
                   <ClientNotesPane
-                    clientName={client.name}
+                    clientName={getClientDisplayName(client)}
                     entries={entries}
                     draft={draft}
                     error={noteError}
@@ -868,7 +870,7 @@ export default function ClientsPage() {
                   <div className="space-y-3 p-4">
                     <p className="text-sm font-semibold text-foreground">Quick actions</p>
                     <p className="text-xs leading-5 text-muted-foreground">
-                      Common actions for {client.name}. These use the existing modals and refresh behavior.
+                      Common actions for {getClientDisplayName(client)}. These use the existing modals and refresh behavior.
                     </p>
                     {client.status === 'ACTIVE' ? (
                       <>
@@ -973,7 +975,7 @@ export default function ClientsPage() {
           isOpen={showProfileEditModal}
           clientId={client.id}
           initialValues={{
-            name: client.name,
+            name: client.name ?? '',
             age: client.age ?? null,
             gender: (client as { gender?: 'MALE' | 'FEMALE' | null }).gender ?? null,
             activityLevel: (client.activityLevel as 'LOW' | 'MODERATE' | 'HIGH' | null) ?? null,
@@ -1003,7 +1005,7 @@ export default function ClientsPage() {
           isOpen={showAssignModal}
           onCloseAction={() => setShowAssignModal(false)}
           clientId={client.id}
-          clientName={client.name}
+          clientName={getClientDisplayName(client)}
           type={assignModalType}
           onAssignmentCompleteAction={async () => {
             if (assignModalType === 'videos') {
@@ -1020,7 +1022,7 @@ export default function ClientsPage() {
           isOpen={showHealthMetricsModal}
           onCloseAction={() => setShowHealthMetricsModal(false)}
           clientId={client.id}
-          clientName={client.name}
+          clientName={getClientDisplayName(client)}
           clientData={{
             currentWeight: client.currentWeight,
             height: client.height,
@@ -1116,7 +1118,7 @@ export default function ClientsPage() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">Danger zone</p>
                 <h2 id="delete-client-title" className="mt-2 text-xl font-semibold text-foreground">
-                  Delete {client.name}?
+                  Delete {getClientDisplayName(client)}?
                 </h2>
               </div>
               <button

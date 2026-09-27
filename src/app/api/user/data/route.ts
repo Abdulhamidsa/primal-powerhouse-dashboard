@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export type DashboardUser = {
   id: string;
@@ -27,7 +28,9 @@ export async function GET(request: NextRequest) {
       where: { id: clientId },
       select: {
         id: true,
-        name: true,
+      name: true,
+      username: true,
+      email: true,
         avatar: true,
         motivationalMessage: true,
         currentWeight: true,
@@ -42,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     const payload: DashboardUser = {
       id: client.id,
-      name: client.name,
+      name: getClientDisplayName(client),
       avatar: client.avatar,
       motivationalMessage: client.motivationalMessage,
       coach: client.coach,

@@ -73,7 +73,7 @@ model Client {
   mobileSessions    MobileSession[]
 
   id                            String             @id @default(cuid())
-  name                          String
+  name                          String?
   email                         String?            @unique
   username                      String?
   usernameNormalized            String?            @unique
@@ -148,6 +148,7 @@ model Client {
   conversationPresence     ConversationPresence?
   pushSubscriptions        PushSubscription[]
   notificationDeliveryLogs NotificationDeliveryLog[]
+  notifications          Notification[]
   workoutPlanAssignments   WorkoutPlanAssignment[]
   workoutSessions          WorkoutSession[]
   dailyCheckinsEnabled     Boolean                   @default(true)
@@ -361,6 +362,31 @@ model NotificationDeliveryLog {
   @@index([clientId, createdAt])
   @@index([source, createdAt])
   @@map("notification_delivery_logs")
+}
+
+model Notification {
+  id           String   @id @default(cuid())
+  clientId     String
+  title        String
+  body         String
+  category     String?
+  actionUrl    String?
+  metadataJson String?
+  channels     String[] @default(["IN_APP"])
+  readAt       DateTime?
+  source       String?
+  sourceId     String?
+  dedupeKey    String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId, createdAt])
+  @@index([clientId, readAt])
+  @@index([clientId, dedupeKey])
+  @@map("notifications")
 }
 
 model Message {

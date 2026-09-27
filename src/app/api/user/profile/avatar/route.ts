@@ -4,6 +4,7 @@ import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 const updateAvatarSchema = z
   .object({
@@ -46,7 +47,7 @@ export async function PUT(request: NextRequest) {
 
     invalidateUserDashboardSummaryCaches({ clientId: auth.user.userId });
 
-    return NextResponse.json({ user: client });
+    return NextResponse.json({ user: { ...client, displayName: getClientDisplayName(client) } });
   } catch (error) {
     console.error('Error updating profile avatar:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

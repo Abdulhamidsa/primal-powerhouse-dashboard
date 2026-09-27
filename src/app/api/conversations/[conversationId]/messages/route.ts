@@ -26,6 +26,7 @@ import {
   logPushDeliveryResult,
   sendPushToClient,
 } from '@/lib/push/push-notifications';
+import { createNotification } from '@/features/notifications/services/notification.service';
 
 function isPresenceTableUnavailable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? '');
@@ -324,6 +325,30 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   invalidateUserDashboardSummaryCaches({ clientId: conversation.clientId });
 
+  // Persist a generic in-app notification for coach/admin messages. The
+  // existing push flow below intentionally remains separate so its
+  // conversation-presence and cooldown rules are unchanged.
+  let coachMessageNotificationId: string | undefined;
+  if (actor.type === 'coach' || actor.type === 'admin') {
+    try {
+      const notification = await createNotification({
+        recipientClientId: conversation.clientId,
+        title: actor.displayName,
+        body: 'You have an update from your coach.',
+        category: 'message',
+        actionUrl: `/user/chat?conversationId=${encodeURIComponent(conversationId)}`,
+        metadata: { conversationId, messageId: created.id },
+        channels: ['IN_APP'],
+        source: 'coach-message',
+        sourceId: created.id,
+        dedupeKey: `coach-message:${created.id}`,
+      });
+      coachMessageNotificationId = notification?.id;
+    } catch (error) {
+      console.error('[NOTIFICATIONS] Failed to create coach message notification:', error);
+    }
+  }
+
   // Send browser push notification when coach sends to client
   if (actor.type === 'coach' || actor.type === 'admin') {
     const pushPayload = {
@@ -333,6 +358,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       tag: `conversation:${conversationId}`,
       conversationId,
       senderId: actor.userId,
+      notificationId: coachMessageNotificationId,
     };
 
     try {
@@ -377,6 +403,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             actorType: actor.type,
             conversationId,
             messageId: created.id,
+            notificationId: coachMessageNotificationId,
           },
         });
       } else if (hasFreshConversationPresence(recipientPresence, conversationId)) {
@@ -397,6 +424,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             actorType: actor.type,
             conversationId,
             messageId: created.id,
+            notificationId: coachMessageNotificationId,
           },
         });
       } else if (cooldownActive) {
@@ -417,6 +445,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             actorType: actor.type,
             conversationId,
             messageId: created.id,
+            notificationId: coachMessageNotificationId,
           },
         });
       } else {
@@ -427,6 +456,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             actorType: actor.type,
             conversationId,
             messageId: created.id,
+            notificationId: coachMessageNotificationId,
           },
         });
       }
@@ -443,6 +473,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             actorType: actor.type,
             conversationId,
             messageId: created.id,
+            notificationId: coachMessageNotificationId,
             pushError: error instanceof Error ? error.message : String(error),
           },
         });

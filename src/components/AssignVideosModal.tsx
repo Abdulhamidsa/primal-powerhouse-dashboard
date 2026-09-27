@@ -13,10 +13,11 @@ import {
 import { Video } from '@/types/video';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 interface Client {
   id: string;
-  name: string; // The client has 'name' instead of firstName/lastName
+  name: string | null;
   email: string | null;
   username?: string | null;
   avatar?: string; // The client has 'avatar' instead of profilePicture
@@ -81,7 +82,7 @@ export default function AssignVideosModal({
 
   const filteredClients = clients.filter(
     client =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getClientDisplayName(client).toLowerCase().includes(searchTerm.toLowerCase()) ||
       (client.email ?? '').toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -300,20 +301,23 @@ export default function AssignVideosModal({
                           {client.avatar ? (
                             <Image
                               src={
-                                client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`
+                                client.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(getClientDisplayName(client))}`
                               }
-                              alt={client.name}
+                              alt={getClientDisplayName(client)}
                               width={40}
                               height={40}
                               className="rounded-full object-cover"
                             />
                           ) : (
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                              <span className="text-blue-600 font-semibold text-sm">{client.name.charAt(0)}</span>
+                              <span className="text-blue-600 font-semibold text-sm">
+                                {getClientDisplayName(client).charAt(0)}
+                              </span>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">{client.name}</p>
+                            <p className="font-medium text-gray-900 truncate">{getClientDisplayName(client)}</p>
                             <p className="text-sm text-gray-500 truncate">{client.email ?? client.username ?? 'No email'}</p>
                           </div>
                         </div>

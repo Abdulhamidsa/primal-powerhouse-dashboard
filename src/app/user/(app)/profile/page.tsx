@@ -20,11 +20,12 @@ import UpdateAppButton from '@/components/UpdateAppButton';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
 import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
-import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
+import { useDisplayNameUpdate, useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 type ProfileHubUser = {
   id: string;
-  name: string;
+  name: string | null;
+  displayName: string;
   email: string | null;
   avatar: string | null;
 };
@@ -60,12 +61,15 @@ export default function UserProfilePage() {
   const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const { user, error: profileError, isLoading } = useUserProfile();
   const { logout } = useUserLogout();
+  const { save: saveDisplayName, loading: isSavingDisplayName, error: displayNameError } = useDisplayNameUpdate();
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('');
   const [userData, setUserData] = useState<ProfileHubUser | null>(user);
 
   useEffect(() => {
     setUserData(user);
+    setDisplayName(user?.name ?? '');
   }, [user]);
 
   useEffect(() => {
@@ -80,6 +84,14 @@ export default function UserProfilePage() {
     window.location.href = '/user/login';
   };
 
+  const handleDisplayNameSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const response = await saveDisplayName(displayName);
+      setUserData(response.user);
+    } catch {}
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-md space-y-6 px-4 pb-32">
@@ -92,7 +104,7 @@ export default function UserProfilePage() {
           <div className="flex items-center gap-4">
             <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[28px] border border-border bg-muted/30">
               {userData?.avatar ? (
-                <Image src={userData.avatar} alt={userData.name} fill className="object-cover" />
+                <Image src={userData.avatar} alt={userData.displayName} fill className="object-cover" />
               ) : (
                 <div className="grid h-full w-full place-items-center">
                   <User aria-hidden="true" focusable="false" className="h-8 w-8 text-muted-foreground" />
@@ -111,11 +123,23 @@ export default function UserProfilePage() {
 
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Account</p>
-              <h1 className="mt-1 truncate text-2xl font-semibold text-foreground">{userData?.name ?? 'Profile'}</h1>
+              <h1 className="mt-1 truncate text-2xl font-semibold text-foreground">{userData?.displayName ?? 'Member'}</h1>
               <p className="truncate text-sm text-muted-foreground">{userData?.email ?? 'Loading…'}</p>
             </div>
           </div>
         </div>
+
+        <SettingsCard>
+          <form className="space-y-3 p-4" onSubmit={handleDisplayNameSubmit}>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Display name</p>
+              <p className="mt-1 text-xs text-muted-foreground">This is how you appear around Primal Powerhouse.</p>
+            </div>
+            <input value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={100} placeholder="Your name" className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+            <button type="submit" disabled={isSavingDisplayName} className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">{isSavingDisplayName ? 'Saving…' : 'Save display name'}</button>
+            {displayNameError ? <p className="text-xs text-destructive">{displayNameError}</p> : null}
+          </form>
+        </SettingsCard>
 
         <SettingsCard>
           <SettingsLink
@@ -185,7 +209,7 @@ export default function UserProfilePage() {
           currentImageUrl={userData?.avatar ?? undefined}
           onCloseAction={() => setIsAvatarModalOpen(false)}
           onSavedAction={result => {
-            setUserData(result.user);
+            setUserData(previous => previous ? { ...previous, ...result.user } : null);
             setIsAvatarModalOpen(false);
             window.alert('Profile picture updated successfully.');
           }}

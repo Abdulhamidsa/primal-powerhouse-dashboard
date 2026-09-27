@@ -1,7 +1,7 @@
 export interface Client {
   id: string;
-  name: string;
-  email: string;
+  name: string | null;
+  email: string | null;
   username?: string | null;
   phone?: string;
   avatar?: string;

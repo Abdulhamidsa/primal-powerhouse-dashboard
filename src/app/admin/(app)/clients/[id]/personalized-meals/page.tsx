@@ -18,6 +18,7 @@ import {
   SunIcon,
 } from '@phosphor-icons/react';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 interface PersonalizedMeal {
   id: string;
@@ -159,8 +160,8 @@ export default function ClientPersonalizedMealsPage() {
           <div className="flex items-center gap-4 mb-4">
             {client && (
               <Image
-                src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
-                alt={client.name}
+                src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(getClientDisplayName(client))}`}
+                alt={getClientDisplayName(client)}
                 width={64}
                 height={64}
                 className="rounded-full"

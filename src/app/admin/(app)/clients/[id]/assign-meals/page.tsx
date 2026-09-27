@@ -12,6 +12,7 @@ import {
 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Client, Meal, MealType, DailyMealPlan, AssignedMeal } from '@/types/meal';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -542,7 +543,7 @@ export default function AssignMealsPage() {
                 <CaretLeftIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
               </Link>
               <div className="text-2xl font-bold text-gray-900">Assign Meals</div>
-              <div className="hidden sm:block text-sm text-gray-500">for {client.name}</div>
+              <div className="hidden sm:block text-sm text-gray-500">for {getClientDisplayName(client)}</div>
             </div>
 
             <div className="flex items-center gap-4">

@@ -6,8 +6,9 @@ export type ProfileAvatarPayload = z.infer<typeof profileAvatarPayloadSchema>;
 export type ProfileAvatarResponse = {
   user: {
     id: string;
-    name: string;
-    email: string;
+    name: string | null;
+    displayName: string;
+    email: string | null;
     avatar: string | null;
     age: number | null;
     height: number | null;

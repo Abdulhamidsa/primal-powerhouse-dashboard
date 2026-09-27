@@ -10,6 +10,8 @@ export default defineConfig({
       'src/features/learn/**/*.test.ts',
       'src/features/coaching-interest/**/*.test.ts',
       'src/features/self-signup/**/*.test.ts',
+      'src/features/user-profile/**/*.test.ts',
+      'src/lib/client-display-name.test.ts',
       'src/features/offline/**/*.test.ts',
     ],
   },

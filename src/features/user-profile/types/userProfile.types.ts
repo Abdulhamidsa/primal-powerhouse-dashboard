@@ -5,7 +5,8 @@ export type UserProfileCoach = {
 
 export type UserProfile = {
   id: string;
-  name: string;
+  name: string | null;
+  displayName: string;
   email: string | null;
   username: string | null;
   emailVerifiedAt: string | null;
@@ -31,4 +32,8 @@ export type PasswordLinkResponse = {
 export type RecoveryEmailResponse = {
   success: boolean;
   message: string;
+};
+
+export type DisplayNameResponse = {
+  user: UserProfile;
 };

@@ -7,8 +7,14 @@ const RESERVED_USERNAMES = new Set([
   'settings', 'signup', 'support', 'system', 'undefined', 'user', 'users',
 ]);
 
-const ADJECTIVES = ['steady', 'strong', 'focused', 'primal', 'grounded', 'daily', 'iron', 'calm'];
-const NOUNS = ['rep', 'stride', 'lift', 'core', 'forge', 'motion', 'grit', 'pulse'];
+const ADJECTIVES = [
+  'steady', 'strong', 'focused', 'primal', 'grounded', 'daily', 'iron', 'calm', 'north', 'clear',
+  'driven', 'balanced', 'durable', 'patient', 'simple', 'honest', 'active', 'ready', 'solid', 'bright',
+];
+const NOUNS = [
+  'rep', 'stride', 'lift', 'core', 'forge', 'motion', 'grit', 'pulse', 'power', 'progress', 'set',
+  'form', 'range', 'habit', 'recovery', 'pace', 'flow', 'strength', 'reset', 'track', 'move', 'fuel',
+];
 
 export function normalizeUsername(value: string): string {
   return value.trim().toLowerCase();
@@ -27,7 +33,8 @@ function randomItem<T>(items: T[]): T {
 }
 
 function candidate(): string {
-  return `${randomItem(ADJECTIVES)}${randomItem(NOUNS)}${Math.floor(10 + Math.random() * 90)}`;
+  const suffix = Math.random() < 0.4 ? String(Math.floor(1 + Math.random() * 99)) : '';
+  return `${randomItem(ADJECTIVES)}${randomItem(NOUNS)}${suffix}`;
 }
 
 export async function suggestUsernames(count = 5): Promise<string[]> {

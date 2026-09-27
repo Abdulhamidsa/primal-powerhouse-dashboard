@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { XIcon as X } from '@phosphor-icons/react';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 interface EditMotivationalMessageModalProps {
   isOpen: boolean;
   onCloseAction: () => void;
   client: {
     id: string;
-    name: string;
+    name: string | null;
     motivationalMessage?: string;
   };
 }
@@ -65,7 +66,9 @@ export default function EditMotivationalMessageModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Client: {client.name}</label>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Client: {getClientDisplayName(client)}
+            </label>
             <p className="text-sm text-muted-foreground mb-4">
               This message will appear on the client&apos;s dashboard and they&apos;ll receive a browser notification
               when you update it.

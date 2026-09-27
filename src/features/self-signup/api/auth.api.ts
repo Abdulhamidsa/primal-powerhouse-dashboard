@@ -7,7 +7,7 @@ import type {
   VerifyEmailResponse,
 } from '../types/auth.types';
 
-export function signup(payload: { method: 'email'; name: string; email: string; password: string } | { method: 'username'; name: string; username: string; password: string }) {
+export function signup(payload: { method: 'email'; email: string; password: string } | { method: 'username'; username: string; password: string }) {
   return httpClient.post<SignupResponse>('/api/auth/user/signup', payload);
 }
 

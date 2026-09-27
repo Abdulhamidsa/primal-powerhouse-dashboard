@@ -8,6 +8,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { createDownloadToken, toCsv } from '@/lib/privacy/export-utils';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 const DEFAULT_EXPORT_EXPIRY_HOURS = Number(process.env.PRIVACY_EXPORT_EXPIRY_HOURS ?? 24);
 
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
       client: {
         id: client.id,
         name: client.name,
+        displayName: getClientDisplayName(client),
         email: client.email,
         username: client.username,
         phone: decryptOrFallback(client.phoneEncrypted, `client:${client.id}:phone`) ?? client.phone,

@@ -6,6 +6,7 @@ import type { Client } from '@/lib/client-page/types';
 import { ClientCredentialsModal } from '@/features/client-credentials';
 import { useClientCredentials } from '@/features/client-credentials/hooks/useClientCredentials';
 import { useResetClientPassword } from '@/features/client-credentials/hooks/useResetClientPassword';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import type {
   ClientCredentials,
   CredentialDisplayMode,
@@ -82,7 +83,7 @@ export function PersonalInfoTab({ clientId, client }: Props) {
   return (
     <div className="p-6 space-y-4 max-w-2xl">
       <Section title="Basic Information">
-        <InfoRow label="Full Name" value={client.name} />
+        <InfoRow label="Full Name" value={getClientDisplayName(client)} />
         <InfoRow label="Email" value={client.email ?? 'No recovery email'} />
         <InfoRow label="Phone" value={client.phone} />
         <InfoRow label="Age" value={client.age} />

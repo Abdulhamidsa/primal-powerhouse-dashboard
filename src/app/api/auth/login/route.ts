@@ -6,6 +6,7 @@ import { loginSchema } from '@/features/self-signup/schemas/auth.schema';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { classifyIdentifier, findClientByIdentifier, normalizeIdentifier } from '@/features/self-signup/server/identifier.server';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 function ip(request: NextRequest) {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: client.id,
         name: client.name,
+        displayName: getClientDisplayName(client),
         email: client.email,
         username: client.username,
         coach: client.coach,

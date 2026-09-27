@@ -12,6 +12,7 @@ import {
 } from '@phosphor-icons/react';
 import AdvancedMealPersonalization from './AdvancedMealPersonalization';
 import { clientApi } from '@/lib/client-api';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 interface AssignPersonalizedMealsModalProps {
   isOpen: boolean;
@@ -186,7 +187,7 @@ export default function AssignPersonalizedMealsModal({
         onAssignAction(selectedMealId, selectedClientId, false);
       }
 
-      setSuccessMessage(`Assigned ${selectedMeal?.name} to ${selectedClient?.name} successfully!`);
+      setSuccessMessage(`Assigned ${selectedMeal?.name} to ${selectedClient ? getClientDisplayName(selectedClient) : 'client'} successfully!`);
 
       // Show an alert to make the feedback clearer
       alert(
@@ -487,7 +488,9 @@ export default function AssignPersonalizedMealsModal({
                         <User aria-hidden="true" focusable="false" size={20} style={{ color: 'var(--color-accent)' }} />
                       </div>
                       <div>
-                        <div className="font-medium">{selectedClient?.name || 'Loading client...'}</div>
+                        <div className="font-medium">
+                          {selectedClient ? getClientDisplayName(selectedClient) : 'Loading client...'}
+                        </div>
                         <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                           {selectedClient?.email || ''}
                         </div>
@@ -531,7 +534,7 @@ export default function AssignPersonalizedMealsModal({
                               />
                             </div>
                             <div>
-                              <div className="font-medium">{client.name}</div>
+                              <div className="font-medium">{getClientDisplayName(client)}</div>
                               <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                                 {client.email ?? 'No email'}
                               </div>

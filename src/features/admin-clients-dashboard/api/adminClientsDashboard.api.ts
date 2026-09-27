@@ -83,6 +83,6 @@ export async function updateClientAccessMode(
 export async function setClientMotivationalMessage(
   clientId: string,
   motivationalMessage: string,
-): Promise<{ success: boolean; client: { id: string; name: string; motivationalMessage: string } }> {
+): Promise<{ success: boolean; client: { id: string; name: string | null; motivationalMessage: string } }> {
   return httpClient.post('/api/admin/clients/motivational-message', { clientId, motivationalMessage });
 }

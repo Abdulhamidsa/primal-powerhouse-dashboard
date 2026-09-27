@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import IntegratedMealAssignmentModal from '@/components/IntegratedMealAssignmentModal';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export default function MealAssignmentPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,9 +75,9 @@ export default function MealAssignmentPage() {
               onClick={() => handleOpenModal(client)}
             >
               <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
-                {client.name.charAt(0)}
+                {getClientDisplayName(client).charAt(0)}
               </div>
-              <h3 className="font-medium">{client.name}</h3>
+              <h3 className="font-medium">{getClientDisplayName(client)}</h3>
               <p className="text-sm text-gray-600">Click to assign meals</p>
 
               <div className="flex gap-2 mt-4">

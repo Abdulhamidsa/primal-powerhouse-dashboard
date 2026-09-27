@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export async function GET(request: NextRequest) {
   try {
@@ -125,7 +126,7 @@ export async function GET(request: NextRequest) {
       // Recent workouts for activity feed
       prisma.workout.findMany({
         where: { coachId: userId },
-        include: { client: true },
+        include: { client: { select: { name: true, username: true, email: true } } },
         take: 5,
         orderBy: { date: 'desc' },
       }),
@@ -196,7 +197,7 @@ export async function GET(request: NextRequest) {
       recentActivity: recentWorkouts.map(workout => ({
         id: workout.id,
         type: 'workout_completed',
-        clientName: workout.client.name,
+        clientName: getClientDisplayName(workout.client),
         description: `Completed ${workout.type.toLowerCase().replace('_', ' ')} session`,
         timestamp: workout.date,
       })),

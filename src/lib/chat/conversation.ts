@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import type { ApiAuthUser } from '@/lib/api-auth';
 
 type ResolvedActor =
@@ -18,7 +19,7 @@ export async function resolveActor(authUser: ApiAuthUser): Promise<ResolvedActor
   if (authUser.type === 'client') {
     const client = await (prisma as any).client.findUnique({
       where: { id: authUser.userId },
-      select: { id: true, name: true },
+      select: { id: true, name: true, username: true, email: true },
     });
 
     if (!client) return null;
@@ -27,7 +28,7 @@ export async function resolveActor(authUser: ApiAuthUser): Promise<ResolvedActor
       type: 'client',
       userId: authUser.userId,
       clientId: client.id,
-      displayName: client.name,
+      displayName: getClientDisplayName(client),
     };
   }
 

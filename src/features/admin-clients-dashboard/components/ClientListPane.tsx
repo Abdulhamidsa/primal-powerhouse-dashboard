@@ -4,6 +4,7 @@ import type {
   AdminClientListItem,
   AdminClientStatus,
 } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export function ClientListPane({
   clients,
@@ -97,6 +98,7 @@ export function ClientListPane({
           ...clients.filter(client => !client.isSystemTemplate),
         ].map(client => {
           const isSelected = client.id === selectedClientId;
+          const displayName = getClientDisplayName(client);
 
           return (
             <button
@@ -113,7 +115,7 @@ export function ClientListPane({
               <div className="flex items-center gap-3">
                 <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
                   <span className="absolute inset-0 grid place-items-center text-sm font-semibold text-muted-foreground">
-                    {client.name
+                    {displayName
                       .split(/\s+/)
                       .map(part => part[0])
                       .join('')
@@ -121,8 +123,8 @@ export function ClientListPane({
                       .toUpperCase()}
                   </span>
                   <Image
-                    src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name)}`}
-                    alt={client.name}
+                    src={client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`}
+                    alt={displayName}
                     fill
                     sizes="44px"
                     className="object-cover"
@@ -132,7 +134,7 @@ export function ClientListPane({
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-foreground">{client.name}</p>
+                  <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
                   <p className="truncate text-xs text-muted-foreground">{client.email ?? client.username ?? 'No email'}</p>
                   {client.status === 'INACTIVE' && client.deletionScheduledFor ? (
                     <p className="truncate text-[10px] text-amber-200/80">

@@ -24,6 +24,7 @@ export type PushPayload = {
   body: string;
   url: string;
   tag?: string;
+  notificationId?: string;
   conversationId?: string;
   senderId?: string;
 };
@@ -40,7 +41,7 @@ export type PushSendResult = {
 };
 
 type PushSendOptions = {
-  source: 'coach-message' | 'test';
+  source: string;
   reason?: string;
   metadata?: Record<string, unknown>;
 };
@@ -70,7 +71,7 @@ export async function logPushDeliveryResult({
   metadata,
 }: {
   clientId: string;
-  source: 'coach-message' | 'test';
+  source: string;
   payload: PushPayload;
   result: PushSendResult;
   metadata?: Record<string, unknown>;

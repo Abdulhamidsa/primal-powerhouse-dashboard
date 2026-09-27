@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { requireApiAuth } from '@/lib/api-auth';
 import { AuthService } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/audit';
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       action: 'client.password_reset',
       ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip'),
       userAgent: request.headers.get('user-agent'),
-      metadata: { clientEmail: client.email, clientName: client.name },
+      metadata: { clientEmail: client.email, clientName: getClientDisplayName(client) },
     });
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 const ACTION_NAME = 'WORKOUT_SESSION_REVIEWED';
 
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       performedBy: session.client
         ? {
             id: session.client.id,
-            name: session.client.name,
+            name: getClientDisplayName(session.client),
           }
         : null,
       reviewed: Boolean(firstReview),

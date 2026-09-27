@@ -4,6 +4,7 @@ import { requireApiAuth } from '@/lib/api-auth';
 import { resolveActor } from '@/lib/chat/conversation';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { getCurrentWeekStartDateKey } from '@/features/weekly-checkin/utils/week';
 import type {
   AdminCommandCenterResponse,
@@ -150,6 +151,8 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        username: true,
+        email: true,
         createdAt: true,
         targetWeight: true,
       },
@@ -279,7 +282,7 @@ export async function GET(request: NextRequest) {
         orderBy: { date: 'asc' },
         include: {
           client: {
-            select: { id: true, name: true },
+            select: { id: true, name: true, username: true, email: true },
           },
         },
       }),
@@ -367,7 +370,7 @@ export async function GET(request: NextRequest) {
             id: `critical-unread-${client.id}`,
             severity: 'critical',
             clientId: client.id,
-            clientName: client.name,
+            clientName: getClientDisplayName(client),
             title: 'Unread message waiting over 1 hour',
             detail: `${unread.unreadCount} unread message(s) from client`,
             occurredAt: unread.lastUnreadAt.toISOString(),
@@ -385,7 +388,7 @@ export async function GET(request: NextRequest) {
           id: `critical-checkin-${client.id}`,
           severity: 'critical',
           clientId: client.id,
-          clientName: client.name,
+          clientName: getClientDisplayName(client),
           title: 'Weekly check-in overdue',
           detail: 'No check-in submitted by expected day.',
           occurredAt: now.toISOString(),
@@ -402,7 +405,7 @@ export async function GET(request: NextRequest) {
           id: `warning-workout-${client.id}`,
           severity: 'warning',
           clientId: client.id,
-          clientName: client.name,
+          clientName: getClientDisplayName(client),
           title: 'No workout activity for 3 days',
           detail: latestWorkoutAt
             ? `Last workout: ${latestWorkoutAt.toLocaleDateString()}`
@@ -418,7 +421,7 @@ export async function GET(request: NextRequest) {
           id: `warning-nutrition-${client.id}`,
           severity: 'warning',
           clientId: client.id,
-          clientName: client.name,
+          clientName: getClientDisplayName(client),
           title: 'No meal compliance log for 2 days',
           detail: latestNutritionAt
             ? `Last nutrition log: ${latestNutritionAt.toLocaleDateString()}`
@@ -454,7 +457,7 @@ export async function GET(request: NextRequest) {
             id: `watch-weight-${client.id}`,
             severity: 'watch',
             clientId: client.id,
-            clientName: client.name,
+            clientName: getClientDisplayName(client),
             title: 'Weight trend is slipping',
             detail: 'Recent check-ins are moving away from target trend.',
             occurredAt: latestCheckIn.submittedAt.toISOString(),
@@ -475,7 +478,7 @@ export async function GET(request: NextRequest) {
           id: `warning-onboarding-${client.id}`,
           severity: 'warning',
           clientId: client.id,
-          clientName: client.name,
+          clientName: getClientDisplayName(client),
           title: 'New client not onboarded in 24h',
           detail: 'No assignments, sessions, or conversation started yet.',
           occurredAt: client.createdAt.toISOString(),
@@ -582,7 +585,7 @@ export async function GET(request: NextRequest) {
         title: 'Upcoming coaching session today',
         detail: `${session.type.replace('_', ' ')} • ${session.duration} min`,
         clientId: session.clientId,
-        clientName: session.client?.name ?? 'Client',
+        clientName: getClientDisplayName(session.client ?? {}),
         dueAt: session.date.toISOString(),
         actions: createBaseActions(
           session.clientId,
@@ -605,7 +608,7 @@ export async function GET(request: NextRequest) {
         clientId: true,
         date: true,
         type: true,
-        client: { select: { name: true } },
+        client: { select: { name: true, username: true, email: true } },
       },
     });
 
@@ -613,7 +616,7 @@ export async function GET(request: NextRequest) {
       momentumMap.set(`workout-${workout.id}`, {
         id: `momentum-workout-${workout.id}`,
         clientId: workout.clientId,
-        clientName: workout.client.name,
+        clientName: getClientDisplayName(workout.client),
         title: 'Workout completed',
         detail: `${workout.type.replace('_', ' ')} logged today.`,
         occurredAt: workout.date.toISOString(),
@@ -626,7 +629,7 @@ export async function GET(request: NextRequest) {
       momentumMap.set(`checkin-${checkIn.id}`, {
         id: `momentum-checkin-${checkIn.id}`,
         clientId: checkIn.clientId,
-        clientName: client.name,
+        clientName: getClientDisplayName(client),
         title: 'Weekly check-in submitted',
         detail: 'Client submitted this week update.',
         occurredAt: checkIn.submittedAt.toISOString(),
@@ -641,7 +644,7 @@ export async function GET(request: NextRequest) {
       momentumMap.set(`nutrition-${nutrition.id}`, {
         id: `momentum-nutrition-${nutrition.id}`,
         clientId: nutrition.clientId,
-        clientName: client.name,
+        clientName: getClientDisplayName(client),
         title: 'Meal compliance logged',
         detail: `Nutrition status: ${nutrition.status.toLowerCase().replace('_', ' ')}`,
         occurredAt: nutrition.dayDate.toISOString(),
@@ -661,7 +664,7 @@ export async function GET(request: NextRequest) {
       recentChanges.push({
         id: `change-message-${row.conversationId}`,
         clientId: row.clientId,
-        clientName: client.name,
+        clientName: getClientDisplayName(client),
         category: 'message',
         text: `${Number(row.unreadCount)} unread message(s) waiting.`,
         occurredAt: row.lastUnreadAt.toISOString(),
@@ -673,7 +676,7 @@ export async function GET(request: NextRequest) {
       recentChanges.push({
         id: `change-workout-${workout.id}`,
         clientId: workout.clientId,
-        clientName: workout.client.name,
+        clientName: getClientDisplayName(workout.client),
         category: 'workout',
         text: `Completed ${workout.type.toLowerCase().replace('_', ' ')} workout.`,
         occurredAt: workout.date.toISOString(),
@@ -698,7 +701,7 @@ export async function GET(request: NextRequest) {
       recentChanges.push({
         id: `change-checkin-${checkIn.id}`,
         clientId: checkIn.clientId,
-        clientName: client.name,
+        clientName: getClientDisplayName(client),
         category: 'check_in',
         text: 'Weekly check-in submitted.',
         occurredAt: checkIn.submittedAt.toISOString(),
@@ -713,7 +716,7 @@ export async function GET(request: NextRequest) {
       recentChanges.push({
         id: `change-nutrition-${nutrition.id}`,
         clientId: nutrition.clientId,
-        clientName: client.name,
+        clientName: getClientDisplayName(client),
         category: 'nutrition',
         text: `Nutrition log: ${nutrition.status.toLowerCase().replace('_', ' ')}`,
         occurredAt: nutrition.dayDate.toISOString(),

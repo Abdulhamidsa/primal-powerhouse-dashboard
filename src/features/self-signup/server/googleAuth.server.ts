@@ -61,11 +61,11 @@ export async function exchangeAndVerifyGoogleCode(code: string) {
   return {
     providerAccountId: payload.sub,
     email: payload.email.toLowerCase().trim(),
-    name: payload.name || payload.email.split('@')[0],
+    name: payload.name?.trim() || null,
   };
 }
 
-export async function findOrCreateGoogleClient(input: { providerAccountId: string; email: string; name: string }) {
+export async function findOrCreateGoogleClient(input: { providerAccountId: string; email: string; name: string | null }) {
   return prisma.$transaction(async tx => {
     const existingIdentity = await tx.clientAuthIdentity.findUnique({
       where: {

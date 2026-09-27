@@ -17,6 +17,7 @@ import { WeightProjectionTimelineCard } from '@/features/admin-clients-dashboard
 import { MotivationalMessageTab } from '@/features/admin-clients-dashboard/components/MotivationalMessageTab';
 import type { AdminClientDetail } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import type { AdminWeeklyCheckInListItem } from '@/features/weekly-checkin/types/adminWeeklyCheckIn.types';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 export function SummaryTabContent({
   client,
@@ -50,6 +51,7 @@ export function SummaryTabContent({
     bmi == null ? 'unknown' : bmi < 18.5 ? 'underweight' : bmi < 25 ? 'normal' : bmi < 30 ? 'overweight' : 'obese';
 
   const goalMacros = parseGoalMacros(client.goalMacros);
+  const displayName = getClientDisplayName(client);
 
   const weeklyTrendData = weeklyWeightHistory
     .filter(item => item.weightKg != null)
@@ -69,7 +71,7 @@ export function SummaryTabContent({
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
-              {client.name}
+              {displayName}
             </h2>
             <div className="mt-2 space-y-1">
               <p className="text-sm inline-flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
@@ -208,7 +210,7 @@ export function SummaryTabContent({
       </div>
 
       <WeightProjectionTimelineCard
-        clientName={client.name}
+        clientName={displayName}
         currentWeightKg={summaryWeightKg}
         targetWeightKg={client.targetWeight}
         weeklyCheckIns={weeklyWeightHistory}
@@ -249,7 +251,7 @@ export function SummaryTabContent({
 
       <MotivationalMessageTab
         clientId={client.id}
-        clientName={client.name}
+        clientName={displayName}
         currentMessage={client.motivationalMessage}
         onRefreshAction={onRefreshClientAction ?? (() => {})}
       />

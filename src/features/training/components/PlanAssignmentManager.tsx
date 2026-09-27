@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCoachPlans, useCoachPlanDays } from '../hooks/useCoachPlans';
 import { useCoachTemplates } from '../hooks/useCoachTemplates';
 import type { ClientTrainingPlanWithDays } from '../types';
+import { getClientDisplayName } from '@/lib/client-display-name';
 
 type WeekdayFormState = {
   weekday: number;
@@ -155,7 +156,7 @@ export function PlanAssignmentManager() {
               <option value="">{plansLoading ? 'Loading plans...' : 'Select a plan'}</option>
               {plansWithDetails.map(plan => (
                 <option key={plan.id} value={plan.id}>
-                  {plan.name} {plan.client?.name ? `- ${plan.client.name}` : `- ${plan.clientId}`}
+                  {plan.name} {plan.client ? `- ${getClientDisplayName(plan.client)}` : `- ${plan.clientId}`}
                 </option>
               ))}
             </select>

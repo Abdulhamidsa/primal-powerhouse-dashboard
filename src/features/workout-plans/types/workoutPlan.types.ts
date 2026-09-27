@@ -27,7 +27,7 @@ export interface WorkoutPlanAssignment {
   clientId: string;
   assignedAt: string;
   isActive: boolean;
-  client?: { id: string; name: string; avatar: string | null };
+  client?: { id: string; name: string | null; username?: string | null; email?: string | null; avatar: string | null };
 }
 
 export interface WorkoutPlan {

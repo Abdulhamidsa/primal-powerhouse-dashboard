@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getClientDisplayName } from '@/lib/client-display-name';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { serializeDailyCheckIn } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { addDays, getRecentDateKeys, parseDateKeyLocal, toDateKeyLocal } from '@/features/daily-checkin/utils/date';
@@ -189,7 +190,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return jsonWithCache({
       client: {
         id: client.id,
-        name: client.name,
+        name: getClientDisplayName(client),
       },
       range: {
         startDate: startDateKey,
