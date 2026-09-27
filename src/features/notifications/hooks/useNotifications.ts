@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { getPusherClient, hasPusherClientConfig } from '@/lib/realtime/pusher-client';
 import { toUserChannel } from '@/lib/realtime/channels';
@@ -17,15 +17,17 @@ import type { NotificationListResponse, NotificationRecord, NotificationUnreadCo
 
 export function useNotifications(userId?: string, enabled = true) {
   const { mutate: globalMutate } = useSWRConfig();
+  const seenRealtimeNotificationIds = useRef<Set<string>>(new Set());
   const listQuery = useSWR<NotificationListResponse, ApiError>(enabled ? NOTIFICATIONS_URL : null, listNotifications, {
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
+    refreshInterval: 20_000,
     dedupingInterval: 15_000,
   });
   const countQuery = useSWR<NotificationUnreadCountResponse, ApiError>(
     enabled ? NOTIFICATION_UNREAD_COUNT_URL : null,
     getUnreadNotificationCount,
-    { revalidateOnFocus: true, revalidateOnReconnect: true, dedupingInterval: 10_000 },
+    { revalidateOnFocus: true, revalidateOnReconnect: true, refreshInterval: 20_000, dedupingInterval: 10_000 },
   );
 
   useEffect(() => {
@@ -35,17 +37,46 @@ export function useNotifications(userId?: string, enabled = true) {
 
     const channelName = toUserChannel(userId);
     const channel = pusher.subscribe(channelName);
-    const handler = (notification: NotificationRecord) => {
+    const handler = async (notification: NotificationRecord) => {
       if (!notification.channels.includes('IN_APP')) return;
 
-      void globalMutate(NOTIFICATIONS_URL);
-      void globalMutate(
+      if (seenRealtimeNotificationIds.current.has(notification.id)) return;
+
+      let isNewNotification = false;
+      await globalMutate<NotificationListResponse | undefined>(
+        NOTIFICATIONS_URL,
+        (previous: NotificationListResponse | undefined) => {
+          if (seenRealtimeNotificationIds.current.has(notification.id) || previous?.items.some(item => item.id === notification.id)) {
+            return previous;
+          }
+
+          seenRealtimeNotificationIds.current.add(notification.id);
+          if (seenRealtimeNotificationIds.current.size > 500) {
+            const oldestId = seenRealtimeNotificationIds.current.values().next().value;
+            if (oldestId) seenRealtimeNotificationIds.current.delete(oldestId);
+          }
+
+          isNewNotification = true;
+          return {
+            items: [notification, ...(previous?.items ?? [])],
+            nextCursor: previous?.nextCursor ?? null,
+          };
+        },
+        false,
+      );
+
+      if (!isNewNotification) return;
+
+      await globalMutate<NotificationUnreadCountResponse | undefined>(
         NOTIFICATION_UNREAD_COUNT_URL,
         (previous: NotificationUnreadCountResponse | undefined) => ({
           unreadCount: (previous?.unreadCount ?? 0) + (notification.readAt ? 0 : 1),
         }),
         false,
       );
+
+      void globalMutate(NOTIFICATIONS_URL);
+      void globalMutate(NOTIFICATION_UNREAD_COUNT_URL);
     };
 
     channel.bind('notification.created', handler);
