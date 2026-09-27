@@ -77,9 +77,9 @@ export function NotificationBell({
       </button>
 
       {open ? (
-        <section className="absolute right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl">
-          <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
-            <div>
+        <section className="absolute right-0 z-50 mt-2 w-[calc(100vw-2rem)] max-w-sm min-w-0 overflow-hidden rounded-3xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl sm:w-[min(22rem,calc(100vw-2rem))]">
+          <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
+            <div className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground">Notifications</h2>
               <p className="text-xs text-muted-foreground">
                 {unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up'}
@@ -89,7 +89,7 @@ export function NotificationBell({
               type="button"
               onClick={markAll}
               disabled={isMarkingAll || unreadCount === 0}
-              className="text-xs font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-40"
+              className="shrink-0 text-xs font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isMarkingAll ? 'Saving…' : 'Mark all read'}
             </button>
@@ -113,12 +113,12 @@ export function NotificationBell({
                   <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${notification.readAt ? 'bg-border' : 'bg-primary'}`} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-start justify-between gap-2">
-                      <span className={`text-sm ${notification.readAt ? 'font-medium' : 'font-semibold'} text-foreground`}>
+                      <span className={`min-w-0 break-words [overflow-wrap:anywhere] text-sm ${notification.readAt ? 'font-medium' : 'font-semibold'} text-foreground`}>
                         {notification.title}
                       </span>
                       <span className="shrink-0 text-[10px] text-muted-foreground">{formatDate(notification.createdAt)}</span>
                     </span>
-                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{notification.body}</span>
+                    <span className="mt-1 block break-words text-xs leading-5 text-muted-foreground [overflow-wrap:anywhere]">{notification.body}</span>
                   </span>
                   {notification.readAt ? <CheckIcon size={14} className="mt-1 shrink-0 text-muted-foreground" /> : null}
                 </button>
