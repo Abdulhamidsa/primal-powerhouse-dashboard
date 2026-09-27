@@ -84,6 +84,7 @@ export function useUserPasswordLink() {
 }
 
 export function useRecoveryEmail() {
+  const { mutate } = useSWRConfig();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<RecoveryEmailResponse | null>(null);
@@ -94,6 +95,7 @@ export function useRecoveryEmail() {
     try {
       const response = await addRecoveryEmail(email);
       setResult(response);
+      await mutate(USER_PROFILE_ME_URL);
       return response;
     } catch (err) {
       const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : 'Something went wrong';

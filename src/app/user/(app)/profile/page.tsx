@@ -20,8 +20,7 @@ import UpdateAppButton from '@/components/UpdateAppButton';
 import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/components/ProfileAvatarEditModal';
 import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
-import { useDisplayNameUpdate, useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
-import { hasVerifiedRecoveryEmail } from '@/lib/auth/recovery-status';
+import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 type ProfileHubUser = {
   id: string;
@@ -64,15 +63,12 @@ export default function UserProfilePage() {
   const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const { user, error: profileError, isLoading } = useUserProfile();
   const { logout } = useUserLogout();
-  const { save: saveDisplayName, loading: isSavingDisplayName, error: displayNameError } = useDisplayNameUpdate();
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [displayName, setDisplayName] = useState('');
   const [userData, setUserData] = useState<ProfileHubUser | null>(user);
 
   useEffect(() => {
     setUserData(user);
-    setDisplayName(user?.name ?? '');
   }, [user]);
 
   useEffect(() => {
@@ -85,14 +81,6 @@ export default function UserProfilePage() {
   const handleSignOut = async () => {
     await logout();
     window.location.href = '/user/login';
-  };
-
-  const handleDisplayNameSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    try {
-      const response = await saveDisplayName(displayName);
-      setUserData(response.user);
-    } catch {}
   };
 
   return (
@@ -137,31 +125,13 @@ export default function UserProfilePage() {
         </div>
 
         <SettingsCard>
-          <div className="border-b border-border/60 px-4 py-4">
-            <p className="text-sm font-semibold text-foreground">Account info</p>
-            <p className="mt-1 text-xs text-muted-foreground">Your identity and login details.</p>
-          </div>
-          <div className="divide-y divide-border/60">
-            <form className="space-y-3 px-4 py-4" onSubmit={handleDisplayNameSubmit}>
-              <label htmlFor="display-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Display name</label>
-              <div className="flex gap-2">
-                <input id="display-name" value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={100} placeholder="Your name" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" />
-                <button type="submit" disabled={isSavingDisplayName} className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">{isSavingDisplayName ? 'Saving…' : 'Save'}</button>
-              </div>
-              {displayNameError ? <p className="text-xs text-destructive">{displayNameError}</p> : null}
-            </form>
-            <AccountInfoRow label="Username" value={userData?.username ? `@${userData.username}` : 'Not set'} />
-            <AccountInfoRow label="Email" value={userData?.email ?? 'Not added'} />
-            <Link href="/user/settings/security" className="flex items-center justify-between px-4 py-3 transition-colors active:bg-muted/60">
-              <span className="text-sm text-muted-foreground">Recovery</span>
-              <span className="text-sm font-medium text-foreground">
-                {userData && hasVerifiedRecoveryEmail(userData) ? 'Enabled' : 'Not set up'}
-              </span>
-            </Link>
-          </div>
-        </SettingsCard>
-
-        <SettingsCard>
+          <SettingsLink
+            href="/user/settings/account"
+            icon={<User aria-hidden="true" focusable="false" className="h-4 w-4" />}
+            title="Account Info"
+            description="Name, username, email, and recovery"
+          />
+          <div className="ml-16 h-px bg-border/60" />
           <SettingsLink
             href="/user/settings/security"
             icon={<KeyRound aria-hidden="true" focusable="false" className="h-4 w-4" />}
@@ -235,15 +205,6 @@ export default function UserProfilePage() {
           }}
         />
       </div>
-    </div>
-  );
-}
-
-function AccountInfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="truncate text-right text-sm font-medium text-foreground">{value}</span>
     </div>
   );
 }

@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { CaretLeftIcon as ChevronLeft, KeyIcon as KeyRound, EnvelopeSimpleIcon as Mail } from '@phosphor-icons/react';
+import { CaretLeftIcon as ChevronLeft, KeyIcon as KeyRound } from '@phosphor-icons/react';
 import { SkeletonUserProfile } from '@/components/Skeletons';
-import { useRecoveryEmail, useUserPasswordLink, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
+import { useUserPasswordLink, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
 
 export default function UserSecuritySettingsPage() {
   const { user, isLoading } = useUserProfile();
@@ -14,8 +13,6 @@ export default function UserSecuritySettingsPage() {
     error: passwordLinkError,
     result: passwordLinkResult,
   } = useUserPasswordLink();
-  const { save: saveRecoveryEmail, loading: isSavingRecoveryEmail, error: recoveryEmailError, result: recoveryEmailResult } = useRecoveryEmail();
-  const [recoveryEmail, setRecoveryEmail] = useState('');
 
   if (isLoading) return <SkeletonUserProfile />;
 
@@ -23,11 +20,6 @@ export default function UserSecuritySettingsPage() {
     try {
       await sendPasswordLink();
     } catch {}
-  };
-
-  const handleRecoveryEmail = async (event: React.FormEvent) => {
-    event.preventDefault();
-    try { await saveRecoveryEmail(recoveryEmail); } catch {}
   };
 
   return (
@@ -45,7 +37,7 @@ export default function UserSecuritySettingsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Settings</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">Account Security</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Manage password access without changing your Google sign-in.
+            Manage your password and login access.
           </p>
         </div>
 
@@ -71,33 +63,13 @@ export default function UserSecuritySettingsPage() {
           </div>
 
           <div className="border-t border-border/60 px-4 py-4">
-            <div className="flex items-start gap-3 rounded-2xl bg-muted/25 p-3">
-              <Mail aria-hidden="true" focusable="false" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <p className="text-xs leading-5 text-muted-foreground">
-                {user?.email ? `We send a secure email link to ${user.email}.` : 'Add a recovery email to receive secure password links and recover your account.'} Password changes are never done directly inside the logged-in session.
-              </p>
-            </div>
+            <p className="text-xs leading-5 text-muted-foreground">Password changes are handled through a secure email link and are never completed directly inside the logged-in session.</p>
             {passwordLinkResult?.message ? (
               <p className="mt-3 text-xs text-emerald-600">{passwordLinkResult.message}</p>
             ) : null}
             {passwordLinkError ? <p className="mt-3 text-xs text-destructive">{passwordLinkError}</p> : null}
           </div>
         </section>
-
-        {!user?.email || !user.emailVerifiedAt ? (
-          <section className="space-y-3 rounded-3xl border border-border bg-card p-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Recovery email</p>
-              <p className="mt-1 text-xs text-muted-foreground">We’ll verify this address before it can be used to sign in.</p>
-            </div>
-            <form className="space-y-3" onSubmit={handleRecoveryEmail}>
-              <input type="email" required value={recoveryEmail} onChange={event => setRecoveryEmail(event.target.value)} placeholder="you@example.com" className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
-              <button type="submit" disabled={isSavingRecoveryEmail} className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">{isSavingRecoveryEmail ? 'Sending…' : 'Add recovery email'}</button>
-              {recoveryEmailResult?.message ? <p className="text-xs text-emerald-600">{recoveryEmailResult.message}</p> : null}
-              {recoveryEmailError ? <p className="text-xs text-destructive">{recoveryEmailError}</p> : null}
-            </form>
-          </section>
-        ) : null}
       </div>
     </div>
   );
