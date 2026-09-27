@@ -14,6 +14,8 @@ export default defineConfig({
       'src/lib/client-display-name.test.ts',
       'src/features/offline/**/*.test.ts',
       'packages/theme/**/*.test.ts',
+      'src/lib/security/**/*.test.ts',
+      'src/app/api/**/*.test.ts',
     ],
   },
 });

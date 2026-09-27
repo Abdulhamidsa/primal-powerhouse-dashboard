@@ -1,0 +1,65 @@
+export const mealResponseSelect = {
+  id: true,
+  name: true,
+  type: true,
+  calories: true,
+  protein: true,
+  carbs: true,
+  fat: true,
+  fiber: true,
+  ingredients: true,
+  spices: true,
+  instructions: true,
+  prepTime: true,
+  cookTime: true,
+  servings: true,
+  tags: true,
+  imageUrl: true,
+  isPersonalized: true,
+  originalMealId: true,
+};
+
+export const sideItemResponseSelect = {
+  id: true,
+  name: true,
+  type: true,
+  imageUrl: true,
+  calories: true,
+  protein: true,
+  carbs: true,
+  fat: true,
+  fiber: true,
+  ingredients: true,
+  spices: true,
+  instructions: true,
+  foodOrigin: true,
+} as const;
+
+export const mealAssignmentResponseSelect = {
+  id: true,
+  dayOfWeek: true,
+  mealType: true,
+  portion: true,
+  scheduledTime: true,
+  notes: true,
+  mealPlanId: true,
+  mealId: true,
+  meal: { select: mealResponseSelect },
+  side: { select: sideItemResponseSelect },
+} as const;
+
+export const mealPlanResponseSelect = {
+  id: true,
+  name: true,
+  startDate: true,
+  endDate: true,
+  isActive: true,
+  notes: true,
+  createdAt: true,
+  updatedAt: true,
+  clientId: true,
+  mealAssignments: {
+    select: mealAssignmentResponseSelect,
+    orderBy: [{ dayOfWeek: 'asc' as const }, { mealType: 'asc' as const }],
+  },
+};

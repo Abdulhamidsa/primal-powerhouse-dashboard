@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { CACHE_TAGS, invalidateMealCaches, mealTag } from '@/lib/cache-tags';
-import { AuthService } from '@/lib/auth';
+import { requireApiAuth, requireClientResourceAccess, requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 function isObjectObjectToken(value: unknown): boolean {
   return typeof value === 'string' && value.trim().toLowerCase() === '[object object]';
@@ -176,17 +177,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const view = searchParams.get('view');
-    const referer = request.headers.get('referer') ?? '';
-
-    let fromUserPage = false;
-    if (referer) {
-      try {
-        const refererPath = new URL(referer).pathname;
-        fromUserPage = refererPath.startsWith('/user');
-      } catch {
-        fromUserPage = false;
-      }
-    }
     const meal = await unstable_cache(
       async () =>
         prisma.meal.findUnique({
@@ -198,6 +188,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!meal) {
       return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
+    }
+
+    const auth = await requireApiAuth(request);
+    if (!auth.ok && (view === 'client' || meal.isPersonalized || meal.clientId)) return auth.res;
+
+    if (auth.ok && auth.user.type === 'client') {
+      const assigned = meal.clientId === auth.user.userId || Boolean(
+        await prisma.mealAssignment.findFirst({
+          where: { mealId: id, mealPlan: { clientId: auth.user.userId } },
+          select: { id: true },
+        }),
+      );
+      if (!assigned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (auth.ok && auth.user.type === 'admin') {
+      const staff = await requireStaffActor(request);
+      if (!staff.ok) return staff.res;
+      if (staff.actor.role === 'COACH' && meal.coachId !== staff.actor.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     let ingredients = normalizeIngredients(meal.ingredients);
@@ -229,15 +240,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const parsedMeal = {
-      ...meal,
+      id: meal.id,
+      name: meal.name,
+      type: meal.type,
+      calories: meal.calories,
+      protein: meal.protein,
+      carbs: meal.carbs,
+      fat: meal.fat,
+      fiber: meal.fiber,
+      imageUrl: meal.imageUrl,
+      prepTime: meal.prepTime,
+      cookTime: meal.cookTime,
+      servings: meal.servings,
+      isPersonalized: meal.isPersonalized,
+      originalMealId: meal.originalMealId,
+      createdAt: meal.createdAt,
+      updatedAt: meal.updatedAt,
       ingredients,
       spices,
       instructions,
       tags: normalizeTags(meal.tags),
     };
 
-    const authUser = await AuthService.validateRequestAuth(request);
-    if (view === 'client' || authUser?.type === 'client' || fromUserPage) {
+    if (view === 'client' || auth.ok && auth.user.type === 'client') {
       return NextResponse.json({
         ...parsedMeal,
         ingredients: ingredients.map(toClientDisplayIngredient).filter(Boolean),
@@ -247,16 +272,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(parsedMeal);
   } catch (error) {
-    console.error('Error fetching meal:', error);
+    console.error('Error fetching meal:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to fetch meal' }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const { id } = await params;
     const body = await request.json();
     const { coachId, ...mealData } = body;
+
+    const existing = await prisma.meal.findUnique({ where: { id }, select: { id: true, clientId: true, coachId: true } });
+    if (!existing) return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
+    if (auth.actor.role === 'COACH' && existing.coachId !== auth.actor.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (auth.actor.role === 'COACH' && typeof mealData.clientId === 'string') {
+      const clientAccess = await requireClientResourceAccess(request, mealData.clientId);
+      if (!clientAccess.ok) return clientAccess.res;
+    }
 
     const meal = await prisma.meal.update({
       where: { id },
@@ -270,8 +308,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Parse JSON fields for response
     const parsedMeal = {
-      ...meal,
+      id: meal.id,
+      name: meal.name,
+      type: meal.type,
+      calories: meal.calories,
+      protein: meal.protein,
+      carbs: meal.carbs,
+      fat: meal.fat,
+      fiber: meal.fiber,
+      imageUrl: meal.imageUrl,
+      prepTime: meal.prepTime,
+      cookTime: meal.cookTime,
+      servings: meal.servings,
+      isPersonalized: meal.isPersonalized,
+      originalMealId: meal.originalMealId,
+      createdAt: meal.createdAt,
+      updatedAt: meal.updatedAt,
       ingredients: meal.ingredients ? JSON.parse(meal.ingredients) : [],
+      spices: meal.spices ? JSON.parse(meal.spices) : [],
       instructions: meal.instructions ? JSON.parse(meal.instructions) : [],
       tags: meal.tags ? JSON.parse(meal.tags) : [],
     };
@@ -283,23 +337,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(parsedMeal);
   } catch (error) {
-    console.error('Error updating meal:', error);
+    console.error('Error updating meal:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to update meal' }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const { id } = await params;
 
     // First, check if the meal exists and whether it's personalized
     const meal = await prisma.meal.findUnique({
       where: { id },
-      select: { isPersonalized: true, originalMealId: true },
+      select: { isPersonalized: true, originalMealId: true, coachId: true },
     });
 
     if (!meal) {
       return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
+    }
+
+    if (auth.actor.role === 'COACH' && meal.coachId !== auth.actor.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // For original/template meals, only allow deletion when they are not used anywhere
@@ -328,7 +389,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json({ message: 'Meal deleted successfully' });
   } catch (error) {
-    console.error('Error deleting meal:', error);
+    console.error('Error deleting meal:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to delete meal' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffActor, requireStaffClientAccess } from '@/lib/api-auth';
 import { invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { z } from 'zod';
 
@@ -9,7 +9,7 @@ type RouteContext = { params: Promise<{ assignmentId: string }> };
 const patchSchema = z.object({ isActive: z.boolean() });
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const { assignmentId } = await params;
@@ -25,20 +25,22 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     include: { workoutPlan: { select: { coachId: true } } },
   });
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (existing.workoutPlan.coachId !== auth.user.userId)
+  if (existing.workoutPlan.coachId !== auth.actor.id)
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const clientAccess = await requireStaffClientAccess(request, existing.clientId);
+  if (!clientAccess.ok) return clientAccess.res;
 
   const updated = await (prisma as any).workoutPlanAssignment.update({
     where: { id: assignmentId },
     data: { isActive: parsed.data.isActive },
   });
 
-  invalidateWorkoutCaches({ clientId: existing.clientId, coachId: auth.user.userId });
+  invalidateWorkoutCaches({ clientId: existing.clientId, coachId: auth.actor.id });
   return NextResponse.json(updated);
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const { assignmentId } = await params;
@@ -48,11 +50,13 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
     include: { workoutPlan: { select: { coachId: true } } },
   });
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (existing.workoutPlan.coachId !== auth.user.userId)
+  if (existing.workoutPlan.coachId !== auth.actor.id)
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const clientAccess = await requireStaffClientAccess(request, existing.clientId);
+  if (!clientAccess.ok) return clientAccess.res;
 
   await (prisma as any).workoutPlanAssignment.delete({ where: { id: assignmentId } });
 
-  invalidateWorkoutCaches({ clientId: existing.clientId, coachId: auth.user.userId });
+  invalidateWorkoutCaches({ clientId: existing.clientId, coachId: auth.actor.id });
   return new Response(null, { status: 204 });
 }

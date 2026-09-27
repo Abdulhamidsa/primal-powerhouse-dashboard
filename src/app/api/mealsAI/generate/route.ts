@@ -1,11 +1,16 @@
 // @deprecated — use /api/mealsAI/generate-meal-template instead
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { generateMeals } from '@/lib/meal-generator';
 import type { GenerateMealsInput } from '@/types/meal';
 import { generateMealsSchema } from '@/features/meals/schemas/generateMeals.schema';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
 
     // Validate body with Zod schema and coerce types where possible
@@ -38,22 +43,16 @@ export async function POST(request: Request) {
     // Simple server-side cap
     if ((input.mealCount ?? 0) > 10) input.mealCount = 10;
 
-    // TODO: add auth/checks here (only coaches/admins should call this in production)
-
     const meals = await generateMeals(input);
 
     return NextResponse.json({ success: true, data: meals });
-  } catch (error: any) {
-    // Log full error for debugging (server logs)
-    console.error('mealsAI/generate error:', error);
-    const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
+  } catch (error: unknown) {
+    console.error('mealsAI/generate error:', safeErrorMessage(error));
 
     return NextResponse.json(
       {
         success: false,
-        message,
-        ...(stack ? { stack: String(stack).split('\n').slice(0, 5).join('\n') } : {}),
+        message: 'Meal generation failed',
       },
       { status: 500 },
     );

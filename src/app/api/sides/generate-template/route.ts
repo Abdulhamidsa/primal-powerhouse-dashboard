@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { FoodBaseUnit, FoodSource } from '@prisma/client';
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
 import { prisma } from '@/lib/prisma';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
 import { buildPromptIngredientNames } from '@/lib/ingredient-canonicalization';
 import {
@@ -160,8 +162,11 @@ function buildSidePrompt(input: {
   ].join(' ');
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
     const parsed = generateSideSchema.safeParse(body);
 
@@ -311,9 +316,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(template);
   } catch (error) {
-    console.error('Error generating side template:', error);
+    console.error('Error generating side template:', safeErrorMessage(error));
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate side template' },
+      { error: 'Failed to generate side template' },
       { status: 500 },
     );
   }

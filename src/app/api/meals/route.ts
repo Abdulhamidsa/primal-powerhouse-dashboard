@@ -3,6 +3,8 @@ import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, invalidateMealCaches } from '@/lib/cache-tags';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 function hasMissingSpicesColumnError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
@@ -30,8 +32,24 @@ function parseMealForResponse(
   },
   spicesFallback: string[] = [],
 ) {
+  const value = meal as Record<string, unknown>;
   return {
-    ...meal,
+    id: value.id,
+    name: value.name,
+    type: value.type,
+    calories: value.calories,
+    protein: value.protein,
+    carbs: value.carbs,
+    fat: value.fat,
+    fiber: value.fiber ?? null,
+    prepTime: value.prepTime ?? null,
+    cookTime: value.cookTime ?? null,
+    servings: value.servings ?? 1,
+    imageUrl: value.imageUrl ?? null,
+    isPersonalized: value.isPersonalized ?? false,
+    originalMealId: value.originalMealId ?? null,
+    createdAt: value.createdAt,
+    updatedAt: value.updatedAt,
     ingredients: safeJsonArray(meal.ingredients),
     spices: meal.spices ? safeJsonArray(meal.spices) : spicesFallback,
     instructions: safeJsonArray(meal.instructions),
@@ -41,8 +59,6 @@ function parseMealForResponse(
 
 export async function GET(_request: NextRequest) {
   try {
-    console.log('Meals API: FETCH ALL');
-
     let meals;
 
     try {
@@ -75,11 +91,10 @@ export async function GET(_request: NextRequest) {
 
     return jsonWithCache(parsedMeals);
   } catch (error) {
-    console.error('Error fetching meals:', error);
+    console.error('Error fetching meals:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to fetch meals',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );
@@ -88,62 +103,22 @@ export async function GET(_request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Meals API: Starting POST request');
-    // Get the raw request body for debugging
-    const bodyText = await request.text();
-    console.log('Meals API: Raw request body:', bodyText);
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
 
-    // Parse the body
-    let body;
-    try {
-      body = JSON.parse(bodyText);
-      console.log('Meals API: Parsed request body successfully');
-    } catch (parseError) {
-      console.error('Meals API: Error parsing request body:', parseError);
-      return jsonWithCache({ error: 'Invalid JSON in request body' }, { status: 400 });
-    }
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object') return jsonWithCache({ error: 'Invalid JSON in request body' }, { status: 400 });
 
     // Extract fields we'll handle separately (and remove fields that aren't in the schema)
     const { coachId, clientId, description, originalMealId, isPersonalized, ...mealData } = body;
 
-    // Get or create default coach
-    let userId = coachId;
-
-    // Validate provided coachId first; stale IDs should not break meal creation
-    if (userId) {
-      const existingUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true },
-      });
-
-      if (!existingUser) {
-        console.warn(`Meals API: Provided coachId not found (${userId}). Falling back to default coach.`);
-        userId = undefined;
-      }
+    let userId = auth.actor.role === 'COACH' ? auth.actor.id : coachId || auth.actor.id;
+    const selectedUser = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+    if (!selectedUser || (selectedUser.role !== 'ADMIN' && selectedUser.role !== 'COACH')) {
+      return jsonWithCache({ error: 'Invalid coach' }, { status: 400 });
     }
-
-    if (!userId) {
-      console.log('Meals API: Finding seeded coach for POST');
-      // Try to find the seeded coach first
-      let defaultCoach = await prisma.user.findFirst({
-        where: { role: 'COACH' },
-      });
-
-      // If no coach exists, create one
-      if (!defaultCoach) {
-        console.log('Meals API: Creating default coach for POST');
-        defaultCoach = await prisma.user.create({
-          data: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-      console.log('Meals API: Using coach ID for POST:', userId);
+    if (auth.actor.role === 'COACH' && userId !== auth.actor.id) {
+      return jsonWithCache({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Create a clean meal data object that exactly matches the database schema
@@ -200,7 +175,6 @@ export async function POST(request: NextRequest) {
       tags: mealData.tags ? (typeof mealData.tags === 'string' ? mealData.tags : JSON.stringify(mealData.tags)) : '[]',
     };
 
-    console.log('Creating meal with cleaned data:', mealDataClean);
     let createdMeal;
     const spicesFallback = Array.isArray(mealData.spices)
       ? mealData.spices.filter((item: unknown) => typeof item === 'string' && item.trim())
@@ -211,13 +185,11 @@ export async function POST(request: NextRequest) {
         data: mealDataClean,
       });
 
-      console.log('Meal created successfully:', createdMeal.id);
     } catch (error) {
-      console.error('Error creating meal:', error);
-      console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Error creating meal:', safeErrorMessage(error));
 
       if (hasMissingSpicesColumnError(error)) {
-        console.warn('Meals API POST: spices column missing; creating meal without spices column.');
+        console.warn('Meals API POST: spices column missing; using compatibility insert.');
         const fallbackCreatedRows = await prisma.$queryRawUnsafe(
           `INSERT INTO "meals" ("name", "type", "calories", "protein", "carbs", "fat", "fiber", "ingredients", "instructions", "prepTime", "cookTime", "servings", "tags", "imageUrl", "isPersonalized", "originalMealId", "coachId", "clientId")
            VALUES ($1, $2::"MealType", $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
@@ -255,7 +227,6 @@ export async function POST(request: NextRequest) {
 
       // Try again with absolute minimal fields
       try {
-        console.log('Retrying meal creation with minimal required fields');
         createdMeal = await prisma.meal.create({
           data: {
             name: mealDataClean.name,
@@ -273,9 +244,8 @@ export async function POST(request: NextRequest) {
             originalMealId: mealDataClean.originalMealId || null,
           },
         });
-        console.log('Meal created successfully with minimal fields:', createdMeal.id);
       } catch (retryError) {
-        console.error('Error on retry attempt:', retryError);
+        console.error('Error on retry attempt:', safeErrorMessage(retryError));
         throw retryError; // Re-throw the retry error
       }
     }
@@ -290,12 +260,10 @@ export async function POST(request: NextRequest) {
 
     return jsonWithCache(parsedMeal, { status: 201 });
   } catch (error) {
-    console.error('Error creating meal:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error creating meal:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to create meal',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

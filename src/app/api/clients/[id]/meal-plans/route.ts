@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 /**
  * GET handler for client meal plans
@@ -10,7 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
 
-    console.log(`Fetching meal plans for client ID: ${id}`);
+    const access = await requireStaffClientAccess(request, id);
+    if (!access.ok) return access.res;
 
     // Verify client exists
     const client = await prisma.client.findUnique({
@@ -18,7 +21,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!client) {
-      console.log(`Client with ID ${id} not found`);
       return NextResponse.json({ error: `Client with ID ${id} not found` }, { status: 404 });
     }
 
@@ -39,11 +41,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
     });
 
-    console.log(`Found ${mealPlans.length} meal plans for client ${id}`);
-
     return NextResponse.json(mealPlans);
   } catch (error) {
-    console.error('Error fetching client meal plans:', error);
+    console.error('Error fetching client meal plans:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to fetch meal plans' }, { status: 500 });
   }
 }

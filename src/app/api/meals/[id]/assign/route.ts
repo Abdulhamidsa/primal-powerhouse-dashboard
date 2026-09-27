@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { invalidateMealCaches } from '@/lib/cache-tags';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -12,6 +14,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Client ID is required' }, { status: 400 });
     }
 
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
+
     // Verify original meal exists
     const originalMeal = await prisma.meal.findUnique({
       where: { id },
@@ -19,6 +24,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (!originalMeal) {
       return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
+    }
+
+    if (access.actor.role === 'COACH' && originalMeal.coachId !== access.actor.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Verify client exists
@@ -54,8 +63,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     });
 
-    console.log(`Created personalized meal ${personalizedMeal.id} from ${originalMeal.id} for client ${clientId}`);
-
     invalidateMealCaches({
       mealId: originalMeal.id,
       clientId,
@@ -80,7 +87,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error assigning meal:', error);
-    return NextResponse.json({ error: 'Failed to assign meal', details: (error as Error).message }, { status: 500 });
+    console.error('Error assigning meal:', safeErrorMessage(error));
+    return NextResponse.json({ error: 'Failed to assign meal' }, { status: 500 });
   }
 }

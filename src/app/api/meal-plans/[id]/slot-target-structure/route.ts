@@ -12,6 +12,8 @@ import {
   slotTargetCalculatorApplyResponseSchema,
 } from '@/features/slot-target-calculator/schemas/slotTargetCalculator.schema';
 import type { SlotTarget } from '@/features/slot-target-calculator/types/slotTargetCalculator.types';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -39,6 +41,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!mealPlan) {
       return jsonWithCache({ error: 'Meal plan not found' }, { status: 404 });
     }
+
+    const access = await requireStaffClientAccess(request, mealPlan.clientId);
+    if (!access.ok) return access.res;
 
     if (mealPlan.clientId !== payload.clientId) {
       return jsonWithCache({ error: 'Meal plan client mismatch' }, { status: 400 });
@@ -178,11 +183,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }),
     );
   } catch (error) {
-    console.error('[MEAL_PLAN_SLOT_TARGET_STRUCTURE_POST] Failed:', error);
+    console.error('[MEAL_PLAN_SLOT_TARGET_STRUCTURE_POST] Failed:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to apply slot target structure',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

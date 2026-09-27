@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { invalidateVideoCaches } from '@/lib/cache-tags';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const existing = await prisma.videoAssignment.findUnique({
+      where: { id },
+      select: { id: true, clientId: true },
+    });
+    if (!existing) return NextResponse.json({ error: 'Video assignment not found' }, { status: 404 });
+    const access = await requireStaffClientAccess(request, existing.clientId);
+    if (!access.ok) return access.res;
+
     const body = await request.json();
     const { isCompleted, progress, notes } = body;
 
@@ -60,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(parsedAssignment);
   } catch (error) {
-    console.error('Error updating video assignment:', error);
+    console.error('Error updating video assignment:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to update video assignment' }, { status: 500 });
   }
 }
@@ -73,6 +83,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const existing = await prisma.videoAssignment.findUnique({
+      where: { id },
+      select: { id: true, clientId: true },
+    });
+    if (!existing) return NextResponse.json({ error: 'Video assignment not found' }, { status: 404 });
+    const access = await requireStaffClientAccess(request, existing.clientId);
+    if (!access.ok) return access.res;
 
     const assignment = await prisma.videoAssignment.delete({
       where: { id },
@@ -87,7 +104,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json({ message: 'Video assignment deleted successfully' });
   } catch (error) {
-    console.error('Error deleting video assignment:', error);
+    console.error('Error deleting video assignment:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to delete video assignment' }, { status: 500 });
   }
 }

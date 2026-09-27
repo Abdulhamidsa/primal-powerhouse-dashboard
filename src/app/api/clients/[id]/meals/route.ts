@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 function safeJsonArray(value: string | null) {
   if (!value) return [];
@@ -14,6 +16,8 @@ function safeJsonArray(value: string | null) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: clientId } = await params;
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
 
     // Get all personalized meals for this client
     const personalizedMeals = await prisma.meal.findMany({
@@ -37,9 +41,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       count: parsedMeals.length,
     });
   } catch (error) {
-    console.error('Error fetching client meals:', error);
+    console.error('Error fetching client meals:', safeErrorMessage(error));
     return NextResponse.json(
-      { error: 'Failed to fetch client meals', details: (error as Error).message },
+      { error: 'Failed to fetch client meals' },
       { status: 500 }
     );
   }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { FoodBaseUnit, FoodSource, MealType as PrismaMealType } from '@prisma/client';
 import { distance as levenshtein } from 'fastest-levenshtein';
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
@@ -24,6 +24,8 @@ import {
   type CookingMethod,
 } from '@/lib/meal-dishes';
 import type { FoodGenerationReadyRow } from '@/types/meal';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 type BuilderMealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 type MatchMode = 'strict' | 'lenient';
@@ -840,8 +842,11 @@ MACRO ESTIMATION RULE:
 - Values must be realistic food nutrition values, not zeros.`;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
     const parsed = generateMealTemplateRequestSchema.safeParse(body);
 
@@ -1230,13 +1235,12 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: `Failed to generate a strong enough meal template after retries: ${lastErrorMessage}`,
+        message: 'Failed to generate a meal template after retries',
       },
       { status: 500 },
     );
   } catch (error) {
-    console.error('generate-meal-template-v2 error:', error);
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, message }, { status: 500 });
+    console.error('generate-meal-template-v2 error:', safeErrorMessage(error));
+    return NextResponse.json({ success: false, message: 'Meal template generation failed' }, { status: 500 });
   }
 }

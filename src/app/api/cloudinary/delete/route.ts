@@ -5,6 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
+import { requireCloudinaryAssetAccess } from '@/lib/cloudinary-access';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 // Configure Cloudinary (server-side only)
 cloudinary.config({
@@ -15,11 +17,15 @@ cloudinary.config({
 
 export async function POST(request: NextRequest) {
   try {
-    const { publicId } = await request.json();
+    const body = await request.json().catch(() => null);
+    const publicId = typeof body?.publicId === 'string' ? body.publicId.trim() : '';
 
-    if (!publicId) {
+    if (!publicId || publicId.length > 512) {
       return NextResponse.json({ error: 'Public ID is required' }, { status: 400 });
     }
+
+    const access = await requireCloudinaryAssetAccess(request, publicId);
+    if (!access.ok) return access.res;
 
     // Verify credentials are configured
     if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
@@ -35,14 +41,13 @@ export async function POST(request: NextRequest) {
         message: 'Image deleted successfully',
       });
     } else {
-      return NextResponse.json({ error: 'Failed to delete image', details: result }, { status: 400 });
+      return NextResponse.json({ error: 'Failed to delete image' }, { status: 400 });
     }
   } catch (error) {
-    console.error('Delete error:', error);
+    console.error('Delete error:', safeErrorMessage(error));
     return NextResponse.json(
       {
         error: 'Failed to delete image',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

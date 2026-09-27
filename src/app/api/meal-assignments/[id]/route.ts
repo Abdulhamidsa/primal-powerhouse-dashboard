@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MealType } from '@prisma/client';
 import { invalidateMealCaches } from '@/lib/cache-tags';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 type PatchBody = {
   notes?: string | null;
@@ -18,6 +20,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id } = await params;
     const body = (await request.json()) as PatchBody;
 
+    const existing = await prisma.mealAssignment.findUnique({
+      where: { id },
+      select: { mealPlan: { select: { clientId: true } } },
+    });
+    if (!existing) return NextResponse.json({ error: 'Meal assignment not found' }, { status: 404 });
+
+    const access = await requireStaffClientAccess(request, existing.mealPlan.clientId);
+    if (!access.ok) return access.res;
+
     const assignment = await prisma.mealAssignment.update({
       where: { id },
       data: {
@@ -29,7 +40,33 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(body.mealId !== undefined ? { mealId: body.mealId } : {}),
         ...(body.mealPlanId !== undefined ? { mealPlanId: body.mealPlanId } : {}),
       },
-      include: { meal: true, side: true, mealPlan: true },
+      select: {
+        id: true,
+        dayOfWeek: true,
+        mealType: true,
+        portion: true,
+        scheduledTime: true,
+        notes: true,
+        mealPlanId: true,
+        mealId: true,
+        meal: {
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true,
+            calories: true,
+            protein: true,
+            carbs: true,
+            fat: true,
+            ingredients: true,
+            instructions: true,
+            isPersonalized: true,
+          },
+        },
+        side: {
+          select: { id: true, name: true, type: true, imageUrl: true, calories: true, protein: true, carbs: true, fat: true, fiber: true },
+        },
+      },
     });
 
     invalidateMealCaches({
@@ -40,7 +77,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json(assignment);
   } catch (error) {
-    console.error('Error updating meal assignment:', error);
+    console.error('Error updating meal assignment:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to update meal assignment' }, { status: 500 });
   }
 }
@@ -49,7 +86,16 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   try {
     const { id } = await params;
 
-    const assignment = await prisma.mealAssignment.delete({ where: { id } });
+    const existing = await prisma.mealAssignment.findUnique({
+      where: { id },
+      select: { mealPlan: { select: { clientId: true } } },
+    });
+    if (!existing) return NextResponse.json({ error: 'Meal assignment not found' }, { status: 404 });
+
+    const access = await requireStaffClientAccess(_request, existing.mealPlan.clientId);
+    if (!access.ok) return access.res;
+
+    const assignment = await prisma.mealAssignment.delete({ where: { id }, select: { id: true, mealId: true, mealPlanId: true } });
 
     invalidateMealCaches({
       mealId: assignment.mealId,
@@ -59,7 +105,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
     return NextResponse.json({ message: 'Meal assignment deleted successfully' });
   } catch (error) {
-    console.error('Error deleting meal assignment:', error);
+    console.error('Error deleting meal assignment:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to delete meal assignment' }, { status: 500 });
   }
 }

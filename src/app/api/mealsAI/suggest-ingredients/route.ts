@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import type { MatchedIngredient as GlobalMatchedIngredient } from '@/types/meal';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const suggestIngredientsSchema = z.object({
   mealDescription: z.string().min(3).max(500),
@@ -33,6 +35,9 @@ interface UnmatchedIngredient {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
     const parsed = suggestIngredientsSchema.safeParse(body);
 
@@ -184,11 +189,11 @@ Return ONLY valid JSON, no other text.`;
       mealName,
     });
   } catch (error) {
-    console.error('Ingredient suggestion error:', error);
+    console.error('Ingredient suggestion error:', safeErrorMessage(error));
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Internal server error',
+        message: 'Ingredient suggestion failed',
       },
       { status: 500 },
     );

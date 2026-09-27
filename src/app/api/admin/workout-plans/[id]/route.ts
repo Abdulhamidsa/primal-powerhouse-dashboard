@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffActor } from '@/lib/api-auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { updateWorkoutPlanSchema } from '@/features/workout-plans/schemas/workoutPlan.schemas';
@@ -8,7 +8,7 @@ import { updateWorkoutPlanSchema } from '@/features/workout-plans/schemas/workou
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const { id } = await params;
@@ -28,20 +28,20 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   });
 
   if (!plan) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (plan.coachId !== auth.user.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (plan.coachId !== auth.actor.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   return jsonWithCache(plan);
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const { id } = await params;
 
   const existing = await (prisma as any).workoutPlan.findUnique({ where: { id }, select: { id: true, coachId: true } });
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (existing.coachId !== auth.user.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (existing.coachId !== auth.actor.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const body = await request.json();
   const parsed = updateWorkoutPlanSchema.safeParse(body);
@@ -94,7 +94,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             tips: null,
             isPublic: true,
             viewCount: 0,
-            coachId: auth.user.userId,
+            coachId: auth.actor.id,
           },
         });
       }
@@ -122,22 +122,22 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return plan;
   });
 
-  invalidateWorkoutCaches({ coachId: auth.user.userId, planId: id });
+  invalidateWorkoutCaches({ coachId: auth.actor.id, planId: id });
   return NextResponse.json(updatedPlan);
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const { id } = await params;
 
   const existing = await (prisma as any).workoutPlan.findUnique({ where: { id }, select: { id: true, coachId: true } });
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (existing.coachId !== auth.user.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (existing.coachId !== auth.actor.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   await (prisma as any).workoutPlan.delete({ where: { id } });
 
-  invalidateWorkoutCaches({ coachId: auth.user.userId, planId: id });
+  invalidateWorkoutCaches({ coachId: auth.actor.id, planId: id });
   return new Response(null, { status: 204 });
 }

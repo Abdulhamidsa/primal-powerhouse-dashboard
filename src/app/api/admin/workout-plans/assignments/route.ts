@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffActor, requireStaffClientAccess } from '@/lib/api-auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, clientWorkoutPlansTag, invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { z } from 'zod';
@@ -13,13 +13,15 @@ const assignSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get('clientId');
 
   if (!clientId) return NextResponse.json({ error: 'clientId required' }, { status: 400 });
+  const clientAccess = await requireStaffClientAccess(request, clientId);
+  if (!clientAccess.ok) return clientAccess.res;
 
   const assignments = await unstable_cache(
     async () =>
@@ -47,7 +49,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const body = await request.json();
@@ -57,6 +59,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { workoutPlanId, clientId, isActive } = parsed.data;
+  const clientAccess = await requireStaffClientAccess(request, clientId);
+  if (!clientAccess.ok) return clientAccess.res;
 
   // Verify plan belongs to this coach
   const plan = await (prisma as any).workoutPlan.findUnique({
@@ -64,7 +68,7 @@ export async function POST(request: NextRequest) {
     select: { coachId: true },
   });
   if (!plan) return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
-  if (plan.coachId !== auth.user.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (plan.coachId !== auth.actor.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const assignment = await (prisma as any).workoutPlanAssignment.create({
     data: {
@@ -75,6 +79,6 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  invalidateWorkoutCaches({ clientId, coachId: auth.user.userId });
+  invalidateWorkoutCaches({ clientId, coachId: auth.actor.id });
   return NextResponse.json(assignment, { status: 201 });
 }

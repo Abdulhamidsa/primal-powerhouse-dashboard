@@ -1,4 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { prisma } from '@/lib/prisma';
 import { createSideSchema } from '@/features/sides/schemas/side.schema';
 import {
@@ -20,13 +22,16 @@ export async function GET() {
       return NextResponse.json({ error: 'Side items table is not deployed yet', items: [] }, { status: 503 });
     }
 
-    console.error('Error fetching sides:', error);
+    console.error('Error fetching sides:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to fetch sides' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
     const parsed = createSideSchema.safeParse(body);
 
@@ -63,7 +68,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error('Error creating side:', error);
+    console.error('Error creating side:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to create side' }, { status: 500 });
   }
 }

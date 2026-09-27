@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireClientResourceAccess, requireStaffActor } from '@/lib/api-auth';
 import { decryptOrFallback, encryptField } from '@/lib/security/field-crypto';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { clientProfileReadSelect, toClientDetailResponse } from '@/lib/client-response';
+import { logAuditEvent } from '@/lib/audit';
 import { z } from 'zod';
 
 function isMissingFieldEncryptionKeyError(error: unknown): boolean {
@@ -54,10 +56,10 @@ const adminClientUpdateSchema = z
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireApiAuth(request, 'admin');
-    if (!auth.ok) return auth.res;
-
     const { id } = await params;
+
+    const access = await requireClientResourceAccess(request, id);
+    if (!access.ok) return access.res;
 
     // Check if the client ID is valid
     if (!id || typeof id !== 'string' || id.trim() === '') {
@@ -68,6 +70,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Try to find the client
     const client = await (prisma as any).client.findUnique({
       where: { id },
+      select: clientProfileReadSelect,
     });
 
     if (!client) {
@@ -116,20 +119,31 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         `client:${client.id}:dietaryRestrictions`
       );
 
-      const clientData = {
-        ...client,
-        isSystemTemplate: Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
-        phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${client.id}:phone`),
-        notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${client.id}:notes`),
-        motivationalMessage: decryptWithPlaintextFallback(
-          client.motivationalMessageEncrypted,
-          client.motivationalMessage,
-          `client:${client.id}:motivationalMessage`
-        ),
-        goals: goalsRaw ? JSON.parse(goalsRaw) : [],
-        dietaryRestrictions: dietaryRaw ? JSON.parse(dietaryRaw) : [],
-        progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
-      };
+      const clientData = toClientDetailResponse(
+        {
+          ...client,
+          phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${client.id}:phone`),
+          notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${client.id}:notes`),
+          motivationalMessage: decryptWithPlaintextFallback(
+            client.motivationalMessageEncrypted,
+            client.motivationalMessage,
+            `client:${client.id}:motivationalMessage`,
+          ),
+          goals: goalsRaw ? JSON.parse(goalsRaw) : [],
+          dietaryRestrictions: dietaryRaw ? JSON.parse(dietaryRaw) : [],
+          progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
+        },
+        Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
+      );
+
+      await logAuditEvent({
+        actorId: access.actor.id,
+        actorRole: access.actor.role,
+        targetUserId: id,
+        action: 'client.profile.read',
+        ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined,
+        userAgent: request.headers.get('user-agent') ?? undefined,
+      });
 
       return jsonWithCache(clientData);
     } catch (parseError) {
@@ -137,7 +151,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json(
         {
           error: 'Error parsing client data',
-          details: safeErrorMessage(parseError),
         },
         { status: 500 }
       );
@@ -147,7 +160,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: safeErrorMessage(error),
       },
       { status: 500 }
     );
@@ -156,7 +168,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireApiAuth(request, 'admin');
+    const auth = await requireStaffActor(request);
     if (!auth.ok) return auth.res;
 
     const { id } = await params;
@@ -173,15 +185,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    const actor = await prisma.user.findUnique({
-      where: { id: auth.user.userId },
-      select: { id: true, role: true },
-    });
-
-    if (!actor || (actor.role !== 'ADMIN' && actor.role !== 'COACH')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const existingClient = await prisma.client.findUnique({
       where: { id },
       select: { id: true, email: true, coachId: true },
@@ -191,7 +194,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
     }
 
-    if (actor.role === 'COACH' && existingClient.coachId !== actor.id) {
+    if (auth.actor.role === 'COACH' && existingClient.coachId !== auth.actor.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -220,6 +223,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const client = await (prisma as any).client.update({
       where: { id },
       data: updateData,
+      select: clientProfileReadSelect,
     });
 
     // Parse JSON fields for response
@@ -230,20 +234,25 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       `client:${id}:dietaryRestrictions`
     );
 
-    const clientData = {
-      ...client,
-      isSystemTemplate: Boolean((process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim() && client.id === process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim()) || client.email === 'starter-template@primal.local'),
-      phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${id}:phone`),
-      notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${id}:notes`),
-      motivationalMessage: decryptWithPlaintextFallback(
-        client.motivationalMessageEncrypted,
-        client.motivationalMessage,
-        `client:${id}:motivationalMessage`
+    const clientData = toClientDetailResponse(
+      {
+        ...client,
+        phone: decryptWithPlaintextFallback(client.phoneEncrypted, client.phone, `client:${id}:phone`),
+        notes: decryptWithPlaintextFallback(client.notesEncrypted, client.notes, `client:${id}:notes`),
+        motivationalMessage: decryptWithPlaintextFallback(
+          client.motivationalMessageEncrypted,
+          client.motivationalMessage,
+          `client:${id}:motivationalMessage`,
+        ),
+        goals: goals ? JSON.parse(goals) : [],
+        dietaryRestrictions: dietary ? JSON.parse(dietary) : [],
+        progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
+      },
+      Boolean(
+        (process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim() && id === process.env.SELF_SERVICE_STARTER_CLIENT_ID.trim()) ||
+          client.email === 'starter-template@primal.local',
       ),
-      goals: goals ? JSON.parse(goals) : [],
-      dietaryRestrictions: dietary ? JSON.parse(dietary) : [],
-      progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
-    };
+    );
 
     return NextResponse.json(clientData);
   } catch (error) {
@@ -254,12 +263,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireApiAuth(request, 'admin');
+    const auth = await requireStaffActor(request);
     if (!auth.ok) return auth.res;
 
     const { id } = await params;
 
-    const protectedClient = await prisma.client.findUnique({ where: { id }, select: { email: true } });
+    const protectedClient = await prisma.client.findUnique({ where: { id }, select: { email: true, coachId: true } });
+    if (!protectedClient) return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    if (auth.actor.role === 'COACH' && protectedClient.coachId !== auth.actor.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     if (protectedClient && ((process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim() && id === process.env.SELF_SERVICE_STARTER_CLIENT_ID.trim()) || protectedClient.email === 'starter-template@primal.local')) {
       return NextResponse.json({ error: 'System template clients cannot be deleted.' }, { status: 400 });
     }

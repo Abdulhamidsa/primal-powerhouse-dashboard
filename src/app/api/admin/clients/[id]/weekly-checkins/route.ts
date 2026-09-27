@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireStaffClientAccess } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { getClientDisplayName } from '@/lib/client-display-name';
 import { jsonWithCache } from '@/lib/cacheHeaders';
@@ -89,20 +89,15 @@ function getWeeklyCheckInStatus(hasCurrentWeekCheckIn: boolean): 'completed' | '
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { error, user } = await requireAuth(request, 'admin');
-    if (error || !user) {
-      return jsonWithCache({ error: 'Not authorized' }, { status: 401 });
-    }
-
     const { id: clientId } = await params;
     if (!clientId) {
       return jsonWithCache({ error: 'Client id is required' }, { status: 400 });
     }
 
-    const actor = await prisma.user.findUnique({
-      where: { id: user.userId },
-      select: { id: true, role: true },
-    });
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
+
+    const actor = access.actor;
 
     const currentWeekStartDateKey = getCurrentWeekStartDateKey();
     const currentWeekStartUtc = dateKeyToUtcMidnight(currentWeekStartDateKey);

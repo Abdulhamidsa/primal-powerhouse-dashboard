@@ -3,6 +3,8 @@ import { FoodBaseUnit, FoodSource } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { matchIngredientToFood } from '@/lib/meal-matcher';
 import { rematchMealIngredientsRequestSchema } from '@/features/meals/schemas/generateMealTemplate.schema';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 function toFoodGenerationRows(
   foods: Array<{
@@ -32,6 +34,9 @@ function toFoodGenerationRows(
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
     const parsed = rematchMealIngredientsRequestSchema.safeParse(body);
 
@@ -111,7 +116,7 @@ export async function POST(request: NextRequest) {
       warnings,
     });
   } catch (error) {
-    console.error('Meal ingredient rematch failed:', error);
+    console.error('Meal ingredient rematch failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to rematch meal ingredients' }, { status: 500 });
   }
 }

@@ -1,44 +1,23 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { requireStaffActor, requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get('coachId');
     const clientId = searchParams.get('clientId');
 
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      // First try to get the real coach (not the placeholder)
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }, // Skip the placeholder coach
-          ],
-        },
-      });
-
-      // If no real coach found, create/get the default one
-      if (!defaultCoach) {
-        defaultCoach = await prisma.user.upsert({
-          where: { email: 'coach@fitness.com' },
-          update: {},
-          create: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
+    if (clientId) {
+      const access = await requireStaffClientAccess(request, clientId);
+      if (!access.ok) return access.res;
     }
 
-    const whereClause: any = { coachId: userId };
+    const whereClause: Record<string, unknown> = auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : {};
     if (clientId) {
       whereClause.clientId = clientId;
     }
@@ -46,7 +25,7 @@ export async function GET(request: NextRequest) {
     const workouts = await prisma.workout.findMany({
       where: whereClause,
       include: {
-        client: true,
+        client: { select: { id: true, name: true, username: true, email: true } },
       },
       orderBy: { date: 'desc' },
     });
@@ -59,54 +38,40 @@ export async function GET(request: NextRequest) {
 
     return jsonWithCache(parsedWorkouts);
   } catch (error) {
-    console.error('Error fetching workouts:', error);
+    console.error('Error fetching workouts:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to fetch workouts' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
-    const { coachId, ...workoutData } = body;
+    const { clientId, coachId, ...workoutData } = body;
 
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      // First try to get the real coach (not the placeholder)
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }, // Skip the placeholder coach
-          ],
-        },
-      });
+    if (!clientId) return jsonWithCache({ error: 'Client ID is required' }, { status: 400 });
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
+    const userId = auth.actor.role === 'COACH' ? auth.actor.id : coachId || auth.actor.id;
 
-      // If no real coach found, create/get the default one
-      if (!defaultCoach) {
-        defaultCoach = await prisma.user.upsert({
-          where: { email: 'coach@fitness.com' },
-          update: {},
-          create: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
+    if (auth.actor.role === 'ADMIN' && coachId) {
+      const selectedCoach = await prisma.user.findUnique({ where: { id: coachId }, select: { id: true, role: true } });
+      if (!selectedCoach || selectedCoach.role !== 'COACH') {
+        return jsonWithCache({ error: 'Invalid coach' }, { status: 400 });
       }
-
-      userId = defaultCoach.id;
     }
 
     const workout = await prisma.workout.create({
       data: {
         ...workoutData,
+        clientId,
         coachId: userId,
         exercises: JSON.stringify(workoutData.exercises || []),
       },
       include: {
-        client: true,
+        client: { select: { id: true, name: true, username: true, email: true } },
       },
     });
 
@@ -118,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     return jsonWithCache(parsedWorkout, { status: 201 });
   } catch (error) {
-    console.error('Error creating workout:', error);
+    console.error('Error creating workout:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to create workout' }, { status: 500 });
   }
 }

@@ -2,47 +2,21 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { getClientDisplayName } from '@/lib/client-display-name';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Dashboard Stats API: Starting GET request');
-    const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get('coachId');
-    console.log('Dashboard Stats API: Coach ID:', coachId);
-
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      console.log('Dashboard Stats API: Finding seeded coach');
-      // Try to find the seeded coach first
-      let defaultCoach = await prisma.user.findFirst({
-        where: { role: 'COACH' },
-      });
-
-      // If no coach exists, create one
-      if (!defaultCoach) {
-        console.log('Dashboard Stats API: Creating default coach');
-        defaultCoach = await prisma.user.create({
-          data: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-      console.log('Dashboard Stats API: Using coach ID:', userId);
-    }
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+    const userId = auth.actor.role === 'COACH' ? auth.actor.id : undefined;
+    const coachFilter = userId ? { coachId: userId } : {};
 
     // Get current date ranges
     const now = new Date();
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-
-    console.log('Dashboard Stats API: Fetching data for user:', userId);
 
     // Fetch data
     const [
@@ -58,26 +32,26 @@ export async function GET(request: NextRequest) {
       recentWorkouts,
     ] = await Promise.all([
       // Total clients
-      prisma.client.count({ where: { coachId: userId } }),
+      prisma.client.count({ where: coachFilter }),
 
       // Active clients
       prisma.client.count({
         where: {
-          coachId: userId,
+          ...coachFilter,
           status: 'ACTIVE',
         },
       }),
 
       // Total meals
-      prisma.meal.count({ where: { coachId: userId } }),
+      prisma.meal.count({ where: coachFilter }),
 
       // Total workouts
-      prisma.workout.count({ where: { coachId: userId } }),
+      prisma.workout.count({ where: coachFilter }),
 
       // This month clients
       prisma.client.count({
         where: {
-          coachId: userId,
+          ...coachFilter,
           createdAt: { gte: startOfThisMonth },
         },
       }),
@@ -85,7 +59,7 @@ export async function GET(request: NextRequest) {
       // Last month clients
       prisma.client.count({
         where: {
-          coachId: userId,
+          ...coachFilter,
           createdAt: {
             gte: startOfLastMonth,
             lte: endOfLastMonth,
@@ -96,7 +70,7 @@ export async function GET(request: NextRequest) {
       // This month workouts
       prisma.workout.count({
         where: {
-          coachId: userId,
+          ...coachFilter,
           date: { gte: startOfThisMonth },
         },
       }),
@@ -104,7 +78,7 @@ export async function GET(request: NextRequest) {
       // Last month workouts
       prisma.workout.count({
         where: {
-          coachId: userId,
+          ...coachFilter,
           date: {
             gte: startOfLastMonth,
             lte: endOfLastMonth,
@@ -115,7 +89,7 @@ export async function GET(request: NextRequest) {
       // Upcoming sessions (future workouts/sessions)
       prisma.session.findMany({
         where: {
-          coachId: userId,
+          ...coachFilter,
           date: { gte: now },
           status: 'SCHEDULED',
         },
@@ -125,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       // Recent workouts for activity feed
       prisma.workout.findMany({
-        where: { coachId: userId },
+        where: coachFilter,
         include: { client: { select: { name: true, username: true, email: true } } },
         take: 5,
         orderBy: { date: 'desc' },
@@ -135,7 +109,7 @@ export async function GET(request: NextRequest) {
     // Calculate average rating
     const workoutsWithRating = await prisma.workout.findMany({
       where: {
-        coachId: userId,
+        ...coachFilter,
         rating: { not: null },
       },
       select: { rating: true },
@@ -203,15 +177,12 @@ export async function GET(request: NextRequest) {
       })),
     };
 
-    console.log('Dashboard Stats API: Successfully calculated stats');
     return jsonWithCache(stats);
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error fetching dashboard stats:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to fetch dashboard stats',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

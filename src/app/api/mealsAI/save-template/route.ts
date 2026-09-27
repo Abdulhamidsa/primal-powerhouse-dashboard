@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import { saveGeneratedMealTemplateSchema } from '@/features/meals/schemas/saveGeneratedMealTemplate.schema';
 import { resolveIngredientUnitByName } from '@/utils/ingredientUnitResolver';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const SPICE_TERMS = [
   'salt',
@@ -143,31 +145,11 @@ function buildInstructionsForSave(input: {
   return appendCoverageStepIfNeeded(withSpiceGuidance, input.ingredientNames, input.spices);
 }
 
-async function resolveCoachId(): Promise<string> {
-  const existingCoach = await prisma.user.findFirst({
-    where: { role: 'COACH' },
-    select: { id: true },
-  });
-
-  if (existingCoach?.id) {
-    return existingCoach.id;
-  }
-
-  const createdCoach = await prisma.user.create({
-    data: {
-      email: 'coach@fitness.com',
-      name: 'Mike Johnson',
-      password: 'hashedpassword',
-      role: 'COACH',
-    },
-    select: { id: true },
-  });
-
-  return createdCoach.id;
-}
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const body = await request.json();
     const parsed = saveGeneratedMealTemplateSchema.safeParse(body);
 
@@ -252,7 +234,7 @@ export async function POST(request: Request) {
     }
 
     const macros = calculateMealMacros(normalizedIngredients);
-    const coachId = await resolveCoachId();
+    const coachId = auth.actor.id;
 
     const mergedTags = Array.from(
       new Set(['ai-generated', 'standard-template', ...tags].map(tag => tag.trim()).filter(Boolean)),
@@ -305,8 +287,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error('mealsAI/save-template error:', error);
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, message }, { status: 500 });
+    console.error('mealsAI/save-template error:', safeErrorMessage(error));
+    return NextResponse.json({ success: false, message: 'Failed to save meal template' }, { status: 500 });
   }
 }

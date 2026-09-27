@@ -3,10 +3,32 @@ import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { calculateHealthMetrics } from '@/lib/health/calculators';
 import { healthMetricsRequestSchema } from '@/features/health-metrics/schemas/healthMetrics.schema';
+import { requireClientResourceAccess } from '@/lib/api-auth';
+import { logAuditEvent } from '@/lib/audit';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
+
+const healthMetricResponseSelect = {
+  id: true,
+  clientId: true,
+  weight: true,
+  bmi: true,
+  bmr: true,
+  tdee: true,
+  recommendedCals: true,
+  bmiCategory: true,
+  goal: true,
+  macros: true,
+  notes: true,
+  recordedAt: true,
+  createdAt: true,
+} as const;
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: clientId } = await params;
+    const access = await requireClientResourceAccess(request, clientId);
+    if (!access.ok) return access.res;
+
     const body = await request.json();
     const parsed = healthMetricsRequestSchema.safeParse(body);
 
@@ -121,6 +143,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         macros: JSON.stringify(metrics.macros),
         notes: [...metrics.notes, ...metrics.safetyWarnings].join('\n'),
       },
+      select: healthMetricResponseSelect,
     });
 
     // Update client with current weight and goal
@@ -139,6 +162,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     });
 
+    await logAuditEvent({
+      actorId: access.actor.id,
+      actorRole: access.actor.role,
+      targetUserId: clientId,
+      action: 'client.health_metrics.write',
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip'),
+      userAgent: request.headers.get('user-agent'),
+    });
+
     return jsonWithCache({
       success: true,
       applied: true,
@@ -147,13 +179,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       client: updatedClient,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
-    console.error('Error calculating health metrics:', errorMessage);
-    console.error('Full error:', error);
+    console.error('Error calculating health metrics:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to calculate health metrics',
-        details: errorMessage,
       },
       { status: 500 },
     );
@@ -164,22 +193,35 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: clientId } = await params;
+    const access = await requireClientResourceAccess(request, clientId);
+    if (!access.ok) return access.res;
+
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 10;
+    const requestedLimit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 10;
+    const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 10;
 
     const metrics = await prisma.healthMetric.findMany({
       where: { clientId },
       orderBy: { recordedAt: 'desc' },
       take: limit,
+      select: healthMetricResponseSelect,
+    });
+
+    await logAuditEvent({
+      actorId: access.actor.id,
+      actorRole: access.actor.role,
+      targetUserId: clientId,
+      action: 'client.health_metrics.read',
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip'),
+      userAgent: request.headers.get('user-agent'),
     });
 
     return jsonWithCache(metrics);
   } catch (error) {
-    console.error('Error fetching health metrics:', error);
+    console.error('Error fetching health metrics:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to fetch health metrics',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

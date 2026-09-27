@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { CACHE_TAGS, clientVideoAssignmentsTag, invalidateVideoCaches } from '@/lib/cache-tags';
+import { requireClientResourceAccess, requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,6 +13,9 @@ export async function GET(request: NextRequest) {
     if (!clientId) {
       return NextResponse.json({ error: 'Client ID is required' }, { status: 400 });
     }
+
+    const access = await requireClientResourceAccess(request, clientId);
+    if (!access.ok) return access.res;
 
     const assignments = await unstable_cache(
       async () =>
@@ -45,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(parsedAssignments);
   } catch (error) {
-    console.error('Error fetching video assignments:', error);
+    console.error('Error fetching video assignments:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to fetch video assignments' }, { status: 500 });
   }
 }
@@ -64,6 +69,9 @@ export async function POST(request: NextRequest) {
         if (!clientId || !videoId) {
           continue; // Skip invalid assignments
         }
+
+        const access = await requireStaffClientAccess(request, clientId);
+        if (!access.ok) return access.res;
 
         const assignment = await prisma.videoAssignment.create({
           data: {
@@ -107,6 +115,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
+
     const assignment = await prisma.videoAssignment.create({
       data: {
         clientId,
@@ -145,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(parsedAssignment, { status: 201 });
   } catch (error) {
-    console.error('Error creating video assignment:', error);
+    console.error('Error creating video assignment:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to create video assignment' }, { status: 500 });
   }
 }

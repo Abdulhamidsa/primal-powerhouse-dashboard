@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { invalidateMealCaches } from '@/lib/cache-tags';
 import { calculateMacroRecommendations } from '@/lib/health/calculators';
 import { mealPlanRecalculationSchema } from '@/features/meal-plan-recalculation/schemas/mealPlanRecalculation.schema';
@@ -432,6 +434,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ message: 'Meal plan not found.' }, { status: 404 });
     }
 
+    const clientAccess = await requireStaffClientAccess(request, mealPlan.clientId);
+    if (!clientAccess.ok) return clientAccess.res;
+
     if (mealPlan.updatedAt.toISOString() !== input.basePlanUpdatedAt) {
       return NextResponse.json(
         {
@@ -745,7 +750,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
   } catch (error) {
-    console.error('Error recalculating meal plan:', error);
+    console.error('Error recalculating meal plan:', safeErrorMessage(error));
     return NextResponse.json({ message: 'Failed to recalculate meal plan.' }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffClientAccess } from '@/lib/api-auth';
 import { calculateWeeklyCompliance, type ComplianceInput } from '@/features/client-health/lib/calculateCompliance';
 import {
   getCurrentWeekStartDateKey,
@@ -153,10 +153,9 @@ function buildDailyTrainingEntriesForWeek(
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireApiAuth(request, 'admin');
-    if (!auth.ok) return auth.res;
-
     const { id: clientId } = await params;
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
     if (!clientId) {
       return jsonWithCache({ error: 'Client id is required' }, { status: 400 });
     }

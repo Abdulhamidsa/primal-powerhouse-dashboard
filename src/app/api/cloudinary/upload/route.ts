@@ -6,6 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateChatMediaFile } from '@/lib/cloudinary';
+import { requireApiAuth, requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 seconds timeout
@@ -58,6 +60,25 @@ export async function POST(request: NextRequest) {
     const folder = formData.get('folder') as string | null;
     const publicId = formData.get('publicId') as string | null;
     const tags = formData.get('tags') as string | null;
+    const normalizedFolder = (folder || 'meals').trim().toLowerCase();
+    const clientFolders = new Set(['weekly-checkins', 'profile-avatars']);
+    const staffFolders = new Set(['meals', 'training-exercises']);
+
+    if (!clientFolders.has(normalizedFolder) && !staffFolders.has(normalizedFolder)) {
+      return NextResponse.json({ error: 'Unsupported upload folder' }, { status: 400 });
+    }
+
+    if (clientFolders.has(normalizedFolder)) {
+      const auth = await requireApiAuth(request, 'client');
+      if (!auth.ok) return auth.res;
+    } else {
+      const auth = await requireStaffActor(request);
+      if (!auth.ok) return auth.res;
+    }
+
+    if (publicId && !publicId.trim().toLowerCase().startsWith(`${normalizedFolder}/`)) {
+      return NextResponse.json({ error: 'Invalid public ID' }, { status: 400 });
+    }
 
     // Validate the file. Weekly check-in images are allowed to be larger.
     const validation = validateChatMediaFile(file);
@@ -76,7 +97,7 @@ export async function POST(request: NextRequest) {
     const cloudinaryFormData = new FormData();
     cloudinaryFormData.append('file', file);
     cloudinaryFormData.append('upload_preset', uploadPreset);
-    cloudinaryFormData.append('folder', folder || 'meals');
+    cloudinaryFormData.append('folder', normalizedFolder);
 
     if (publicId) {
       cloudinaryFormData.append('public_id', publicId);
@@ -97,11 +118,10 @@ export async function POST(request: NextRequest) {
 
     if (!uploadResponse.ok) {
       const error = await uploadResponse.json();
-      console.error('Cloudinary error:', error);
+      console.error('Cloudinary upload failed:', safeErrorMessage(error));
       return NextResponse.json(
         {
           error: 'Failed to upload to Cloudinary',
-          details: error.error?.message || 'Unknown error',
         },
         { status: 400 },
       );
@@ -122,11 +142,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('Upload error:', safeErrorMessage(error));
     return NextResponse.json(
       {
         error: 'Failed to upload image',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

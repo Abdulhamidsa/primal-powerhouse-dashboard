@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getClientDisplayName } from '@/lib/client-display-name';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffActor } from '@/lib/api-auth';
 import { AuthService } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/audit';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
@@ -19,7 +19,7 @@ function generateResetPassword(): string {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireApiAuth(request, 'admin');
+    const auth = await requireStaffActor(request);
     if (!auth.ok) return auth.res;
 
     const { id } = await params;
@@ -29,11 +29,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const client = await prisma.client.findUnique({
       where: { id },
-      select: { id: true, email: true, username: true, name: true },
+      select: { id: true, email: true, username: true, name: true, coachId: true },
     });
 
     if (!client) {
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    }
+
+    if (auth.actor.role === 'COACH' && client.coachId !== auth.actor.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const plainPassword = generateResetPassword();

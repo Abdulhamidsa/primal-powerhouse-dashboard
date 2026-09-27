@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AuthService } from '@/lib/auth';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { rateLimit } from '@/lib/security/rate-limit';
+
+function requestIp(request: NextRequest): string {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +20,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+    const limited = rateLimit(`admin-login:${normalizedEmail}:${requestIp(request)}`, 10, 60_000);
+    if (!limited.allowed) {
+      return NextResponse.json({ error: 'Please wait before trying again.' }, { status: 429 });
+    }
+
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {

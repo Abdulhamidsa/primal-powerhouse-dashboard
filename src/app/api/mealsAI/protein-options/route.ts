@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { buildMainProteinOptions, type ProteinSelectableMealType } from '@/lib/main-protein';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 const ALLOWED_MEAL_TYPES: ProteinSelectableMealType[] = ['BREAKFAST', 'LUNCH', 'DINNER'];
 
@@ -13,8 +15,11 @@ function parseMealType(value: string | null): ProteinSelectableMealType {
   return 'LUNCH';
 }
 
-export async function GET(request: Request) {
+export async function GET(request: import('next/server').NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const url = new URL(request.url);
     const mealType = parseMealType(url.searchParams.get('mealType'));
 
@@ -40,7 +45,7 @@ export async function GET(request: Request) {
       data: options,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, message }, { status: 500 });
+    console.error('Meal protein options error:', safeErrorMessage(error));
+    return NextResponse.json({ success: false, message: 'Failed to fetch meal protein options' }, { status: 500 });
   }
 }

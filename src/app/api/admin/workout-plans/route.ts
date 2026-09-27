@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffActor } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, coachWorkoutPlansTag, invalidateWorkoutCaches } from '@/lib/cache-tags';
 import { createWorkoutPlanSchema } from '@/features/workout-plans/schemas/workoutPlan.schemas';
 
 export async function GET(request: NextRequest) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const plans = await unstable_cache(
     async () =>
       (prisma as any).workoutPlan.findMany({
-        where: { coachId: auth.user.userId },
+        where: { coachId: auth.actor.id },
         include: {
           exercises: {
             orderBy: { order: 'asc' },
@@ -23,15 +24,15 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: 'desc' },
       }),
-    [`workout-plans:coach:${auth.user.userId}`],
-    { tags: [CACHE_TAGS.workoutPlans, coachWorkoutPlansTag(auth.user.userId)], revalidate: false },
+    [`workout-plans:coach:${auth.actor.id}`],
+    { tags: [CACHE_TAGS.workoutPlans, coachWorkoutPlansTag(auth.actor.id)], revalidate: false },
   )();
 
   return jsonWithCache(plans);
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   const body = await request.json();
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
             tips: null,
             isPublic: true,
             viewCount: 0,
-            coachId: auth.user.userId,
+            coachId: auth.actor.id,
           },
         }),
       );
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
         id: crypto.randomUUID(),
         name,
         description: description ?? null,
-        coachId: auth.user.userId,
+        coachId: auth.actor.id,
         updatedAt: new Date(),
         exercises: {
           create: exercises.map((ex: any, i: number) => ({
@@ -115,13 +116,10 @@ export async function POST(request: NextRequest) {
 
     const plan = results[results.length - 1];
 
-    invalidateWorkoutCaches({ coachId: auth.user.userId });
+    invalidateWorkoutCaches({ coachId: auth.actor.id });
     return NextResponse.json(plan, { status: 201 });
   } catch (err: any) {
-    console.error('Failed to create workout plan with upserted videos:', err);
-    return NextResponse.json(
-      { error: 'Failed to create workout plan', details: err?.message ?? String(err) },
-      { status: 500 },
-    );
+    console.error('Failed to create workout plan with upserted videos:', safeErrorMessage(err));
+    return NextResponse.json({ error: 'Failed to create workout plan' }, { status: 500 });
   }
 }

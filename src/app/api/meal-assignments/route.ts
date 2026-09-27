@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { invalidateMealCaches } from '@/lib/cache-tags';
+import { requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,8 +22,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Creating meal assignment with:', { mealId, clientId, mealType, dayOfWeek, planId });
-
     if (!mealId || !clientId || !mealType) {
       return jsonWithCache(
         { error: 'Missing required fields: mealId, clientId, and mealType are required' },
@@ -29,13 +29,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
+
     // Validate meal exists
     const meal = await prisma.meal.findUnique({
       where: { id: mealId },
     });
 
     if (!meal) {
-      console.error(`Meal with ID ${mealId} not found`);
       return jsonWithCache({ error: `Meal with ID ${mealId} not found` }, { status: 400 });
     }
 
@@ -45,7 +47,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!client) {
-      console.error(`Client with ID ${clientId} not found`);
       return jsonWithCache({ error: `Client with ID ${clientId} not found` }, { status: 400 });
     }
 
@@ -66,7 +67,6 @@ export async function POST(request: NextRequest) {
 
       if (activePlans.length > 0) {
         mealPlanId = activePlans[0].id;
-        console.log('Using existing active meal plan:', mealPlanId);
       } else {
         // Create a new meal plan
         const newPlan = await prisma.mealPlan.create({
@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
           },
         });
         mealPlanId = newPlan.id;
-        console.log('Created new meal plan:', mealPlanId);
       }
     }
 
@@ -99,7 +98,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('Created meal assignment:', assignment.id);
     invalidateMealCaches({
       mealId: assignment.mealId,
       mealPlanId: assignment.mealPlanId,
@@ -109,11 +107,10 @@ export async function POST(request: NextRequest) {
 
     return jsonWithCache(assignment);
   } catch (error) {
-    console.error('Error creating meal assignment:', error);
+    console.error('Error creating meal assignment:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to create meal assignment',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

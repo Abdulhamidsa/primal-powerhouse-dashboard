@@ -1,47 +1,24 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
-import { requireApiAuth } from '@/lib/api-auth';
+import { requireStaffActor } from '@/lib/api-auth';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { createClientSchema } from '@/features/client-creation/schemas/clientCreation.schema';
 import { ClientStatus } from '@prisma/client';
+import {
+  clientListSelect,
+  toClientCreatedResponse,
+  toClientListResponse,
+} from '@/lib/client-response';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireStaffActor(request);
+    if (!auth.ok) return auth.res;
+
     const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get('coachId');
-
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      // First try to get the real coach (not the placeholder)
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [
-            { role: 'COACH' },
-            { email: { not: 'coach@example.com' } }, // Skip the placeholder coach
-          ],
-        },
-      });
-
-      // If no real coach found, create/get the default one
-      if (!defaultCoach) {
-        defaultCoach = await prisma.user.upsert({
-          where: { email: 'coach@fitness.com' },
-          update: {},
-          create: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-    }
-
     const legacyArchived = searchParams.get('archived') === 'true';
     const requestedStatus = searchParams.get('status');
     const includeCounts = searchParams.get('includeCounts') === 'true';
@@ -55,22 +32,23 @@ export async function GET(request: NextRequest) {
     const clients = await prisma.client.findMany({
       where: {
         status: statusFilter,
+        ...(auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : {}),
       },
+      select: clientListSelect,
       orderBy: { createdAt: 'desc' },
     });
 
-    // Parse JSON fields
-    const parsedClients = clients.map(client => ({
-      ...client,
-      isSystemTemplate: Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
-      dietaryRestrictions: client.dietaryRestrictions ? JSON.parse(client.dietaryRestrictions) : [],
-      goals: client.goals ? JSON.parse(client.goals) : [],
-      progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
-    }));
+    const parsedClients = clients.map(client =>
+      toClientListResponse(
+        client,
+        Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
+      ),
+    );
 
     if (includeCounts) {
       const groupedCounts = await prisma.client.groupBy({
         by: ['status'],
+        where: auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : undefined,
         _count: { _all: true },
       });
       const counts = { ACTIVE: 0, INACTIVE: 0, ARCHIVED: 0 };
@@ -83,13 +61,13 @@ export async function GET(request: NextRequest) {
 
     return jsonWithCache(parsedClients);
   } catch (error) {
-    console.error('Error fetching clients:', error);
+    console.error('Error fetching clients:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to fetch clients' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireApiAuth(request, 'admin');
+  const auth = await requireStaffActor(request);
   if (!auth.ok) return auth.res;
 
   try {
@@ -153,23 +131,13 @@ export async function POST(request: NextRequest) {
       progressPhotos: JSON.stringify(progressPhotos || []),
     };
 
-    console.log('Creating client with:', clientToCreate);
-
     const client = await prisma.client.create({
       data: clientToCreate,
     });
 
-    // Parse JSON fields for response
-    const parsedClient = {
-      ...client,
-      dietaryRestrictions: client.dietaryRestrictions ? JSON.parse(client.dietaryRestrictions) : [],
-      goals: client.goals ? JSON.parse(client.goals) : [],
-      progressPhotos: client.progressPhotos ? JSON.parse(client.progressPhotos) : [],
-    };
-
     return jsonWithCache(
       {
-        client: parsedClient,
+        client: toClientCreatedResponse(client),
         credentials: {
           email: client.email,
           password: plainPassword,
@@ -177,11 +145,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Error creating client:', error);
+  } catch {
     return jsonWithCache(
       {
-        error: `Failed to create client: ${error?.message || 'Unknown error'}`,
+        error: 'Failed to create client',
       },
       { status: 500 }
     );

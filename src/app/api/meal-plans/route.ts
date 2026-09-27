@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, clientMealPlansTag, invalidateMealCaches } from '@/lib/cache-tags';
 import { notifyMealPlanPublished } from '@/features/notifications/services/automatic-notification.service';
+import { requireClientResourceAccess, requireStaffClientAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { mealAssignmentResponseSelect, mealPlanResponseSelect } from '@/lib/meal-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,19 +17,14 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Client ID is required' }, { status: 400 });
     }
 
+    const access = await requireClientResourceAccess(request, clientId);
+    if (!access.ok) return access.res;
+
     const mealPlans = await unstable_cache(
       async () =>
         prisma.mealPlan.findMany({
           where: { clientId },
-          include: {
-            mealAssignments: {
-              include: {
-                meal: true,
-                side: true,
-              },
-              orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
-            },
-          },
+          select: mealPlanResponseSelect,
           orderBy: { createdAt: 'desc' },
         }),
       [`meal-plans:${clientId}`],
@@ -35,44 +33,26 @@ export async function GET(request: NextRequest) {
 
     return jsonWithCache(mealPlans);
   } catch (error) {
-    console.error('Error fetching meal plans:', error);
+    console.error('Error fetching meal plans:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to fetch meal plans' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/meal-plans - Starting...');
-
-    // Get the raw request body for debugging
-    const bodyText = await request.text();
-    console.log('Raw request body:', bodyText);
-
-    // Parse the body
-    let body;
-    try {
-      body = JSON.parse(bodyText);
-      console.log('Parsed request body:', body);
-    } catch (parseError) {
-      console.error('Error parsing request body:', parseError);
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
       return jsonWithCache({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
 
     const { clientId, name, startDate, endDate, notes, mealAssignments } = body;
 
     if (!clientId || !name || !startDate) {
-      console.log('Missing required fields:', { clientId, name, startDate });
       return jsonWithCache({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    console.log('Creating meal plan with data:', {
-      clientId,
-      name,
-      startDate,
-      endDate,
-      notes,
-      assignmentsCount: mealAssignments?.length || 0,
-    });
+    const access = await requireStaffClientAccess(request, clientId);
+    if (!access.ok) return access.res;
 
     // Validate meal assignments
     if (!Array.isArray(mealAssignments) || mealAssignments.length === 0) {
@@ -85,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     for (const assignment of mealAssignments) {
       if (!assignment.mealId) {
-        console.error('Missing mealId in assignment:', assignment);
+        console.error('Missing mealId in assignment');
         continue; // Skip this assignment but process the rest
       }
 
@@ -102,21 +82,19 @@ export async function POST(request: NextRequest) {
         });
 
         if (!meal) {
-          console.error(`Meal with ID ${assignment.mealId} not found`);
           continue; // Skip this assignment but process the rest
         }
 
         // Add to valid assignments
         validAssignments.push(assignment);
       } catch (error) {
-        console.error(`Error validating meal ${assignment.mealId}:`, error);
+        console.error(`Error validating meal ${assignment.mealId}:`, safeErrorMessage(error));
         continue; // Skip this assignment but process the rest
       }
     }
 
     // If no valid assignments, return an error
     if (validAssignments.length === 0) {
-      console.error('No valid meal assignments found');
       return jsonWithCache({ error: 'No valid meal assignments found' }, { status: 400 });
     }
 
@@ -146,20 +124,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      console.log('Created meal plan:', mealPlan.id);
-
       // Now create each meal assignment individually to avoid type issues
       const createdAssignments = [];
       for (const assignment of validatedMealAssignments) {
         try {
-          console.log('Processing assignment for meal:', assignment.mealId);
-
           // Check if this is a personalized meal assignment
           let mealId = assignment.mealId;
           let notes = assignment.notes || '';
 
           if (assignment.isPersonalized) {
-            console.log('This is a personalized meal assignment');
             notes = notes || 'Personalized meal';
           }
 
@@ -172,10 +145,7 @@ export async function POST(request: NextRequest) {
               portion: assignment.portion || 1.0,
               notes: notes,
             },
-            include: {
-              meal: true,
-              side: true,
-            },
+            select: mealAssignmentResponseSelect,
           });
 
           if (assignment.sideId) {
@@ -193,10 +163,8 @@ export async function POST(request: NextRequest) {
           }
 
           createdAssignments.push(mealAssignment);
-          console.log('Created meal assignment:', mealAssignment.id);
         } catch (assignmentError) {
-          console.error('Error creating meal assignment:', assignmentError);
-          console.error('Error details:', assignmentError instanceof Error ? assignmentError.message : 'Unknown error');
+          console.error('Error creating meal assignment:', safeErrorMessage(assignmentError));
           // Continue with the next assignment
         }
       }
@@ -204,18 +172,9 @@ export async function POST(request: NextRequest) {
       // Fetch the complete meal plan with all assignments
       const completeMealPlan = await prisma.mealPlan.findUnique({
         where: { id: mealPlan.id },
-        include: {
-          mealAssignments: {
-            include: {
-              meal: true,
-              side: true,
-            },
-          },
-        },
+          select: mealPlanResponseSelect,
       });
 
-      console.log('Meal plan created successfully:', mealPlan.id);
-      console.log('Created assignments:', createdAssignments.length);
       invalidateMealCaches({
         mealPlanId: mealPlan.id,
         clientId,
@@ -224,26 +183,24 @@ export async function POST(request: NextRequest) {
       try {
         await notifyMealPlanPublished(clientId, mealPlan.id);
       } catch (notificationError) {
-        console.error('[NOTIFICATIONS] Failed to create meal plan publication notification:', notificationError);
+        console.error('[NOTIFICATIONS] Failed to create meal plan publication notification:', safeErrorMessage(notificationError));
       }
 
       return jsonWithCache(completeMealPlan);
     } catch (dbError) {
-      console.error('Database error creating meal plan:', dbError);
+      console.error('Database error creating meal plan:', safeErrorMessage(dbError));
       return jsonWithCache(
         {
           error: 'Database error creating meal plan',
-          details: dbError instanceof Error ? dbError.message : 'Unknown error',
         },
         { status: 500 },
       );
     }
   } catch (error) {
-    console.error('Error creating meal plan:', error);
+    console.error('Error creating meal plan:', safeErrorMessage(error));
     return jsonWithCache(
       {
         error: 'Failed to create meal plan',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireClientResourceAccess } from '@/lib/api-auth';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 /**
  * GET handler for meal plan assignments
@@ -10,17 +12,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
 
-    console.log(`Fetching meal assignments for meal plan ID: ${id}`);
-
     // Verify meal plan exists
     const mealPlan = await prisma.mealPlan.findUnique({
       where: { id },
+      select: { id: true, clientId: true },
     });
 
     if (!mealPlan) {
-      console.log(`Meal plan with ID ${id} not found`);
-      return NextResponse.json({ error: `Meal plan with ID ${id} not found` }, { status: 404 });
+      return NextResponse.json({ error: 'Meal plan not found' }, { status: 404 });
     }
+
+    const access = await requireClientResourceAccess(request, mealPlan.clientId);
+    if (!access.ok) return access.res;
 
     // Fetch meal assignments for this plan
     const mealAssignments = await prisma.mealAssignment.findMany({
@@ -28,16 +31,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         mealPlanId: id,
       },
       include: {
-        meal: true,
+        meal: {
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true,
+            calories: true,
+            protein: true,
+            carbs: true,
+            fat: true,
+            ingredients: true,
+            instructions: true,
+            isPersonalized: true,
+          },
+        },
       },
       orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
     });
 
-    console.log(`Found ${mealAssignments.length} meal assignments for meal plan ${id}`);
-
     return NextResponse.json(mealAssignments);
   } catch (error) {
-    console.error('Error fetching meal plan assignments:', error);
+    console.error('Error fetching meal plan assignments:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to fetch meal assignments' }, { status: 500 });
   }
 }
