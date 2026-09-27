@@ -161,7 +161,7 @@ function ClientCommandHeader({
             </div>
             <p className="mt-1 flex items-center gap-2 truncate text-sm text-muted-foreground">
               <Mail aria-hidden="true" focusable="false" size={14} />
-              {client.email}
+              {client.email ?? client.username ?? 'No recovery email'}
             </p>
             {client.status === 'INACTIVE' && client.deletionScheduledFor ? (
               <p className="mt-2 text-xs text-amber-200/80">
@@ -296,7 +296,7 @@ export default function ClientsPage() {
     const normalized = changeUserSearch.trim().toLowerCase();
     if (!normalized) return filteredClients;
     return filteredClients.filter(client => {
-      return client.name.toLowerCase().includes(normalized) || client.email.toLowerCase().includes(normalized);
+      return client.name.toLowerCase().includes(normalized) || (client.email ?? '').toLowerCase().includes(normalized) || (client.username ?? '').toLowerCase().includes(normalized);
     });
   }, [changeUserSearch, filteredClients]);
 

@@ -74,7 +74,9 @@ model Client {
 
   id                            String             @id @default(cuid())
   name                          String
-  email                         String             @unique
+  email                         String?            @unique
+  username                      String?
+  usernameNormalized            String?            @unique
   password                      String?
   accessMode                    ClientAccessMode  @default(COACHING)
   serviceTier                   ClientServiceTier  @default(COACHING)
@@ -222,6 +224,7 @@ model ProgramEnrollment {
 model EmailVerificationToken {
   id        String    @id @default(cuid())
   clientId  String
+  targetEmail String?
   tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
@@ -1063,6 +1066,7 @@ enum ClientAccessMode {
 enum ClientSignupSource {
   ADMIN_CREATED
   SELF_SIGNUP
+  USERNAME_SIGNUP
 }
 
 enum ProgramEnrollmentStatus {

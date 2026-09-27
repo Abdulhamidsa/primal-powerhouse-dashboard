@@ -190,7 +190,7 @@ export function ClientHeader({
               </div>
 
               <p className="text-[12px] sm:text-sm truncate" style={{ color: 'var(--color-text-muted)' }}>
-                {client.email}
+                {client.email ?? 'No recovery email'}
               </p>
             </div>
           </div>

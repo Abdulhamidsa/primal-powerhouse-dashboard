@@ -8,11 +8,11 @@ import { requiresEmailVerification } from '@/lib/auth/client-verification';
 export const hashRefreshToken = (value: string) => createHash('sha256').update(value).digest('hex');
 const sessionExpiry = () => new Date(Date.now() + 30 * 86400_000);
 
-function accessToken(sessionId: string, user: { id: string; email: string }, authenticatedAt: Date): string {
+function accessToken(sessionId: string, user: { id: string; email: string | null }, authenticatedAt: Date): string {
   return jwt.sign({ userId: user.id, email: user.email, type: 'client', sid: sessionId, authenticatedAt: Math.floor(authenticatedAt.getTime() / 1000) }, getJwtSecret(), { algorithm: 'HS256', audience: 'primal-mobile', expiresIn: '15m' });
 }
 
-export async function createMobileSession(user: { id: string; email: string; name: string }): Promise<MobileTokenPair> {
+export async function createMobileSession(user: { id: string; email: string | null; name: string }): Promise<MobileTokenPair> {
   const refreshToken = randomBytes(48).toString('base64url');
   const session = await prisma.mobileSession.create({ data: { clientId: user.id, refreshHash: hashRefreshToken(refreshToken), expiresAt: sessionExpiry(), authenticatedAt: new Date() } });
   return { accessToken: accessToken(session.id, user, session.authenticatedAt), refreshToken, expiresIn: 900, user };

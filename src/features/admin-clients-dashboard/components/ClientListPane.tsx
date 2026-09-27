@@ -133,7 +133,7 @@ export function ClientListPane({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-foreground">{client.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{client.email}</p>
+                  <p className="truncate text-xs text-muted-foreground">{client.email ?? client.username ?? 'No email'}</p>
                   {client.status === 'INACTIVE' && client.deletionScheduledFor ? (
                     <p className="truncate text-[10px] text-amber-200/80">
                       Deletion scheduled {new Date(client.deletionScheduledFor).toLocaleDateString()}

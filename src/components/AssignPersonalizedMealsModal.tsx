@@ -533,7 +533,7 @@ export default function AssignPersonalizedMealsModal({
                             <div>
                               <div className="font-medium">{client.name}</div>
                               <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                                {client.email}
+                                {client.email ?? 'No email'}
                               </div>
                             </div>
                           </div>

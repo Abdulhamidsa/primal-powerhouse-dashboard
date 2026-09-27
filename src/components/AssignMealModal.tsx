@@ -12,7 +12,8 @@ import { DataService } from '@/services/dataService';
 interface Client {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  username?: string | null;
   status: string;
 }
 
@@ -63,7 +64,7 @@ export default function AssignMealModal({
 
     const query = searchQuery.toLowerCase();
     return clients.filter(
-      client => client.name.toLowerCase().includes(query) || client.email.toLowerCase().includes(query),
+      client => client.name.toLowerCase().includes(query) || (client.email ?? '').toLowerCase().includes(query),
     );
   }, [clients, searchQuery]);
 
@@ -154,7 +155,7 @@ export default function AssignMealModal({
                         <h3 className="font-semibold text-zinc-100 group-hover:text-blue-400 transition-colors">
                           {client.name}
                         </h3>
-                        <p className="text-sm text-zinc-400">{client.email}</p>
+                        <p className="text-sm text-zinc-400">{client.email ?? client.username ?? 'No email'}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <span

@@ -20,7 +20,7 @@ export default async function UserAppLayout({ children }: { children: React.Reac
     select: { signupSource: true, emailVerifiedAt: true, email: true, accessMode: true },
   });
   if (!client) redirect('/user/login');
-  if (requiresEmailVerification(client)) redirect(`/user/verify-required?email=${encodeURIComponent(client.email)}`);
+  if (requiresEmailVerification(client) && client.email) redirect(`/user/verify-required?email=${encodeURIComponent(client.email)}`);
 
   return <UserShell userId={payload.userId} accessMode={client.accessMode}>{children}</UserShell>;
 }

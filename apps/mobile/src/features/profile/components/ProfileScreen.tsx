@@ -17,7 +17,7 @@ export default function ProfileScreen() {
           <Card>
             {user.avatar ? <Image accessibilityLabel={`${user.name} profile photo`} source={{ uri: user.avatar }} style={{ width: 90, height: 90, borderRadius: 45 }} /> : null}
             <Copy>{user.name}</Copy>
-            <Copy muted>{user.email}</Copy>
+            <Copy muted>{user.email ?? 'No recovery email added'}</Copy>
             <Copy>Age · {user.age ?? '—'}</Copy>
             <Copy>Height · {user.height ?? '—'} cm</Copy>
             <Copy>Weight · {user.currentWeight ?? '—'} kg</Copy>

@@ -365,7 +365,7 @@ export default function ClientProfilePage() {
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>
                   <span style={{ color: 'var(--color-text-muted)' }}>Email</span>
                   <span style={{ color: 'var(--color-text)' }} className="font-medium">
-                    {client.email}
+                    {client.email ?? client.username ?? 'No recovery email'}
                   </span>
                 </div>
                 <div className="flex justify-between border-t" style={{ borderColor: 'var(--color-border)' }}>

@@ -2,7 +2,8 @@ export type AuthActionResponse = {
   success: boolean;
   message?: string;
   requiresVerification?: boolean;
-  email?: string;
+  email?: string | null;
+  username?: string | null;
 };
 
 export type SignupResponse = AuthActionResponse;

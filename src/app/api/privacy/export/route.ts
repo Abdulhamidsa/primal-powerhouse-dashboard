@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
         id: client.id,
         name: client.name,
         email: client.email,
+        username: client.username,
         phone: decryptOrFallback(client.phoneEncrypted, `client:${client.id}:phone`) ?? client.phone,
         age: client.age,
         height: client.height,

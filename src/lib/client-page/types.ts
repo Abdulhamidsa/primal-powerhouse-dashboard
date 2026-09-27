@@ -2,6 +2,7 @@ export interface Client {
   id: string;
   name: string;
   email: string;
+  username?: string | null;
   phone?: string;
   avatar?: string;
   dateOfBirth?: Date;

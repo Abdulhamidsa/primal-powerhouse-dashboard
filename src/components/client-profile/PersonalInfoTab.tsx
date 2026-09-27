@@ -83,7 +83,7 @@ export function PersonalInfoTab({ clientId, client }: Props) {
     <div className="p-6 space-y-4 max-w-2xl">
       <Section title="Basic Information">
         <InfoRow label="Full Name" value={client.name} />
-        <InfoRow label="Email" value={client.email} />
+        <InfoRow label="Email" value={client.email ?? 'No recovery email'} />
         <InfoRow label="Phone" value={client.phone} />
         <InfoRow label="Age" value={client.age} />
         <InfoRow label="Gender" value={client.gender} />

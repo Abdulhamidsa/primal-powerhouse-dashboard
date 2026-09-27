@@ -7,14 +7,14 @@ export function useAuth() {
 }
 export function useRestoreAuth() { useEffect(() => { void restoreSession(); }, []); }
 export function useLogin() {
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
+  const [identifier, setIdentifier] = useState(''); const [password, setPassword] = useState('');
   const [pending, setPending] = useState(false); const [error, setError] = useState('');
-  return { email, setEmail, password, setPassword, pending, error, submit: async () => {
+  return { identifier, setIdentifier, password, setPassword, pending, error, submit: async () => {
     if (pending) return;
-    const input = mobileLoginSchema.safeParse({ email, password });
+    const input = mobileLoginSchema.safeParse({ identifier, password });
     if (!input.success) { setError(input.error.issues[0].message); return; }
     setPending(true); setError('');
-    try { await saveSession(await login(input.data.email, input.data.password)); setPassword(''); }
+    try { await saveSession(await login(input.data.identifier, input.data.password)); setPassword(''); }
     catch (e) { setError(e instanceof Error ? e.message : 'Unable to sign in'); }
     finally { setPending(false); }
   } };

@@ -15,7 +15,7 @@ export const CLIENT_AUTH_COOKIE_NAME = 'auth-token-client';
 
 export interface AuthTokenPayload {
   userId: string;
-  email: string;
+  email: string | null;
   type: 'client' | 'admin';
   sid?: string;
   authenticatedAt?: number;
@@ -26,7 +26,7 @@ export interface AuthTokenPayload {
 
 export interface AuthUser {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
 }
 
@@ -106,7 +106,7 @@ export class AuthService {
     }
     if (!payload || (role && payload.type !== role)) return null;
     if (payload.type === 'client') {
-      const client = await prisma.client.findUnique({ where: { id: payload.userId }, select: { status: true, authInvalidBefore: true, deactivatedAt: true, signupSource: true, emailVerifiedAt: true } });
+      const client = await prisma.client.findUnique({ where: { id: payload.userId }, select: { status: true, authInvalidBefore: true, deactivatedAt: true, signupSource: true, email: true, emailVerifiedAt: true } });
       if (!client || client.status === 'ARCHIVED' || client.status === 'INACTIVE' || client.deactivatedAt) return null;
       if (requiresEmailVerification(client)) return null;
       if (!bearer && client.authInvalidBefore && (payload.issuedAtMs ?? (payload.iat ?? 0) * 1000) <= client.authInvalidBefore.getTime()) return null;

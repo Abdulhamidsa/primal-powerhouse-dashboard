@@ -17,7 +17,8 @@ import Image from 'next/image';
 interface Client {
   id: string;
   name: string; // The client has 'name' instead of firstName/lastName
-  email: string;
+  email: string | null;
+  username?: string | null;
   avatar?: string; // The client has 'avatar' instead of profilePicture
 }
 
@@ -81,7 +82,7 @@ export default function AssignVideosModal({
   const filteredClients = clients.filter(
     client =>
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      (client.email ?? '').toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleClientToggle = (clientId: string) => {
@@ -313,7 +314,7 @@ export default function AssignVideosModal({
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 truncate">{client.name}</p>
-                            <p className="text-sm text-gray-500 truncate">{client.email}</p>
+                            <p className="text-sm text-gray-500 truncate">{client.email ?? client.username ?? 'No email'}</p>
                           </div>
                         </div>
                       </label>

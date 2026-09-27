@@ -73,7 +73,7 @@ export function SummaryTabContent({
             </h2>
             <div className="mt-2 space-y-1">
               <p className="text-sm inline-flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
-                <Mail aria-hidden="true" focusable="false" size={14} /> {client.email}
+                <Mail aria-hidden="true" focusable="false" size={14} /> {client.email ?? client.username ?? 'No email'}
               </p>
               <p className="text-sm inline-flex items-center gap-2" style={{ color: 'var(--color-text-muted)' }}>
                 <Phone aria-hidden="true" focusable="false" size={14} /> {client.phone || 'Not provided'}

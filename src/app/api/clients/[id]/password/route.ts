@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const client = await prisma.client.findUnique({
       where: { id },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, username: true, name: true },
     });
 
     if (!client) {
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({
       email: client.email,
+      username: client.username,
       password: plainPassword,
     });
   } catch (error) {

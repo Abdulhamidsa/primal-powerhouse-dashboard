@@ -25,7 +25,7 @@ import { useUserLogout, useUserProfile } from '@/features/user-profile/hooks/use
 type ProfileHubUser = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   avatar: string | null;
 };
 

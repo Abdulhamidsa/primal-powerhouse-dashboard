@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function UserLoginClient() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
 
   const [rememberMe, setRememberMe] = useState(false);
@@ -16,8 +16,8 @@ export default function UserLoginClient() {
   const router = useRouter();
 
   const canSubmit = useMemo(() => {
-    return email.trim().length > 0 && password.trim().length > 0 && !loading;
-  }, [email, password, loading]);
+    return identifier.trim().length > 0 && password.trim().length > 0 && !loading;
+  }, [identifier, password, loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +31,7 @@ export default function UserLoginClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify({ identifier, password, rememberMe }),
       });
 
       let data: any = null;
@@ -71,18 +71,18 @@ export default function UserLoginClient() {
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-3">
               <div>
-                <label htmlFor="email" className="sr-only">
-                  Email
+                <label htmlFor="identifier" className="sr-only">
+                  Email or username
                 </label>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="identifier"
+                  name="identifier"
+                  type="text"
+                  autoComplete="username"
                   required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="Email"
+                  value={identifier}
+                  onChange={e => setIdentifier(e.target.value)}
+                  placeholder="Email or username"
                   className="
                       w-full rounded-xl border border-border bg-background
                       px-4 py-3 text-base text-foreground

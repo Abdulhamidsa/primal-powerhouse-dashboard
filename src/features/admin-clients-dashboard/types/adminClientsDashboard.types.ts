@@ -9,7 +9,8 @@ export type DashboardTabKey = 'summary' | 'nutrition' | 'assignments' | 'check-i
 export type AdminClientListItem = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  username?: string | null;
   avatar: string | null;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | string;
   accessMode: 'SELF_SERVICE' | 'COACHING';
@@ -32,7 +33,8 @@ export type AdminClientsListResponse = {
 export type AdminClientDetail = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  username?: string | null;
   phone: string | null;
   avatar: string | null;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | string;

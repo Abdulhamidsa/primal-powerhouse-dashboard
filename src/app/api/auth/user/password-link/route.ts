@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     if (!limited.allowed) return NextResponse.json({ error: 'Please wait before trying again.' }, { status: 429 });
 
     const sent = await sendAuthenticatedPasswordLink(user.userId);
-    if (!sent) return NextResponse.json({ error: 'Account not found.' }, { status: 404 });
+    if (!sent) return NextResponse.json({ error: 'Add and verify a recovery email before requesting a password link.' }, { status: 409 });
 
     return NextResponse.json({
       success: true,

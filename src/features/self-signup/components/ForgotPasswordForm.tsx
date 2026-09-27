@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useForgotPasswordAction } from '../hooks/useAuthForms';
 
 export function ForgotPasswordForm() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const { run, loading, error, result } = useForgotPasswordAction();
 
   return (
-    <form className="space-y-4" onSubmit={event => { event.preventDefault(); void run({ email }); }}>
-      <input className="w-full rounded-xl border border-border bg-background px-4 py-3" placeholder="Email" type="email" value={email} onChange={event => setEmail(event.target.value)} required />
+    <form className="space-y-4" onSubmit={event => { event.preventDefault(); void run({ identifier }); }}>
+      <input className="w-full rounded-xl border border-border bg-background px-4 py-3" placeholder="Email or username" type="text" value={identifier} onChange={event => setIdentifier(event.target.value)} required />
       {error && <p className="text-sm text-destructive">{error}</p>}
       {result?.message && <p className="text-sm text-muted-foreground">{result.message}</p>}
       <button disabled={loading} className="w-full rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground disabled:opacity-60">

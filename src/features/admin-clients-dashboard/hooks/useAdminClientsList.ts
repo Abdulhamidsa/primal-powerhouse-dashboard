@@ -24,7 +24,7 @@ export function useAdminClientsList() {
     if (!normalized) return clients;
 
     return clients.filter(client => {
-      return client.name.toLowerCase().includes(normalized) || client.email.toLowerCase().includes(normalized);
+      return client.name.toLowerCase().includes(normalized) || (client.email ?? '').toLowerCase().includes(normalized) || (client.username ?? '').toLowerCase().includes(normalized);
     });
   }, [clients, deferredSearch]);
 

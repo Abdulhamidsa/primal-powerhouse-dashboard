@@ -18,7 +18,7 @@ export default async function LoginPage() {
         where: { id: payload.userId },
         select: { email: true, signupSource: true, emailVerifiedAt: true },
       });
-      if (client && requiresEmailVerification(client)) redirect(`/user/verify-required?email=${encodeURIComponent(client.email)}`);
+      if (client && requiresEmailVerification(client) && client.email) redirect(`/user/verify-required?email=${encodeURIComponent(client.email)}`);
       if (client) redirect('/user/dashboard');
     }
   }

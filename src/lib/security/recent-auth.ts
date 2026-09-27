@@ -7,7 +7,7 @@ type RecentAuthSuccess = {
   ok: true;
   user: {
     userId: string;
-    email: string;
+    email: string | null;
     type: 'client' | 'admin';
     iat?: number;
     exp?: number;

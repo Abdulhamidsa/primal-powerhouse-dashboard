@@ -8,8 +8,9 @@ import {
   sendUserPasswordLink,
   USER_PROFILE_ME_URL,
   logoutUser,
+  addRecoveryEmail,
 } from '@/features/user-profile/api/userProfile.api';
-import type { PasswordLinkResponse, UserProfileResponse } from '@/features/user-profile/types/userProfile.types';
+import type { PasswordLinkResponse, RecoveryEmailResponse, UserProfileResponse } from '@/features/user-profile/types/userProfile.types';
 import { OFFLINE_METADATA_KEY } from '@/features/offline/lib/offlinePolicy';
 
 export function useUserProfile(options: { enabled?: boolean } = {}) {
@@ -76,4 +77,28 @@ export function useUserPasswordLink() {
   }
 
   return { sendPasswordLink, loading, error, result };
+}
+
+export function useRecoveryEmail() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState<RecoveryEmailResponse | null>(null);
+
+  async function save(email: string) {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await addRecoveryEmail(email);
+      setResult(response);
+      return response;
+    } catch (err) {
+      const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : 'Something went wrong';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return { save, loading, error, result };
 }

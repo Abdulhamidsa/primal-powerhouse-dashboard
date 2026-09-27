@@ -7,8 +7,12 @@ import type {
   VerifyEmailResponse,
 } from '../types/auth.types';
 
-export function signup(payload: { name: string; email: string; password: string }) {
+export function signup(payload: { method: 'email'; name: string; email: string; password: string } | { method: 'username'; name: string; username: string; password: string }) {
   return httpClient.post<SignupResponse>('/api/auth/user/signup', payload);
+}
+
+export function suggestUsernames() {
+  return httpClient.post<{ suggestions: string[] }>('/api/auth/user/username-suggestions', {});
 }
 
 export function resendVerification(payload: { email: string }) {
@@ -19,7 +23,7 @@ export function verifyEmail(payload: { token: string }) {
   return httpClient.post<VerifyEmailResponse>('/api/auth/user/verify-email', payload);
 }
 
-export function forgotPassword(payload: { email: string }) {
+export function forgotPassword(payload: { identifier: string }) {
   return httpClient.post<ForgotPasswordResponse>('/api/auth/user/forgot-password', payload);
 }
 

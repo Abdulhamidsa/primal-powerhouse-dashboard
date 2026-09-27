@@ -6,7 +6,7 @@ export type Role = 'client' | 'admin';
 
 export type ApiAuthUser = {
   userId: string;
-  email: string;
+  email: string | null;
   type: 'client' | 'admin';
   iat?: number;
   exp?: number;

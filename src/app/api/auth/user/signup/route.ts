@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { AuthService } from '@/lib/auth';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { signupSchema } from '@/features/self-signup/schemas/auth.schema';
@@ -18,16 +19,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await createSelfSignupClient(parsed.data);
-    return NextResponse.json({
+    const client = await createSelfSignupClient(parsed.data);
+    const response = NextResponse.json({
       success: true,
-      email: parsed.data.email,
-      requiresVerification: true,
-      message: 'Check your email to verify your account.',
+      email: 'email' in parsed.data ? parsed.data.email : null,
+      username: 'username' in parsed.data ? parsed.data.username : null,
+      requiresVerification: parsed.data.method !== 'username',
+      message: parsed.data.method === 'username' ? 'Your account is ready.' : 'Check your email to verify your account.',
     }, { status: 201 });
+    if (parsed.data.method === 'username') {
+      AuthService.setAuthCookieOnResponse(response, { userId: client.id, email: null, type: 'client' }, {
+        rememberMe: true,
+        requestHost: request.headers.get('host') ?? undefined,
+      });
+    }
+    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Signup failed';
+    const isConflict = typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002';
     console.error('[SIGNUP] error:', safeErrorMessage(error));
-    return NextResponse.json({ error: message }, { status: message.includes('already exists') ? 409 : 500 });
+    return NextResponse.json({ error: isConflict ? 'That email or username is already in use.' : message }, { status: isConflict || message.includes('already exists') || message.includes('already taken') ? 409 : 500 });
   }
 }

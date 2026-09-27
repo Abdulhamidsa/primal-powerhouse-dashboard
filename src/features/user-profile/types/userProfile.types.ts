@@ -6,7 +6,9 @@ export type UserProfileCoach = {
 export type UserProfile = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  username: string | null;
+  emailVerifiedAt: string | null;
   avatar: string | null;
   age: number | null;
   height: number | null;
@@ -22,6 +24,11 @@ export type UserProfileResponse = {
 };
 
 export type PasswordLinkResponse = {
+  success: boolean;
+  message: string;
+};
+
+export type RecoveryEmailResponse = {
   success: boolean;
   message: string;
 };

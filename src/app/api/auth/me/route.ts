@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
         id: client.id,
         name: client.name,
         email: client.email,
+        username: client.username,
+        emailVerifiedAt: client.emailVerifiedAt,
         avatar: client.avatar,
         age: client.age,
         height: client.height,
