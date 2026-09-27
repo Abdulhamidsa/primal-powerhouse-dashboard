@@ -1,4 +1,5 @@
 import { Image } from 'react-native';
+import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
 import { Button, Card, Copy, Field, Label, Screen, Status } from '@/components/ui';
 import { useTheme } from '@/features/theme/hooks/useTheme';
@@ -8,6 +9,11 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const m = useProfile();
   const user = m.profile.data?.user;
+  const [name, setName] = useState('');
+
+  useEffect(() => {
+    setName(user?.name ?? '');
+  }, [user?.name]);
 
   return (
     <Screen title="Profile" onRefresh={m.profile.refresh} refreshing={m.profile.isValidating}>
@@ -18,6 +24,16 @@ export default function ProfileScreen() {
             {user.avatar ? <Image accessibilityLabel={`${user.displayName} profile photo`} source={{ uri: user.avatar }} style={{ width: 90, height: 90, borderRadius: 45 }} /> : null}
             <Copy>{user.displayName}</Copy>
             <Copy muted>{user.email ?? 'No recovery email added'}</Copy>
+            <Field label="Display name" value={name} onChange={setName} />
+            <Button
+              secondary
+              title={m.action.pending ? 'Saving…' : 'Save display name'}
+              disabled={m.offline || m.action.pending}
+              onPress={async () => {
+                await m.updateName(name);
+                await m.profile.refresh();
+              }}
+            />
             <Copy>Age · {user.age ?? '—'}</Copy>
             <Copy>Height · {user.height ?? '—'} cm</Copy>
             <Copy>Weight · {user.currentWeight ?? '—'} kg</Copy>

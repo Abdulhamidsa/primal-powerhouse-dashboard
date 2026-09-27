@@ -14,6 +14,7 @@ export function useProfile() {
   return { profile, privacy, action, media, logout, push, feedback, offline,
     avatar: () => action.run(async () => { const file = await media.pick(); if (!file) return; const url = await uploadPhoto(file, 'profile-avatars'); return api.saveAvatar(avatarSchema.parse({ avatar: url })); }),
     removeAvatar: () => action.run(() => api.saveAvatar(avatarSchema.parse({ avatar: null }))),
+    updateName: (name: string) => action.run(() => api.updateName({ name })),
     sendFeedback: () => action.run(async () => { const result = await api.sendFeedback(feedbackSchema.parse({ message: feedback.value })); feedback.setValue(''); return result; }),
     enableNotifications: () => action.run(async () => {
       if (!privacy.data) throw new Error('Privacy settings are still loading.');
