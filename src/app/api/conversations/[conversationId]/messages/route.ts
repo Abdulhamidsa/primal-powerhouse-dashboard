@@ -26,7 +26,7 @@ import {
   logPushDeliveryResult,
   sendPushToClient,
 } from '@/lib/push/push-notifications';
-import { createNotification } from '@/features/notifications/services/notification.service';
+import { notifyCoachMessage } from '@/features/notifications/services/automatic-notification.service';
 
 function isPresenceTableUnavailable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? '');
@@ -269,6 +269,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const context = `conversation:${conversationId}:message:${messageId}:body`;
   const storedBody = buildBodyStorage(parsed.data.body, context);
 
+  let wasIdempotentReplay = false;
   const created = await (prisma as any).message.create({
     data: {
       id: messageId,
@@ -284,9 +285,29 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (error.code !== 'P2002' || !parsed.data.clientTempId) throw error;
     const existing = await prisma.message.findUnique({ where: { conversationId_senderId_clientTempId: { conversationId, senderId: actor.userId, clientTempId: parsed.data.clientTempId } } });
     if (!existing) throw error;
+    wasIdempotentReplay = true;
     return existing;
   });
-  if (created.id !== messageId) return NextResponse.json(toApiMessage(created), { status: 200 });
+  if (wasIdempotentReplay) {
+    if (actor.type === 'coach' || actor.type === 'admin') {
+      try {
+        await notifyCoachMessage({
+          clientId: conversation.clientId,
+          messageId: created.id,
+          conversationId,
+          senderName: actor.displayName,
+          body: decryptOrFallback(
+            created.bodyEncrypted,
+            `conversation:${conversationId}:message:${created.id}:body`,
+          ) ?? created.body,
+          hasAttachment: Boolean(created.attachmentsJson),
+        });
+      } catch (error) {
+        console.error('[NOTIFICATIONS] Failed to recover coach message notification:', error);
+      }
+    }
+    return NextResponse.json(toApiMessage(created), { status: 200 });
+  }
 
   await (prisma as any).conversation.update({
     where: { id: conversationId },
@@ -297,6 +318,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   });
 
   const responseMessage = toApiMessage(created);
+  let coachMessageNotificationId: string | undefined;
+
+  if (actor.type === 'coach' || actor.type === 'admin') {
+    try {
+      const notification = await notifyCoachMessage({
+        clientId: conversation.clientId,
+        messageId: created.id,
+        conversationId,
+        senderName: actor.displayName,
+        body: responseMessage.body,
+        hasAttachment: responseMessage.attachments.length > 0,
+      });
+      coachMessageNotificationId = notification?.id;
+    } catch (error) {
+      console.error('[NOTIFICATIONS] Failed to create coach message notification:', error);
+    }
+  }
+
   // Echo the client-side temp ID back in the Pusher payload so the sender
   // can replace their optimistic message in-place without a visible duplicate.
   const pusherMessage = parsed.data.clientTempId
@@ -307,47 +346,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     try {
       await getPusherServer().trigger(toConversationChannel(conversationId), 'message.created', pusherMessage);
 
-      // Notify the recipient on their personal user channel
-      const recipientUserId = actor.type === 'client' ? conversation.coachId : conversation.clientId;
-      const rawBody = parsed.data.body?.trim() ?? null;
-      const preview = rawBody ? (rawBody.length > 80 ? `${rawBody.slice(0, 80)}…` : rawBody) : null;
-      await getPusherServer().trigger(toUserChannel(recipientUserId), 'notification.message', {
-        conversationId,
-        senderName: actor.displayName,
-        preview,
-        hasAttachment: (parsed.data.attachments?.length ?? 0) > 0,
-        createdAt: created.createdAt.toISOString(),
-      });
+      // Keep the legacy client-to-coach banner event. Coach-to-client messages
+      // use the generic notification.created event emitted by the notification
+      // service, avoiding two realtime notification events for one message.
+      if (actor.type === 'client') {
+        const rawBody = parsed.data.body?.trim() ?? null;
+        const preview = rawBody ? (rawBody.length > 80 ? `${rawBody.slice(0, 80)}…` : rawBody) : null;
+        await getPusherServer().trigger(toUserChannel(conversation.coachId), 'notification.message', {
+          conversationId,
+          senderName: actor.displayName,
+          preview,
+          hasAttachment: (parsed.data.attachments?.length ?? 0) > 0,
+          createdAt: created.createdAt.toISOString(),
+        });
+      }
     } catch (error) {
       console.error('Failed to publish realtime chat event:', error);
     }
   }
 
   invalidateUserDashboardSummaryCaches({ clientId: conversation.clientId });
-
-  // Persist a generic in-app notification for coach/admin messages. The
-  // existing push flow below intentionally remains separate so its
-  // conversation-presence and cooldown rules are unchanged.
-  let coachMessageNotificationId: string | undefined;
-  if (actor.type === 'coach' || actor.type === 'admin') {
-    try {
-      const notification = await createNotification({
-        recipientClientId: conversation.clientId,
-        title: actor.displayName,
-        body: 'You have an update from your coach.',
-        category: 'message',
-        actionUrl: `/user/chat?conversationId=${encodeURIComponent(conversationId)}`,
-        metadata: { conversationId, messageId: created.id },
-        channels: ['IN_APP'],
-        source: 'coach-message',
-        sourceId: created.id,
-        dedupeKey: `coach-message:${created.id}`,
-      });
-      coachMessageNotificationId = notification?.id;
-    } catch (error) {
-      console.error('[NOTIFICATIONS] Failed to create coach message notification:', error);
-    }
-  }
 
   // Send browser push notification when coach sends to client
   if (actor.type === 'coach' || actor.type === 'admin') {

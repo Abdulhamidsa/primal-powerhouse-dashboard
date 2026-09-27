@@ -12,6 +12,13 @@ import type {
 } from '@/features/client-coach-messaging/types/messaging.types';
 
 type RawNotificationPayload = Omit<MessageNotification, 'id'>;
+type GenericNotificationPayload = {
+  category?: string | null;
+  title?: string;
+  body?: string;
+  metadata?: Record<string, unknown> | null;
+  createdAt?: string;
+};
 
 export function useMessageNotifications(userId: string) {
   const [notifications, setNotifications] = useState<MessageNotification[]>([]);
@@ -29,7 +36,7 @@ export function useMessageNotifications(userId: string) {
 
     const channel = pusher.subscribe(channelName);
 
-    const handler = (data: RawNotificationPayload) => {
+    const handleMessageNotification = (data: RawNotificationPayload) => {
       const notification: MessageNotification = {
         ...data,
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -55,10 +62,24 @@ export function useMessageNotifications(userId: string) {
       globalMutate(USER_DASHBOARD_SUMMARY_URL);
     };
 
-    channel.bind('notification.message', handler);
+    const genericHandler = (data: GenericNotificationPayload) => {
+      if (data.category !== 'message' || typeof data.metadata?.conversationId !== 'string') return;
+
+      handleMessageNotification({
+        conversationId: data.metadata.conversationId,
+        senderName: data.title ?? 'Coach',
+        preview: data.body ?? null,
+        hasAttachment: Boolean(data.metadata.hasAttachment),
+        createdAt: data.createdAt ?? new Date().toISOString(),
+      });
+    };
+
+    channel.bind('notification.message', handleMessageNotification);
+    channel.bind('notification.created', genericHandler);
 
     return () => {
-      channel.unbind('notification.message', handler);
+      channel.unbind('notification.message', handleMessageNotification);
+      channel.unbind('notification.created', genericHandler);
       pusher.unsubscribe(channelName);
       channelRef.current = null;
     };

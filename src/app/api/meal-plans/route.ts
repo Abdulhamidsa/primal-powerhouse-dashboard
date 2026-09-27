@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, clientMealPlansTag, invalidateMealCaches } from '@/lib/cache-tags';
+import { notifyMealPlanPublished } from '@/features/notifications/services/automatic-notification.service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -219,6 +220,12 @@ export async function POST(request: NextRequest) {
         mealPlanId: mealPlan.id,
         clientId,
       });
+
+      try {
+        await notifyMealPlanPublished(clientId, mealPlan.id);
+      } catch (notificationError) {
+        console.error('[NOTIFICATIONS] Failed to create meal plan publication notification:', notificationError);
+      }
 
       return jsonWithCache(completeMealPlan);
     } catch (dbError) {

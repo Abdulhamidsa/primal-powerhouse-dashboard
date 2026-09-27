@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
+import {
+  notifyTrainingPlanAssigned,
+  notifyTrainingPlanUpdated,
+} from '@/features/notifications/services/automatic-notification.service';
 import type {
   CreateTrainingPlanDayInput,
   UpdateTrainingPlanDayInput,
@@ -29,6 +33,17 @@ export const trainingPlanDayService = {
     if (weekdays.size !== 7) {
       throw new Error('Weekly pattern must contain each weekday exactly once');
     }
+
+    const existingDays = await prisma.trainingPlanDay.findMany({
+      where: { planId: input.planId },
+      select: {
+        weekday: true,
+        type: true,
+        workoutTemplateId: true,
+        title: true,
+        note: true,
+      },
+    });
 
     const saved = await (prisma as any).$transaction(async (tx: any) => {
       const result = [];
@@ -112,6 +127,38 @@ export const trainingPlanDayService = {
     });
 
     invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });
+
+    const nextDays = input.days.map(day => ({
+      weekday: day.weekday,
+      type: day.type,
+      workoutTemplateId: day.type === 'WORKOUT' ? day.workoutTemplateId ?? null : null,
+      title: day.title ?? null,
+      note: day.note ?? null,
+    }));
+    const existingByWeekday = new Map(existingDays.map(day => [day.weekday, day]));
+    const changed = nextDays.some(day => {
+      const previous = existingByWeekday.get(day.weekday);
+      return (
+        !previous ||
+        previous.type !== day.type ||
+        previous.workoutTemplateId !== day.workoutTemplateId ||
+        (previous.title ?? null) !== day.title ||
+        (previous.note ?? null) !== day.note
+      );
+    });
+
+    if (changed) {
+      try {
+        if (existingDays.length === 0) {
+          await notifyTrainingPlanAssigned(plan.clientId, plan.id);
+        } else {
+          await notifyTrainingPlanUpdated(plan.clientId, plan.id, nextDays);
+        }
+      } catch (error) {
+        console.error('[NOTIFICATIONS] Failed to create training plan notification:', error);
+      }
+    }
+
     return saved;
   },
 

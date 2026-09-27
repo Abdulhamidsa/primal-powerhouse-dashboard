@@ -57,21 +57,32 @@ export async function createNotification(input: CreateNotificationInput): Promis
     if (existing) return serializeNotification(existing);
   }
 
-  const notification = await prisma.notification.create({
-    data: {
-      clientId: client.id,
-      title: parsed.title,
-      body: parsed.body,
-      category: parsed.category ?? null,
-      actionUrl: parsed.actionUrl ?? null,
-      metadataJson: parsed.metadata ? JSON.stringify(parsed.metadata) : null,
-      channels,
-      source: parsed.source ?? null,
-      sourceId: parsed.sourceId ?? null,
-      dedupeKey: parsed.dedupeKey ?? null,
-      expiresAt: parsed.expiresAt ?? null,
-    },
-  });
+  let notification;
+  try {
+    notification = await prisma.notification.create({
+      data: {
+        clientId: client.id,
+        title: parsed.title,
+        body: parsed.body,
+        category: parsed.category ?? null,
+        actionUrl: parsed.actionUrl ?? null,
+        metadataJson: parsed.metadata ? JSON.stringify(parsed.metadata) : null,
+        channels,
+        source: parsed.source ?? null,
+        sourceId: parsed.sourceId ?? null,
+        dedupeKey: parsed.dedupeKey ?? null,
+        expiresAt: parsed.expiresAt ?? null,
+      },
+    });
+  } catch (error: any) {
+    if (error?.code !== 'P2002' || !parsed.dedupeKey) throw error;
+    const existing = await prisma.notification.findFirst({
+      where: { clientId: client.id, dedupeKey: parsed.dedupeKey },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!existing) throw error;
+    return serializeNotification(existing);
+  }
 
   const payload = serializeNotification(notification);
 

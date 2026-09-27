@@ -386,6 +386,7 @@ model Notification {
   @@index([clientId, createdAt])
   @@index([clientId, readAt])
   @@index([clientId, dedupeKey])
+  @@unique([clientId, dedupeKey])
   @@map("notifications")
 }
 

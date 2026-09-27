@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { CACHE_TAGS, invalidateMealCaches, mealPlanTag } from '@/lib/cache-tags';
+import { notifyMealPlanUpdated } from '@/features/notifications/services/automatic-notification.service';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -43,6 +44,19 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const body = await request.json();
     const { name, startDate, endDate, notes, isActive, mealAssignments, clientId } = body;
+
+    const previousMealPlan = await prisma.mealPlan.findUnique({
+      where: { id },
+      include: {
+        mealAssignments: {
+          include: { side: true },
+        },
+      },
+    });
+
+    if (!previousMealPlan) {
+      return NextResponse.json({ error: 'Meal plan not found' }, { status: 404 });
+    }
 
     console.log(`[Meal Plan Update] Updating meal plan ${id} for client ${clientId}`);
     console.log(`[Meal Plan Update] Received ${mealAssignments?.length || 0} new meal assignments`);
@@ -160,7 +174,25 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       clientId: updatedMealPlan?.clientId,
     });
 
-    return NextResponse.json(updatedMealPlan);
+    const completeMealPlan = await prisma.mealPlan.findUnique({
+      where: { id },
+      include: {
+        mealAssignments: {
+          include: { meal: true, side: true },
+          orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
+        },
+      },
+    });
+
+    if (completeMealPlan) {
+      try {
+        await notifyMealPlanUpdated(completeMealPlan.clientId, completeMealPlan, previousMealPlan);
+      } catch (notificationError) {
+        console.error('[NOTIFICATIONS] Failed to create meal plan update notification:', notificationError);
+      }
+    }
+
+    return NextResponse.json(completeMealPlan ?? updatedMealPlan);
   } catch (error) {
     console.error('[Meal Plan Update] Error updating meal plan:', error);
     return NextResponse.json(

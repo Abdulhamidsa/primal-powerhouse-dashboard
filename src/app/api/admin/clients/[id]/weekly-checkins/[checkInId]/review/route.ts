@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { notifyWeeklyCheckInReviewed } from '@/features/notifications/services/automatic-notification.service';
 
 const ACTION_NAME = 'WEEKLY_CHECKIN_REVIEWED';
 
@@ -62,6 +63,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           metadata: JSON.stringify({ clientId, checkInId }),
         },
       });
+
+      try {
+        await notifyWeeklyCheckInReviewed(clientId, checkInId);
+      } catch (notificationError) {
+        console.error('[NOTIFICATIONS] Failed to create check-in review notification:', notificationError);
+      }
     }
 
     return jsonWithCache({ success: true as const });
