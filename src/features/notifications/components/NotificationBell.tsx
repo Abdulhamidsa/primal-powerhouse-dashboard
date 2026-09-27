@@ -77,7 +77,7 @@ export function NotificationBell({
       </button>
 
       {open ? (
-        <section className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+4.5rem)] z-50 w-[calc(100vw-2rem)] max-w-sm min-w-0 -translate-x-1/2 overflow-hidden rounded-3xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl lg:absolute lg:right-0 lg:top-auto lg:mt-2 lg:w-[min(22rem,calc(100vw-2rem))] lg:translate-x-0">
+        <section className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+4.5rem)] z-50 w-[calc(100vw-2rem)] max-w-sm min-w-0 -translate-x-1/2 overflow-hidden rounded-3xl border border-border bg-card text-foreground shadow-2xl ring-1 ring-border/50 lg:absolute lg:right-0 lg:top-auto lg:mt-2 lg:w-[min(22rem,calc(100vw-2rem))] lg:translate-x-0">
           <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground">Notifications</h2>
