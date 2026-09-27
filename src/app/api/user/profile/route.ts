@@ -4,6 +4,7 @@ import { requireApiAuth } from '@/lib/api-auth';
 import { assertSameOrigin } from '@/lib/security/csrf';
 import { updateDisplayNameSchema } from '@/features/user-profile/schemas/userProfile.schema';
 import { getClientDisplayName } from '@/lib/client-display-name';
+import { invalidateUserDashboardSummaryCaches } from '@/lib/cache-tags';
 
 export async function PATCH(request: NextRequest) {
   const csrf = await assertSameOrigin(request);
@@ -20,6 +21,8 @@ export async function PATCH(request: NextRequest) {
     data: { name: parsed.data.name },
     select: { id: true, name: true, username: true, email: true, emailVerifiedAt: true, avatar: true, age: true, height: true, currentWeight: true, targetWeight: true, password: true, accessMode: true, coach: { select: { name: true, email: true } } },
   });
+
+  invalidateUserDashboardSummaryCaches({ clientId: client.id });
 
   return NextResponse.json({
     user: {

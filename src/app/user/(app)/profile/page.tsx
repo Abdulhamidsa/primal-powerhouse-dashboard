@@ -21,12 +21,15 @@ import { ProfileAvatarEditModal } from '@/features/profile-avatar-edit/component
 import { ThemePreferenceSection } from '@/features/theme-preference/components/ThemePreferenceSection';
 import { useThemePreference } from '@/features/theme-preference/hooks/useThemePreference';
 import { useDisplayNameUpdate, useUserLogout, useUserProfile } from '@/features/user-profile/hooks/useUserProfile';
+import { hasVerifiedRecoveryEmail } from '@/lib/auth/recovery-status';
 
 type ProfileHubUser = {
   id: string;
   name: string | null;
   displayName: string;
+  username: string | null;
   email: string | null;
+  emailVerifiedAt: string | null;
   avatar: string | null;
 };
 
@@ -124,21 +127,38 @@ export default function UserProfilePage() {
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Account</p>
               <h1 className="mt-1 truncate text-2xl font-semibold text-foreground">{userData?.displayName ?? 'Member'}</h1>
-              <p className="truncate text-sm text-muted-foreground">{userData?.email ?? 'Loading…'}</p>
+              {userData?.email ? (
+                <p className="truncate text-sm text-muted-foreground">{userData.email}</p>
+              ) : userData?.username ? (
+                <p className="truncate text-sm text-muted-foreground">@{userData.username}</p>
+              ) : null}
             </div>
           </div>
         </div>
 
         <SettingsCard>
-          <form className="space-y-3 p-4" onSubmit={handleDisplayNameSubmit}>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Display name</p>
-              <p className="mt-1 text-xs text-muted-foreground">This is how you appear around Primal Powerhouse.</p>
-            </div>
-            <input value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={100} placeholder="Your name" className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
-            <button type="submit" disabled={isSavingDisplayName} className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">{isSavingDisplayName ? 'Saving…' : 'Save display name'}</button>
-            {displayNameError ? <p className="text-xs text-destructive">{displayNameError}</p> : null}
-          </form>
+          <div className="border-b border-border/60 px-4 py-4">
+            <p className="text-sm font-semibold text-foreground">Account info</p>
+            <p className="mt-1 text-xs text-muted-foreground">Your identity and login details.</p>
+          </div>
+          <div className="divide-y divide-border/60">
+            <form className="space-y-3 px-4 py-4" onSubmit={handleDisplayNameSubmit}>
+              <label htmlFor="display-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Display name</label>
+              <div className="flex gap-2">
+                <input id="display-name" value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={100} placeholder="Your name" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+                <button type="submit" disabled={isSavingDisplayName} className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">{isSavingDisplayName ? 'Saving…' : 'Save'}</button>
+              </div>
+              {displayNameError ? <p className="text-xs text-destructive">{displayNameError}</p> : null}
+            </form>
+            <AccountInfoRow label="Username" value={userData?.username ? `@${userData.username}` : 'Not set'} />
+            <AccountInfoRow label="Email" value={userData?.email ?? 'Not added'} />
+            <Link href="/user/settings/security" className="flex items-center justify-between px-4 py-3 transition-colors active:bg-muted/60">
+              <span className="text-sm text-muted-foreground">Recovery</span>
+              <span className="text-sm font-medium text-foreground">
+                {userData && hasVerifiedRecoveryEmail(userData) ? 'Enabled' : 'Not set up'}
+              </span>
+            </Link>
+          </div>
         </SettingsCard>
 
         <SettingsCard>
@@ -215,6 +235,15 @@ export default function UserProfilePage() {
           }}
         />
       </div>
+    </div>
+  );
+}
+
+function AccountInfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="truncate text-right text-sm font-medium text-foreground">{value}</span>
     </div>
   );
 }

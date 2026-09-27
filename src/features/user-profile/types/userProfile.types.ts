@@ -7,8 +7,8 @@ export type UserProfile = {
   id: string;
   name: string | null;
   displayName: string;
-  email: string | null;
   username: string | null;
+  email: string | null;
   emailVerifiedAt: string | null;
   avatar: string | null;
   age: number | null;

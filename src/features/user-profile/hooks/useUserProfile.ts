@@ -13,6 +13,9 @@ import {
 } from '@/features/user-profile/api/userProfile.api';
 import type { PasswordLinkResponse, RecoveryEmailResponse, UserProfileResponse } from '@/features/user-profile/types/userProfile.types';
 import { OFFLINE_METADATA_KEY } from '@/features/offline/lib/offlinePolicy';
+import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
+
+const USER_DATA_URL = '/api/user/data';
 
 export function useUserProfile(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
@@ -117,6 +120,21 @@ export function useDisplayNameUpdate() {
       const response = await updateDisplayName(name);
       setResult(response);
       await mutate(USER_PROFILE_ME_URL, response, false);
+      await mutate(
+        USER_DASHBOARD_SUMMARY_URL,
+        current => current ? { ...current, user: { ...current.user, name: response.user.displayName } } : current,
+        false,
+      );
+      await mutate(
+        USER_DATA_URL,
+        current => current ? { ...current, name: response.user.displayName } : current,
+        false,
+      );
+      void Promise.all([
+        mutate(USER_PROFILE_ME_URL),
+        mutate(USER_DASHBOARD_SUMMARY_URL),
+        mutate(USER_DATA_URL),
+      ]);
       return response;
     } catch (err) {
       const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : 'Something went wrong';
