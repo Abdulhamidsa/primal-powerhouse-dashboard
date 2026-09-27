@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { InfoIcon } from '@phosphor-icons/react';
 import { suggestUsernames } from '../api/auth.api';
 import { useSignupAction } from '../hooks/useAuthForms';
 import { getPasswordStrength } from '../lib/passwordStrength';
@@ -15,6 +16,7 @@ export function SignupForm() {
   const [form, setForm] = useState({ email: '', username: '', password: '' });
   const [suggesting, setSuggesting] = useState(false);
   const [copyLabel, setCopyLabel] = useState('');
+  const passwordStrength = getPasswordStrength(form.password);
 
   async function makeUsername() {
     setSuggesting(true);
@@ -59,10 +61,57 @@ export function SignupForm() {
           {form.username ? <button type="button" onClick={copyUsername} className="text-xs text-primary">{copyLabel || 'Copy username'}</button> : null}
         </div>
       )}
-      <input className="w-full rounded-xl border border-border bg-background px-4 py-3" placeholder="Password" type="password" minLength={8} value={form.password} onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))} required />
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Use at least 8 characters. Longer passwords are stronger.</span>
-        {getPasswordStrength(form.password) ? <span className="font-semibold text-foreground">{getPasswordStrength(form.password)}</span> : null}
+      <div className="space-y-1.5">
+        <div className="relative">
+          <input
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 pr-10"
+            placeholder="Password"
+            type="password"
+            minLength={8}
+            value={form.password}
+            onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
+            aria-describedby="password-hint"
+            required
+          />
+          <span
+            title="Use at least 8 characters. Longer passwords with varied characters are stronger."
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          >
+            <InfoIcon size={16} aria-hidden="true" focusable="false" />
+            <span className="sr-only">Password guidance: use at least 8 characters. Longer passwords with varied characters are stronger.</span>
+          </span>
+        </div>
+        <div className="flex min-h-1 items-center gap-2" aria-live="polite">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+            {passwordStrength ? (
+              <div
+                className={`h-full rounded-full transition-[width,background-color] ${
+                  passwordStrength === 'Weak'
+                    ? 'w-1/3 bg-rose-500'
+                    : passwordStrength === 'Good'
+                      ? 'w-2/3 bg-amber-500'
+                      : 'w-full bg-emerald-500'
+                }`}
+              />
+            ) : null}
+          </div>
+          {passwordStrength ? (
+            <span
+              className={`border-b-2 pb-0.5 text-[11px] font-semibold leading-none ${
+                passwordStrength === 'Weak'
+                  ? 'border-rose-500 text-rose-600'
+                  : passwordStrength === 'Good'
+                    ? 'border-amber-500 text-amber-600'
+                    : 'border-emerald-500 text-emerald-600'
+              }`}
+            >
+              {passwordStrength}
+            </span>
+          ) : null}
+        </div>
+        <span id="password-hint" className="sr-only">
+          Use at least 8 characters. Longer passwords with varied characters are stronger.
+        </span>
       </div>
       {error && <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
       <button disabled={loading} className="w-full rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground disabled:opacity-60">{loading ? 'Creating account…' : method === 'username' ? 'Create account' : 'Create free account'}</button>
