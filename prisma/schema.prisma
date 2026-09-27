@@ -85,6 +85,7 @@ model Client {
   onboardingCompletedAt         DateTime?
   phone                         String?
   avatar                        String?
+  themePreference               String             @default("ember")
   status                        ClientStatus       @default(ACTIVE)
   joinDate                      DateTime           @default(now())
   currentWeight                 Float?

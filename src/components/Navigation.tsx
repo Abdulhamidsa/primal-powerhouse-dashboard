@@ -335,7 +335,7 @@ export default function Navigation({
   const { user: profileUser } = useUserProfile({ enabled: userType === 'user' });
   const { summary: dashboardSummary } = useUserDashboardSummary(userType === 'user');
   const notifications = useNotifications(userId, userType === 'user');
-  useThemePreference({ enabled: userType === 'user' });
+  useThemePreference({ enabled: userType === 'user', userId: profileUser?.id });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);

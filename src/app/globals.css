@@ -2,158 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme values are generated from @primal/theme. */
+
 /* =========================================================
    GLOBAL BASE – iOS / ANDROID FRIENDLY PWA BEHAVIOR
    ========================================================= */
 @layer base {
-  :root {
-    /* Base */
-    --color-bg: #0d0d0d;
-    --color-surface: #141414;
-    --color-bg-alt: #1c1c1c;
-
-    /* Text */
-    --color-text: #f5f5f5;
-    --color-text-black: #000000;
-    --color-text-muted: #9ca3af;
-
-    /* Borders */
-    --color-border: #262626;
-
-    /* Accent */
-    --color-accent: #b86a4e;
-    --color-text-on-accent: #ffffff;
-
-    /* Accent variations */
-    --color-accent-muted: rgba(184, 106, 78, 0.2);
-    --color-accent-translucent: rgba(184, 106, 78, 0.1);
-
-    /* Status colors */
-    --color-success: #22c55e;
-    --color-success-muted: rgba(34, 197, 94, 0.16);
-    --color-warning: #f59e0b;
-    --color-warning-muted: rgba(245, 158, 11, 0.16);
-    --color-danger: #ef4444;
-    --color-danger-muted: rgba(239, 68, 68, 0.16);
-    --color-info: #3b82f6;
-    --color-info-muted: rgba(59, 130, 246, 0.16);
-
-    /* Theme swatch colors */
-    --theme-ember-accent: #b86a4e;
-    --theme-ocean-accent: #3b82f6;
-    --theme-forest-accent: #22c55e;
-    --theme-ruby-accent: #ef4444;
-    --theme-aura-accent: #a78bfa;
-    --theme-arctic-accent: #67e8f9;
-    --theme-dusk-accent: #f472b6;
-    --theme-onyx-accent: #d4d4d4;
-  }
-
-  :root[data-theme='ember'] {
-    --color-bg: #0d0d0d;
-    --color-accent: #b86a4e;
-    --color-accent-muted: rgba(184, 106, 78, 0.2);
-    --color-accent-translucent: rgba(184, 106, 78, 0.1);
-    --color-text-on-accent: #ffffff;
-  }
-
-  :root[data-theme='ocean'] {
-    --color-bg: #0a111a;
-    --color-accent: #3b82f6;
-    --color-accent-muted: rgba(59, 130, 246, 0.2);
-    --color-accent-translucent: rgba(59, 130, 246, 0.1);
-    --color-text-on-accent: #ffffff;
-  }
-
-  :root[data-theme='forest'] {
-    --color-bg: #0c1410;
-    --color-accent: #22c55e;
-    --color-accent-muted: rgba(34, 197, 94, 0.2);
-    --color-accent-translucent: rgba(34, 197, 94, 0.1);
-    --color-text-on-accent: #052e16;
-  }
-
-  :root[data-theme='ruby'] {
-    --color-bg: #150d11;
-    --color-accent: #ef4444;
-    --color-accent-muted: rgba(239, 68, 68, 0.2);
-    --color-accent-translucent: rgba(239, 68, 68, 0.1);
-    --color-text-on-accent: #ffffff;
-  }
-
-  /* Aura — deep cosmic purple on near-black */
-  :root[data-theme='aura'] {
-    --color-bg: #0b0a12;
-    --color-surface: #110f1c;
-    --color-bg-alt: #18162a;
-    --color-border: #252136;
-    --color-accent: #a78bfa;
-    --color-accent-muted: rgba(167, 139, 250, 0.18);
-    --color-accent-translucent: rgba(167, 139, 250, 0.09);
-    --color-text-on-accent: #1a0f3a;
-  }
-
-  /* Arctic — icy cyan-blue on a deep navy */
-  :root[data-theme='arctic'] {
-    --color-bg: #08101a;
-    --color-surface: #0d1824;
-    --color-bg-alt: #13212f;
-    --color-border: #1c2f40;
-    --color-accent: #67e8f9;
-    --color-accent-muted: rgba(103, 232, 249, 0.15);
-    --color-accent-translucent: rgba(103, 232, 249, 0.07);
-    --color-text-on-accent: #012a32;
-  }
-
-  /* Dusk — warm rose-pink on deep charcoal */
-  :root[data-theme='dusk'] {
-    --color-bg: #120d0f;
-    --color-surface: #1a1114;
-    --color-bg-alt: #22161b;
-    --color-border: #2e1d22;
-    --color-accent: #f472b6;
-    --color-accent-muted: rgba(244, 114, 182, 0.18);
-    --color-accent-translucent: rgba(244, 114, 182, 0.09);
-    --color-text-on-accent: #3a0020;
-  }
-
-  /* Onyx — warm silver on absolute black */
-  :root[data-theme='onyx'] {
-    --color-bg: #080808;
-    --color-surface: #111111;
-    --color-bg-alt: #1a1a1a;
-    --color-border: #242424;
-    --color-accent: #d4d4d4;
-    --color-accent-muted: rgba(212, 212, 212, 0.14);
-    --color-accent-translucent: rgba(212, 212, 212, 0.07);
-    --color-text-on-accent: #080808;
-  }
-
-  html[data-theme],
-  html[data-theme] body {
-    background-color: var(--color-bg) !important;
-  }
-
-  html[data-theme] .bg-background {
-    background-color: var(--color-bg) !important;
-  }
-
-  html[data-theme] .bg-accent {
-    background-color: var(--color-accent) !important;
-  }
-
-  html[data-theme] .text-accent {
-    color: var(--color-accent) !important;
-  }
-
-  html[data-theme] .border-accent {
-    border-color: var(--color-accent) !important;
-  }
-
-  html[data-theme] .text-accent-foreground {
-    color: var(--color-text-on-accent) !important;
-  }
-
   * {
     @apply border-border;
     -webkit-tap-highlight-color: transparent;
@@ -564,14 +418,14 @@
   }
 
   .bg-gym-gradient {
-    background: linear-gradient(135deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%);
+    background: linear-gradient(135deg, var(--theme-background) 0%, var(--theme-surface) 50%, var(--theme-background) 100%);
   }
 
   .bg-primary-gradient {
-    background: linear-gradient(135deg, #b22222 0%, #8b0000 100%);
+    background: linear-gradient(135deg, var(--theme-accent-hover) 0%, var(--theme-accent-pressed) 100%);
   }
 
   .bg-highlight-gradient {
-    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+    background: linear-gradient(135deg, var(--theme-warning) 0%, var(--theme-accent) 100%);
   }
 }

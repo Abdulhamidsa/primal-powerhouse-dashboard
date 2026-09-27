@@ -2,12 +2,13 @@ import { Image } from 'react-native';
 import { Link } from 'expo-router';
 import { Button, Card, Copy, Field, Label, Screen, Status } from '@/components/ui';
 import { useTheme } from '@/features/theme/hooks/useTheme';
+import { ThemePicker } from '@/features/theme/components/ThemePicker';
 import { useProfile } from '../hooks/useProfile';
 
 export default function ProfileScreen() {
-  const theme = useTheme();
   const m = useProfile();
   const user = m.profile.data?.user;
+  const theme = useTheme(user?.id);
 
   return (
     <Screen title="Profile" onRefresh={m.profile.refresh} refreshing={m.profile.isValidating}>
@@ -17,7 +18,7 @@ export default function ProfileScreen() {
           <Card>
             {user.avatar ? <Image accessibilityLabel={`${user.displayName} profile photo`} source={{ uri: user.avatar }} style={{ width: 90, height: 90, borderRadius: 45 }} /> : null}
             <Copy>{user.displayName}</Copy>
-            <Link href="/account-info" style={{ color: theme.colors.accent, paddingVertical: 12 }}>Account Info</Link>
+            <Link href="/account-info" style={{ color: theme.tokens.accent, paddingVertical: 12 }}>Account Info</Link>
             <Copy>Age · {user.age ?? '—'}</Copy>
             <Copy>Height · {user.height ?? '—'} cm</Copy>
             <Copy>Weight · {user.currentWeight ?? '—'} kg</Copy>
@@ -29,19 +30,19 @@ export default function ProfileScreen() {
             <Label>Your coach</Label>
             <Copy>{user.coach?.name ?? 'Your coach'}</Copy>
             <Copy muted>{user.coach?.email}</Copy>
-            <Link href="/chat" style={{ color: theme.colors.accent, padding: 12 }}>Message your coach</Link>
+            <Link href="/chat" style={{ color: theme.tokens.accent, padding: 12 }}>Message your coach</Link>
           </Card>
         </>
       ) : null}
       <Card>
         <Label>Theme</Label>
-        {theme.options.map(name => <Button key={name} secondary={name !== theme.name} title={name} onPress={() => theme.select(name)} />)}
+        <ThemePicker userId={user?.id} />
       </Card>
       <Card>
         <Label>Notifications</Label>
         <Button title={m.privacy.data?.consents.messageNotifications ? 'Chat notifications enabled' : 'Enable chat notifications'} onPress={m.enableNotifications} disabled={m.offline || m.action.pending || !m.privacy.data || Boolean(m.privacy.data.consents.messageNotifications)} />
         <Copy muted>{m.push.message || (m.privacy.data?.consents.messageNotifications ? 'Coach message alerts are enabled for this account.' : '')}</Copy>
-        <Link href="/privacy" style={{ color: theme.colors.accent, padding: 12 }}>Privacy, notification consent & account deletion</Link>
+        <Link href="/privacy" style={{ color: theme.tokens.accent, padding: 12 }}>Privacy, notification consent & account deletion</Link>
       </Card>
       <Card>
         <Label>Feedback</Label>

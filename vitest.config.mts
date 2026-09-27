@@ -13,6 +13,7 @@ export default defineConfig({
       'src/features/user-profile/**/*.test.ts',
       'src/lib/client-display-name.test.ts',
       'src/features/offline/**/*.test.ts',
+      'packages/theme/**/*.test.ts',
     ],
   },
 });

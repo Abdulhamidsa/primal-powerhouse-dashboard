@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { themeOptions } from '@primal/theme';
 import { themePreferenceSchema } from '@/features/theme-preference/schemas/themePreference.schema';
 
 export type ThemePreference = z.infer<typeof themePreferenceSchema>;
@@ -6,16 +7,13 @@ export type ThemePreference = z.infer<typeof themePreferenceSchema>;
 export type ThemeOption = {
   value: ThemePreference;
   label: string;
-  swatchVarName: string;
+  description: string;
+  isDefault?: boolean;
 };
 
-export const THEME_OPTIONS: ThemeOption[] = [
-  { value: 'ember', label: 'Ember', swatchVarName: '--theme-ember-accent' },
-  { value: 'ocean', label: 'Ocean', swatchVarName: '--theme-ocean-accent' },
-  { value: 'forest', label: 'Forest', swatchVarName: '--theme-forest-accent' },
-  { value: 'ruby', label: 'Ruby', swatchVarName: '--theme-ruby-accent' },
-  { value: 'aura', label: 'Aura', swatchVarName: '--theme-aura-accent' },
-  { value: 'arctic', label: 'Arctic', swatchVarName: '--theme-arctic-accent' },
-  { value: 'dusk', label: 'Dusk', swatchVarName: '--theme-dusk-accent' },
-  { value: 'onyx', label: 'Onyx', swatchVarName: '--theme-onyx-accent' },
-];
+export const THEME_OPTIONS: ThemeOption[] = themeOptions.map(option => ({
+  value: option.id,
+  label: option.label,
+  description: option.description,
+  isDefault: option.isDefault,
+}));

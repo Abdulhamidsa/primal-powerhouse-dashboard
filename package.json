@@ -31,11 +31,14 @@
     "predb:studio:dev": "node scripts/assert-development-database.cjs",
     "predb:foods:import:dev": "node scripts/assert-development-database.cjs",
     "mobile:start": "pnpm --dir apps/mobile start",
-    "mobile:type-check": "pnpm --dir apps/mobile type-check"
+    "mobile:type-check": "pnpm --dir apps/mobile type-check",
+    "theme:generate": "node --experimental-strip-types --experimental-transform-types packages/theme/scripts/generate-web-css.ts",
+    "theme:audit": "node scripts/audit-theme-colors.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",
     "@primal/contracts": "workspace:*",
+    "@primal/theme": "workspace:*",
     "@prisma/client": "6.17.1",
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-slot": "1.2.3",

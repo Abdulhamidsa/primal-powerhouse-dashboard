@@ -60,8 +60,8 @@ function SettingsLink({
 }
 
 export default function UserProfilePage() {
-  const { themePreference, setThemePreference, themeOptions } = useThemePreference();
   const { user, error: profileError, isLoading } = useUserProfile();
+  const { themePreference, setThemePreference, themeOptions } = useThemePreference({ userId: user?.id });
   const { logout } = useUserLogout();
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);

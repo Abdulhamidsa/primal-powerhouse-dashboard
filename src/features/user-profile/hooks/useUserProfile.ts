@@ -14,6 +14,7 @@ import {
 import type { PasswordLinkResponse, RecoveryEmailResponse, UserProfileResponse } from '@/features/user-profile/types/userProfile.types';
 import { OFFLINE_METADATA_KEY } from '@/features/offline/lib/offlinePolicy';
 import { USER_DASHBOARD_SUMMARY_URL } from '@/features/user-dashboard/api/userDashboard.api';
+import { THEME_STORAGE_KEY } from '@/features/theme-preference/api/themePreference.api';
 
 const USER_DATA_URL = '/api/user/data';
 
@@ -53,6 +54,10 @@ export function useUserLogout() {
     await mutate(USER_PROFILE_ME_URL, null, false);
     localStorage.removeItem('userType');
     localStorage.removeItem(OFFLINE_METADATA_KEY);
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith(`${THEME_STORAGE_KEY}:`)) localStorage.removeItem(key);
+    }
+    document.cookie = 'pph_theme_preference=; Path=/; Max-Age=0; SameSite=Lax';
     navigator.serviceWorker?.controller?.postMessage({ type: 'OFFLINE_CLEAR_USER' });
   };
 

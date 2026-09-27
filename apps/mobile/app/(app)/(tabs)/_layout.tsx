@@ -12,22 +12,22 @@ const tabs = [
 ] as const;
 
 export default function TabLayout() {
-  const { colors } = useTheme();
+  const { tokens } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.text,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.muted,
+        headerStyle: { backgroundColor: tokens.navigationBackground },
+        headerTintColor: tokens.text,
+        tabBarStyle: { backgroundColor: tokens.navigationBackground, borderTopColor: tokens.navigationBorder },
+        tabBarActiveTintColor: tokens.navigationActive,
+        tabBarInactiveTintColor: tokens.navigationInactive,
         headerRight: () => (
           <View style={{ flexDirection: 'row', gap: 16, paddingRight: 16 }}>
-            <Link href="/chat" style={{ color: colors.text, padding: 10 }}>
+            <Link href="/chat" style={{ color: tokens.text, padding: 10 }}>
               Chat
             </Link>
-            <Link href="/profile" style={{ color: colors.text, padding: 10 }}>
+            <Link href="/profile" style={{ color: tokens.text, padding: 10 }}>
               Profile
             </Link>
           </View>

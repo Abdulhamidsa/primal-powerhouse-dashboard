@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from 'next/font/google';
+import '@primal/theme/web.css';
 import './globals.css';
 import PWAInstaller from '@/components/PWAInstaller';
 import InstallPrompt from '@/components/InstallPrompt';
@@ -8,6 +9,9 @@ import { LoadingProvider } from '@/contexts/LoadingProvider';
 import { Metadata } from 'next/types';
 import { SwrProvider } from '@/providers/swr-provider';
 import { AppUpdateProvider } from '@/components/AppUpdateManager';
+import { cookies } from 'next/headers';
+import { themeIdSchema, DEFAULT_THEME_ID, type ThemeId } from '@primal/theme';
+import { ThemeProvider } from '@/features/theme/components/ThemeProvider';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -41,14 +45,20 @@ export const viewport = {
   themeColor: '#ef4444',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const parsedTheme = themeIdSchema.safeParse(cookieStore.get('pph_theme_preference')?.value);
+  const cookieTheme: ThemeId | null = parsedTheme.success ? parsedTheme.data : null;
+  const initialTheme: ThemeId = cookieTheme ?? DEFAULT_THEME_ID;
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" data-theme={initialTheme} suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('pph_theme_preference');var v=['ember','ocean','forest','ruby','aura','arctic','dusk','onyx'];if(!${cookieTheme ? 'true' : 'false'}&&v.indexOf(t)!==-1)document.documentElement.dataset.theme=t}catch(e){}})()` }} />
         <link rel="manifest" href="/manifest.json" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -60,15 +70,17 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <LoadingProvider>
-          <RootAuthGate>
-            <AppUpdateProvider>
-              <PWAInstaller />
-              <InstallPrompt />
-              <SwrProvider>{children}</SwrProvider>
-            </AppUpdateProvider>
-          </RootAuthGate>
-        </LoadingProvider>
+          <ThemeProvider initialTheme={cookieTheme}>
+            <LoadingProvider>
+              <RootAuthGate>
+                <AppUpdateProvider>
+                  <PWAInstaller />
+                  <InstallPrompt />
+                  <SwrProvider>{children}</SwrProvider>
+                </AppUpdateProvider>
+              </RootAuthGate>
+            </LoadingProvider>
+          </ThemeProvider>
       </body>
     </html>
   );

@@ -10,37 +10,40 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Clean minimal palette
-        background: '#000000', // Pure black
-        foreground: '#FFFFFF', // Pure white
+        background: 'rgb(var(--theme-background-rgb) / <alpha-value>)',
+        foreground: 'rgb(var(--theme-text-rgb) / <alpha-value>)',
         primary: {
-          DEFAULT: '#FFFFFF', // Clean white
-          foreground: '#000000',
+          DEFAULT: 'rgb(var(--theme-accent-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--theme-on-accent-rgb) / <alpha-value>)',
         },
         secondary: {
-          DEFAULT: '#1A1A1A', // Dark gray
-          foreground: '#FFFFFF',
+          DEFAULT: 'rgb(var(--theme-surface-elevated-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--theme-text-rgb) / <alpha-value>)',
         },
         card: {
-          DEFAULT: '#0A0A0A', // Very dark card
-          hover: '#111111', // Subtle hover
-          foreground: '#FFFFFF',
+          DEFAULT: 'rgb(var(--theme-card-rgb) / <alpha-value>)',
+          hover: 'rgb(var(--theme-surface-hover-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--theme-text-rgb) / <alpha-value>)',
         },
         muted: {
-          DEFAULT: '#404040', // Medium gray
-          foreground: '#888888',
+          DEFAULT: 'rgb(var(--theme-surface-hover-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--theme-text-muted-rgb) / <alpha-value>)',
         },
-        border: '#1A1A1A', // Subtle dark border
-        input: '#111111', // Dark input
-        ring: '#FFFFFF', // White focus ring
+        border: 'rgb(var(--theme-border-rgb) / <alpha-value>)',
+        'border-strong': 'rgb(var(--theme-border-strong-rgb) / <alpha-value>)',
+        input: 'rgb(var(--theme-input-background-rgb) / <alpha-value>)',
+        ring: 'rgb(var(--theme-focus-ring-rgb) / <alpha-value>)',
         destructive: {
-          DEFAULT: '#EF4444', // Clean red
-          foreground: '#FFFFFF',
+          DEFAULT: 'rgb(var(--theme-error-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--theme-on-error-rgb) / <alpha-value>)',
         },
         accent: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#000000',
+          DEFAULT: 'rgb(var(--theme-accent-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--theme-on-accent-rgb) / <alpha-value>)',
         },
+        'primary-dark': 'rgb(var(--theme-accent-pressed-rgb) / <alpha-value>)',
+        highlight: 'rgb(var(--theme-accent-hover-rgb) / <alpha-value>)',
+        placeholder: 'rgb(var(--theme-placeholder-rgb) / <alpha-value>)',
       },
       fontFamily: {
         display: ['Inter', 'system-ui', 'sans-serif'],

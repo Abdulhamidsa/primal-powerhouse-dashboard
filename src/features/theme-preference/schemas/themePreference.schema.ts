@@ -1,3 +1,3 @@
-import { z } from 'zod';
+import { themeIdSchema } from '@primal/theme';
 
-export const themePreferenceSchema = z.enum(['ember', 'ocean', 'forest', 'ruby', 'aura', 'arctic', 'dusk', 'onyx']);
+export const themePreferenceSchema = themeIdSchema;

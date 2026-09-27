@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@primal/contracts": "workspace:*",
+    "@primal/theme": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "11.5.2",
     "expo": "~55.0.31",
