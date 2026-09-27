@@ -1,4 +1,5 @@
 // next.config.ts
+import { resolve } from 'node:path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -11,6 +12,14 @@ const nextConfig: NextConfig = {
   compress: true,
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react'],
+  },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@primal/theme$': resolve(process.cwd(), 'packages/theme/src/index.ts'),
+      '@primal/theme/web.css$': resolve(process.cwd(), 'packages/theme/generated/themes.css'),
+    };
+    return config;
   },
 
   images: {

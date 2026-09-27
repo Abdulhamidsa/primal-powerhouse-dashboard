@@ -6,6 +6,7 @@ WORKDIR /app
 FROM base AS dependencies
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/contracts/package.json ./packages/contracts/package.json
+COPY packages/theme/package.json ./packages/theme/package.json
 COPY apps/mobile/package.json ./apps/mobile/package.json
 RUN pnpm install --frozen-lockfile --ignore-scripts --filter primal-powerhouse-dashboard...
 

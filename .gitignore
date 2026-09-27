@@ -362,6 +362,7 @@ rate-limiter.ts
 !apps/mobile/eas.json
 !apps/mobile/tsconfig.json
 !packages/contracts/package.json
+!packages/theme/package.json
 !Dockerfile
 !.dockerignore
 !prisma/migrations/
