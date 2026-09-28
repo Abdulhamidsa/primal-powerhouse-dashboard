@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { getCachedUserDashboardSummary } from '@/features/user-dashboard/lib/loadUserDashboardSummary';
 import { userDashboardSummarySchema } from '@/features/user-dashboard/schemas/userDashboard.schema';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   const startedAt = performance.now();
@@ -25,10 +26,10 @@ export async function GET(request: NextRequest) {
     const response = jsonWithCache(parsed.data);
     const duration = Math.round(performance.now() - startedAt);
     response.headers.set('Server-Timing', `auth;dur=${Math.round(authenticatedAt - startedAt)}, summary;dur=${Math.round(performance.now() - authenticatedAt)}, total;dur=${duration}`);
-    console.info('[USER_DASHBOARD_SUMMARY_GET]', { userId: user.userId, durationMs: duration });
+    console.info('[USER_DASHBOARD_SUMMARY_GET]', { durationMs: duration });
     return response;
   } catch (error) {
-    console.error('[USER_DASHBOARD_SUMMARY_GET] Failed:', error);
+    console.error('[USER_DASHBOARD_SUMMARY_GET] Failed:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to load dashboard summary' }, { status: 500 });
   }
 }

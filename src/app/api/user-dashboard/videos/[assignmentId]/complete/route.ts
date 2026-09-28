@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 
 import { prisma } from '@/lib/prisma';
 import { invalidateVideoCaches } from '@/lib/cache-tags';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 export async function POST(request: NextRequest, { params }: { params: Promise<{ assignmentId: string }> }) {
   try {
     const { error, user } = await requireAuth(request);
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json(updatedAssignment);
   } catch (error) {
-    console.error('Error completing video assignment:', error);
+    console.error('[USER_DASHBOARD_VIDEO_COMPLETE_POST] Failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     // DO NOT disconnect in serverless - it breaks connection pooling

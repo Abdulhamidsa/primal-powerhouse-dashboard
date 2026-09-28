@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('User all meals API called');
-
-    // Use the existing auth system
     const { error, user } = await requireAuth(request, 'client');
-
-    console.log('Auth result for all meals:', { error, user });
 
     if (error || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -57,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     return jsonWithCache(allMealAssignments);
   } catch (error) {
-    console.error("Error fetching user's all meals:", error);
+    console.error('[USER_MEALS_GET] Failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

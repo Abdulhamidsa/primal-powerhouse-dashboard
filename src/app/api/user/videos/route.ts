@@ -4,15 +4,11 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, clientVideoAssignmentsTag, userVideosTag } from '@/lib/cache-tags';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('User videos API called');
-
-    // Use the existing auth system
     const { error, user } = await requireAuth(request);
-
-    console.log('Auth result for user videos:', { error, user });
 
     if (error || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -44,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     return jsonWithCache(videoAssignments);
   } catch (error) {
-    console.error('Error fetching user videos:', error);
+    console.error('[USER_VIDEOS_GET] Failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

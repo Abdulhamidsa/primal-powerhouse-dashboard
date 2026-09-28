@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Today videos API called');
-
-    // Use the existing auth system
     const { error, user } = await requireAuth(request);
-
-    console.log('Auth result for videos:', { error, user });
 
     if (error || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -37,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     return jsonWithCache(todaysVideos);
   } catch (error) {
-    console.error("Error fetching today's videos:", error);
+    console.error('[USER_VIDEOS_TODAY_GET] Failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

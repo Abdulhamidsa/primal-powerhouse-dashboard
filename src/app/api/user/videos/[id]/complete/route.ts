@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { invalidateUserDashboardSummaryCaches, invalidateVideoCaches } from '@/lib/cache-tags';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error marking video as completed:', error);
+    console.error('[USER_VIDEO_COMPLETE_POST] Failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

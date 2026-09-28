@@ -6,6 +6,7 @@ import { computeSelectionTotals, macroDelta } from '@/features/meals/utils/mealS
 import { prisma } from '@/lib/prisma';
 import { mealPlanSummarySchema } from '@/features/meals/schemas/mealPlanSummary.schema';
 import { StarterPlanSetupError } from '@/features/self-service/server/starterPlanProvisioner';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest) {
   const startedAt = performance.now();
@@ -65,11 +66,11 @@ export async function GET(request: NextRequest) {
     const response = jsonWithCache(parsed.data);
     const duration = Math.round(performance.now() - startedAt);
     response.headers.set('Server-Timing', `meal-plan-summary;dur=${duration}`);
-    console.info('[USER_MEAL_PLAN_SUMMARY_GET]', { userId: user.userId, durationMs: duration });
+    console.info('[USER_MEAL_PLAN_SUMMARY_GET]', { durationMs: duration });
     return response;
   } catch (error) {
     if (error instanceof StarterPlanSetupError) return jsonWithCache({ error: error.message }, { status: 503 });
-    console.error('[USER_MEAL_PLAN_SUMMARY_GET] Failed:', error);
+    console.error('[USER_MEAL_PLAN_SUMMARY_GET] Failed:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to load meal plan summary' }, { status: 500 });
   }
 }

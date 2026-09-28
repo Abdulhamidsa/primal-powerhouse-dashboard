@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, clientVideoAssignmentsTag, userVideosTag, videoAssignmentTag } from '@/lib/cache-tags';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return jsonWithCache(parsedAssignment);
   } catch (error) {
-    console.error('Error fetching user video assignment:', error);
+    console.error('[USER_VIDEO_ASSIGNMENT_GET] Failed:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { safeErrorMessage } from '@/lib/security/log-redaction';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       `;
     } catch (tableError) {
       // Table might already exist, continue
-      console.log('[FEEDBACK API] Feedback table check/create error (might already exist):', tableError);
+      console.warn('[FEEDBACK_API] Feedback table check/create failed:', safeErrorMessage(tableError));
     }
 
     // Create feedback record
@@ -47,10 +48,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log('[FEEDBACK API] Feedback submitted:', {
-      feedbackId: feedback.id,
-      clientId: feedback.clientId,
-    });
+    console.info('[FEEDBACK_API] Feedback submitted');
 
     return jsonWithCache({
       success: true,
@@ -58,7 +56,7 @@ export async function POST(request: NextRequest) {
       feedbackId: feedback.id,
     });
   } catch (error) {
-    console.error('[FEEDBACK API] Error submitting feedback:', error);
+    console.error('[FEEDBACK_API] Failed:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to submit feedback' }, { status: 500 });
   }
 }
