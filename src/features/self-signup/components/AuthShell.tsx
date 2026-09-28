@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { LegalLinks } from '@/features/legal/components/LegalLinks';
 
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <div className="mt-8">{children}</div>
+        <div className="mt-6 border-t border-border pt-4"><LegalLinks compact /></div>
       </div>
     </div>
   );

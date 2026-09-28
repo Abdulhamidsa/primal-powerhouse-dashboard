@@ -7,17 +7,19 @@ import { findClientByIdentifier } from './identifier.server';
 import { normalizeUsername, validateUsername } from './username.server';
 import { getClientDisplayName } from '@/lib/client-display-name';
 import { recordConfiguredAgeDeclaration, assertAgeDeclaration } from '@/lib/privacy/age-policy';
+import { assertSignupPolicyAcknowledgement, recordSignupPolicyAcknowledgements } from '@/lib/privacy/consent-records';
 
 const VERIFICATION_TOKEN_HOURS = 24;
 const RESET_TOKEN_HOURS = 1;
 export const GENERIC_FORGOT_RESPONSE = 'If recovery is available for this account, instructions have been sent.';
 
 type SignupInput =
-  | { method?: 'email'; email: string; password: string; ageDeclared?: boolean }
-  | { method: 'username'; username: string; password: string; ageDeclared?: boolean };
+  | { method?: 'email'; email: string; password: string; ageDeclared?: boolean; legalAcknowledged?: boolean }
+  | { method: 'username'; username: string; password: string; ageDeclared?: boolean; legalAcknowledged?: boolean };
 
 export async function createSelfSignupClient(input: SignupInput) {
   assertAgeDeclaration(input.ageDeclared);
+  assertSignupPolicyAcknowledgement(input.legalAcknowledged);
   const isUsernameSignup = input.method === 'username';
   const email = isUsernameSignup ? null : input.email.toLowerCase().trim();
   const username = isUsernameSignup ? input.username.trim() : null;
@@ -55,6 +57,13 @@ export async function createSelfSignupClient(input: SignupInput) {
       clientId: created.id,
       declared: input.ageDeclared,
       source: 'email-signup',
+      platform: 'web',
+      tx,
+    });
+    await recordSignupPolicyAcknowledgements({
+      clientId: created.id,
+      acknowledged: input.legalAcknowledged,
+      source: 'signup',
       platform: 'web',
       tx,
     });

@@ -9,6 +9,7 @@ import {
   signup,
   verifyEmail,
   getAgePolicy,
+  getLegalRequirements,
 } from '../api/auth.api';
 
 export function useAuthAction<TArgs extends unknown[], TResult>(
@@ -41,6 +42,9 @@ export function useAuthAction<TArgs extends unknown[], TResult>(
 export const useSignupAction = () => useAuthAction(signup);
 export function useAgePolicy() {
   return useSWR('/api/auth/age-policy', getAgePolicy);
+}
+export function useLegalRequirements() {
+  return useSWR('/api/legal/requirements', getLegalRequirements);
 }
 export const useResendVerificationAction = () => useAuthAction(resendVerification);
 export const useVerifyEmailAction = () => useAuthAction(verifyEmail);

@@ -7,6 +7,7 @@ import { usePushSubscription } from '@/features/client-coach-messaging/hooks/use
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
 import { clearClientLocalData } from '@/features/privacy/lib/client-cleanup';
+import { LegalLinks } from '@/features/legal/components/LegalLinks';
 
 function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -146,6 +147,26 @@ export function PrivacyDataCenter() {
         <p className="px-4 pb-4 text-xs text-muted-foreground">
           Analytics, marketing, and optional tracking are not active features in this app.
         </p>
+      </SettingsGroup>
+
+      <SettingsGroup title="Legal & transparency">
+        <div className="space-y-3 px-4 py-4">
+          <LegalLinks />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Approved documents, consent history, processor purposes, retention categories, AI-assisted features, and storage classifications are summarized in the linked documents. Vendor regions, contractual status, transfer mechanisms, and backup deletion remain deployment- and legal-review dependent.
+          </p>
+          {data.legalDocuments.length ? (
+            <div className="space-y-1 text-xs text-muted-foreground">
+              {data.legalDocuments.map(document => (
+                <p key={`${document.type}:${document.version}`}>
+                  {document.title} · v{document.version}{document.effectiveDate ? ` · effective ${new Date(document.effectiveDate).toLocaleDateString()}` : ''}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No approved legal versions are active yet.</p>
+          )}
+        </div>
       </SettingsGroup>
 
       <SettingsGroup title="Data">

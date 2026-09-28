@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     return jsonWithCache({ success: true });
   } catch (error) {
-    if (error instanceof Error && error.message === 'POLICY_VERSION_NOT_CONFIGURED') {
+    if (error instanceof Error && ['POLICY_VERSION_NOT_CONFIGURED', 'POLICY_VERSION_NOT_APPROVED'].includes(error.message)) {
       return jsonWithCache({ error: 'Policy version is not available' }, { status: 400 });
     }
     console.error('[PRIVACY_POLICY_POST] Failed:', safeErrorMessage(error));

@@ -5,6 +5,7 @@ import type {
   PrivacyDeleteValues,
   PrivacyDeleteResponse,
   PrivacyExportCreateResponse,
+  PolicyAcknowledgementValues,
 } from '@/features/privacy/types/privacy.types';
 
 export async function getPrivacyCenter(): Promise<PrivacyCenterResponse> {
@@ -25,6 +26,10 @@ export async function updatePrivacyConsent(payload: PrivacyConsentValues): Promi
 
 export async function updateNotificationPreference(payload: { coachMessagePushEnabled: boolean }): Promise<{ success: true }> {
   return httpClient.put<{ success: true }>('/api/privacy/notifications', payload);
+}
+
+export async function acknowledgePolicy(payload: PolicyAcknowledgementValues): Promise<{ success: true }> {
+  return httpClient.post<{ success: true }>('/api/privacy/policy', payload);
 }
 
 export async function revokeAllSessions(): Promise<{ success: true }> {

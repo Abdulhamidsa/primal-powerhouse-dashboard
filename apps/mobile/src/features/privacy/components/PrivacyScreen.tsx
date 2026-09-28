@@ -1,5 +1,14 @@
+import { Linking } from 'react-native';
 import { Button, Card, Copy, Field, Label, Screen, Status } from '@/components/ui';
 import { usePrivacy } from '../hooks/usePrivacy';
+
+const legalLinks = [
+  ['Privacy Policy', 'privacy'],
+  ['Terms of Service', 'terms'],
+  ['Health disclaimer', 'health-disclaimer'],
+  ['AI disclosure', 'ai-disclosure'],
+  ['Storage notice', 'storage'],
+] as const;
 
 export default function PrivacyScreen() {
   const m = usePrivacy();
@@ -19,6 +28,30 @@ export default function PrivacyScreen() {
               disabled={m.offline || m.action.pending}
             />
             <Copy muted>Analytics, marketing, and optional tracking are not active features in this app.</Copy>
+          </Card>
+          <Card>
+            <Label>Legal & transparency</Label>
+            {legalLinks.map(([label, slug]) => (
+              <Button key={slug} secondary title={label} onPress={() => Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_URL || process.env.EXPO_PUBLIC_API_URL}/legal/${slug}`)} />
+            ))}
+            {m.query.data.legalDocuments.length ? m.query.data.legalDocuments.map(document => (
+              <Copy key={`${document.type}:${document.version}`} muted>
+                {document.title} · v{document.version}
+              </Copy>
+            )) : <Copy muted>No approved legal versions are active yet.</Copy>}
+            {m.query.data.pendingPolicyAcknowledgements.length ? (
+              <>
+                <Copy>Please review and acknowledge the current approved policies.</Copy>
+                {m.query.data.pendingPolicyAcknowledgements.map(document => (
+                  <Button
+                    key={`${document.type}:${document.version}`}
+                    title={`Acknowledge ${document.title}`}
+                    onPress={() => m.acknowledgePolicy({ type: document.type as 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE', version: document.version })}
+                    disabled={m.offline || m.action.pending}
+                  />
+                ))}
+              </>
+            ) : null}
           </Card>
           {m.query.data.exportJobs.length ? (
             <Card>

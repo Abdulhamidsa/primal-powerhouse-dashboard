@@ -9,8 +9,9 @@ import {
   revokeAllSessions,
   updatePrivacyConsent,
   updateNotificationPreference,
+  acknowledgePolicy as acknowledgePolicyRequest,
 } from '@/features/privacy/api/privacy.api';
-import type { PrivacyConsentValues, PrivacyDeleteValues } from '@/features/privacy/types/privacy.types';
+import type { PolicyAcknowledgementValues, PrivacyConsentValues, PrivacyDeleteValues } from '@/features/privacy/types/privacy.types';
 
 const PRIVACY_CENTER_KEY = '/api/privacy/center';
 
@@ -43,6 +44,12 @@ export function usePrivacyActions() {
     return result;
   };
 
+  const acknowledgePolicy = async (payload: PolicyAcknowledgementValues) => {
+    const result = await acknowledgePolicyRequest(payload);
+    await refresh();
+    return result;
+  };
+
   const startExport = async () => {
     const result = await requestPrivacyExport();
     await refresh();
@@ -64,6 +71,7 @@ export function usePrivacyActions() {
   return {
     updateConsent,
     updateNotifications,
+    acknowledgePolicy,
     startExport,
     requestDeletion,
     logoutAll,

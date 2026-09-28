@@ -6,11 +6,16 @@ import type {
   SignupResponse,
   VerifyEmailResponse,
 } from '../types/auth.types';
+import type { LegalRequirements } from '@primal/contracts/legal/types/legal.types';
 
 export type AgePolicyResponse = { enabled: boolean; minimumAge: number | null; version: string | null };
 
-export function signup(payload: { method: 'email'; email: string; password: string; ageDeclared?: boolean } | { method: 'username'; username: string; password: string; ageDeclared?: boolean }) {
+export function signup(payload: { method: 'email'; email: string; password: string; ageDeclared?: boolean; legalAcknowledged?: boolean } | { method: 'username'; username: string; password: string; ageDeclared?: boolean; legalAcknowledged?: boolean }) {
   return httpClient.post<SignupResponse>('/api/auth/user/signup', payload);
+}
+
+export function getLegalRequirements() {
+  return httpClient.get<LegalRequirements>('/api/legal/requirements');
 }
 
 export function getAgePolicy() {

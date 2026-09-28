@@ -4,6 +4,8 @@ import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { groupConsentRecords, listConsentRecords } from '@/lib/privacy/consent-records';
+import { getActiveMandatoryPolicyDocuments, getApprovedConfiguredDocuments, toLegalDocumentSummary } from '@/features/legal/legal-registry';
+import { ConsentRecordAction, ConsentRecordCategory } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -66,6 +68,14 @@ export async function GET(request: NextRequest) {
 
     const consentHistory = groupConsentRecords(consentRecords);
     const messagePushEnabled = client.notificationPreference?.coachMessagePushEnabled ?? client.consentMessageNotifications;
+    const acceptedPolicyVersions = new Set(
+      consentRecords
+        .filter(record => record.category === ConsentRecordCategory.POLICY_ACKNOWLEDGEMENT && record.action === ConsentRecordAction.ACKNOWLEDGED)
+        .map(record => `${record.type}:${record.version}`),
+    );
+    const pendingPolicyAcknowledgements = getActiveMandatoryPolicyDocuments().filter(
+      document => !acceptedPolicyVersions.has(`${document.type}:${document.version}`),
+    );
 
     return jsonWithCache({
       consents: {
@@ -92,6 +102,8 @@ export async function GET(request: NextRequest) {
           })),
         ]),
       ),
+      legalDocuments: getApprovedConfiguredDocuments().map(toLegalDocumentSummary),
+      pendingPolicyAcknowledgements: pendingPolicyAcknowledgements.map(toLegalDocumentSummary),
       exportJobs: exportJobs.map((job: any) => ({
         id: job.id,
         status: job.status,

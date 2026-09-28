@@ -3,6 +3,7 @@ import { AuthService } from '@/lib/auth';
 import {
   GOOGLE_OAUTH_STATE_COOKIE,
   GOOGLE_AGE_DECLARATION_COOKIE,
+  GOOGLE_LEGAL_ACKNOWLEDGEMENT_COOKIE,
   exchangeAndVerifyGoogleCode,
   findOrCreateGoogleClient,
 } from '@/features/self-signup/server/googleAuth.server';
@@ -16,6 +17,13 @@ function clearState(response: NextResponse) {
     maxAge: 0,
   });
   response.cookies.set(GOOGLE_AGE_DECLARATION_COOKIE, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+  response.cookies.set(GOOGLE_LEGAL_ACKNOWLEDGEMENT_COOKIE, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -46,6 +54,7 @@ export async function GET(request: NextRequest) {
     const client = await findOrCreateGoogleClient({
       ...googleUser,
       ageDeclared: request.cookies.get(GOOGLE_AGE_DECLARATION_COOKIE)?.value === 'true',
+      legalAcknowledged: request.cookies.get(GOOGLE_LEGAL_ACKNOWLEDGEMENT_COOKIE)?.value === 'true',
     });
     const response = NextResponse.redirect(redirect('/user/dashboard'));
     clearState(response);

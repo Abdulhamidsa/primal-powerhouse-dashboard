@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { LegalLinks } from '@/features/legal/components/LegalLinks';
 
 export default function UserLoginClient() {
   const [identifier, setIdentifier] = useState('');
@@ -192,6 +193,7 @@ export default function UserLoginClient() {
         <p className="mt-6 text-center text-xs text-muted-foreground">
           New here? <a href="/user/signup" className="text-primary hover:underline">Create a free account</a>
         </p>
+        <div className="mt-4 flex justify-center"><LegalLinks compact /></div>
       </div>
     </div>
   );

@@ -1,5 +1,10 @@
 import { ConsentRecordAction, ConsentRecordCategory, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import {
+  getActiveMandatoryPolicyDocuments,
+  getApprovedConfiguredLegalDocument,
+  getConfiguredLegalDocument,
+} from '@/features/legal/legal-registry';
 
 export const CONSENT_RECORD_TYPES = {
   policy: ['TERMS', 'PRIVACY_POLICY', 'AI_DISCLOSURE'],
@@ -284,7 +289,26 @@ export async function acknowledgeConfiguredPolicy(input: {
     throw new Error('POLICY_VERSION_NOT_CONFIGURED');
   }
 
-  return appendConsentRecord(input.tx ?? prisma, {
+  const document = getConfiguredLegalDocument(input.type);
+  const approvedDocument = getApprovedConfiguredLegalDocument(input.type);
+  if (!document || document.version !== input.version || !approvedDocument || approvedDocument.version !== input.version) {
+    throw new Error('POLICY_VERSION_NOT_APPROVED');
+  }
+
+  const client = input.tx ?? prisma;
+  const existing = await client.consentRecord.findFirst({
+    where: {
+      clientId: input.clientId,
+      category: ConsentRecordCategory.POLICY_ACKNOWLEDGEMENT,
+      type: input.type,
+      action: ConsentRecordAction.ACKNOWLEDGED,
+      version: input.version,
+    },
+    orderBy: { occurredAt: 'desc' },
+  });
+  if (existing) return existing;
+
+  return appendConsentRecord(client, {
     clientId: input.clientId,
     category: ConsentRecordCategory.POLICY_ACKNOWLEDGEMENT,
     type: input.type,
@@ -293,4 +317,40 @@ export async function acknowledgeConfiguredPolicy(input: {
     source: input.source,
     platform: input.platform,
   });
+}
+
+export function isSignupPolicyAcknowledgementRequired() {
+  return getActiveMandatoryPolicyDocuments().length === 2;
+}
+
+export function assertSignupPolicyAcknowledgement(acknowledged: boolean | undefined) {
+  if (isSignupPolicyAcknowledgementRequired() && acknowledged !== true) {
+    throw new Error('LEGAL_ACKNOWLEDGEMENT_REQUIRED');
+  }
+}
+
+export async function recordSignupPolicyAcknowledgements(input: {
+  clientId: string;
+  acknowledged: boolean | undefined;
+  source: string;
+  platform: string;
+  tx: Prisma.TransactionClient;
+}) {
+  const documents = getActiveMandatoryPolicyDocuments();
+  if (documents.length === 0) return [];
+  if (input.acknowledged !== true) throw new Error('LEGAL_ACKNOWLEDGEMENT_REQUIRED');
+
+  const records = [];
+  for (const document of documents) {
+    if (document.type !== 'TERMS' && document.type !== 'PRIVACY_POLICY' && document.type !== 'AI_DISCLOSURE') continue;
+    records.push(await acknowledgeConfiguredPolicy({
+      clientId: input.clientId,
+      type: document.type,
+      version: document.version,
+      source: input.source,
+      platform: input.platform,
+      tx: input.tx,
+    }));
+  }
+  return records;
 }

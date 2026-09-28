@@ -7,6 +7,7 @@ import type {
   privacyNotificationPreferenceSchema,
   policyAcknowledgementSchema,
 } from '../schemas/privacy.schema';
+import type { LegalDocumentSummary } from '../../legal/types/legal.types';
 
 export type PrivacyConsentValues = z.infer<typeof privacyConsentSchema>;
 export type PrivacyDeleteValues = z.infer<typeof privacyDeleteRequestSchema>;
@@ -55,6 +56,8 @@ export type PrivacyCenterResponse = {
   consents: PrivacyConsentValues;
   notificationPreferences: PrivacyNotificationPreference;
   consentHistory: PrivacyConsentHistory;
+  legalDocuments: LegalDocumentSummary[];
+  pendingPolicyAcknowledgements: LegalDocumentSummary[];
   exportJobs: PrivacyExportJobItem[];
   activeDeletionRequest: DeletionRequestItem | null;
   activeSession: {

@@ -8,6 +8,7 @@ export const emailSignupSchema = z.object({
   email: z.string().trim().email().max(254).transform(value => value.toLowerCase()),
   password: passwordSchema,
   ageDeclared: z.boolean().optional(),
+  legalAcknowledged: z.boolean().optional(),
 });
 
 export const usernameSignupSchema = z.object({
@@ -15,6 +16,7 @@ export const usernameSignupSchema = z.object({
   username: usernameSchema,
   password: passwordSchema,
   ageDeclared: z.boolean().optional(),
+  legalAcknowledged: z.boolean().optional(),
 });
 
 export const signupSchema = z.union([emailSignupSchema, usernameSignupSchema]);

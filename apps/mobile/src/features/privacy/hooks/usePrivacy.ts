@@ -20,6 +20,12 @@ export function usePrivacy() {
       if (next) await push.enable();
       return api.updateNotificationPreference({ coachMessagePushEnabled: next });
     }),
+    acknowledgePolicy: (input: { type: 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE'; version: string }) =>
+      action.run(async () => {
+        const result = await api.acknowledgePolicy(input);
+        await query.refresh();
+        return result;
+      }),
     export: () => action.run(async () => { await verify(); const job = await api.requestExport(); const data = await api.downloadExport(job.downloadUrl); const file = new File(Paths.cache, `primal-export-${Date.now()}.json`); file.create(); file.write(typeof data === 'string' ? data : JSON.stringify(data, null, 2)); try { if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri, { mimeType: 'application/json' }); else throw new Error('Sharing is unavailable on this device.'); } finally { file.delete(); } return job; }),
     delete: () => action.run(async () => { const input = privacyDeleteRequestSchema.parse({ confirmText: confirmation }); await verify(); const clientId = getAuthState().session?.user.id; const result = await api.deleteAccount(input); await clearMobileClientData(clientId); await saveSession(null); return result; }),
     revoke: () => action.run(async () => { const result = await api.revokeSessions(); await saveSession(null); return result; }),

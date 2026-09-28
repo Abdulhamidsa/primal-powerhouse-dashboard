@@ -2,12 +2,14 @@ import Navigation from '@/components/Navigation';
 import MessageNotificationBanner from '@/features/client-coach-messaging/components/MessageNotificationBanner';
 import { OfflineProvider } from '@/features/offline/components/OfflineProvider';
 import { OfflineStatusBanner } from '@/features/offline/components/OfflineStatusBanner';
+import { PolicyUpdatePrompt } from '@/features/legal/components/PolicyUpdatePrompt';
 
 export default function UserShell({ userId, accessMode, children }: { userId: string; accessMode: 'SELF_SERVICE' | 'COACHING'; children: React.ReactNode }) {
   return (
     <OfflineProvider userId={userId}>
       <Navigation userType="user" userId={userId}>
         <OfflineStatusBanner />
+        <PolicyUpdatePrompt />
         {children}
         {accessMode === 'COACHING' ? <MessageNotificationBanner userId={userId} chatPath="/user/chat" /> : null}
       </Navigation>
