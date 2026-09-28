@@ -75,6 +75,7 @@ export default function PrivacyScreen() {
               Scheduled deletion ·{' '}
               {new Date(m.query.data.activeDeletionRequest.scheduledHardDeleteAt).toLocaleDateString()}
             </Copy>
+            <Copy muted>This deletion cannot be cancelled.</Copy>
           </>
         ) : (
           <>

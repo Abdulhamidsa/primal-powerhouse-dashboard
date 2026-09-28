@@ -229,10 +229,13 @@ export function PrivacyDataCenter() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">Delete Account</p>
               {data.activeDeletionRequest ? (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Requested {new Date(data.activeDeletionRequest.requestedAt).toLocaleDateString()} · scheduled deletion{' '}
-                  {new Date(data.activeDeletionRequest.scheduledHardDeleteAt).toLocaleDateString()}
-                </p>
+                <>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Requested {new Date(data.activeDeletionRequest.requestedAt).toLocaleDateString()} · scheduled deletion{' '}
+                    {new Date(data.activeDeletionRequest.scheduledHardDeleteAt).toLocaleDateString()}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">This deletion cannot be cancelled.</p>
+                </>
               ) : (
                 <>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">

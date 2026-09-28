@@ -376,6 +376,8 @@ prisma/migrations/*
 !src/features/mobile-auth/**/*.test.ts
 !src/features/coaching-interest/**/*.test.ts
 !apps/mobile/src/**/*.test.ts
+!src/lib/privacy/**/*.test.ts
+!packages/theme/src/*.test.ts
 !scripts/*.test.cjs
 !docs/mobile-parity.md
 !docs/mobile-development.md

@@ -15,6 +15,7 @@ export default defineConfig({
       'src/features/offline/**/*.test.ts',
       'packages/theme/**/*.test.ts',
       'src/lib/security/**/*.test.ts',
+      'src/lib/privacy/**/*.test.ts',
       'src/app/api/**/*.test.ts',
     ],
   },

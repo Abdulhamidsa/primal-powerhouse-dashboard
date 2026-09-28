@@ -242,7 +242,9 @@ export function readMediaManifest(metadata: string | null | undefined): ClientMe
   if (!metadata) return null;
   try {
     const parsed = JSON.parse(metadata) as { mediaManifest?: ClientMediaManifest };
-    return parsed.mediaManifest?.version === 1 ? parsed.mediaManifest : null;
+    return parsed.mediaManifest?.version === 1 && Array.isArray(parsed.mediaManifest.entries) && Array.isArray(parsed.mediaManifest.unresolved)
+      ? parsed.mediaManifest
+      : null;
   } catch {
     return null;
   }
