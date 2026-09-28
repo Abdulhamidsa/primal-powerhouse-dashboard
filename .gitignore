@@ -17,18 +17,6 @@ package-lock.json
 
 # Testing
 coverage/
-*.test.js
-*.test.ts
-*.test.jsx
-*.test.tsx
-*.spec.js
-*.spec.ts
-*.spec.jsx
-*.spec.tsx
-!src/app/api/*-hardening.test.ts
-!src/lib/security/api-auth.test.ts
-!src/lib/privacy/**/*.test.ts
-__tests__/
 .nyc_output
 *.lcov
 junit.xml
@@ -342,14 +330,10 @@ supabase-setup.sql
 seed.js
 
 
-all .md files except README.md
 *.md
 
 
 *fullSeed.ts
-## comment out all js files expect those files prisma-generate-safe.js
-*.js
-!prisma-generate-safe.js
 
 ## json files except package.json and prisma files exept those this file app-version.json add it below
 *.json
@@ -373,14 +357,13 @@ prisma/migrations/*
 !prisma/migrations/*/
 !prisma/migrations/*/migration.sql
 !prisma/migrations/migration_lock.toml
-!src/features/mobile-auth/**/*.test.ts
-!src/features/coaching-interest/**/*.test.ts
-!apps/mobile/src/**/*.test.ts
-!src/lib/privacy/**/*.test.ts
-!packages/theme/src/*.test.ts
-!scripts/*.test.cjs
 !docs/mobile-parity.md
 !docs/mobile-development.md
 !docs/hetzner-mobile-backend.md
+
+# Project scripts are versioned; generated/import data remains local.
+!scripts/
+!scripts/**
+scripts/data/
 .env.mobile-test.local
 .cache/

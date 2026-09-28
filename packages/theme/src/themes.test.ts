@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { accentThemeIds, appearanceModeIds } from './ids';
 import { accentThemes } from './accents';
 import { composeTheme } from './compose';
@@ -58,5 +60,14 @@ describe('composed appearance tokens', () => {
     for (const [id, tokens] of Object.entries(accentThemes)) {
       expect(channelSpread(tokens.accent), id).toBeGreaterThanOrEqual(id === 'onyx' ? 8 : 32);
     }
+  });
+
+  it('generates independent mode and accent selectors with RGB aliases', () => {
+    const css = readFileSync(resolve(process.cwd(), 'packages/theme/generated/themes.css'), 'utf8');
+    expect(css).toContain(":root[data-mode='dark']");
+    expect(css).toContain(":root[data-mode='light']");
+    expect(css).toContain(":root[data-accent='ocean']");
+    expect(css).toContain('--theme-accent-rgb: var(--accent-accent-rgb);');
+    expect(css).toContain('--theme-background-rgb: var(--mode-background-rgb);');
   });
 });

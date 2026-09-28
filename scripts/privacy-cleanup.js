@@ -42,7 +42,7 @@ function parseCloudinaryReference(value) {
 
 function addEntry(entries, unresolved, input) {
   const parsed = input.publicId
-    ? { publicId: String(input.publicId), resourceType: input.resourceType === 'video' || input.resourceType === 'raw' ? input.resourceType : 'image' }
+    ? { publicId: String(input.publicId), resourceType: input.resourceType === 'video' || input.resourceType === 'audio' ? 'video' : input.resourceType === 'raw' ? 'raw' : 'image' }
     : parseCloudinaryReference(input.value);
   if (!parsed) {
     if (typeof input.value === 'string' && /cloudinary/i.test(input.value)) unresolved.add(input.sourceReference);
@@ -103,7 +103,9 @@ async function collectLegacyMediaManifest(clientId, db) {
 
 function readManifest(metadata) {
   const parsed = parseJson(metadata);
-  return parsed && parsed.mediaManifest && parsed.mediaManifest.version === 1 ? parsed.mediaManifest : null;
+  return parsed && parsed.mediaManifest && parsed.mediaManifest.version === 1 && Array.isArray(parsed.mediaManifest.entries) && Array.isArray(parsed.mediaManifest.unresolved)
+    ? parsed.mediaManifest
+    : null;
 }
 
 async function purgeExpiredExports(now, db = prisma) {
