@@ -127,6 +127,50 @@ describe('Phase 5A staff route boundaries', () => {
     expect(database.video.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ coachId: 'coach-a' }) }));
   });
 
+  it('rejects client access to staff-only routes', async () => {
+    auth.requireStaffActor.mockResolvedValue({ ok: false, res: new Response('Forbidden', { status: 403 }) });
+
+    expect((await getVideos(request('/api/videos'))).status).toBe(403);
+    expect((await getSchedule(request('/api/schedule'))).status).toBe(403);
+    expect((await getSettings(request('/api/settings'))).status).toBe(403);
+  });
+
+  it('creates an admin video for an explicitly validated coach', async () => {
+    const response = await createVideo(request('/api/videos', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        title: 'Squat', category: 'STRENGTH_TRAINING', difficulty: 'BEGINNER', duration: 120,
+        videoUrl: 'https://example.test/video.mp4', coachId: 'coach-a',
+      }),
+    }));
+
+    expect(response.status).toBe(201);
+    expect(database.video.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ coachId: 'coach-a' }),
+    }));
+  });
+
+  it('does not let a coach submit a different video owner', async () => {
+    auth.requireStaffActor.mockResolvedValue({
+      ok: true,
+      user: { userId: 'coach-a', type: 'admin' },
+      actor: { id: 'coach-a', role: 'COACH' },
+    });
+
+    const response = await createVideo(request('/api/videos', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        title: 'Squat', category: 'STRENGTH_TRAINING', difficulty: 'BEGINNER', duration: 120,
+        videoUrl: 'https://example.test/video.mp4', coachId: 'coach-b',
+      }),
+    }));
+
+    expect(response.status).toBe(400);
+    expect(database.video.create).not.toHaveBeenCalled();
+  });
+
   it('requires admins to choose a coach for video creation', async () => {
     const response = await createVideo(request('/api/videos', {
       method: 'POST',
@@ -219,6 +263,15 @@ describe('Phase 5A staff route boundaries', () => {
     const response = await getSchedule(request('/api/schedule?clientId=client-b'));
     expect(response.status).toBe(403);
     expect(database.videoAssignment.findMany).not.toHaveBeenCalled();
+  });
+
+  it('lets an admin filter schedule results by client without using a coachId', async () => {
+    await getSchedule(request('/api/schedule?clientId=client-a'));
+
+    expect(database.client.findUnique).toHaveBeenCalledWith({ where: { id: 'client-a' }, select: { id: true } });
+    expect(database.videoAssignment.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ clientId: { equals: 'client-a' } }),
+    }));
   });
 
   it('rejects caller-selected settings identities', async () => {
