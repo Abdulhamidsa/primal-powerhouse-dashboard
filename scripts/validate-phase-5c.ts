@@ -58,7 +58,13 @@ const disclosureDocs = [
   'docs/pm2-production-operations.md',
 ];
 for (const relativePath of disclosureDocs) {
-  const source = readFileSync(resolve(root, relativePath), 'utf8');
+  const absolutePath = resolve(root, relativePath);
+  // Some operational Markdown files are intentionally host-local/ignored and
+  // are not present in a clean production checkout. Validate them when they
+  // exist, but do not make deployment depend on untracked documentation.
+  if (!existsSync(absolutePath)) continue;
+
+  const source = readFileSync(absolutePath, 'utf8');
   if (/off-server disaster recovery is (?:available|configured|enabled|provided)/i.test(source)) {
     fail(`unsupported off-server recovery claim in ${relativePath}`);
   }
