@@ -89,7 +89,7 @@ function addEntry(
     : parseCloudinaryReference(input.value);
 
   if (!parsed) {
-    if (typeof input.value === 'string' && input.value.trim()) {
+    if (typeof input.value === 'string' && /cloudinary/i.test(input.value)) {
       unresolved.add(input.sourceReference);
     }
     return;

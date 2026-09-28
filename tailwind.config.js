@@ -43,6 +43,8 @@ module.exports = {
         },
         'primary-dark': 'rgb(var(--theme-accent-pressed-rgb) / <alpha-value>)',
         highlight: 'rgb(var(--theme-accent-hover-rgb) / <alpha-value>)',
+        link: 'rgb(var(--theme-link-rgb) / <alpha-value>)',
+        'link-hover': 'rgb(var(--theme-link-hover-rgb) / <alpha-value>)',
         placeholder: 'rgb(var(--theme-placeholder-rgb) / <alpha-value>)',
       },
       fontFamily: {

@@ -64,8 +64,8 @@ export default function PrivacyScreen() {
       <Card>
         <Label>Delete account</Label>
         <Copy>
-          This will deactivate your account and start the existing deletion process. Enter your password above and type
-          DELETE MY ACCOUNT to confirm.
+          Access is removed immediately. Your account is scheduled for permanent deletion after 30 days. This deletion
+          cannot be cancelled. Enter your password above and type DELETE MY ACCOUNT to confirm.
         </Copy>
         {m.query.data?.activeDeletionRequest ? (
           <>

@@ -45,7 +45,7 @@ function addEntry(entries, unresolved, input) {
     ? { publicId: String(input.publicId), resourceType: input.resourceType === 'video' || input.resourceType === 'raw' ? input.resourceType : 'image' }
     : parseCloudinaryReference(input.value);
   if (!parsed) {
-    if (typeof input.value === 'string' && input.value.trim()) unresolved.add(input.sourceReference);
+    if (typeof input.value === 'string' && /cloudinary/i.test(input.value)) unresolved.add(input.sourceReference);
     return;
   }
   const key = `${parsed.resourceType}:${parsed.publicId}`;
@@ -154,7 +154,11 @@ async function finalizeHardDeletes(now, db = prisma) {
         manifest = await collectLegacyMediaManifest(request.clientId, db);
         await db.deletionRequest.update({
           where: { id: request.id },
-          data: { metadata: JSON.stringify({ mediaManifest: manifest, legacyManifestDerivedAt: now.toISOString() }) },
+          data: { metadata: JSON.stringify({
+            mediaManifest: manifest,
+            legacyManifestDerivedAt: now.toISOString(),
+            legacyVendorMediaResolution: manifest.entries.length ? 'derived' : 'no-deterministic-reference',
+          }) },
         });
       }
 
@@ -170,7 +174,11 @@ async function finalizeHardDeletes(now, db = prisma) {
             actorRole: 'system',
             targetUserId: request.clientId,
             action: 'privacy.deletion.finalized',
-            metadata: JSON.stringify({ deletionRequestId: request.id }),
+            metadata: JSON.stringify({
+              deletionRequestId: request.id,
+              unresolvedMediaReferences: manifest.unresolved?.length ?? 0,
+              legacyVendorMediaResolution: manifest.unresolved?.length ? 'unresolved' : 'complete',
+            }),
           },
         });
         // Client is intentionally deleted last; DeletionRequest is removed by
