@@ -12,6 +12,7 @@ import {
   toClientListResponse,
 } from '@/lib/client-response';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { assertAgeDeclaration, recordConfiguredAgeDeclaration } from '@/lib/privacy/age-policy';
 
 export async function GET(request: NextRequest) {
   try {
@@ -84,7 +85,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { coachId, password, progressPhotos, sessionsCompleted, status, ...clientData } = parsed.data;
+    const { coachId, password, progressPhotos, sessionsCompleted, status, ageDeclared, ...clientData } = parsed.data;
+
+    assertAgeDeclaration(ageDeclared);
 
     // Default to the authenticated user as the coach
     const userId = coachId || auth.user.userId;
@@ -131,8 +134,18 @@ export async function POST(request: NextRequest) {
       progressPhotos: JSON.stringify(progressPhotos || []),
     };
 
-    const client = await prisma.client.create({
-      data: clientToCreate,
+    const client = await prisma.$transaction(async tx => {
+      const created = await tx.client.create({
+        data: clientToCreate,
+      });
+      await recordConfiguredAgeDeclaration({
+        clientId: created.id,
+        declared: ageDeclared,
+        source: 'admin-client-create',
+        platform: 'web',
+        tx,
+      });
+      return created;
     });
 
     return jsonWithCache(
@@ -145,7 +158,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === 'AGE_DECLARATION_REQUIRED') {
+      return jsonWithCache({ error: 'Age declaration is required to create a client' }, { status: 422 });
+    }
     return jsonWithCache(
       {
         error: 'Failed to create client',

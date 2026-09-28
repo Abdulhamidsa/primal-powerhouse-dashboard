@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DownloadIcon as Download, SignOutIcon as LogOut, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
-import { privacyConsentSchema, privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
+import { privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
 import { clearClientLocalData } from '@/features/privacy/lib/client-cleanup';
 
 function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
@@ -54,7 +54,7 @@ function SwitchRow({
 export function PrivacyDataCenter() {
   const router = useRouter();
   const { data, isLoading, error } = usePrivacyCenter();
-  const { updateConsent, startExport, requestDeletion, logoutAll } = usePrivacyActions();
+  const { updateNotifications, startExport, requestDeletion, logoutAll } = usePrivacyActions();
   const { status: pushStatus, isLoading: isPushLoading, subscribe, unsubscribe } = usePushSubscription();
 
   const [isSavingConsent, setIsSavingConsent] = useState(false);
@@ -69,30 +69,20 @@ export function PrivacyDataCenter() {
 
   const latestJob = data.exportJobs[0] ?? null;
 
-  const handleConsentToggle = async (
-    key: 'analytics' | 'marketingNotifications' | 'optionalTracking' | 'messageNotifications',
-  ) => {
-    const next = {
-      ...data.consents,
-      [key]: !data.consents[key],
-    };
-
-    const parsed = privacyConsentSchema.safeParse(next);
-    if (!parsed.success) return;
+  const handleConsentToggle = async () => {
+    const next = !data.notificationPreferences.coachMessagePushEnabled;
 
     try {
       setIsSavingConsent(true);
 
-      if (key === 'messageNotifications') {
-        if (parsed.data.messageNotifications) {
+      if (next) {
           const ok = await subscribe();
           if (!ok) return;
-        } else {
-          await unsubscribe();
-        }
+      } else {
+        await unsubscribe();
       }
 
-      await updateConsent(parsed.data);
+      await updateNotifications(next);
     } finally {
       setIsSavingConsent(false);
     }
@@ -139,31 +129,7 @@ export function PrivacyDataCenter() {
 
   return (
     <div className="space-y-6">
-      <SettingsGroup title="Consent">
-        <SwitchRow
-          label="Analytics"
-          description="Help improve the app with product analytics."
-          checked={data.consents.analytics}
-          disabled={isSavingConsent}
-          onToggle={() => handleConsentToggle('analytics')}
-        />
-        <div className="ml-4 h-px bg-border/60" />
-        <SwitchRow
-          label="Marketing Notifications"
-          description="Receive optional product and promotion updates."
-          checked={data.consents.marketingNotifications}
-          disabled={isSavingConsent}
-          onToggle={() => handleConsentToggle('marketingNotifications')}
-        />
-        <div className="ml-4 h-px bg-border/60" />
-        <SwitchRow
-          label="Optional Tracking"
-          description="Allow optional personalization tracking."
-          checked={data.consents.optionalTracking}
-          disabled={isSavingConsent}
-          onToggle={() => handleConsentToggle('optionalTracking')}
-        />
-        <div className="ml-4 h-px bg-border/60" />
+      <SettingsGroup title="Notifications">
         <SwitchRow
           label="Message Push Notifications"
           description={
@@ -173,10 +139,13 @@ export function PrivacyDataCenter() {
                 ? 'Not supported by this browser.'
                 : 'Coach message alerts for this device.'
           }
-          checked={data.consents.messageNotifications}
+          checked={data.notificationPreferences.coachMessagePushEnabled}
           disabled={isSavingConsent || isPushLoading || pushStatus === 'unsupported' || pushStatus === 'denied'}
-          onToggle={() => handleConsentToggle('messageNotifications')}
+          onToggle={handleConsentToggle}
         />
+        <p className="px-4 pb-4 text-xs text-muted-foreground">
+          Analytics, marketing, and optional tracking are not active features in this app.
+        </p>
       </SettingsGroup>
 
       <SettingsGroup title="Data">

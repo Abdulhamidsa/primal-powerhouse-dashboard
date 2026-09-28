@@ -23,6 +23,10 @@ export async function updatePrivacyConsent(payload: PrivacyConsentValues): Promi
   return httpClient.put<{ success: true }>('/api/privacy/consent', payload);
 }
 
+export async function updateNotificationPreference(payload: { coachMessagePushEnabled: boolean }): Promise<{ success: true }> {
+  return httpClient.put<{ success: true }>('/api/privacy/notifications', payload);
+}
+
 export async function revokeAllSessions(): Promise<{ success: true }> {
   return httpClient.post<{ success: true }>('/api/privacy/sessions', { action: 'logout_all' });
 }

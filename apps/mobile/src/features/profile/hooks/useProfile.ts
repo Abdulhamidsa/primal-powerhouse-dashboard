@@ -5,7 +5,6 @@ import { useLogout } from '@/features/auth/hooks/useAuth';
 import { usePushRegistration } from '@/features/chat/hooks/useNativeLifecycle';
 import { useConnection } from '@/features/resources/hooks/useConnection';
 import { avatarSchema, feedbackSchema } from '../schemas/profile.schema';
-import { privacyConsentSchema } from '@/features/privacy/schemas/privacy.schema';
 import * as privacyApi from '@/features/privacy/api/privacy.api';
 import * as api from '../api/profile.api';
 export function useProfile() {
@@ -19,7 +18,7 @@ export function useProfile() {
     enableNotifications: () => action.run(async () => {
       if (!privacy.data) throw new Error('Privacy settings are still loading.');
       await push.enable();
-      return privacyApi.updateConsent(privacyConsentSchema.parse({ ...privacy.data.consents, messageNotifications: true }));
+      return privacyApi.updateNotificationPreference({ coachMessagePushEnabled: true });
     }),
   };
 }

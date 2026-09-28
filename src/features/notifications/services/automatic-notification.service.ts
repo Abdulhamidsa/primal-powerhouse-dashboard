@@ -34,10 +34,14 @@ type MealPlanLike = {
 async function coachClientChannels(clientId: string): Promise<NotificationChannel[]> {
   const client = await prisma.client.findUnique({
     where: { id: clientId },
-    select: { consentMessageNotifications: true },
+    select: {
+      consentMessageNotifications: true,
+      notificationPreference: { select: { coachMessagePushEnabled: true } },
+    },
   });
 
-  return client?.consentMessageNotifications ? ['IN_APP', 'PUSH'] : ['IN_APP'];
+  const pushEnabled = client?.notificationPreference?.coachMessagePushEnabled ?? client?.consentMessageNotifications;
+  return pushEnabled ? ['IN_APP', 'PUSH'] : ['IN_APP'];
 }
 
 function hash(value: unknown): string {

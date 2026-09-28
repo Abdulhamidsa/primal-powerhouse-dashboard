@@ -23,7 +23,7 @@ function StatusPill({ label, tone = 'neutral' }: { label: string; tone?: 'neutra
 
 export default function UserNotificationSettingsPage() {
   const { data: privacyData, isLoading: isPrivacyLoading } = usePrivacyCenter();
-  const { updateConsent } = usePrivacyActions();
+  const { updateNotifications } = usePrivacyActions();
   const {
     status: pushStatus,
     isLoading: isPushLoading,
@@ -43,7 +43,7 @@ export default function UserNotificationSettingsPage() {
   const handleNotificationToggle = async () => {
     if (!privacyData || isSavingNotifications) return;
 
-    const nextMessageNotifications = !privacyData.consents.messageNotifications;
+    const nextMessageNotifications = !privacyData.notificationPreferences.coachMessagePushEnabled;
 
     try {
       setIsSavingNotifications(true);
@@ -55,10 +55,7 @@ export default function UserNotificationSettingsPage() {
         await unsubscribe();
       }
 
-      await updateConsent({
-        ...privacyData.consents,
-        messageNotifications: nextMessageNotifications,
-      });
+      await updateNotifications(nextMessageNotifications);
     } finally {
       setIsSavingNotifications(false);
     }
@@ -133,14 +130,14 @@ export default function UserNotificationSettingsPage() {
                 pushStatus === 'unsupported' ||
                 permissionState === 'denied'
               }
-              aria-pressed={Boolean(privacyData?.consents.messageNotifications)}
+              aria-pressed={Boolean(privacyData?.notificationPreferences.coachMessagePushEnabled)}
               className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors ${
-                privacyData?.consents.messageNotifications ? 'bg-accent' : 'bg-muted'
+                privacyData?.notificationPreferences.coachMessagePushEnabled ? 'bg-accent' : 'bg-muted'
               } disabled:cursor-not-allowed disabled:opacity-50`}
             >
               <span
                 className={`absolute top-1 block h-5 w-5 rounded-full bg-white transition-transform ${
-                  privacyData?.consents.messageNotifications ? 'translate-x-6' : 'translate-x-1'
+                  privacyData?.notificationPreferences.coachMessagePushEnabled ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>

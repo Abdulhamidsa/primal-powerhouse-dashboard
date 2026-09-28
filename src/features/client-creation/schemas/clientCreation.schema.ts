@@ -13,6 +13,7 @@ export const createClientSchema = z
     targetWeight: z.number().finite().min(20).max(350),
     height: z.number().finite().min(90).max(260),
     age: z.number().int().min(10).max(120),
+    ageDeclared: z.boolean().optional(),
     activityLevel: z.enum(['LOW', 'MODERATE', 'HIGH']),
     dietaryRestrictions: z.array(z.string().trim()),
     goals: z.array(z.string().trim().min(1)).min(1),

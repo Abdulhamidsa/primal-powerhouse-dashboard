@@ -7,8 +7,14 @@ import type {
   VerifyEmailResponse,
 } from '../types/auth.types';
 
-export function signup(payload: { method: 'email'; email: string; password: string } | { method: 'username'; username: string; password: string }) {
+export type AgePolicyResponse = { enabled: boolean; minimumAge: number | null; version: string | null };
+
+export function signup(payload: { method: 'email'; email: string; password: string; ageDeclared?: boolean } | { method: 'username'; username: string; password: string; ageDeclared?: boolean }) {
   return httpClient.post<SignupResponse>('/api/auth/user/signup', payload);
+}
+
+export function getAgePolicy() {
+  return httpClient.get<AgePolicyResponse>('/api/auth/age-policy');
 }
 
 export function suggestUsernames() {

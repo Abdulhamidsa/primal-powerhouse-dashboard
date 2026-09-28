@@ -6,16 +6,18 @@ import { createRawToken, hashToken, hoursFromNow } from './token.server';
 import { findClientByIdentifier } from './identifier.server';
 import { normalizeUsername, validateUsername } from './username.server';
 import { getClientDisplayName } from '@/lib/client-display-name';
+import { recordConfiguredAgeDeclaration, assertAgeDeclaration } from '@/lib/privacy/age-policy';
 
 const VERIFICATION_TOKEN_HOURS = 24;
 const RESET_TOKEN_HOURS = 1;
 export const GENERIC_FORGOT_RESPONSE = 'If recovery is available for this account, instructions have been sent.';
 
 type SignupInput =
-  | { method?: 'email'; email: string; password: string }
-  | { method: 'username'; username: string; password: string };
+  | { method?: 'email'; email: string; password: string; ageDeclared?: boolean }
+  | { method: 'username'; username: string; password: string; ageDeclared?: boolean };
 
 export async function createSelfSignupClient(input: SignupInput) {
+  assertAgeDeclaration(input.ageDeclared);
   const isUsernameSignup = input.method === 'username';
   const email = isUsernameSignup ? null : input.email.toLowerCase().trim();
   const username = isUsernameSignup ? input.username.trim() : null;
@@ -47,6 +49,14 @@ export async function createSelfSignupClient(input: SignupInput) {
         signupSource: isUsernameSignup ? 'USERNAME_SIGNUP' : 'SELF_SIGNUP',
       },
       select: { id: true, name: true, email: true, username: true },
+    });
+
+    await recordConfiguredAgeDeclaration({
+      clientId: created.id,
+      declared: input.ageDeclared,
+      source: 'email-signup',
+      platform: 'web',
+      tx,
     });
 
     if (rawToken && tokenHash && created.email) {

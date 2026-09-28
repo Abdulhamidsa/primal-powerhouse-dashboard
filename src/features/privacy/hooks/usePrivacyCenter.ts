@@ -8,6 +8,7 @@ import {
   requestPrivacyExport,
   revokeAllSessions,
   updatePrivacyConsent,
+  updateNotificationPreference,
 } from '@/features/privacy/api/privacy.api';
 import type { PrivacyConsentValues, PrivacyDeleteValues } from '@/features/privacy/types/privacy.types';
 
@@ -36,6 +37,12 @@ export function usePrivacyActions() {
     return result;
   };
 
+  const updateNotifications = async (coachMessagePushEnabled: boolean) => {
+    const result = await updateNotificationPreference({ coachMessagePushEnabled });
+    await refresh();
+    return result;
+  };
+
   const startExport = async () => {
     const result = await requestPrivacyExport();
     await refresh();
@@ -56,6 +63,7 @@ export function usePrivacyActions() {
 
   return {
     updateConsent,
+    updateNotifications,
     startExport,
     requestDeletion,
     logoutAll,

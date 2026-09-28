@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { InfoIcon } from '@phosphor-icons/react';
 import { suggestUsernames } from '../api/auth.api';
-import { useSignupAction } from '../hooks/useAuthForms';
+import { useAgePolicy, useSignupAction } from '../hooks/useAuthForms';
 import { getPasswordStrength } from '../lib/passwordStrength';
 
 type SignupMethod = 'email' | 'username';
@@ -12,8 +12,10 @@ type SignupMethod = 'email' | 'username';
 export function SignupForm() {
   const router = useRouter();
   const { run, loading, error } = useSignupAction();
+  const { data: agePolicy } = useAgePolicy();
   const [method, setMethod] = useState<SignupMethod>('email');
   const [form, setForm] = useState({ email: '', username: '', password: '' });
+  const [ageDeclared, setAgeDeclared] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [copyLabel, setCopyLabel] = useState('');
   const passwordStrength = getPasswordStrength(form.password);
@@ -38,8 +40,8 @@ export function SignupForm() {
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     const result = method === 'email'
-      ? await run({ method: 'email', email: form.email, password: form.password })
-      : await run({ method: 'username', username: form.username, password: form.password });
+      ? await run({ method: 'email', email: form.email, password: form.password, ageDeclared })
+      : await run({ method: 'username', username: form.username, password: form.password, ageDeclared });
     if (method === 'email') router.replace(`/user/verify-required?email=${encodeURIComponent(result.email ?? form.email)}`);
     else router.replace('/user/dashboard');
   }
@@ -113,9 +115,15 @@ export function SignupForm() {
           Use at least 8 characters. Longer passwords with varied characters are stronger.
         </span>
       </div>
+      {agePolicy?.enabled ? (
+        <label className="flex items-start gap-2 text-sm text-muted-foreground">
+          <input type="checkbox" checked={ageDeclared} onChange={event => setAgeDeclared(event.target.checked)} required />
+          <span>I confirm that I meet the minimum age requirement of {agePolicy.minimumAge}.</span>
+        </label>
+      ) : null}
       {error && <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
       <button disabled={loading} className="w-full rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground disabled:opacity-60">{loading ? 'Creating account…' : method === 'username' ? 'Create account' : 'Create free account'}</button>
-      <a href="/api/auth/google/start" className="block w-full rounded-xl border border-border px-4 py-3 text-center font-medium">Continue with Google</a>
+      <a href={`/api/auth/google/start${ageDeclared ? '?ageDeclared=true' : ''}`} className="block w-full rounded-xl border border-border px-4 py-3 text-center font-medium">Continue with Google</a>
       <p className="text-center text-sm text-muted-foreground">Already have an account? <a href="/user/login" className="text-primary">Sign in</a></p>
     </form>
   );

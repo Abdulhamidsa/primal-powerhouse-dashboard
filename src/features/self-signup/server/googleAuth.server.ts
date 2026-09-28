@@ -3,8 +3,10 @@ import { OAuth2Client } from 'google-auth-library';
 import { prisma } from '@/lib/prisma';
 import { getAppBaseUrl } from '@/lib/email/transactional-email';
 import { getOrCreateSystemCoachId } from './systemCoach.server';
+import { assertAgeDeclaration, recordConfiguredAgeDeclaration } from '@/lib/privacy/age-policy';
 
 export const GOOGLE_OAUTH_STATE_COOKIE = 'google-oauth-state';
+export const GOOGLE_AGE_DECLARATION_COOKIE = 'google-age-declared';
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 
 function googleClientId() {
@@ -65,7 +67,12 @@ export async function exchangeAndVerifyGoogleCode(code: string) {
   };
 }
 
-export async function findOrCreateGoogleClient(input: { providerAccountId: string; email: string; name: string | null }) {
+export async function findOrCreateGoogleClient(input: {
+  providerAccountId: string;
+  email: string;
+  name: string | null;
+  ageDeclared?: boolean;
+}) {
   return prisma.$transaction(async tx => {
     const existingIdentity = await tx.clientAuthIdentity.findUnique({
       where: {
@@ -114,6 +121,8 @@ export async function findOrCreateGoogleClient(input: { providerAccountId: strin
       return existingClient;
     }
 
+    assertAgeDeclaration(input.ageDeclared);
+
     const coachId = await getOrCreateSystemCoachId(tx as typeof prisma);
     const created = await tx.client.create({
       data: {
@@ -134,6 +143,13 @@ export async function findOrCreateGoogleClient(input: { providerAccountId: strin
           },
         },
       },
+    });
+    await recordConfiguredAgeDeclaration({
+      clientId: created.id,
+      declared: input.ageDeclared,
+      source: 'google-signup',
+      platform: 'web',
+      tx,
     });
     return created;
   });

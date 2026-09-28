@@ -52,6 +52,8 @@ export async function buildClientExport(clientId: string) {
   const db = prisma as any;
   const [
     client,
+    consentRecords,
+    notificationPreference,
     weeklyCheckIns,
     healthMetrics,
     feedback,
@@ -98,6 +100,18 @@ export async function buildClientExport(clientId: string) {
         } },
       },
     }),
+    db.consentRecord?.findMany?.({
+      where: { clientId },
+      orderBy: { occurredAt: 'asc' },
+      select: {
+        id: true, category: true, type: true, action: true, version: true,
+        source: true, platform: true, occurredAt: true,
+      },
+    }) ?? Promise.resolve([]),
+    db.clientNotificationPreference?.findUnique?.({
+      where: { clientId },
+      select: { coachMessagePushEnabled: true, createdAt: true, updatedAt: true },
+    }) ?? Promise.resolve(null),
     db.weeklyCheckIn.findMany({ where: { clientId }, orderBy: { weekStartDate: 'desc' }, select: {
       id: true, weekStartDate: true, submittedAt: true, weightKg: true, waistCm: true, trainingAdherence: true,
       nutritionAdherence: true, energyRating: true, stressRating: true, hungerRating: true, digestionRating: true,
@@ -363,7 +377,15 @@ export async function buildClientExport(clientId: string) {
       subscriptionCount: entry.subscriptionCount, successCount: entry.successCount, failureCount: entry.failureCount, staleCount: entry.staleCount,
       reason: entry.reason, createdAt: iso(entry.createdAt) })),
     consentAndPrivacy: { consents: { analytics: client.consentAnalytics, marketingNotifications: client.consentMarketingNotifications,
-      optionalTracking: client.consentOptionalTracking, messageNotifications: client.consentMessageNotifications }, privacyUpdatedAt: iso(client.privacyUpdatedAt),
+      optionalTracking: client.consentOptionalTracking, messageNotifications: client.consentMessageNotifications },
+      notificationPreferences: notificationPreference ? {
+        coachMessagePushEnabled: notificationPreference.coachMessagePushEnabled,
+        createdAt: iso(notificationPreference.createdAt),
+        updatedAt: iso(notificationPreference.updatedAt),
+      } : null,
+      consentHistory: consentRecords.map((entry: any) => ({ id: entry.id, category: entry.category, type: entry.type,
+        action: entry.action, version: entry.version, source: entry.source, platform: entry.platform, occurredAt: iso(entry.occurredAt) })),
+      privacyUpdatedAt: iso(client.privacyUpdatedAt),
       deletionRequests: deletionRequests.map((entry: any) => ({ id: entry.id, status: entry.status, requestedAt: iso(entry.requestedAt), gracePeriodDays: entry.gracePeriodDays,
         scheduledHardDeleteAt: iso(entry.scheduledHardDeleteAt), anonymizedAt: iso(entry.anonymizedAt), finalizedAt: iso(entry.finalizedAt),
         cancelledAt: iso(entry.cancelledAt), reason: entry.reason })),

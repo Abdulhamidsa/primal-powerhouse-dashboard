@@ -4,8 +4,17 @@ import type { ExpoPushResult } from '../types/mobilePush.types';
 
 function expoHeaders(): Record<string, string> { return process.env.EXPO_ACCESS_TOKEN ? { Authorization: `Bearer ${process.env.EXPO_ACCESS_TOKEN}` } : {}; }
 export async function sendMobileChatPush(clientId: string, conversationId: string, messageId: string) {
-  const client = await prisma.client.findUnique({ where: { id: clientId }, select: { consentMessageNotifications: true, status: true, deactivatedAt: true } });
-  if (!client?.consentMessageNotifications || client.status === 'ARCHIVED' || client.status === 'INACTIVE' || client.deactivatedAt) return;
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    select: {
+      consentMessageNotifications: true,
+      notificationPreference: { select: { coachMessagePushEnabled: true } },
+      status: true,
+      deactivatedAt: true,
+    },
+  });
+  const pushEnabled = client?.notificationPreference?.coachMessagePushEnabled ?? client?.consentMessageNotifications;
+  if (!client || !pushEnabled || client.status === 'ARCHIVED' || client.status === 'INACTIVE' || client.deactivatedAt) return;
   const devices = await prisma.mobilePushDevice.findMany({ where: { session: { clientId, revokedAt: null, expiresAt: { gt: new Date() } } } });
   for (const device of devices) {
     // A durable uniqueness constraint prevents the web fallback from sending this message twice.

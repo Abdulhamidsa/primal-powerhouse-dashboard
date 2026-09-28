@@ -146,6 +146,8 @@ model Client {
   mealSelectionSet         UserMealSelectionSet?
   privacyExportJobs        PrivacyExportJob[]
   deletionRequests         DeletionRequest[]
+  consentRecords           ConsentRecord[]
+  notificationPreference   ClientNotificationPreference?
   conversations            Conversation[]
   conversationPresence     ConversationPresence?
   pushSubscriptions        PushSubscription[]
@@ -988,6 +990,36 @@ model DeletionRequest {
   @@map("deletion_requests")
 }
 
+model ConsentRecord {
+  id         String                   @id @default(cuid())
+  clientId   String
+  client     Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  category   ConsentRecordCategory
+  type       String
+  action     ConsentRecordAction
+  version    String?
+  source     String?
+  platform   String?
+  metadataJson String?
+  occurredAt DateTime                 @default(now())
+  createdAt  DateTime                 @default(now())
+
+  @@index([clientId, category, type, occurredAt])
+  @@index([clientId, occurredAt])
+  @@map("consent_records")
+}
+
+model ClientNotificationPreference {
+  id                    String   @id @default(cuid())
+  clientId              String   @unique
+  client                 Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  coachMessagePushEnabled Boolean @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("client_notification_preferences")
+}
+
 model AuditLog {
   id           String   @id @default(cuid())
   actorId      String?
@@ -1735,4 +1767,21 @@ model MobilePushDelivery {
 
   @@unique([messageId, deviceToken])
   @@index([status, createdAt])
+}
+
+enum ConsentRecordCategory {
+  POLICY_ACKNOWLEDGEMENT
+  OPTIONAL_CONSENT
+  NOTIFICATION_PREFERENCE
+  AGE_DECLARATION
+}
+
+enum ConsentRecordAction {
+  ACKNOWLEDGED
+  GRANTED
+  WITHDRAWN
+  ENABLED
+  DISABLED
+  DECLARED
+  DECLINED
 }

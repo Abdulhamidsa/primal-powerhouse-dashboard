@@ -12,15 +12,13 @@ export default function PrivacyScreen() {
         <>
           <Card>
             <Label>Your choices</Label>
-            {(['analytics', 'marketingNotifications', 'optionalTracking', 'messageNotifications'] as const).map(key => (
-              <Button
-                secondary
-                key={key}
-                title={`${m.query.data!.consents[key] ? 'Enabled' : 'Disabled'} · ${key.replace(/([A-Z])/g, ' $1')}`}
-                onPress={() => m.toggle(key)}
-                disabled={m.offline || m.action.pending}
-              />
-            ))}
+            <Button
+              secondary
+              title={`${m.query.data.notificationPreferences.coachMessagePushEnabled ? 'Enabled' : 'Disabled'} · Coach message push`}
+              onPress={() => m.toggle()}
+              disabled={m.offline || m.action.pending}
+            />
+            <Copy muted>Analytics, marketing, and optional tracking are not active features in this app.</Copy>
           </Card>
           {m.query.data.exportJobs.length ? (
             <Card>

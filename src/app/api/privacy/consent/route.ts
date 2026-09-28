@@ -1,25 +1,15 @@
 import { NextRequest } from 'next/server';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
-import { prisma } from '@/lib/prisma';
 import { assertSameOrigin } from '@/lib/security/csrf';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { logAuditEvent } from '@/lib/audit';
 import { privacyConsentSchema } from '@/features/privacy/schemas/privacy.schema';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { updatePrivacyChoices } from '@/lib/privacy/consent-records';
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
-}
-
-function isSchemaMismatchError(error: unknown): boolean {
-  const message = String(error);
-  return (
-    message.includes('Unknown argument') ||
-    message.includes('Unknown field') ||
-    message.includes('Unknown arg') ||
-    message.includes('Invalid `prisma.client.update()` invocation')
-  );
 }
 
 export async function PUT(request: NextRequest) {
@@ -41,24 +31,12 @@ export async function PUT(request: NextRequest) {
       return jsonWithCache({ error: 'Invalid consent payload' }, { status: 400 });
     }
 
-    const { analytics, marketingNotifications, optionalTracking, messageNotifications } = parsed.data;
-
-    try {
-      await (prisma as any).client.update({
-        where: { id: auth.user.userId },
-        data: {
-          consentAnalytics: analytics,
-          consentMarketingNotifications: marketingNotifications,
-          consentOptionalTracking: optionalTracking,
-          consentMessageNotifications: messageNotifications,
-          privacyUpdatedAt: new Date(),
-        },
-      });
-    } catch (error) {
-      if (!isSchemaMismatchError(error)) {
-        throw error;
-      }
-    }
+    await updatePrivacyChoices({
+      clientId: auth.user.userId,
+      ...parsed.data,
+      source: 'privacy-center',
+      platform: request.headers.get('user-agent')?.toLowerCase().includes('mobile') ? 'mobile' : 'web',
+    });
 
     await logAuditEvent({
       actorId: auth.user.userId,
@@ -67,7 +45,10 @@ export async function PUT(request: NextRequest) {
       action: 'privacy.consent.changed',
       ip,
       userAgent: request.headers.get('user-agent'),
-      metadata: parsed.data,
+      metadata: {
+        categories: ['OPTIONAL_CONSENT', 'NOTIFICATION_PREFERENCE'],
+        changed: true,
+      },
     });
 
     return jsonWithCache({ success: true });

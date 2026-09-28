@@ -40,9 +40,9 @@ export default function ProfileScreen() {
       </Card>
       <Card>
         <Label>Notifications</Label>
-        <Button title={m.privacy.data?.consents.messageNotifications ? 'Chat notifications enabled' : 'Enable chat notifications'} onPress={m.enableNotifications} disabled={m.offline || m.action.pending || !m.privacy.data || Boolean(m.privacy.data.consents.messageNotifications)} />
-        <Copy muted>{m.push.message || (m.privacy.data?.consents.messageNotifications ? 'Coach message alerts are enabled for this account.' : '')}</Copy>
-        <Link href="/privacy" style={{ color: theme.tokens.accent, padding: 12 }}>Privacy, notification consent & account deletion</Link>
+        <Button title={m.privacy.data?.notificationPreferences.coachMessagePushEnabled ? 'Chat notifications enabled' : 'Enable chat notifications'} onPress={m.enableNotifications} disabled={m.offline || m.action.pending || !m.privacy.data || Boolean(m.privacy.data.notificationPreferences.coachMessagePushEnabled)} />
+        <Copy muted>{m.push.message || (m.privacy.data?.notificationPreferences.coachMessagePushEnabled ? 'Coach message alerts are enabled for this account.' : '')}</Copy>
+        <Link href="/privacy" style={{ color: theme.tokens.accent, padding: 12 }}>Privacy, notification settings & account deletion</Link>
       </Card>
       <Card>
         <Label>Feedback</Label>

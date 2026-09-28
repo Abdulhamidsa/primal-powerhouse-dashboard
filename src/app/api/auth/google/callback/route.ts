@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/lib/auth';
-// import { safeErrorMessage } from '@/lib/security/log-redaction';
 import {
   GOOGLE_OAUTH_STATE_COOKIE,
+  GOOGLE_AGE_DECLARATION_COOKIE,
   exchangeAndVerifyGoogleCode,
   findOrCreateGoogleClient,
 } from '@/features/self-signup/server/googleAuth.server';
 
 function clearState(response: NextResponse) {
   response.cookies.set(GOOGLE_OAUTH_STATE_COOKIE, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+  response.cookies.set(GOOGLE_AGE_DECLARATION_COOKIE, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -36,7 +43,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const googleUser = await exchangeAndVerifyGoogleCode(code);
-    const client = await findOrCreateGoogleClient(googleUser);
+    const client = await findOrCreateGoogleClient({
+      ...googleUser,
+      ageDeclared: request.cookies.get(GOOGLE_AGE_DECLARATION_COOKIE)?.value === 'true',
+    });
     const response = NextResponse.redirect(redirect('/user/dashboard'));
     clearState(response);
     AuthService.setAuthCookieOnResponse(

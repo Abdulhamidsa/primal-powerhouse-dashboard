@@ -7,12 +7,14 @@ export const emailSignupSchema = z.object({
   method: z.literal('email').optional(),
   email: z.string().trim().email().max(254).transform(value => value.toLowerCase()),
   password: passwordSchema,
+  ageDeclared: z.boolean().optional(),
 });
 
 export const usernameSignupSchema = z.object({
   method: z.literal('username'),
   username: usernameSchema,
   password: passwordSchema,
+  ageDeclared: z.boolean().optional(),
 });
 
 export const signupSchema = z.union([emailSignupSchema, usernameSignupSchema]);

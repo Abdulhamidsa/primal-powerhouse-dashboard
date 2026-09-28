@@ -16,6 +16,7 @@ export default defineConfig({
       'packages/theme/**/*.test.ts',
       'src/lib/security/**/*.test.ts',
       'src/lib/privacy/**/*.test.ts',
+      'src/lib/ai/**/*.test.ts',
       'src/app/api/**/*.test.ts',
     ],
   },

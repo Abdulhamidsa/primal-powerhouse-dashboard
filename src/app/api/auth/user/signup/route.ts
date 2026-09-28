@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
     }
     return response;
   } catch (error) {
+    if (error instanceof Error && error.message === 'AGE_DECLARATION_REQUIRED') {
+      return NextResponse.json({ error: 'Age declaration is required to create an account.' }, { status: 422 });
+    }
     const message = error instanceof Error ? error.message : 'Signup failed';
     const isConflict = typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002';
     console.error('[SIGNUP] error:', safeErrorMessage(error));

@@ -1,8 +1,37 @@
 import type { z } from 'zod';
-import type { privacyConsentSchema, privacyDeleteRequestSchema } from '../schemas/privacy.schema';
+import type {
+  consentRecordActionSchema,
+  consentRecordCategorySchema,
+  privacyConsentSchema,
+  privacyDeleteRequestSchema,
+  privacyNotificationPreferenceSchema,
+  policyAcknowledgementSchema,
+} from '../schemas/privacy.schema';
 
 export type PrivacyConsentValues = z.infer<typeof privacyConsentSchema>;
 export type PrivacyDeleteValues = z.infer<typeof privacyDeleteRequestSchema>;
+export type ConsentRecordCategory = z.infer<typeof consentRecordCategorySchema>;
+export type ConsentRecordAction = z.infer<typeof consentRecordActionSchema>;
+export type PrivacyNotificationPreference = z.infer<typeof privacyNotificationPreferenceSchema>;
+export type PolicyAcknowledgementValues = z.infer<typeof policyAcknowledgementSchema>;
+
+export type PrivacyConsentRecord = {
+  id: string;
+  category: ConsentRecordCategory;
+  type: string;
+  action: ConsentRecordAction;
+  version: string | null;
+  source: string | null;
+  platform: string | null;
+  occurredAt: string;
+};
+
+export type PrivacyConsentHistory = {
+  policyAcknowledgements: PrivacyConsentRecord[];
+  optionalConsents: PrivacyConsentRecord[];
+  notificationPreferences: PrivacyConsentRecord[];
+  ageDeclarations: PrivacyConsentRecord[];
+};
 
 export type PrivacyExportJobItem = {
   id: string;
@@ -24,6 +53,8 @@ export type DeletionRequestItem = {
 
 export type PrivacyCenterResponse = {
   consents: PrivacyConsentValues;
+  notificationPreferences: PrivacyNotificationPreference;
+  consentHistory: PrivacyConsentHistory;
   exportJobs: PrivacyExportJobItem[];
   activeDeletionRequest: DeletionRequestItem | null;
   activeSession: {

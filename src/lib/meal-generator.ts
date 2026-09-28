@@ -7,6 +7,7 @@ import { matchIngredientToFood } from '@/lib/meal-matcher';
 import { calculateMealMacros } from '@/lib/meal-macros';
 import { prisma } from '@/lib/prisma';
 import { generateMealImageWithProvider } from '@/lib/meal-image-provider';
+import { buildMealAiContext } from '@/lib/ai/data-minimization';
 import type {
   AiMealSuggestion,
   FoodGenerationReadyRow,
@@ -83,7 +84,7 @@ async function generateMealSuggestions(
   const allowedIngredients = buildPromptIngredientNames(foods, 800);
 
   const basePrompt = buildMealPrompt({
-    ...input,
+    ...buildMealAiContext(input),
     mealCount: candidateCount,
   });
   const prompt = `${basePrompt}\n\nAllowed ingredients (must use only these names):\n${allowedIngredients.join(', ')}`;

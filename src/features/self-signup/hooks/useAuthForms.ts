@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import useSWR from 'swr';
 import {
   forgotPassword,
   resendVerification,
   resetPassword,
   signup,
   verifyEmail,
+  getAgePolicy,
 } from '../api/auth.api';
 
 export function useAuthAction<TArgs extends unknown[], TResult>(
@@ -37,6 +39,9 @@ export function useAuthAction<TArgs extends unknown[], TResult>(
 }
 
 export const useSignupAction = () => useAuthAction(signup);
+export function useAgePolicy() {
+  return useSWR('/api/auth/age-policy', getAgePolicy);
+}
 export const useResendVerificationAction = () => useAuthAction(resendVerification);
 export const useVerifyEmailAction = () => useAuthAction(verifyEmail);
 export const useForgotPasswordAction = () => useAuthAction(forgotPassword);

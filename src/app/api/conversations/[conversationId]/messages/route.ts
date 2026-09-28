@@ -384,7 +384,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const [recipientClient, recipientPresence, cooldownActive] = await Promise.all([
         (prisma as any).client.findUnique({
           where: { id: conversation.clientId },
-          select: { consentMessageNotifications: true },
+          select: {
+            consentMessageNotifications: true,
+            notificationPreference: { select: { coachMessagePushEnabled: true } },
+          },
         }),
         presenceModel
           ? presenceModel
@@ -403,7 +406,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         isCoachMessagePushCooldownActive(conversation.clientId, conversationId),
       ]);
 
-      if (!recipientClient?.consentMessageNotifications) {
+      if (!(recipientClient?.notificationPreference?.coachMessagePushEnabled ?? recipientClient?.consentMessageNotifications)) {
         await logPushDeliveryResult({
           clientId: conversation.clientId,
           source: 'coach-message',

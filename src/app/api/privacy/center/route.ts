@@ -3,6 +3,7 @@ import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { groupConsentRecords, listConsentRecords } from '@/lib/privacy/consent-records';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
         consentMarketingNotifications: true,
         consentOptionalTracking: true,
         consentMessageNotifications: true,
+        notificationPreference: { select: { coachMessagePushEnabled: true } },
       },
     });
 
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
     const privacyExportJobModel = (prisma as any).privacyExportJob;
     const deletionRequestModel = (prisma as any).deletionRequest;
 
-    const [exportJobs, activeDeletionRequest] = await Promise.all([
+    const [exportJobs, activeDeletionRequest, consentRecords] = await Promise.all([
       privacyExportJobModel
         ? privacyExportJobModel.findMany({
             where: { clientId: auth.user.userId },
@@ -59,15 +61,37 @@ export async function GET(request: NextRequest) {
             },
           })
         : null,
+      listConsentRecords(auth.user.userId),
     ]);
+
+    const consentHistory = groupConsentRecords(consentRecords);
+    const messagePushEnabled = client.notificationPreference?.coachMessagePushEnabled ?? client.consentMessageNotifications;
 
     return jsonWithCache({
       consents: {
         analytics: Boolean(client.consentAnalytics),
         marketingNotifications: Boolean(client.consentMarketingNotifications),
         optionalTracking: Boolean(client.consentOptionalTracking),
-        messageNotifications: Boolean(client.consentMessageNotifications),
+        messageNotifications: Boolean(messagePushEnabled),
       },
+      notificationPreferences: {
+        coachMessagePushEnabled: Boolean(messagePushEnabled),
+      },
+      consentHistory: Object.fromEntries(
+        Object.entries(consentHistory).map(([category, records]) => [
+          category,
+          records.map(record => ({
+            id: record.id,
+            category: record.category,
+            type: record.type,
+            action: record.action,
+            version: record.version,
+            source: record.source,
+            platform: record.platform,
+            occurredAt: record.occurredAt.toISOString(),
+          })),
+        ]),
+      ),
       exportJobs: exportJobs.map((job: any) => ({
         id: job.id,
         status: job.status,
