@@ -29,16 +29,6 @@ interface Meal {
   imageUrl?: string | null;
 }
 
-interface MealAssignment {
-  id: string;
-  dayOfWeek: number;
-  mealType: string;
-  portion: number;
-  scheduledTime?: string | null;
-  notes?: string | null;
-  meal: Meal;
-}
-
 function OptimizedMealImage({ src, alt }: { src: string; alt: string }) {
   const image = getMealImageDelivery(src, 'card');
 
