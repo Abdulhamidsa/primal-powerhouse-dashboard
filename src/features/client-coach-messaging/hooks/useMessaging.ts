@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
+import { mergeConversationMessagePage } from '@primal/contracts/client-coach-messaging/message-pagination';
 import {
   buildConversationMessagesUrl,
   buildConversationsUrl,
@@ -125,18 +126,40 @@ export function useConversationMessages(conversationId: string | null) {
   const pathname = usePathname();
   const key = conversationId ? buildConversationMessagesUrl(conversationId) : null;
   const { mutate: globalMutate } = useSWRConfig();
+  const currentDataRef = useRef<ConversationMessagesResponse | undefined>(undefined);
+  const olderRequestRef = useRef<{ conversationId: string; promise: Promise<void> } | null>(null);
+  const olderRequestTokenRef = useRef(0);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+
+  const fetchLatestPage = useCallback(async (): Promise<ConversationMessagesResponse> => {
+    const latest = await listConversationMessages(conversationId as string);
+    const current = currentDataRef.current;
+
+    return current && current.conversation.id === latest.conversation.id
+      ? mergeConversationMessagePage(current, latest, 'latest')
+      : latest;
+  }, [conversationId]);
 
   const { data, error, isLoading, mutate } = useSWR<ConversationMessagesResponse>(
     key,
-    () => listConversationMessages(conversationId as string),
+    fetchLatestPage,
     {
       // Realtime updates come from Pusher; polling can cause signed media URLs to rotate and appear as reloads.
       refreshInterval: hasPusherClientConfig() ? 0 : CHAT_POLL_INTERVAL_MS,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
-      keepPreviousData: true,
+      keepPreviousData: false,
     },
   );
+
+  useEffect(() => {
+    currentDataRef.current = data;
+  }, [data]);
+
+  useEffect(() => {
+    currentDataRef.current = undefined;
+    setIsLoadingOlder(false);
+  }, [conversationId]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -357,6 +380,50 @@ export function useConversationMessages(conversationId: string | null) {
     }
   };
 
+  const loadOlderMessages = useCallback(async () => {
+    if (!conversationId) return;
+
+    const current = currentDataRef.current;
+    if (!current?.hasMore || !current.nextCursor) return;
+
+    const existingRequest = olderRequestRef.current;
+    if (existingRequest?.conversationId === conversationId) {
+      return existingRequest.promise;
+    }
+
+    const requestToken = ++olderRequestTokenRef.current;
+    const cursor = current.nextCursor;
+    const promise = (async () => {
+      setIsLoadingOlder(true);
+
+      try {
+        const olderPage = await listConversationMessages(conversationId, cursor);
+
+        await mutate(previous => {
+          if (!previous || previous.conversation.id !== conversationId) return previous;
+
+          const merged = mergeConversationMessagePage(previous, olderPage, 'older');
+          currentDataRef.current = merged;
+          return merged;
+        }, false);
+      } finally {
+        if (requestToken === olderRequestTokenRef.current) {
+          setIsLoadingOlder(false);
+        }
+      }
+    })();
+
+    olderRequestRef.current = { conversationId, promise };
+
+    try {
+      await promise;
+    } finally {
+      if (olderRequestRef.current?.promise === promise) {
+        olderRequestRef.current = null;
+      }
+    }
+  }, [conversationId, mutate]);
+
   const normalizedMessages = useMemo(() => dedupeMessagesById((data?.items ?? []).map(withSentStatus)), [data?.items]);
 
   return {
@@ -364,6 +431,9 @@ export function useConversationMessages(conversationId: string | null) {
     messages: normalizedMessages,
     isLoading,
     error,
+    hasMore: data?.hasMore ?? false,
+    isLoadingOlder,
+    loadOlderMessages,
     sendMessage,
     retryMessage,
     refresh: () => mutate(),

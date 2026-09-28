@@ -27,6 +27,9 @@ import {
   sendPushToClient,
 } from '@/lib/push/push-notifications';
 import { notifyCoachMessage } from '@/features/notifications/services/automatic-notification.service';
+import { decodeMessageCursor, encodeMessageCursor } from '@/lib/chat/message-pagination';
+
+const MESSAGE_PAGE_SIZE = 20;
 
 function isPresenceTableUnavailable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? '');
@@ -160,6 +163,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (actor.type === 'client' && !(await clientHasCoachingAccess(actor.clientId))) return coachingAccessDeniedResponse();
 
   const { conversationId } = await params;
+  const rawCursor = request.nextUrl.searchParams.get('cursor');
+  const cursor = rawCursor ? decodeMessageCursor(rawCursor) : null;
+
+  if (rawCursor && !cursor) {
+    return NextResponse.json({ error: 'Invalid message cursor' }, { status: 400 });
+  }
 
   const conversation = await (prisma as any).conversation.findUnique({
     where: { id: conversationId },
@@ -184,10 +193,37 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   });
 
   const items = await (prisma as any).message.findMany({
-    where: { conversationId },
-    orderBy: { createdAt: 'asc' },
-    take: 300,
+    where: {
+      conversationId,
+      ...(cursor
+        ? {
+            OR: [
+              { createdAt: { lt: new Date(cursor.createdAt) } },
+              { createdAt: new Date(cursor.createdAt), id: { lt: cursor.id } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: MESSAGE_PAGE_SIZE + 1,
+    select: {
+      id: true,
+      conversationId: true,
+      senderId: true,
+      senderRole: true,
+      body: true,
+      bodyEncrypted: true,
+      attachmentsJson: true,
+      createdAt: true,
+    },
   });
+
+  const hasMore = items.length > MESSAGE_PAGE_SIZE;
+  const pageItems = items.slice(0, MESSAGE_PAGE_SIZE);
+  const oldestMessage = pageItems.at(-1);
+  const nextCursor = hasMore && oldestMessage
+    ? encodeMessageCursor({ createdAt: oldestMessage.createdAt.toISOString(), id: oldestMessage.id })
+    : null;
 
   return NextResponse.json({
     conversation: {
@@ -202,7 +238,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       updatedAt: conversation.updatedAt.toISOString(),
       unreadCount: 0,
     },
-    items: items.map(toApiMessage),
+    items: pageItems.reverse().map(toApiMessage),
+    hasMore,
+    nextCursor,
   });
 }
 

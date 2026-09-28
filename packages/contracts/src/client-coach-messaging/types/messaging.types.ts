@@ -47,6 +47,8 @@ export type ConversationListResponse = {
 export type ConversationMessagesResponse = {
   conversation: ConversationSummary;
   items: ChatMessage[];
+  hasMore: boolean;
+  nextCursor: string | null;
 };
 
 export type SendMessagePayload = {

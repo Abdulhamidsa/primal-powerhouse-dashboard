@@ -13,8 +13,9 @@ export function buildConversationsUrl(): string {
   return '/api/conversations';
 }
 
-export function buildConversationMessagesUrl(conversationId: string): string {
-  return `/api/conversations/${encodeURIComponent(conversationId)}/messages`;
+export function buildConversationMessagesUrl(conversationId: string, cursor?: string | null): string {
+  const url = `/api/conversations/${encodeURIComponent(conversationId)}/messages`;
+  return cursor ? `${url}?cursor=${encodeURIComponent(cursor)}` : url;
 }
 
 export function buildConversationUploadUrl(conversationId: string): string {
@@ -29,8 +30,11 @@ export async function createConversation(payload: CreateConversationPayload): Pr
   return httpClient.post<ConversationSummary>(buildConversationsUrl(), payload);
 }
 
-export async function listConversationMessages(conversationId: string): Promise<ConversationMessagesResponse> {
-  return httpClient.get<ConversationMessagesResponse>(buildConversationMessagesUrl(conversationId));
+export async function listConversationMessages(
+  conversationId: string,
+  cursor?: string | null,
+): Promise<ConversationMessagesResponse> {
+  return httpClient.get<ConversationMessagesResponse>(buildConversationMessagesUrl(conversationId, cursor));
 }
 
 export async function sendConversationMessage(

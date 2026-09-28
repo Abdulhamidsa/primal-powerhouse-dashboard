@@ -16,8 +16,10 @@ export async function createConversation(): Promise<ConversationSummary> {
   if (!conversation) throw new Error('Your coach conversation is not available yet. Please contact your coach.');
   return conversation;
 }
-export const getMessages = (id: string) =>
-  httpClient.get<ConversationMessagesResponse>(`/api/conversations/${encodeURIComponent(id)}/messages`);
+export const getMessages = (id: string, cursor?: string | null) => {
+  const base = `/api/conversations/${encodeURIComponent(id)}/messages`;
+  return httpClient.get<ConversationMessagesResponse>(cursor ? `${base}?cursor=${encodeURIComponent(cursor)}` : base);
+};
 export const sendMessage = (id: string, body: string, attachments: MessageAttachment[], clientTempId: string) =>
   httpClient.send(`/api/conversations/${encodeURIComponent(id)}/messages`, 'POST', { body, attachments, clientTempId });
 export const uploadAttachment = (id: string, file: NativeFile) =>

@@ -34,6 +34,14 @@ export default function PrivacyScreen() {
             {legalLinks.map(([label, slug]) => (
               <Button key={slug} secondary title={label} onPress={() => Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_URL || process.env.EXPO_PUBLIC_API_URL}/legal/${slug}`)} />
             ))}
+            <Copy muted>{m.query.data.disclosures.retention.localPostgresBackups}</Copy>
+            <Copy muted>{m.query.data.disclosures.retention.offServerDisasterRecovery}</Copy>
+            <Copy muted>{m.query.data.disclosures.retention.providerRetention}</Copy>
+            <Copy muted>{m.query.data.disclosures.reviewNotice}</Copy>
+            <Label>Service purposes</Label>
+            {m.query.data.disclosures.providers.map(provider => (
+              <Copy key={provider.name} muted>{provider.name}: {provider.purpose}</Copy>
+            ))}
             {m.query.data.legalDocuments.length ? m.query.data.legalDocuments.map(document => (
               <Copy key={`${document.type}:${document.version}`} muted>
                 {document.title} · v{document.version}

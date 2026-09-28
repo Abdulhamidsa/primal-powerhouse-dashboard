@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useLocalSearchParams } from 'expo-router';
@@ -8,6 +8,8 @@ import { useMedia } from '@/features/media/hooks/useMedia';
 import { usePendingMessage } from './usePendingMessage';
 import { useConnection } from '@/features/resources/hooks/useConnection';
 import type { MessageAttachment } from '../types/chat.types';
+import type { ConversationMessagesResponse } from '../types/chat.types';
+import { mergeConversationMessagePage } from '@primal/contracts/client-coach-messaging/message-pagination';
 import type { NativeFile } from '@/features/media/types/media.types';
 import * as api from '../api/chat.api';
 export function useChat() {
@@ -15,12 +17,71 @@ export function useChat() {
   const params = useLocalSearchParams<{ conversationId?: string }>();
   const list = useResource('/api/conversations', api.listConversations, false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const messageDataRef = useRef<ConversationMessagesResponse | null>(null);
+  const olderRequestRef = useRef<{ conversationId: string; promise: Promise<void> } | null>(null);
+  const olderRequestTokenRef = useRef(0);
   const id = selected ?? params.conversationId ?? list.data?.items[0]?.id ?? null;
+
+  if (messageDataRef.current && messageDataRef.current.conversation.id !== id) {
+    messageDataRef.current = null;
+  }
+
   const messages = useResource(
     focused && id ? `/api/conversations/${id}/messages` : null,
-    () => api.getMessages(id!),
+    async () => {
+      const latest = await api.getMessages(id!);
+      const current = messageDataRef.current;
+      return current && current.conversation.id === latest.conversation.id
+        ? mergeConversationMessagePage(current, latest, 'latest')
+        : latest;
+    },
     false,
   );
+  messageDataRef.current = messages.data ?? null;
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!id) return;
+
+    const current = messageDataRef.current;
+    if (!current?.hasMore || !current.nextCursor) return;
+
+    const existingRequest = olderRequestRef.current;
+    if (existingRequest?.conversationId === id) {
+      return existingRequest.promise;
+    }
+
+    const requestToken = ++olderRequestTokenRef.current;
+    const cursor = current.nextCursor;
+    const promise = (async () => {
+      setIsLoadingOlder(true);
+
+      try {
+        const olderPage = await api.getMessages(id, cursor);
+        await messages.mutate(previous => {
+          if (!previous || previous.conversation.id !== id) return previous;
+
+          const merged = mergeConversationMessagePage(previous, olderPage, 'older');
+          messageDataRef.current = merged;
+          return merged;
+        }, false);
+      } finally {
+        if (requestToken === olderRequestTokenRef.current) {
+          setIsLoadingOlder(false);
+        }
+      }
+    })();
+
+    olderRequestRef.current = { conversationId: id, promise };
+
+    try {
+      await promise;
+    } finally {
+      if (olderRequestRef.current?.promise === promise) {
+        olderRequestRef.current = null;
+      }
+    }
+  }, [id, messages]);
   const draft = useDraft(`chat:${id}`, '');
   const attachments = useDraft<MessageAttachment[]>(`chat-attachments:${id}`, []);
   const action = useAction(['/api/conversations']);
@@ -90,6 +151,9 @@ export function useChat() {
     offline,
     list,
     messages,
+    hasMore: messages.data?.hasMore ?? false,
+    isLoadingOlder,
+    loadOlderMessages,
     canSend: Boolean(pendingMessage.pending || draft.value.trim() || attachments.value.length),
     selected: id,
     setSelected,

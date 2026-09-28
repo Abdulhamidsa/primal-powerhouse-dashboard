@@ -13,6 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 type ScreenProps = PropsWithChildren<{
   title: string;
@@ -20,9 +21,24 @@ type ScreenProps = PropsWithChildren<{
   refreshing?: boolean;
   onRefresh?: () => void;
   scrollRef?: RefObject<ScrollView | null>;
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onScrollBeginDrag?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onContentSizeChange?: (contentWidth: number, contentHeight: number) => void;
+  scrollEventThrottle?: number;
 }>;
 
-export function Screen({ title, subtitle, children, refreshing = false, onRefresh, scrollRef }: ScreenProps) {
+export function Screen({
+  title,
+  subtitle,
+  children,
+  refreshing = false,
+  onRefresh,
+  scrollRef,
+  onScroll,
+  onScrollBeginDrag,
+  onContentSizeChange,
+  scrollEventThrottle,
+}: ScreenProps) {
   const { tokens } = useTheme();
   const { offline } = useConnection();
   return (
@@ -31,6 +47,10 @@ export function Screen({ title, subtitle, children, refreshing = false, onRefres
         ref={scrollRef}
         contentContainerStyle={styles.page}
         keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        onScrollBeginDrag={onScrollBeginDrag}
+        onContentSizeChange={onContentSizeChange}
+        scrollEventThrottle={scrollEventThrottle}
         refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.accent} /> : undefined}
       >
         {offline ? <Text accessibilityRole="alert" style={[styles.error, { color: tokens.warning }]}>Offline · saved data is available; connect to submit changes.</Text> : null}

@@ -66,7 +66,18 @@ function AttachmentView({ attachment }: { attachment: ChatMessage['attachments']
   if (attachment.type === 'image') {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={attachment.url} alt="Attachment" className="max-h-56 w-full rounded-lg object-cover" />
+      <img
+        src={attachment.url}
+        alt="Attachment"
+        loading="lazy"
+        decoding="async"
+        className="max-h-56 w-full rounded-lg object-cover"
+        style={
+          attachment.width && attachment.height
+            ? { aspectRatio: `${attachment.width} / ${attachment.height}` }
+            : undefined
+        }
+      />
     );
   }
 
@@ -126,7 +137,13 @@ export function MessageList({
               <div className="mt-1 shrink-0">
                 {sender.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={sender.avatarUrl} alt={sender.label} className="h-8 w-8 rounded-full object-cover" />
+                  <img
+                    src={sender.avatarUrl}
+                    alt={sender.label}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
                 ) : (
                   <div
                     className="grid h-8 w-8 place-items-center rounded-full text-[11px] font-semibold"
@@ -222,7 +239,13 @@ export function MessageList({
               <div className="mt-1 shrink-0">
                 {sender.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={sender.avatarUrl} alt={sender.label} className="h-8 w-8 rounded-full object-cover" />
+                  <img
+                    src={sender.avatarUrl}
+                    alt={sender.label}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
                 ) : (
                   <div
                     className="grid h-8 w-8 place-items-center rounded-full text-[11px] font-semibold"

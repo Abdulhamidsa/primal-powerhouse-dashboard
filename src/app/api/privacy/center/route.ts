@@ -6,6 +6,7 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { groupConsentRecords, listConsentRecords } from '@/lib/privacy/consent-records';
 import { getActiveMandatoryPolicyDocuments, getApprovedConfiguredDocuments, toLegalDocumentSummary } from '@/features/legal/legal-registry';
 import { ConsentRecordAction, ConsentRecordCategory } from '@prisma/client';
+import { PRIVACY_DISCLOSURE_SUMMARY } from '@/lib/privacy/disclosure-summary';
 
 export async function GET(request: NextRequest) {
   try {
@@ -104,6 +105,7 @@ export async function GET(request: NextRequest) {
       ),
       legalDocuments: getApprovedConfiguredDocuments().map(toLegalDocumentSummary),
       pendingPolicyAcknowledgements: pendingPolicyAcknowledgements.map(toLegalDocumentSummary),
+      disclosures: PRIVACY_DISCLOSURE_SUMMARY,
       exportJobs: exportJobs.map((job: any) => ({
         id: job.id,
         status: job.status,

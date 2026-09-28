@@ -58,6 +58,7 @@ export type PrivacyCenterResponse = {
   consentHistory: PrivacyConsentHistory;
   legalDocuments: LegalDocumentSummary[];
   pendingPolicyAcknowledgements: LegalDocumentSummary[];
+  disclosures: PrivacyDisclosureSummary;
   exportJobs: PrivacyExportJobItem[];
   activeDeletionRequest: DeletionRequestItem | null;
   activeSession: {
@@ -65,6 +66,23 @@ export type PrivacyCenterResponse = {
     issuedAt: string | null;
     expiresAt: string | null;
   };
+};
+
+export type PrivacyDisclosureProvider = {
+  name: string;
+  purpose: string;
+  dataCategories: string[];
+  status: 'ACTIVE_CONFIGURED' | 'CODE_ACTIVE_CONFIG_UNKNOWN' | 'LEGACY_OR_INACTIVE';
+};
+
+export type PrivacyDisclosureSummary = {
+  providers: PrivacyDisclosureProvider[];
+  retention: {
+    localPostgresBackups: string;
+    offServerDisasterRecovery: string;
+    providerRetention: string;
+  };
+  reviewNotice: string;
 };
 
 export type PrivacyExportCreateResponse = {

@@ -44,7 +44,7 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
       { heading: 'Status', content: 'Draft document — not approved. LEGAL REVIEW REQUIRED before publication or mandatory acknowledgement.' },
       { heading: 'Information we handle', content: 'The application handles account and authentication data, fitness and health-related profile data, coaching communications, check-ins, training and nutrition records, uploaded media, notification data, and technical/offline data as described in the Phase 3 data inventory.' },
       { heading: 'How information is used', content: 'Information is used to authenticate users, provide coaching and self-service features, calculate fitness and nutrition results, deliver messages and notifications, operate exports and deletion, and secure the service.' },
-      { heading: 'External services', content: 'The application uses confirmed and environment-dependent services documented in the processor inventory. Provider regions, transfers, contracts, backups, and retention require OPERATIONAL/LEGAL CONFIRMATION REQUIRED.' },
+      { heading: 'External services', content: 'Repository integrations include PostgreSQL, Cloudinary, Web Push/VAPID, Google OAuth, Resend, Azure OpenAI, ExerciseDB/RapidAPI, Pusher, USDA FoodData Central, and application code for Expo Push. Production configuration, provider regions, transfers, contracts, subprocessors, backups, and retention require OPERATIONAL/LEGAL CONFIRMATION REQUIRED.' },
       { heading: 'Retention, export, and deletion', content: 'The application preserves its existing retention behavior, including the 30-day deletion window, export expiry, audit retention, and vendor-controlled backup limitations. Any additional retention language requires LEGAL REVIEW REQUIRED.' },
       { heading: 'Rights and contact', content: 'Operator identity, contact details, legal bases, rights procedure, complaint route, international-transfer language, and governing requirements require LEGAL REVIEW REQUIRED.' },
     ],
@@ -91,7 +91,7 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
     sections: [
       { heading: 'Status', content: 'Draft document — not approved. LEGAL REVIEW REQUIRED.' },
       { heading: 'Where AI is used', content: 'AI-assisted functionality is used for meal and ingredient generation and related image generation. Some calculations and matching paths are local application logic rather than external AI.' },
-      { heading: 'Data minimization', content: 'The application sends only the meal, ingredient, nutrition, and relevant preference context needed for supported AI requests. Direct account identifiers and unrelated profile data are excluded by the server-side minimization boundary.' },
+      { heading: 'Data minimization', content: 'The primary meal-generation path applies a server-side minimization boundary for meal, ingredient, nutrition, and relevant preference context. Direct account identifiers are excluded from that boundary; route-specific prompts and provider handling remain subject to OPERATIONAL/LEGAL CONFIRMATION REQUIRED.' },
       { heading: 'Output and storage', content: 'AI output may require user or coach judgment and may be stored when a supported workflow saves it. Provider retention, training use, region, and contractual protections require OPERATIONAL/LEGAL CONFIRMATION REQUIRED.' },
     ],
   },

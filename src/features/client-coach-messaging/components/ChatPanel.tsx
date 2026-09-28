@@ -16,6 +16,7 @@ import {
   useConversations,
   useMessagingSelection,
 } from '@/features/client-coach-messaging/hooks/useMessaging';
+import { useMessageScroll } from '@/features/client-coach-messaging/hooks/useMessageScroll';
 import { useConversationPresence } from '@/features/client-coach-messaging/hooks/useConversationPresence';
 import { useConversationClientPresence } from '@/features/client-coach-messaging/hooks/useConversationClientPresence';
 
@@ -79,12 +80,6 @@ export function ChatPanel({
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const messageViewportRef = useRef<HTMLDivElement | null>(null);
-  const messageContentRef = useRef<HTMLDivElement | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-  const previousConversationIdRef = useRef<string | null>(null);
-  const hasInitialScrolledSet = useRef<Set<string>>(new Set());
-  const wasNearBottomRef = useRef(true);
-  const previousMessagesCountRef = useRef(0);
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [conversationSearch, setConversationSearch] = useState('');
@@ -113,6 +108,9 @@ export function ChatPanel({
     conversation,
     messages,
     isLoading: isMessagesLoading,
+    hasMore,
+    isLoadingOlder,
+    loadOlderMessages,
     sendMessage,
     retryMessage,
   } = useConversationMessages(selectedConversationId);
@@ -120,6 +118,17 @@ export function ChatPanel({
   useConversationPresence(selectedConversationId, pathname.startsWith('/user'));
   const showMessageSkeleton =
     isConversationsLoading || (Boolean(selectedConversationId) && isMessagesLoading && messages.length === 0);
+
+  const messageScroll = useMessageScroll({
+    conversationId: selectedConversationId,
+    viewportRef: messageViewportRef,
+    messageCount: messages.length,
+    firstMessageId: messages[0]?.id ?? null,
+    lastMessageId: messages.at(-1)?.id ?? null,
+    hasMore,
+    isLoadingOlder,
+    loadOlderMessages,
+  });
 
   useEffect(() => {
     if (hideConversationList || isAdminVariant || typeof window === 'undefined') return;
@@ -155,93 +164,6 @@ export function ChatPanel({
     next.set('conversationId', selectedConversationId);
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   }, [disableUrlSync, pathname, router, searchParams, selectedConversationId]);
-
-  // Track whether the user is near the bottom so we know whether to auto-scroll on new messages.
-  useEffect(() => {
-    const viewport = messageViewportRef.current;
-    if (!viewport) return;
-    const onScroll = () => {
-      wasNearBottomRef.current = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <= 72;
-    };
-    viewport.addEventListener('scroll', onScroll, { passive: true });
-    return () => viewport.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const viewport = messageViewportRef.current;
-    if (!viewport) return;
-
-    const convId = selectedConversationId ?? '';
-    const conversationChanged = previousConversationIdRef.current !== selectedConversationId;
-    previousConversationIdRef.current = selectedConversationId;
-
-    const prevCount = previousMessagesCountRef.current;
-    previousMessagesCountRef.current = messages.length;
-
-    if (conversationChanged) {
-      // Reset per-conversation state so the next load always jumps to bottom.
-      hasInitialScrolledSet.current.delete(convId);
-      wasNearBottomRef.current = true;
-    }
-
-    // First time we have messages for this conversation: hard-jump to bottom.
-    if (!hasInitialScrolledSet.current.has(convId)) {
-      if (messages.length > 0) {
-        hasInitialScrolledSet.current.add(convId);
-        // Double-rAF: first rAF lets React commit the new message nodes;
-        // second rAF fires after the browser has measured and painted them,
-        // so scrollHeight is the true full height.
-        const outer = window.requestAnimationFrame(() => {
-          const inner = window.requestAnimationFrame(() =>
-            viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'auto' }),
-          );
-          return inner;
-        });
-        return () => window.cancelAnimationFrame(outer);
-      }
-      return;
-    }
-
-    // Subsequent message additions (e.g. optimistic send, Pusher push):
-    // Always scroll when the user just sent (last message is pending).
-    // Otherwise only scroll if the user was near the bottom.
-    const lastMessage = messages[messages.length - 1];
-    const userJustSent = lastMessage?.deliveryStatus === 'pending';
-
-    if (messages.length > prevCount && (userJustSent || wasNearBottomRef.current)) {
-      const id = window.requestAnimationFrame(() =>
-        bottomRef.current?.scrollIntoView({ block: 'end', behavior: userJustSent ? 'smooth' : 'auto' }),
-      );
-      return () => window.cancelAnimationFrame(id);
-    }
-  }, [selectedConversationId, messages]);
-
-  useEffect(() => {
-    const viewport = messageViewportRef.current;
-    const content = messageContentRef.current;
-    if (!viewport || !content || !bottomRef.current) return;
-
-    const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
-      bottomRef.current?.scrollIntoView({ block: 'end', behavior });
-    };
-
-    const id = window.requestAnimationFrame(() => scrollToBottom('auto'));
-    const observer = new ResizeObserver(() => {
-      if (wasNearBottomRef.current) scrollToBottom('auto');
-    });
-    observer.observe(content);
-
-    const mutationObserver = new MutationObserver(() => {
-      if (wasNearBottomRef.current) scrollToBottom('auto');
-    });
-    mutationObserver.observe(content, { childList: true, subtree: true });
-
-    return () => {
-      window.cancelAnimationFrame(id);
-      observer.disconnect();
-      mutationObserver.disconnect();
-    };
-  }, [selectedConversationId, messages.length]);
 
   const startDrag = (event: React.MouseEvent<HTMLDivElement>) => {
     if (hideConversationList || isAdminVariant) return;
@@ -555,8 +477,13 @@ export function ChatPanel({
 
           <div
             ref={messageViewportRef}
+            onScroll={messageScroll.onScroll}
+            onWheel={messageScroll.onWheel}
+            onTouchMove={messageScroll.onTouchMove}
             className={
-              isAdminVariant ? 'flex-1 overflow-y-auto px-5 pb-8 pt-5' : 'flex-1 overflow-y-auto px-3 pb-8 pt-4 md:px-4'
+              isAdminVariant
+                ? 'relative flex-1 overflow-y-auto px-5 pb-8 pt-5'
+                : 'relative flex-1 overflow-y-auto px-3 pb-8 pt-4 md:px-4'
             }
             style={{
               background: isAdminVariant
@@ -579,11 +506,16 @@ export function ChatPanel({
             ) : showMessageSkeleton ? (
               <MessageSkeleton />
             ) : (
-              <div ref={messageContentRef} className="min-h-full">
+              <div className="min-h-full">
                 <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
-                <div ref={bottomRef} className="h-3" />
+                <div className="h-3" />
               </div>
             )}
+            {isLoadingOlder ? (
+              <div className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-full border bg-[var(--color-surface)]/90 px-3 py-1 text-[10px] text-[var(--color-text-muted)] shadow-sm backdrop-blur">
+                Loading older messages…
+              </div>
+            ) : null}
           </div>
 
           <div

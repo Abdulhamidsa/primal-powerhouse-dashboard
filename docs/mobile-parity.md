@@ -17,6 +17,18 @@ Status is explicit: unchecked features are not verified. No production migration
 | Profile/avatar/coach | /api/auth/me, /api/user/profile/avatar, /api/user/coach | Implemented; offline mutation and restored-feedback guards added; parity review pending | No |
 | Privacy/export/deletion/consent | /api/privacy/* | Implemented; sensitive actions disabled offline; parity review pending | No |
 
+## Phase 5C privacy disclosure parity
+
+Web and mobile use the same privacy-center response and stable web legal URLs.
+Both surfaces now expose the same repository-backed provider/backup disclosure:
+14 daily local PostgreSQL backups exist and restore verification has passed; no
+off-server disaster-recovery provider has been selected. Provider regions, DPAs,
+transfers, subprocessors, vendor retention, and legal approval remain unverified.
+
+Mobile has no signup flow, so signup acknowledgement remains web-only. Policy
+version prompts and consent categories must continue to use the shared privacy
+contracts without adding a new consent gate.
+
 ## Release prerequisites
 - Test and shadow connections verified; development migrations applied with original rows preserved. Production privilege isolation still needs an administrator audit.
 - Verify API host, Hetzner identity, existing proxy, disk headroom, and backup restore.

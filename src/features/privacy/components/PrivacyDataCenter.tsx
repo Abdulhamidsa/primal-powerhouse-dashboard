@@ -155,6 +155,18 @@ export function PrivacyDataCenter() {
           <p className="text-xs leading-5 text-muted-foreground">
             Approved documents, consent history, processor purposes, retention categories, AI-assisted features, and storage classifications are summarized in the linked documents. Vendor regions, contractual status, transfer mechanisms, and backup deletion remain deployment- and legal-review dependent.
           </p>
+          <div className="space-y-2 text-xs text-muted-foreground">
+            <p>{data.disclosures.retention.localPostgresBackups}</p>
+            <p>{data.disclosures.retention.offServerDisasterRecovery}</p>
+            <p>{data.disclosures.retention.providerRetention}</p>
+            <p>{data.disclosures.reviewNotice}</p>
+            <div className="space-y-1 pt-1">
+              <p className="font-semibold text-foreground">Service purposes</p>
+              {data.disclosures.providers.map(provider => (
+                <p key={provider.name}>{provider.name}: {provider.purpose}</p>
+              ))}
+            </div>
+          </div>
           {data.legalDocuments.length ? (
             <div className="space-y-1 text-xs text-muted-foreground">
               {data.legalDocuments.map(document => (
