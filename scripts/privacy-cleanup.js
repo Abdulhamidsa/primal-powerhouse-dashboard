@@ -149,6 +149,19 @@ async function finalizeHardDeletes(now, db = prisma) {
   let finalized = 0;
   for (const request of requests) {
     try {
+      const client = await db.client.findUnique({ where: { id: request.clientId }, select: { id: true } });
+      if (!client) {
+        const finalizationAudit = await db.auditLog.findFirst({
+          where: { action: 'privacy.deletion.finalized', targetUserId: request.clientId, metadata: { contains: request.id } },
+          select: { id: true },
+        });
+        if (finalizationAudit) {
+          finalized += 1;
+          continue;
+        }
+        throw new Error('Client missing without finalization audit');
+      }
+
       let manifest = readManifest(request.metadata);
       if (!manifest) {
         manifest = await collectLegacyMediaManifest(request.clientId, db);
