@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { collectClientMediaManifest, readMediaManifest, withMediaManifest } from '@/lib/privacy/media-manifest';
-
-const DEFAULT_GRACE_PERIOD_DAYS = Number(process.env.PRIVACY_DELETION_GRACE_DAYS ?? 30);
+import { getPrivacyRetentionConfig } from '@/lib/privacy/retention-config';
 
 export type ClientDeletionRequestResult = {
   id: string;
@@ -15,8 +14,9 @@ export async function requestClientDeletion(
   clientId: string,
   reason?: string | null,
 ): Promise<ClientDeletionRequestResult> {
+  const { deletionGraceDays } = getPrivacyRetentionConfig();
   const now = new Date();
-  const scheduledHardDeleteAt = new Date(now.getTime() + DEFAULT_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000);
+  const scheduledHardDeleteAt = new Date(now.getTime() + deletionGraceDays * 24 * 60 * 60 * 1000);
 
   const existing = await (prisma as any).deletionRequest.findFirst({
     where: {
@@ -28,7 +28,7 @@ export async function requestClientDeletion(
 
   const anonymizedEmail = `deleted+${clientId}@redacted.local`;
   const effectiveScheduledHardDeleteAt = existing?.scheduledHardDeleteAt ?? scheduledHardDeleteAt;
-  const effectiveGracePeriodDays = existing?.gracePeriodDays ?? DEFAULT_GRACE_PERIOD_DAYS;
+  const effectiveGracePeriodDays = existing?.gracePeriodDays ?? deletionGraceDays;
 
   return (prisma as any).$transaction(async (tx: any) => {
     const client = await tx.client.findUnique({

@@ -1,8 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const { v2: cloudinary } = require('cloudinary');
+const crypto = require('crypto');
+const { getPrivacyRetentionConfig, validatePrivacyRetentionConfig } = require('./privacy-retention-config.cjs');
 
 const prisma = new PrismaClient();
-const AUDIT_RETENTION_DAYS = Number(process.env.PRIVACY_AUDIT_RETENTION_DAYS ?? 365);
 const COMMON_ASSET_EXTENSIONS = /\.(avif|gif|jpe?g|png|webp|bmp|heic|mov|mp3|mp4|m4a|wav|webm)$/i;
 
 function safeErrorName(error) {
@@ -108,16 +109,33 @@ function readManifest(metadata) {
     : null;
 }
 
-async function purgeExpiredExports(now, db = prisma) {
-  const result = await db.privacyExportJob.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { status: 'EXPIRED' }] } });
+function isDryRun(options = {}) {
+  return options.dryRun === true;
+}
+
+async function purgeExpiredExports(now, db = prisma, options = {}) {
+  const where = { OR: [{ expiresAt: { lt: now } }, { status: 'EXPIRED' }] };
+  if (isDryRun(options)) return await db.privacyExportJob.count({ where });
+  const result = await db.privacyExportJob.deleteMany({ where });
   return result.count;
 }
 
-async function purgeExpiredAndUsedTokens(now, db = prisma) {
+async function purgeExpiredAndUsedTokens(now, db = prisma, options = {}) {
+  const verificationWhere = { OR: [{ expiresAt: { lt: now } }, { usedAt: { not: null } }] };
+  const resetWhere = { OR: [{ expiresAt: { lt: now } }, { usedAt: { not: null } }] };
+  const sessionsWhere = { OR: [{ expiresAt: { lt: now } }, { revokedAt: { not: null } }] };
+  if (isDryRun(options)) {
+    const [verification, reset, sessions] = await Promise.all([
+      db.emailVerificationToken.count({ where: verificationWhere }),
+      db.passwordResetToken.count({ where: resetWhere }),
+      db.mobileSession.count({ where: sessionsWhere }),
+    ]);
+    return verification + reset + sessions;
+  }
   const [verification, reset, sessions] = await Promise.all([
-    db.emailVerificationToken.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { usedAt: { not: null } }] } }),
-    db.passwordResetToken.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { usedAt: { not: null } }] } }),
-    db.mobileSession.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { revokedAt: { not: null } }] } }),
+    db.emailVerificationToken.deleteMany({ where: verificationWhere }),
+    db.passwordResetToken.deleteMany({ where: resetWhere }),
+    db.mobileSession.deleteMany({ where: sessionsWhere }),
   ]);
   return verification.count + reset.count + sessions.count;
 }
@@ -137,18 +155,20 @@ async function deleteManifestEntry(entry) {
   if (!['ok', 'not found', 'not_found'].includes(normalized)) throw new Error('Cloudinary cleanup failed');
 }
 
-async function cleanupMediaManifest(manifest) {
+async function cleanupMediaManifest(manifest, options = {}) {
   if (!manifest.entries.length) return;
+  if (isDryRun(options)) return;
   configureCloudinary();
   for (const entry of manifest.entries) await deleteManifestEntry(entry);
 }
 
-async function finalizeHardDeletes(now, db = prisma) {
+async function finalizeHardDeletes(now, db = prisma, options = {}) {
   const requests = await db.deletionRequest.findMany({
     where: { status: { in: ['REQUESTED', 'ANONYMIZED'] }, scheduledHardDeleteAt: { lte: now } },
     select: { id: true, clientId: true, metadata: true },
   });
   let finalized = 0;
+  if (options.metrics) options.metrics.dueDeletionRequests = requests.length;
   for (const request of requests) {
     try {
       const client = await db.client.findUnique({ where: { id: request.clientId }, select: { id: true } });
@@ -167,17 +187,25 @@ async function finalizeHardDeletes(now, db = prisma) {
       let manifest = readManifest(request.metadata);
       if (!manifest) {
         manifest = await collectLegacyMediaManifest(request.clientId, db);
-        await db.deletionRequest.update({
-          where: { id: request.id },
-          data: { metadata: JSON.stringify({
-            mediaManifest: manifest,
-            legacyManifestDerivedAt: now.toISOString(),
-            legacyVendorMediaResolution: manifest.entries.length ? 'derived' : 'no-deterministic-reference',
-          }) },
-        });
+        if (!isDryRun(options)) {
+          await db.deletionRequest.update({
+            where: { id: request.id },
+            data: { metadata: JSON.stringify({
+              mediaManifest: manifest,
+              legacyManifestDerivedAt: now.toISOString(),
+              legacyVendorMediaResolution: manifest.entries.length ? 'derived' : 'no-deterministic-reference',
+            }) },
+          });
+        }
       }
 
-      await cleanupMediaManifest(manifest);
+      if (isDryRun(options)) {
+        if (options.metrics && manifest.entries.length) options.metrics.mediaAssetsPending = (options.metrics.mediaAssetsPending ?? 0) + manifest.entries.length;
+        if (options.metrics && manifest.unresolved?.length) options.metrics.deferredDeletions = (options.metrics.deferredDeletions ?? 0) + 1;
+        continue;
+      }
+
+      await cleanupMediaManifest(manifest, options);
 
       await db.$transaction(async (tx) => {
         const messages = await tx.message.findMany({ where: { conversation: { clientId: request.clientId } }, select: { id: true } });
@@ -202,33 +230,58 @@ async function finalizeHardDeletes(now, db = prisma) {
       });
       finalized += 1;
     } catch (error) {
-      console.error('[privacy-cleanup] Deferred deletion', { requestId: request.id, error: safeErrorName(error) });
+      if (options.metrics) {
+        options.metrics.deferredDeletions = (options.metrics.deferredDeletions ?? 0) + 1;
+        if (String(error?.message ?? '').includes('Cloudinary')) {
+          options.metrics.mediaCleanupFailures = (options.metrics.mediaCleanupFailures ?? 0) + 1;
+        }
+      }
+      console.error(JSON.stringify({ event: 'privacy.cleanup.deferred_deletion', requestId: request.id, error: safeErrorName(error) }));
     }
   }
   return finalized;
 }
 
-async function pruneOldAuditLogs(now, db = prisma) {
-  const threshold = new Date(now.getTime() - AUDIT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+async function pruneOldAuditLogs(now, db = prisma, options = {}) {
+  const { auditRetentionDays } = getPrivacyRetentionConfig();
+  const threshold = new Date(now.getTime() - auditRetentionDays * 24 * 60 * 60 * 1000);
+  if (isDryRun(options)) return await db.auditLog.count({ where: { createdAt: { lt: threshold } } });
   const result = await db.auditLog.deleteMany({ where: { createdAt: { lt: threshold } } });
   return result.count;
 }
 
-async function main() {
+async function main(options = {}) {
+  const dryRun = isDryRun(options) || process.env.PRIVACY_CLEANUP_DRY_RUN === 'true';
+  const retention = validatePrivacyRetentionConfig();
   const now = new Date();
+  const startedAt = Date.now();
+  const metrics = { dryRun, dueDeletionRequests: 0, deferredDeletions: 0, mediaCleanupFailures: 0, mediaAssetsPending: 0 };
   const [expiredExportsDeleted, expiredTokensDeleted, hardDeletesFinalized, prunedAuditLogs] = await Promise.all([
-    purgeExpiredExports(now),
-    purgeExpiredAndUsedTokens(now),
-    finalizeHardDeletes(now),
-    pruneOldAuditLogs(now),
+    purgeExpiredExports(now, prisma, { dryRun }),
+    purgeExpiredAndUsedTokens(now, prisma, { dryRun }),
+    finalizeHardDeletes(now, prisma, { dryRun, metrics }),
+    pruneOldAuditLogs(now, prisma, { dryRun }),
   ]);
-  console.log('[privacy-cleanup] Completed', { expiredExportsDeleted, expiredTokensDeleted, hardDeletesFinalized, prunedAuditLogs, at: now.toISOString() });
+  console.log(JSON.stringify({
+    event: 'privacy.cleanup.completed',
+    runId: crypto.randomUUID(),
+    dryRun,
+    retention,
+    expiredExportsDeleted,
+    expiredTokensDeleted,
+    hardDeletesFinalized,
+    prunedAuditLogs,
+    ...metrics,
+    startedAt: new Date(startedAt).toISOString(),
+    completedAt: new Date().toISOString(),
+    durationMs: Date.now() - startedAt,
+  }));
 }
 
 if (require.main === module) {
-  main()
+  main({ dryRun: process.argv.includes('--dry-run') })
     .catch((error) => {
-      console.error('[privacy-cleanup] Failed', { error: safeErrorName(error) });
+      console.error(JSON.stringify({ event: 'privacy.cleanup.failed', error: safeErrorName(error), at: new Date().toISOString() }));
       process.exitCode = 1;
     })
     .finally(async () => {
@@ -236,4 +289,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { collectLegacyMediaManifest, cleanupMediaManifest, finalizeHardDeletes, purgeExpiredAndUsedTokens };
+module.exports = { collectLegacyMediaManifest, cleanupMediaManifest, finalizeHardDeletes, purgeExpiredAndUsedTokens, purgeExpiredExports, pruneOldAuditLogs, main };

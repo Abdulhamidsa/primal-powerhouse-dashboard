@@ -33,7 +33,7 @@ function clearState(response: NextResponse) {
 }
 
 function redirect(path: string) {
-  const baseUrl = process.env.APP_BASE_URL ?? 'http://localhost:3000';
+  const baseUrl = process.env.APP_BASE_URL ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
 
   return new URL(path, baseUrl);
 }

@@ -1,5 +1,7 @@
 # Deploying on the existing Hetzner server
 
+> This document describes an optional/legacy Docker/Hetzner path. The provisional canonical production path is the host-managed PM2/Next.js standalone deployment documented in [docs/pm2-production-operations.md](pm2-production-operations.md). Do not treat Docker or Compose as active production evidence until the host is explicitly confirmed to use them.
+
 The user-reported server has about 4 GiB RAM, 2 vCPUs, PostgreSQL 16, MongoDB in Docker, and 11 GiB available disk. This is not a capacity test. Preserve existing applications.
 
 ## Before deploying

@@ -78,7 +78,7 @@ function SectionTitle({
       </div>
       <div className="min-w-0">
         <p className="text-sm font-semibold tracking-tight text-[var(--color-text)]">{title}</p>
-        {subtitle ? <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{subtitle}</p> : null}
+        {subtitle ? <p className="mt-0.5 text-[13px] leading-5 text-[var(--color-text-muted)]">{subtitle}</p> : null}
       </div>
     </div>
   );
@@ -97,7 +97,7 @@ function SegmentedControl<T extends string>({
 }) {
   return (
     <div
-      className="grid grid-cols-[repeat(var(--option-count),minmax(0,1fr))] gap-1 rounded-[20px] bg-[var(--color-bg-alt)] p-1"
+      className="grid grid-cols-[repeat(var(--option-count),minmax(0,1fr))] gap-1 rounded-[20px] border border-[var(--color-input-border)] bg-[var(--color-input)] p-1"
       style={{ '--option-count': options.length } as CSSProperties}
     >
       {options.map(option => {
@@ -111,10 +111,10 @@ function SegmentedControl<T extends string>({
             aria-pressed={selected}
             onClick={() => onSelect(option.value)}
             className={cn(
-              'min-h-11 rounded-2xl px-2 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-60',
+              'min-h-11 rounded-2xl border px-2 text-sm font-semibold transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-input)] disabled:cursor-not-allowed disabled:opacity-60',
               selected
-                ? 'bg-[var(--color-text)] text-[var(--color-bg)] shadow-sm'
-                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]',
+                ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-text-on-accent)] shadow-sm'
+                : 'border-transparent text-[var(--color-text)] hover:border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]',
             )}
           >
             {option.label}

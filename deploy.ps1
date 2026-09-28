@@ -1,15 +1,20 @@
 # 🚀 Production Deployment Script (PowerShell)
 # Usage: .\deploy.ps1 [platform]
-# Platforms: vercel, railway, docker, vps
+# Platforms: pm2 (Linux host), vercel, railway, docker, docker-compose, vps
 
 param(
     [Parameter(Position=0)]
-    [string]$Platform = "vercel"
+    [string]$Platform = "pm2"
 )
 
 $ProjectName = "primal-powerhouse-dashboard"
 
 Write-Host "🚀 Deploying $ProjectName to $Platform..." -ForegroundColor Green
+
+if ($Platform -eq "pm2") {
+    Write-Host "PM2/VPS deployment is Linux-hosted. Run ./deploy.sh pm2 on the production host." -ForegroundColor Yellow
+    exit 1
+}
 
 # Pre-deployment checks
 Write-Host "📋 Pre-deployment checks..." -ForegroundColor Yellow
@@ -68,12 +73,12 @@ switch ($Platform) {
     
     "vps" {
         Write-Host "🖥️ VPS deployment requires manual setup." -ForegroundColor Yellow
-        Write-Host "Please follow the VPS section in DEPLOYMENT_GUIDE.md" -ForegroundColor Yellow
+        Write-Host "For the canonical PM2 path, run ./deploy.sh pm2 on the Linux production host." -ForegroundColor Yellow
     }
     
     default {
         Write-Host "❌ Unknown platform: $Platform" -ForegroundColor Red
-        Write-Host "Available platforms: vercel, railway, docker, docker-compose, vps" -ForegroundColor Yellow
+        Write-Host "Available platforms: pm2, vercel, railway, docker, docker-compose, vps" -ForegroundColor Yellow
         exit 1
     }
 }

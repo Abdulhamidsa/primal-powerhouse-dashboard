@@ -1,0 +1,6 @@
+[Unit]
+Description=Record Primal Powerhouse privacy cleanup failure
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/logger -p daemon.err -t primal-privacy-cleanup "Privacy cleanup service failed; inspect journalctl -u primal-privacy-cleanup.service"

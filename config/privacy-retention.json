@@ -1,0 +1,5 @@
+{
+  "deletionGraceDays": 30,
+  "exportExpiryHours": 24,
+  "auditRetentionDays": 365
+}

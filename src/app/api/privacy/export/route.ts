@@ -8,8 +8,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { createDownloadToken, toCsv } from '@/lib/privacy/export-utils';
 import { buildClientExport } from '@/lib/privacy/build-client-export';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
-
-const DEFAULT_EXPORT_EXPIRY_HOURS = Number(process.env.PRIVACY_EXPORT_EXPIRY_HOURS ?? 24);
+import { getPrivacyRetentionConfig } from '@/lib/privacy/retention-config';
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
@@ -27,6 +26,7 @@ export async function POST(request: NextRequest) {
     const limiter = rateLimit(`privacy-export:${auth.user.userId}:${ip}`, 5, 60_000);
     if (!limiter.allowed) return jsonWithCache({ error: 'Too many requests' }, { status: 429 });
 
+    const { exportExpiryHours } = getPrivacyRetentionConfig();
     const exportData = await buildClientExport(auth.user.userId);
     if (!exportData) return jsonWithCache({ error: 'Client not found' }, { status: 404 });
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const { rawToken, tokenHash } = createDownloadToken();
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + DEFAULT_EXPORT_EXPIRY_HOURS * 60 * 60 * 1000);
+    const expiresAt = new Date(now.getTime() + exportExpiryHours * 60 * 60 * 1000);
     const createdJob = await (prisma as any).privacyExportJob.create({
       data: {
         clientId: auth.user.userId,

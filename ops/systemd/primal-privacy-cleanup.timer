@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Primal Powerhouse privacy cleanup hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+AccuracySec=1min
+Unit=primal-privacy-cleanup.service
+
+[Install]
+WantedBy=timers.target

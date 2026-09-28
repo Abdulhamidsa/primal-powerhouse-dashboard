@@ -12,6 +12,7 @@ import {
 } from '@phosphor-icons/react';
 import { useTodayMission } from '@/features/today-mission/hooks/useTodayMission';
 import type { UserDashboardSummary } from '@/features/user-dashboard/types/userDashboard.types';
+import { getDashboardPrimaryAction } from '@/features/user-dashboard/lib/dashboardPrimaryAction';
 import { UserPageHero } from '@/components/UserPageHero';
 
 export function SelfServiceDashboardContent({ summary }: { summary: UserDashboardSummary }) {
@@ -24,14 +25,15 @@ export function SelfServiceDashboardContent({ summary }: { summary: UserDashboar
   const trainingDone = summary.dailyCheckIn.trainingStatus === 'DONE';
   const dailyTotal = (mealsSelected > 0 ? 1 : 0) + (trainingReady ? 1 : 0);
   const dailyCompleted = (mealsDone ? 1 : 0) + (trainingDone ? 1 : 0);
-  const continueAction =
-    summary.training.activeSessionId && summary.training.activeAssignmentId
-      ? { href: `/user/workout/${encodeURIComponent(summary.training.activeAssignmentId)}`, label: 'Resume workout' }
-      : mealsSelected > 0 && !mealsDone
-        ? { href: '/user/my-plan', label: 'Continue meal plan' }
-        : trainingReady
-          ? { href: '/user/training', label: 'Open training plan' }
-          : { href: '/user/my-plan', label: 'Open your program' };
+  const fallbackAction = trainingReady
+    ? { href: '/user/training', label: 'Open training plan' }
+    : { href: '/user/my-plan', label: 'Open your program' };
+  const continueAction = getDashboardPrimaryAction({
+    summary,
+    mealProgress: today,
+    checkInEnabled: false,
+    fallbackAction,
+  });
 
   return (
     <div className="space-y-3">

@@ -2,41 +2,26 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
-  const checks = {
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    database: { status: 'unknown', details: '' },
-    env_variables: {
-      DATABASE_URL: !!process.env.DATABASE_URL,
-      JWT_SECRET: !!process.env.JWT_SECRET,
-      NODE_ENV: process.env.NODE_ENV,
-    },
-  };
+  const timestamp = new Date().toISOString();
+  const version = process.env.npm_package_version || '1.0.0';
 
   try {
-    // Test database connection
     await prisma.$connect();
-    checks.database.status = 'connected';
-    checks.database.details = 'Database connection successful';
-
     return NextResponse.json({
       status: 'healthy',
-      ...checks,
+      timestamp,
+      version,
+      database: { status: 'connected' },
     });
   } catch (error) {
-    checks.database.status = 'error';
-    checks.database.details = error instanceof Error ? error.message : String(error);
-
-    console.error('[HEALTH] Database health check failed:', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error('[HEALTH] Database health check failed:', error instanceof Error ? error.name : 'UnknownError');
 
     return NextResponse.json(
       {
         status: 'unhealthy',
-        ...checks,
+        timestamp,
+        version,
+        database: { status: 'error' },
         error: 'Database connection failed',
       },
       { status: 503 }

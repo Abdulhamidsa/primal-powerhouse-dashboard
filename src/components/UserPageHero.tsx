@@ -14,6 +14,7 @@ type UserPageHeroProps = {
   description?: string;
   icon?: ReactNode;
   statusItems?: UserPageHeroStatusItem[];
+  statusVariant?: 'cards' | 'summary';
   children?: ReactNode;
 };
 
@@ -24,7 +25,15 @@ const TONE_CLASS: Record<HeroTone, string> = {
   danger: 'text-red-500',
 };
 
-export function UserPageHero({ eyebrow, title, description, icon, statusItems = [], children }: UserPageHeroProps) {
+export function UserPageHero({
+  eyebrow,
+  title,
+  description,
+  icon,
+  statusItems = [],
+  statusVariant = 'cards',
+  children,
+}: UserPageHeroProps) {
   return (
     <section className="relative overflow-hidden rounded-[32px] px-4 py-5 sm:px-5 sm:py-6">
       <div
@@ -60,21 +69,39 @@ export function UserPageHero({ eyebrow, title, description, icon, statusItems = 
         </div>
 
         {statusItems.length ? (
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            {statusItems.map(item => (
-              <div
-                key={`${item.label}:${item.value}`}
-                className="rounded-2xl bg-[var(--color-bg-alt)] px-3 py-2"
-              >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                  {item.label}
-                </p>
-                <p className={`mt-1 truncate text-sm font-semibold ${TONE_CLASS[item.tone ?? 'neutral']}`}>
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
+          statusVariant === 'summary' ? (
+            <div className="mt-4 flex flex-wrap items-center gap-y-2 text-xs" aria-label="Today summary">
+              {statusItems.map((item, index) => (
+                <div key={`${item.label}:${item.value}`} className="flex items-center">
+                  {index > 0 ? (
+                    <span aria-hidden="true" className="mx-2 text-[var(--theme-text-subtle)]">
+                      ·
+                    </span>
+                  ) : null}
+                  <span className="whitespace-nowrap">
+                    <span className="text-[var(--color-text-muted)]">{item.label} </span>
+                    <span className={`font-semibold ${TONE_CLASS[item.tone ?? 'neutral']}`}>{item.value}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              {statusItems.map(item => (
+                <div
+                  key={`${item.label}:${item.value}`}
+                  className="rounded-2xl bg-[var(--color-bg-alt)] px-3 py-2"
+                >
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                    {item.label}
+                  </p>
+                  <p className={`mt-1 truncate text-sm font-semibold ${TONE_CLASS[item.tone ?? 'neutral']}`}>
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )
         ) : null}
 
         {children ? <div className="mt-4">{children}</div> : null}

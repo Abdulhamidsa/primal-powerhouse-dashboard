@@ -1,0 +1,18 @@
+[Unit]
+Description=Primal Powerhouse privacy cleanup
+Wants=network-online.target
+After=network-online.target
+OnFailure=primal-privacy-cleanup-failure.service
+
+[Service]
+Type=oneshot
+User=primal
+EnvironmentFile=-/etc/primal/backend.env
+EnvironmentFile=-/etc/primal/operations.env
+ExecStart=/usr/local/libexec/primal-run-privacy-cleanup
+TimeoutStartSec=30min
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

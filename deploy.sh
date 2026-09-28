@@ -2,12 +2,16 @@
 
 # 🚀 Production Deployment Script
 # Usage: ./deploy.sh [platform]
-# Platforms: vercel, railway, docker, vps
+# Platforms: pm2, vercel, railway, docker, vps
 
 set -e
 
-PLATFORM=${1:-vercel}
+PLATFORM=${1:-pm2}
 PROJECT_NAME="primal-powerhouse-dashboard"
+
+if [[ "$PLATFORM" == "pm2" ]]; then
+    exec bash scripts/deploy-pm2.sh
+fi
 
 echo "🚀 Deploying $PROJECT_NAME to $PLATFORM..."
 
