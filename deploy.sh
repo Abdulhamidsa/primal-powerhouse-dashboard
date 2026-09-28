@@ -93,7 +93,7 @@ case $PLATFORM in
     
     *)
         echo "❌ Unknown platform: $PLATFORM"
-        echo "Available platforms: vercel, railway, docker, docker-compose, vps"
+        echo "Available platforms: pm2, vercel, railway, docker, docker-compose, vps"
         exit 1
         ;;
 esac

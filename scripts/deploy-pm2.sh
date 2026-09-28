@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+operations_env="${PRIMAL_OPERATIONS_ENV_FILE:-/etc/primal/operations.env}"
+if [[ -f "$operations_env" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$operations_env"
+  set +a
+fi
+
 : "${PRIMAL_APP_DIR:?Set PRIMAL_APP_DIR to the deployed application directory}"
 : "${PRIMAL_PM2_APP_NAME:?Set PRIMAL_PM2_APP_NAME to the existing PM2 process name}"
 : "${PRIMAL_ENV_FILE:?Set PRIMAL_ENV_FILE to the protected production environment file}"
