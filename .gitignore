@@ -27,6 +27,7 @@ coverage/
 *.spec.tsx
 !src/app/api/*-hardening.test.ts
 !src/lib/security/api-auth.test.ts
+!src/lib/privacy/**/*.test.ts
 __tests__/
 .nyc_output
 *.lcov
