@@ -1,5 +1,5 @@
 [Unit]
-Description=Primal Powerhouse privacy cleanup
+Description=Primal Powerhouse privacy cleanup (direct Node.js runtime)
 Wants=network-online.target
 After=network-online.target
 OnFailure=primal-privacy-cleanup-failure.service
@@ -13,6 +13,7 @@ ExecStart=/usr/local/libexec/primal-run-privacy-cleanup
 TimeoutStartSec=30min
 NoNewPrivileges=true
 PrivateTmp=true
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target

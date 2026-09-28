@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Primal Powerhouse PostgreSQL backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=primal-postgres-backup.service
+
+[Install]
+WantedBy=timers.target
