@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getStoredThemePreference, normalizeThemePreference, setStoredThemePreference } from '@/features/theme-preference/api/themePreference.api';
-import { THEME_OPTIONS, type ThemePreference } from '@/features/theme-preference/types/themePreference.types';
-import { getThemePreference, updateThemePreference } from '@/features/theme/api/theme.api';
+import { useCallback, useEffect, useState } from 'react';
+import { getStoredAppearance, setStoredAppearance } from '@/features/theme-preference/api/themePreference.api';
+import { getThemePreference, updateAppearancePreference } from '@/features/theme/api/theme.api';
 import { useTheme } from '@/features/theme/components/ThemeProvider';
 
 type UseThemePreferenceOptions = {
@@ -13,21 +12,23 @@ type UseThemePreferenceOptions = {
 
 export function useThemePreference(options: UseThemePreferenceOptions = {}) {
   const { enabled = true, userId } = options;
-  const { themeId, setTheme, ready } = useTheme();
+  const { mode, accentTheme, appearanceOptions, setAppearance, ready } = useTheme();
   const [isAccountReady, setIsAccountReady] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
 
     let cancelled = false;
-    const cached = getStoredThemePreference(userId ?? undefined);
-    if (cached) setTheme(cached);
+    const cached = getStoredAppearance(userId ?? undefined);
+    if (cached) {
+      setAppearance(cached);
+    }
 
     void getThemePreference()
       .then(response => {
         if (cancelled) return;
-        setStoredThemePreference(response.themePreference, response.userId);
-        setTheme(response.themePreference);
+        setStoredAppearance({ mode: response.mode, accentTheme: response.accentTheme }, response.userId);
+        setAppearance({ mode: response.mode, accentTheme: response.accentTheme });
         setIsAccountReady(true);
       })
       .catch(() => {
@@ -37,26 +38,26 @@ export function useThemePreference(options: UseThemePreferenceOptions = {}) {
     return () => {
       cancelled = true;
     };
-  }, [enabled, setTheme, userId]);
+  }, [enabled, setAppearance, userId]);
 
-  const setThemePreference = useCallback(async (theme: ThemePreference) => {
-    const resolved = normalizeThemePreference(theme);
-    setTheme(resolved);
-    setStoredThemePreference(resolved, userId ?? undefined);
+  const persist = useCallback(async (next: { mode?: typeof mode; accentTheme?: typeof accentTheme }) => {
+    const selection = { mode: next.mode ?? mode, accentTheme: next.accentTheme ?? accentTheme };
+    setAppearance(selection);
+    setStoredAppearance(selection, userId ?? undefined);
     try {
-      const response = await updateThemePreference(resolved);
-      setStoredThemePreference(response.themePreference, response.userId);
+      const response = await updateAppearancePreference(next);
+      setStoredAppearance({ mode: response.mode, accentTheme: response.accentTheme }, response.userId);
     } catch {
       // Keep the optimistic local theme; the next authenticated restore will reconcile it.
     }
-  }, [setTheme, userId]);
-
-  const themeOptions = useMemo(() => THEME_OPTIONS, []);
+  }, [accentTheme, mode, setAppearance, userId]);
 
   return {
-    themePreference: themeId,
-    setThemePreference,
-    themeOptions,
+    mode,
+    accentTheme,
+    setMode: (nextMode: typeof mode) => persist({ mode: nextMode }),
+    setAccentTheme: (nextAccentTheme: typeof accentTheme) => persist({ accentTheme: nextAccentTheme }),
+    appearanceOptions,
     isHydrated: ready && (!enabled || isAccountReady),
   };
 }

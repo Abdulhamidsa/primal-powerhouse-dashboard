@@ -2,7 +2,7 @@ import { Image } from 'react-native';
 import { Link } from 'expo-router';
 import { Button, Card, Copy, Field, Label, Screen, Status } from '@/components/ui';
 import { useTheme } from '@/features/theme/hooks/useTheme';
-import { ThemePicker } from '@/features/theme/components/ThemePicker';
+import { AppearancePicker } from '@/features/theme/components/AppearancePicker';
 import { useProfile } from '../hooks/useProfile';
 
 export default function ProfileScreen() {
@@ -35,8 +35,8 @@ export default function ProfileScreen() {
         </>
       ) : null}
       <Card>
-        <Label>Theme</Label>
-        <ThemePicker userId={user?.id} />
+        <Label>Appearance</Label>
+        <AppearancePicker userId={user?.id} />
       </Card>
       <Card>
         <Label>Notifications</Label>

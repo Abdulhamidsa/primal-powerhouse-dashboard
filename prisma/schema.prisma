@@ -86,6 +86,7 @@ model Client {
   phone                         String?
   avatar                        String?
   themePreference               String             @default("ember")
+  appearanceMode                String             @default("dark")
   status                        ClientStatus       @default(ACTIVE)
   joinDate                      DateTime           @default(now())
   currentWeight                 Float?

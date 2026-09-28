@@ -10,7 +10,7 @@ import { Metadata } from 'next/types';
 import { SwrProvider } from '@/providers/swr-provider';
 import { AppUpdateProvider } from '@/components/AppUpdateManager';
 import { cookies } from 'next/headers';
-import { themeIdSchema, DEFAULT_THEME_ID, type ThemeId } from '@primal/theme';
+import { accentThemeIdSchema, appearanceModeSchema, DEFAULT_ACCENT_THEME_ID, DEFAULT_APPEARANCE_MODE, type AccentThemeId, type AppearanceMode } from '@primal/theme';
 import { ThemeProvider } from '@/features/theme/components/ThemeProvider';
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -51,14 +51,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const parsedTheme = themeIdSchema.safeParse(cookieStore.get('pph_theme_preference')?.value);
-  const cookieTheme: ThemeId | null = parsedTheme.success ? parsedTheme.data : null;
-  const initialTheme: ThemeId = cookieTheme ?? DEFAULT_THEME_ID;
+  const parsedMode = appearanceModeSchema.safeParse(cookieStore.get('pph_appearance_mode')?.value);
+  const parsedAccent = accentThemeIdSchema.safeParse(cookieStore.get('pph_appearance_accent')?.value ?? cookieStore.get('pph_theme_preference')?.value);
+  const cookieMode: AppearanceMode | null = parsedMode.success ? parsedMode.data : null;
+  const cookieAccent: AccentThemeId | null = parsedAccent.success ? parsedAccent.data : null;
+  const initialMode = cookieMode ?? DEFAULT_APPEARANCE_MODE;
+  const initialAccent = cookieAccent ?? DEFAULT_ACCENT_THEME_ID;
 
   return (
-    <html lang="en" className="dark" data-theme={initialTheme} suppressHydrationWarning>
+    <html lang="en" className={initialMode === 'dark' ? 'dark' : undefined} data-mode={initialMode} data-accent={initialAccent} data-theme={initialAccent} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('pph_theme_preference');var v=['ember','ocean','forest','ruby','aura','arctic','dusk','onyx'];if(!${cookieTheme ? 'true' : 'false'}&&v.indexOf(t)!==-1)document.documentElement.dataset.theme=t}catch(e){}})()` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var e=document.documentElement,v=['ember','ocean','forest','ruby','aura','arctic','dusk','onyx'],m=['dark','light'],r=localStorage.getItem('pph_appearance_v1'),a=r?JSON.parse(r):null;if(!a){var t=localStorage.getItem('pph_theme_preference');if(v.indexOf(t)!==-1)a={mode:'dark',accentTheme:t}}if(a){var mode=m.indexOf(a.mode)!==-1?a.mode:'dark',accent=v.indexOf(a.accentTheme)!==-1?a.accentTheme:'ember';e.dataset.mode=mode;e.dataset.accent=accent;e.dataset.theme=accent;e.classList.toggle('dark',mode==='dark')}}catch(e){}})()` }} />
         <link rel="manifest" href="/manifest.json" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -70,7 +73,7 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-          <ThemeProvider initialTheme={cookieTheme}>
+          <ThemeProvider initialAppearance={cookieMode || cookieAccent ? { mode: initialMode, accentTheme: initialAccent } : null}>
             <LoadingProvider>
               <RootAuthGate>
                 <AppUpdateProvider>

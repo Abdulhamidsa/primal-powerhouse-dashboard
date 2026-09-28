@@ -1,10 +1,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { themeIds } from '../src/ids.ts';
-import { themes } from '../src/themes.ts';
+import { accentThemes } from '../src/accents.ts';
+import { accentThemeIds, appearanceModeIds } from '../src/ids.ts';
+import { baseModes } from '../src/modes.ts';
 
 const outputPath = resolve(process.cwd(), 'packages/theme/generated/themes.css');
-
 const kebabCase = (value: string) => value.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
 
 function rgbChannels(value: string): string | null {
@@ -14,58 +14,82 @@ function rgbChannels(value: string): string | null {
   return `${number >> 16} ${(number >> 8) & 255} ${number & 255}`;
 }
 
-function emitTheme(themeId: (typeof themeIds)[number], selector: string) {
-  const tokens = themes[themeId];
-  const lines = [`${selector} {`];
-
-  for (const [name, value] of Object.entries(tokens)) {
-    const cssName = `--theme-${kebabCase(name)}`;
-    lines.push(`  ${cssName}: ${value};`);
+function emitVariables(prefix: string, values: Record<string, string>) {
+  return Object.entries(values).flatMap(([name, value]) => {
+    const cssName = `--${prefix}-${kebabCase(name)}`;
     const channels = rgbChannels(value);
-    if (channels) lines.push(`  ${cssName}-rgb: ${channels};`);
-  }
+    return channels ? [`  ${cssName}: ${value};`, `  ${cssName}-rgb: ${channels};`] : [`  ${cssName}: ${value};`];
+  });
+}
 
-  lines.push('  --color-bg: var(--theme-background);');
-  lines.push('  --color-text-black: var(--theme-on-accent);');
-  lines.push('  --color-background: var(--theme-background);');
-  lines.push('  --color-surface: var(--theme-surface);');
-  lines.push('  --color-bg-alt: var(--theme-surface-elevated);');
-  lines.push('  --color-card: var(--theme-card);');
-  lines.push('  --color-surface-hover: var(--theme-surface-hover);');
-  lines.push('  --color-border: var(--theme-border);');
-  lines.push('  --color-border-strong: var(--theme-border-strong);');
-  lines.push('  --color-text: var(--theme-text);');
-  lines.push('  --color-foreground: var(--theme-text);');
-  lines.push('  --color-text-primary: var(--theme-text);');
-  lines.push('  --color-text-secondary: var(--theme-text-muted);');
-  lines.push('  --color-text-muted: var(--theme-text-muted);');
-  lines.push('  --color-accent: var(--theme-accent);');
-  lines.push('  --color-accent-hover: var(--theme-accent-hover);');
-  lines.push('  --color-accent-muted: var(--theme-accent-muted);');
-  lines.push('  --color-accent-translucent: var(--theme-accent-muted);');
-  lines.push('  --color-text-on-accent: var(--theme-on-accent);');
-  lines.push('  --color-input: var(--theme-input-background);');
-  lines.push('  --color-input-border: var(--theme-input-border);');
-  lines.push('  --color-primary: var(--theme-accent);');
-  lines.push('  --color-error: var(--theme-error);');
-  lines.push('  --color-danger: var(--theme-error);');
-  lines.push('  --color-success: var(--theme-success);');
-  lines.push('  --color-success-muted: var(--theme-success-muted);');
-  lines.push('  --color-warning: var(--theme-warning);');
-  lines.push('  --color-warning-muted: var(--theme-warning-muted);');
-  lines.push('  --color-info: var(--theme-info);');
-  lines.push('  --color-info-muted: var(--theme-info-muted);');
-  lines.push('  --color-success-bg: var(--theme-success-muted);');
-  lines.push('  --color-danger-bg: var(--theme-error-muted);');
-  lines.push('  --color-danger-muted: var(--theme-error-muted);');
+function emitSelector(selector: string, prefix: string, values: Record<string, string>) {
+  return [selector + ' {', ...emitVariables(prefix, values), '}'].join('\n');
+}
+
+const effectiveTokens = {
+  ...baseModes.dark,
+  ...accentThemes.ember,
+  link: accentThemes.ember.accent,
+  linkHover: accentThemes.ember.accentHover,
+  navigationActive: accentThemes.ember.accent,
+  navigationActiveBackground: accentThemes.ember.accentMuted,
+};
+const baseTokenNames = new Set(Object.keys(baseModes.dark));
+const accentTokenNames = new Set(Object.keys(accentThemes.ember));
+const derivedAccentTokens = new Set(['link', 'linkHover', 'navigationActive', 'navigationActiveBackground']);
+
+function aliasSource(token: string) {
+  const name = kebabCase(token);
+  if (baseTokenNames.has(token)) return `--mode-${name}`;
+  if (accentTokenNames.has(token)) return `--accent-${name}`;
+  if (derivedAccentTokens.has(token)) {
+    const source = token === 'link' || token === 'navigationActive'
+      ? 'accent'
+      : token === 'linkHover'
+        ? 'accent-hover'
+        : 'accent-muted';
+    return `--accent-${source}`;
+  }
+  throw new Error(`No appearance source for ${token}`);
+}
+
+function emitEffectiveAliases() {
+  const lines = [':root {'];
+  for (const token of Object.keys(effectiveTokens)) {
+    const source = aliasSource(token);
+    const cssName = `--theme-${kebabCase(token)}`;
+    lines.push(`  ${cssName}: var(${source});`);
+    if (rgbChannels(effectiveTokens[token as keyof typeof effectiveTokens])) lines.push(`  ${cssName}-rgb: var(${source}-rgb);`);
+  }
+  lines.push(
+    '  --color-bg: var(--theme-background);', '  --color-text-black: var(--theme-on-accent);',
+    '  --color-background: var(--theme-background);', '  --color-surface: var(--theme-surface);',
+    '  --color-bg-alt: var(--theme-surface-elevated);', '  --color-card: var(--theme-card);',
+    '  --color-surface-hover: var(--theme-surface-hover);', '  --color-border: var(--theme-border);',
+    '  --color-border-strong: var(--theme-border-strong);', '  --color-text: var(--theme-text);',
+    '  --color-foreground: var(--theme-text);', '  --color-text-primary: var(--theme-text);',
+    '  --color-text-secondary: var(--theme-text-muted);', '  --color-text-muted: var(--theme-text-muted);',
+    '  --color-accent: var(--theme-accent);', '  --color-accent-hover: var(--theme-accent-hover);',
+    '  --color-accent-muted: var(--theme-accent-muted);', '  --color-accent-translucent: var(--theme-accent-muted);',
+    '  --color-text-on-accent: var(--theme-on-accent);', '  --color-input: var(--theme-input-background);',
+    '  --color-input-border: var(--theme-input-border);', '  --color-primary: var(--theme-accent);',
+    '  --color-link: var(--theme-link);', '  --color-link-hover: var(--theme-link-hover);',
+    '  --color-error: var(--theme-error);', '  --color-danger: var(--theme-error);',
+    '  --color-success: var(--theme-success);', '  --color-success-muted: var(--theme-success-muted);',
+    '  --color-warning: var(--theme-warning);', '  --color-warning-muted: var(--theme-warning-muted);',
+    '  --color-info: var(--theme-info);', '  --color-info-muted: var(--theme-info-muted);',
+    '  --color-success-bg: var(--theme-success-muted);', '  --color-danger-bg: var(--theme-error-muted);',
+    '  --color-danger-muted: var(--theme-error-muted);',
+  );
   lines.push('}');
   return lines.join('\n');
 }
 
 const css = [
-  '/* Generated from packages/theme/src/themes.ts. Do not edit manually. */',
-  emitTheme('ember', ':root'),
-  ...themeIds.filter(themeId => themeId !== 'ember').map(themeId => emitTheme(themeId, `:root[data-theme='${themeId}']`)),
+  '/* Generated from packages/theme/src/modes.ts and accents.ts. Do not edit manually. */',
+  emitEffectiveAliases(),
+  ...appearanceModeIds.map(mode => emitSelector(`:root[data-mode='${mode}']`, 'mode', baseModes[mode])),
+  ...accentThemeIds.map(accent => emitSelector(`:root[data-accent='${accent}'], :root:not([data-accent])[data-theme='${accent}']`, 'accent', accentThemes[accent])),
   '',
 ].join('\n\n');
 

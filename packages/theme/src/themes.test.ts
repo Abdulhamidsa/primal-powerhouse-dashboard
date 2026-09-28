@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { themes } from './themes';
+import { accentThemeIds, appearanceModeIds } from './ids';
+import { accentThemes } from './accents';
+import { composeTheme } from './compose';
+import { baseModes } from './modes';
+import { themeTokensSchema } from './schema';
 
 function hexToRgb(hex: string) {
   const match = hex.match(/^#([0-9a-f]{6})$/i);
@@ -17,25 +21,42 @@ function channelSpread(hex: string) {
   return Math.max(r, g, b) - Math.min(r, g, b);
 }
 
-describe('semantic themes', () => {
-  it('keeps passive surfaces dark and close to neutral while preserving accent identity', () => {
-    for (const [themeId, tokens] of Object.entries(themes)) {
-      const passiveSurfaceSpread = [tokens.background, tokens.surface, tokens.surfaceElevated, tokens.card].map(channelSpread);
-      passiveSurfaceSpread.forEach(spread => {
-        expect(spread, `${themeId} passive surfaces should stay near neutral`).toBeLessThanOrEqual(18);
-      });
-
-      const accentSpread = channelSpread(tokens.accent);
-      const minAccentSpread = themeId === 'onyx' ? 8 : 32;
-      expect(accentSpread, `${themeId} accent should remain visually expressive`).toBeGreaterThanOrEqual(minAccentSpread);
+describe('composed appearance tokens', () => {
+  it('creates a complete semantic contract for every mode and accent combination', () => {
+    for (const mode of appearanceModeIds) for (const accentTheme of accentThemeIds) {
+      expect(themeTokensSchema.safeParse(composeTheme(mode, accentTheme)).success).toBe(true);
     }
   });
 
-  it('keeps navigation and selected-state tokens aligned with neutral foundation', () => {
-    for (const tokens of Object.values(themes)) {
-      expect(tokens.navigationBackground).toBe(tokens.surface);
-      expect(tokens.navigationBorder).toBe(tokens.border);
-      expect(tokens.navigationActiveBackground).toBe(tokens.accentMuted);
+  it('keeps neutral foundations unchanged when only the accent changes', () => {
+    for (const mode of appearanceModeIds) {
+      const ember = composeTheme(mode, 'ember');
+      const ocean = composeTheme(mode, 'ocean');
+      expect(ember.background).toBe(ocean.background);
+      expect(ember.card).toBe(ocean.card);
+      expect(ember.border).toBe(ocean.border);
+      expect(ember.text).toBe(ocean.text);
+      expect(ember.success).toBe(ocean.success);
+    }
+  });
+
+  it('keeps accent behavior unchanged when only the mode changes', () => {
+    for (const accentTheme of accentThemeIds) {
+      const dark = composeTheme('dark', accentTheme);
+      const light = composeTheme('light', accentTheme);
+      expect(dark.accent).toBe(light.accent);
+      expect(dark.focusRing).toBe(light.focusRing);
+      expect(dark.chartSecondary).toBe(light.chartSecondary);
+    }
+  });
+
+  it('uses neutral passive surfaces and expressive accents', () => {
+    for (const mode of appearanceModeIds) {
+      const passiveSurfaceSpread = [baseModes[mode].background, baseModes[mode].surface, baseModes[mode].card].map(channelSpread);
+      passiveSurfaceSpread.forEach(spread => expect(spread).toBeLessThanOrEqual(18));
+    }
+    for (const [id, tokens] of Object.entries(accentThemes)) {
+      expect(channelSpread(tokens.accent), id).toBeGreaterThanOrEqual(id === 'onyx' ? 8 : 32);
     }
   });
 });

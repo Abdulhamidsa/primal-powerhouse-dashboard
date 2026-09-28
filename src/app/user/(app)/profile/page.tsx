@@ -61,7 +61,7 @@ function SettingsLink({
 
 export default function UserProfilePage() {
   const { user, error: profileError, isLoading } = useUserProfile();
-  const { themePreference, setThemePreference, themeOptions } = useThemePreference({ userId: user?.id });
+  const { mode, accentTheme, setMode, setAccentTheme, appearanceOptions } = useThemePreference({ userId: user?.id });
   const { logout } = useUserLogout();
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -161,7 +161,7 @@ export default function UserProfilePage() {
           />
         </SettingsCard>
 
-        <ThemePreferenceSection value={themePreference} options={themeOptions} onChangeAction={setThemePreference} />
+        <ThemePreferenceSection mode={mode} accentTheme={accentTheme} options={appearanceOptions.accents} onModeChangeAction={setMode} onAccentChangeAction={setAccentTheme} />
 
         <SettingsCard>
           <button

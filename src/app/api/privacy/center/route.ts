@@ -11,6 +11,12 @@ export async function GET(request: NextRequest) {
 
     const client = await (prisma as any).client.findUnique({
       where: { id: auth.user.userId },
+      select: {
+        consentAnalytics: true,
+        consentMarketingNotifications: true,
+        consentOptionalTracking: true,
+        consentMessageNotifications: true,
+      },
     });
 
     if (!client) {
@@ -55,30 +61,27 @@ export async function GET(request: NextRequest) {
         : null,
     ]);
 
-    const typedClient = client as {
-      consentAnalytics?: boolean;
-      consentMarketingNotifications?: boolean;
-      consentOptionalTracking?: boolean;
-      consentMessageNotifications?: boolean;
-    };
-
     return jsonWithCache({
       consents: {
-        analytics: Boolean(typedClient.consentAnalytics),
-        marketingNotifications: Boolean(typedClient.consentMarketingNotifications),
-        optionalTracking: Boolean(typedClient.consentOptionalTracking),
-        messageNotifications: Boolean(typedClient.consentMessageNotifications),
+        analytics: Boolean(client.consentAnalytics),
+        marketingNotifications: Boolean(client.consentMarketingNotifications),
+        optionalTracking: Boolean(client.consentOptionalTracking),
+        messageNotifications: Boolean(client.consentMessageNotifications),
       },
       exportJobs: exportJobs.map((job: any) => ({
-        ...job,
+        id: job.id,
+        status: job.status,
         requestedAt: job.requestedAt.toISOString(),
         completedAt: job.completedAt ? job.completedAt.toISOString() : null,
         expiresAt: job.expiresAt.toISOString(),
         downloadedAt: job.downloadedAt ? job.downloadedAt.toISOString() : null,
+        downloadCount: job.downloadCount,
       })),
       activeDeletionRequest: activeDeletionRequest
         ? {
-            ...activeDeletionRequest,
+            id: activeDeletionRequest.id,
+            status: activeDeletionRequest.status,
+            gracePeriodDays: activeDeletionRequest.gracePeriodDays,
             requestedAt: activeDeletionRequest.requestedAt.toISOString(),
             scheduledHardDeleteAt: activeDeletionRequest.scheduledHardDeleteAt.toISOString(),
           }

@@ -6,6 +6,7 @@ import { DownloadIcon as Download, SignOutIcon as LogOut, TrashIcon as Trash2 } 
 import { usePushSubscription } from '@/features/client-coach-messaging/hooks/usePushSubscription';
 import { usePrivacyActions, usePrivacyCenter } from '@/features/privacy/hooks/usePrivacyCenter';
 import { privacyConsentSchema, privacyDeleteRequestSchema } from '@/features/privacy/schemas/privacy.schema';
+import { clearClientLocalData } from '@/features/privacy/lib/client-cleanup';
 
 function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -117,8 +118,9 @@ export function PrivacyDataCenter() {
     try {
       setIsRequestingDeletion(true);
       await requestDeletion(parsed.data);
+      await clearClientLocalData();
       setConfirmText('');
-      window.alert('Your account has been deactivated and deletion has been scheduled.');
+      window.alert('Access is removed immediately. Your account is scheduled for permanent deletion after 30 days. This deletion cannot be cancelled.');
       router.push('/user/login');
     } finally {
       setIsRequestingDeletion(false);
@@ -234,8 +236,8 @@ export function PrivacyDataCenter() {
               ) : (
                 <>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Access is removed immediately, identifying info is anonymized, and deletion is scheduled after the
-                    grace period. Your email can be used again for signup.
+                    Access is removed immediately. Your account is scheduled for permanent deletion after 30 days. This
+                    deletion cannot be cancelled.
                   </p>
 
                   {!isDeleteExpanded ? (
