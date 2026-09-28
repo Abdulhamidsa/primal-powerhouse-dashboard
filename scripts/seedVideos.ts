@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'; // adjust path to your prisma singleton file
 import { Prisma, DifficultyLevel, VideoCategory } from '@prisma/client';
+import { assertDevelopmentSeed } from './seed-dev-guard';
 
 const sampleVideos: Prisma.VideoCreateInput[] = [
   // STRENGTH TRAINING
@@ -626,6 +627,7 @@ const sampleVideos: Prisma.VideoCreateInput[] = [
 
 async function seedVideos() {
   try {
+    assertDevelopmentSeed();
     const coach = await prisma.user.findFirst({
       where: { role: 'COACH' },
       select: { id: true },

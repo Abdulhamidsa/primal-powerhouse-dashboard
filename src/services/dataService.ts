@@ -465,17 +465,6 @@ export class DataService {
     return stats.recentActivity;
   }
 
-  // Database seeding
-  static async seedDatabase() {
-    const response = await fetch(`${this.baseUrl}/seed`, {
-      method: 'POST',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to seed database');
-    }
-    return response.json();
-  }
-
   // Utility methods for stats calculations
   static async getClientStats() {
     const clients = await this.getClients();

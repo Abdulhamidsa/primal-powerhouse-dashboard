@@ -1,38 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
-
+import { NextRequest } from 'next/server';
+import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
+import { mealPlanResponseSelect } from '@/lib/meal-response';
+
 export async function GET(request: NextRequest) {
+  const auth = await requireApiAuth(request, 'client');
+  if (!auth.ok) return auth.res;
+
+  if (request.nextUrl.searchParams.has('clientId')) {
+    return Response.json({ error: 'clientId must not be supplied for client-dashboard requests' }, { status: 400 });
+  }
+
   try {
-    const { error, user } = await requireAuth(request, 'client');
-
-    if (error || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const clientId = searchParams.get('clientId') || user.userId;
-
-    // Fetch meal plans with assignments for the client
     const mealPlans = await prisma.mealPlan.findMany({
-      where: { clientId },
-      include: {
-        mealAssignments: {
-          include: {
-            meal: true,
-          },
-          orderBy: [{ dayOfWeek: 'asc' }, { scheduledTime: 'asc' }],
-        },
-      },
+      where: { clientId: auth.user.userId },
+      select: mealPlanResponseSelect,
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(mealPlans);
-  } catch (error) {
-    console.error('Error fetching user meals:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  } finally {
-    // DO NOT disconnect in serverless - it breaks connection pooling
-    // await prisma.$disconnect();
+    return Response.json(mealPlans);
+  } catch {
+    return Response.json({ error: 'Failed to fetch user meals' }, { status: 500 });
   }
 }

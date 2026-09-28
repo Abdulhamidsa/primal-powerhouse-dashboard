@@ -20,11 +20,13 @@ import {
   VIDEO_CATEGORIES,
   DIFFICULTY_LEVELS,
 } from '@/types/video';
+import { createVideo } from '@/features/videos/api/video.api';
 
 interface AddVideoModalProps {
   isOpen: boolean;
   onCloseAction: () => void;
   onVideoAddedAction: (video: Video) => void;
+  coachId: string;
 }
 
 const INITIAL_FORM_DATA: VideoFormData = {
@@ -86,7 +88,7 @@ const extractVimeoId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
-export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedAction }: AddVideoModalProps) {
+export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedAction, coachId }: AddVideoModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<VideoFormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -223,33 +225,23 @@ export default function AddVideoModal({ isOpen, onCloseAction, onVideoAddedActio
 
     setIsSubmitting(true);
     try {
+      if (!coachId) {
+        alert('Select a coach before creating a video.');
+        return;
+      }
+
       const cleanedData = {
         ...formData,
         instructions: formData.instructions ? formData.instructions.filter(i => i.trim() !== '') : [],
         tips: formData.tips ? formData.tips.filter(t => t.trim() !== '') : [],
-        viewCount: 0,
-        coachId: 'cmeejzitq00007kswt2jrt8hl', // Use the ID of the user we created
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        coachId,
       };
 
-      const response = await fetch('/api/videos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cleanedData),
-      });
-
-      if (response.ok) {
-        const newVideo = await response.json();
-        onVideoAddedAction(newVideo);
-        onCloseAction();
-      } else {
-        const errorData = await response.json();
-        console.error('Failed to add video:', errorData);
-        alert(`Failed to add video: ${errorData.error}`);
-      }
-    } catch (error) {
-      console.error('Error adding video:', error);
+      const newVideo = await createVideo(cleanedData);
+      onVideoAddedAction(newVideo);
+      onCloseAction();
+    } catch {
+      alert('Failed to add video. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

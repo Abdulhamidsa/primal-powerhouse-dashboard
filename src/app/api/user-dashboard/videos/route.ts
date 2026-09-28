@@ -1,34 +1,53 @@
 import { NextRequest } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireApiAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 
+const userVideoAssignmentSelect = {
+  id: true,
+  assignedDate: true,
+  dueDate: true,
+  scheduledTime: true,
+  isCompleted: true,
+  completedAt: true,
+  notes: true,
+  progress: true,
+  video: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      category: true,
+      difficulty: true,
+      duration: true,
+      videoUrl: true,
+      thumbnailUrl: true,
+      equipment: true,
+      muscleGroups: true,
+      tags: true,
+      instructions: true,
+      tips: true,
+    },
+  },
+} as const;
+
 export async function GET(request: NextRequest) {
+  const auth = await requireApiAuth(request, 'client');
+  if (!auth.ok) return auth.res;
+
+  if (request.nextUrl.searchParams.has('clientId')) {
+    return jsonWithCache({ error: 'clientId must not be supplied for client-dashboard requests' }, { status: 400 });
+  }
+
   try {
-    const { error, user } = await requireAuth(request);
-
-    if (error || !user) {
-      return jsonWithCache({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const clientId = searchParams.get('clientId') || user.userId;
-
-    // Fetch video assignments for the client
     const videoAssignments = await prisma.videoAssignment.findMany({
-      where: { clientId },
-      include: {
-        video: true,
-      },
+      where: { clientId: auth.user.userId },
+      select: userVideoAssignmentSelect,
       orderBy: { assignedDate: 'desc' },
     });
 
     return jsonWithCache(videoAssignments);
-  } catch (error) {
-    console.error('Error fetching user videos:', error);
-    return jsonWithCache({ error: 'Internal server error' }, { status: 500 });
-  } finally {
-    // DO NOT disconnect in serverless - it breaks connection pooling
-    // await prisma.$disconnect();
+  } catch {
+    return jsonWithCache({ error: 'Failed to fetch user videos' }, { status: 500 });
   }
 }

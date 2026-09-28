@@ -10,6 +10,8 @@ import NewVideoDetailModal from '@/components/NewVideoDetailModal';
 import AssignVideosModal from '@/components/AssignVideosModal';
 import ExerciseDbLibraryPanel from '@/features/exercises/components/ExerciseDbLibraryPanel';
 import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
+import { useVideoCoaches } from '@/features/videos/hooks/useVideoCoaches';
+import { deleteVideo, importExerciseAsVideo } from '@/features/videos/api/video.api';
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -21,6 +23,8 @@ export default function VideosPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [selectedVideos, setSelectedVideos] = useState<Video[]>([]);
   const [activeTab, setActiveTab] = useState<'exercises' | 'videos'>('exercises');
+  const [selectedCoachId, setSelectedCoachId] = useState('');
+  const { coaches, isLoading: coachesLoading } = useVideoCoaches();
   // const [filters] = useState({
   //   category: 'all' as VideoCategory | 'all',
   //   difficulty: 'all' as DifficultyLevel | 'all',
@@ -60,18 +64,11 @@ export default function VideosPage() {
     if (!confirm('Are you sure you want to delete this video?')) return;
 
     try {
-      const response = await fetch(`/api/videos/${videoId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setVideos(videos.filter(v => v.id !== videoId));
-        setIsDetailModalOpen(false);
-      } else {
-        console.error('Failed to delete video');
-      }
-    } catch (error) {
-      console.error('Error deleting video:', error);
+      await deleteVideo(videoId);
+      setVideos(videos.filter(v => v.id !== videoId));
+      setIsDetailModalOpen(false);
+    } catch {
+      alert('Failed to delete video. Please try again.');
     }
   };
 
@@ -92,24 +89,18 @@ export default function VideosPage() {
   };
 
   const handleAssignExercise = async (exercise: ExerciseDbExercise) => {
+    if (!selectedCoachId) {
+      alert('Select a coach before importing an exercise.');
+      return;
+    }
+
     try {
       setIsAssigningExercise(exercise.exerciseId);
 
-      const response = await fetch('/api/videos/import-exercise', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(exercise),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to import exercise for assignment');
-      }
-
-      const importedVideo: Video = await response.json();
+      const importedVideo = await importExerciseAsVideo({ ...exercise, coachId: selectedCoachId });
       setSelectedVideos([importedVideo]);
       setIsAssignModalOpen(true);
-    } catch (error) {
-      console.error('Error assigning exercise:', error);
+    } catch {
       alert('Could not assign this exercise. Please try again.');
     } finally {
       setIsAssigningExercise(null);
@@ -165,6 +156,27 @@ export default function VideosPage() {
               Add Video
             </button>
           </div>
+        </div>
+
+        <div className="mb-6 max-w-md">
+          <label htmlFor="video-owner-coach" className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+            Video owner
+          </label>
+          <select
+            id="video-owner-coach"
+            value={selectedCoachId}
+            onChange={event => setSelectedCoachId(event.target.value)}
+            disabled={coachesLoading}
+            className="w-full rounded-lg border px-4 py-3"
+            style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
+          >
+            <option value="">Select a coach</option>
+            {coaches.map(coach => (
+              <option key={coach.id} value={coach.id}>
+                {coach.name || coach.email || coach.id}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="mb-6 flex items-center gap-3">
@@ -268,6 +280,7 @@ export default function VideosPage() {
             isOpen={isAddModalOpen}
             onCloseAction={() => setIsAddModalOpen(false)}
             onVideoAddedAction={handleAddVideo}
+            coachId={selectedCoachId}
           />
         )}
 

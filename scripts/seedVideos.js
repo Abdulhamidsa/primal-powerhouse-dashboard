@@ -596,6 +596,7 @@ const sampleVideos = [
 
 async function seedVideos() {
   try {
+    if (process.env.NODE_ENV === 'production') throw new Error('Development seed scripts cannot run in production');
     const coach = await prisma.user.findFirst({
       where: { role: 'COACH' },
       select: { id: true },

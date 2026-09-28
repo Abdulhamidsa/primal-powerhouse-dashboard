@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import { assertDevelopmentSeed } from './seed-dev-guard';
 
 const prisma = new PrismaClient();
 
 async function seedMeals() {
   try {
+    assertDevelopmentSeed();
     // Create a default coach first
     const coach = await prisma.user.upsert({
       where: { email: 'coach@example.com' },

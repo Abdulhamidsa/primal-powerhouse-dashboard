@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import {
   PlayIcon as Play,
@@ -13,31 +13,32 @@ import {
   LightningIcon as Zap,
   UserIcon as User,
 } from '@phosphor-icons/react';
+import { useUserDashboardVideos } from '@/features/user-dashboard/hooks/useUserDashboardLegacy';
 
 interface Video {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   category: string;
   difficulty: string;
   duration: number;
   videoUrl: string;
-  thumbnailUrl?: string;
-  equipment?: string;
-  muscleGroups?: string;
-  tags?: string;
-  instructions?: string;
-  tips?: string;
+  thumbnailUrl?: string | null;
+  equipment?: string | null;
+  muscleGroups?: string | null;
+  tags?: string | null;
+  instructions?: string | null;
+  tips?: string | null;
 }
 
 interface VideoAssignment {
   id: string;
   assignedDate: string;
-  dueDate?: string;
-  scheduledTime?: string;
+  dueDate?: string | null;
+  scheduledTime?: string | null;
   isCompleted: boolean;
-  completedAt?: string;
-  notes?: string;
+  completedAt?: string | null;
+  notes?: string | null;
   progress: number;
   video: Video;
 }
@@ -47,31 +48,9 @@ interface UserVideosProps {
 }
 
 export default function UserVideos({ userId }: UserVideosProps) {
-  const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { videoAssignments, isLoading: loading, complete } = useUserDashboardVideos(Boolean(userId));
   const [selectedVideo, setSelectedVideo] = useState<VideoAssignment | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
-
-  useEffect(() => {
-    fetchVideoAssignments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]); // Only run when userId changes
-
-  const fetchVideoAssignments = async () => {
-    try {
-      const response = await fetch(`/api/user-dashboard/videos?clientId=${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setVideoAssignments(data);
-      } else {
-        console.error('Failed to fetch video assignments');
-      }
-    } catch (error) {
-      console.error('Error fetching video assignments:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -112,20 +91,9 @@ export default function UserVideos({ userId }: UserVideosProps) {
 
   const markAsCompleted = async (assignmentId: string) => {
     try {
-      const response = await fetch(`/api/user-dashboard/videos/${assignmentId}/complete`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setVideoAssignments(prev =>
-          prev.map(assignment =>
-            assignment.id === assignmentId
-              ? { ...assignment, isCompleted: true, completedAt: new Date().toISOString(), progress: 100 }
-              : assignment,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error('Error marking video as completed:', error);
+      await complete(assignmentId);
+    } catch {
+      // Keep the existing assignment state when the completion request fails.
     }
   };
 

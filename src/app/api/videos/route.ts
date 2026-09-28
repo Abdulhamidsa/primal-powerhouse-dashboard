@@ -3,161 +3,88 @@ import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { CACHE_TAGS, invalidateVideoCaches } from '@/lib/cache-tags';
+import { requireStaffActor } from '@/lib/api-auth';
+import { videoListQuerySchema, videoWriteSchema } from '@/features/videos/schemas/video.schema';
+import { resolveVideoCoachTarget } from '@/features/videos/server/video-authorization';
+import { toVideoResponse, videoResponseSelect } from '@/features/videos/server/video-response';
+
+function parseListQuery(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+  return videoListQuerySchema.safeParse({
+    category: params.get('category') && params.get('category') !== 'all' ? params.get('category') : undefined,
+    difficulty: params.get('difficulty') && params.get('difficulty') !== 'all' ? params.get('difficulty') : undefined,
+  });
+}
 
 export async function GET(request: NextRequest) {
+  const auth = await requireStaffActor(request);
+  if (!auth.ok) return auth.res;
+
+  const parsedQuery = parseListQuery(request);
+  if (!parsedQuery.success) return jsonWithCache({ error: 'Invalid video filters' }, { status: 400 });
+
   try {
-    console.log('Videos API: Starting GET request');
-    const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get('coachId');
-    const category = searchParams.get('category');
-    const difficulty = searchParams.get('difficulty');
-
-    console.log('Videos API: Request params:', { coachId, category, difficulty });
-
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      console.log('Videos API: Finding seeded coach');
-      // Try to find the seeded coach first
-      let defaultCoach = await prisma.user.findFirst({
-        where: { role: 'COACH' },
-      });
-
-      // If no coach exists, create one
-      if (!defaultCoach) {
-        console.log('Videos API: Creating default coach');
-        defaultCoach = await prisma.user.create({
-          data: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-      console.log('Videos API: Using coach ID:', userId);
-    }
-
-    // Build filter conditions
-    const whereConditions: any = { coachId: userId };
-
-    if (category && category !== 'all') {
-      whereConditions.category = category;
-    }
-
-    if (difficulty && difficulty !== 'all') {
-      whereConditions.difficulty = difficulty;
-    }
-
-    console.log('Videos API: Fetching videos with conditions:', whereConditions);
-    const cacheKey = ['videos:list', String(userId), String(category ?? 'all'), String(difficulty ?? 'all')];
+    const where = {
+      ...(auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : {}),
+      ...(parsedQuery.data.category ? { category: parsedQuery.data.category } : {}),
+      ...(parsedQuery.data.difficulty ? { difficulty: parsedQuery.data.difficulty } : {}),
+    };
+    const cacheKey = [
+      'videos:list',
+      auth.actor.role,
+      auth.actor.id,
+      String(parsedQuery.data.category ?? 'all'),
+      String(parsedQuery.data.difficulty ?? 'all'),
+    ];
 
     const videos = await unstable_cache(
-      async () =>
-        prisma.video.findMany({
-          where: whereConditions,
-          orderBy: { createdAt: 'desc' },
-        }),
+      () => prisma.video.findMany({ where, orderBy: { createdAt: 'desc' }, select: videoResponseSelect }),
       cacheKey,
-      { tags: [CACHE_TAGS.videos], revalidate: false }
+      { tags: [CACHE_TAGS.videos], revalidate: false },
     )();
 
-    console.log('Videos API: Found videos:', videos.length);
-    // Parse JSON fields
-    const parsedVideos = videos.map(video => ({
-      ...video,
-      equipment: video.equipment ? JSON.parse(video.equipment) : [],
-      muscleGroups: video.muscleGroups ? JSON.parse(video.muscleGroups) : [],
-      tags: video.tags ? JSON.parse(video.tags) : [],
-      instructions: video.instructions ? JSON.parse(video.instructions) : [],
-      tips: video.tips ? JSON.parse(video.tips) : [],
-    }));
-
-    return jsonWithCache(parsedVideos);
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return jsonWithCache(
-      {
-        error: 'Failed to fetch videos',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    return jsonWithCache(videos.map(toVideoResponse));
+  } catch {
+    return jsonWithCache({ error: 'Failed to fetch videos' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireStaffActor(request);
+  if (!auth.ok) return auth.res;
+
   try {
-    console.log('Videos API: Starting POST request');
-    const body = await request.json();
-    console.log('Videos API: Request body received');
-    const { coachId, ...videoData } = body;
+    const body = await request.json().catch(() => null);
+    const parsed = videoWriteSchema.safeParse(body);
+    if (!parsed.success) return jsonWithCache({ error: 'Invalid video payload' }, { status: 400 });
 
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      console.log('Videos API: Finding seeded coach for POST');
-      // Try to find the seeded coach first
-      let defaultCoach = await prisma.user.findFirst({
-        where: { role: 'COACH' },
-      });
+    const target = await resolveVideoCoachTarget(auth.actor, parsed.data.coachId, true);
+    if (!target.ok) return jsonWithCache({ error: target.error }, { status: target.status });
 
-      // If no coach exists, create one
-      if (!defaultCoach) {
-        console.log('Videos API: Creating default coach for POST');
-        defaultCoach = await prisma.user.create({
-          data: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-      console.log('Videos API: Using coach ID for POST:', userId);
-    }
-
-    console.log('Videos API: Creating video with data:', videoData);
+    const { coachId: _requestedCoachId, ...input } = parsed.data;
     const video = await prisma.video.create({
       data: {
-        ...videoData,
-        coachId: userId,
-        equipment: JSON.stringify(videoData.equipment || []),
-        muscleGroups: JSON.stringify(videoData.muscleGroups || []),
-        tags: JSON.stringify(videoData.tags || []),
-        instructions: JSON.stringify(videoData.instructions || []),
-        tips: JSON.stringify(videoData.tips || []),
+        title: input.title,
+        description: input.description ?? null,
+        category: input.category,
+        difficulty: input.difficulty,
+        duration: input.duration,
+        videoUrl: input.videoUrl,
+        thumbnailUrl: input.thumbnailUrl || null,
+        equipment: JSON.stringify(input.equipment ?? []),
+        muscleGroups: JSON.stringify(input.muscleGroups ?? []),
+        tags: JSON.stringify(input.tags ?? []),
+        instructions: JSON.stringify(input.instructions ?? []),
+        tips: JSON.stringify(input.tips ?? []),
+        isPublic: input.isPublic ?? true,
+        coachId: target.coachId,
       },
+      select: videoResponseSelect,
     });
 
-    console.log('Videos API: Video created successfully:', video.id);
-    // Parse JSON fields for response
-    const parsedVideo = {
-      ...video,
-      equipment: video.equipment ? JSON.parse(video.equipment) : [],
-      muscleGroups: video.muscleGroups ? JSON.parse(video.muscleGroups) : [],
-      tags: video.tags ? JSON.parse(video.tags) : [],
-      instructions: video.instructions ? JSON.parse(video.instructions) : [],
-      tips: video.tips ? JSON.parse(video.tips) : [],
-    };
-
     invalidateVideoCaches({ videoId: video.id });
-
-    return jsonWithCache(parsedVideo, { status: 201 });
-  } catch (error) {
-    console.error('Error creating video:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return jsonWithCache(
-      {
-        error: 'Failed to create video',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    return jsonWithCache(toVideoResponse(video), { status: 201 });
+  } catch {
+    return jsonWithCache({ error: 'Failed to create video' }, { status: 500 });
   }
 }

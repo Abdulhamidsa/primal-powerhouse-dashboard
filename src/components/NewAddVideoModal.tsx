@@ -23,11 +23,13 @@ import {
   VideoCameraIcon as VideoIcon,
 } from '@phosphor-icons/react';
 import Image from 'next/image';
+import { createVideo } from '@/features/videos/api/video.api';
 
 interface AddVideoModalProps {
   isOpen: boolean;
   onCloseAction: () => void;
   onVideoAddedAction: (video: Video) => void;
+  coachId: string;
 }
 
 const INITIAL_FORM_DATA: VideoFormData = {
@@ -77,7 +79,7 @@ const EQUIPMENT_OPTIONS = [
   'Yoga Mat',
 ];
 
-export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAction }: AddVideoModalProps) {
+export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAction, coachId }: AddVideoModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<VideoFormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,7 +210,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1:
-        return Boolean(formData.title && formData.videoUrl);
+        return Boolean(coachId && formData.title && formData.videoUrl);
       case 2:
         return Boolean(formData.description && formData.duration > 0);
       case 3:
@@ -228,33 +230,23 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
 
     setIsSubmitting(true);
     try {
+      if (!coachId) {
+        alert('Select a coach before creating a video.');
+        return;
+      }
+
       const cleanedData = {
         ...formData,
         instructions: formData.instructions ? formData.instructions.filter(i => i.trim() !== '') : [],
         tips: formData.tips ? formData.tips.filter(t => t.trim() !== '') : [],
-        viewCount: 0,
-        coachId: 'cmeejzitq00007kswt2jrt8hl', // Use the ID of the user we created
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        coachId,
       };
 
-      const response = await fetch('/api/videos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cleanedData),
-      });
-
-      if (response.ok) {
-        const newVideo = await response.json();
-        onVideoAddedAction(newVideo);
-        onCloseAction();
-      } else {
-        const errorData = await response.json();
-        console.error('Failed to add video:', errorData);
-        alert(`Failed to add video: ${errorData.error}`);
-      }
-    } catch (error) {
-      console.error('Error adding video:', error);
+      const newVideo = await createVideo(cleanedData);
+      onVideoAddedAction(newVideo);
+      onCloseAction();
+    } catch {
+      alert('Failed to add video. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -313,6 +305,15 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
                         borderColor: 'var(--color-border)',
                       }}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                      Coach ownership *
+                    </label>
+                    <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                      Select the coach who owns this video before continuing.
+                    </p>
                   </div>
 
                   <div>

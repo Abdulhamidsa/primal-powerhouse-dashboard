@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import { assertDevelopmentSeed } from './seed-dev-guard';
 
 const prisma = new PrismaClient();
 
 async function seedAssignments() {
   try {
+    assertDevelopmentSeed();
     // Get the client
     const client = await prisma.client.findFirst();
     if (!client) {

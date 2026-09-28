@@ -1,7 +1,7 @@
 'use client';
 
 import { ForkKnifeIcon } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -10,6 +10,7 @@ import {
   ForkKnifeIcon as Utensils,
 } from '@phosphor-icons/react';
 import { getMealImageDelivery } from '@/features/meals/utils/mealImageDelivery';
+import { useUserDashboardMeals } from '@/features/user-dashboard/hooks/useUserDashboardLegacy';
 
 interface Meal {
   id: string;
@@ -19,13 +20,13 @@ interface Meal {
   protein: number;
   carbs: number;
   fat: number;
-  fiber?: number;
-  ingredients?: string;
-  instructions?: string;
-  prepTime?: number;
-  cookTime?: number;
+  fiber?: number | null;
+  ingredients?: string | null;
+  instructions?: string | null;
+  prepTime?: number | null;
+  cookTime?: number | null;
   servings: number;
-  imageUrl?: string;
+  imageUrl?: string | null;
 }
 
 interface MealAssignment {
@@ -33,18 +34,9 @@ interface MealAssignment {
   dayOfWeek: number;
   mealType: string;
   portion: number;
-  scheduledTime?: string;
-  notes?: string;
+  scheduledTime?: string | null;
+  notes?: string | null;
   meal: Meal;
-}
-
-interface MealPlan {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  mealAssignments: MealAssignment[];
 }
 
 function OptimizedMealImage({ src, alt }: { src: string; alt: string }) {
@@ -70,35 +62,13 @@ const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function UserMeals({ userId }: UserMealsProps) {
   const router = useRouter();
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { mealPlans, isLoading: loading } = useUserDashboardMeals(Boolean(userId));
   const [carouselPositions, setCarouselPositions] = useState<{ [key: string]: number }>({
     breakfast: 0,
     lunch: 0,
     dinner: 0,
     snack: 0,
   });
-
-  useEffect(() => {
-    fetchMealPlans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]); // Only run when userId changes
-
-  const fetchMealPlans = async () => {
-    try {
-      const response = await fetch(`/api/user-dashboard/meals?clientId=${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMealPlans(data);
-      } else {
-        console.error('Failed to fetch meal plans');
-      }
-    } catch (error) {
-      console.error('Error fetching meal plans:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Group meals by type
   const getMealsByType = (type: string) => {

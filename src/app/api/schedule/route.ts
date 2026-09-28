@@ -1,99 +1,75 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { requireStaffActor } from '@/lib/api-auth';
+import { scheduleQuerySchema } from '@/features/schedule/schemas/schedule.schema';
 
 export async function GET(request: NextRequest) {
+  const auth = await requireStaffActor(request);
+  if (!auth.ok) return auth.res;
+
+  const parsed = scheduleQuerySchema.safeParse({
+    clientId: request.nextUrl.searchParams.get('clientId') ?? undefined,
+    date: request.nextUrl.searchParams.get('date') ?? undefined,
+  });
+  if (!parsed.success) return jsonWithCache({ error: 'Invalid schedule filters' }, { status: 400 });
+
   try {
-    const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get('coachId');
-    const clientId = searchParams.get('clientId');
-    const date = searchParams.get('date');
-
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [{ role: 'COACH' }, { email: { not: 'coach@example.com' } }],
-        },
-      });
-
-      if (!defaultCoach) {
-        defaultCoach = await prisma.user.upsert({
-          where: { email: 'coach@fitness.com' },
-          update: {},
-          create: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
+    let clientFilter: { in: string[] } | { equals: string } | undefined;
+    if (auth.actor.role === 'ADMIN') {
+      if (parsed.data.clientId) {
+        const client = await prisma.client.findUnique({ where: { id: parsed.data.clientId }, select: { id: true } });
+        if (!client) return jsonWithCache({ error: 'Client not found' }, { status: 404 });
+        clientFilter = { equals: client.id };
       }
-
-      userId = defaultCoach.id;
-    }
-
-    // Build where clause for schedule items
-    const whereClause: any = {};
-
-    if (clientId) {
-      whereClause.clientId = clientId;
-    } else {
-      // Get all clients for this coach
-      const clients = await prisma.client.findMany({
-        where: { coachId: userId },
+    } else if (parsed.data.clientId) {
+      const client = await prisma.client.findFirst({
+        where: { id: parsed.data.clientId, coachId: auth.actor.id },
         select: { id: true },
       });
-      whereClause.clientId = { in: clients.map(c => c.id) };
+      if (!client) return jsonWithCache({ error: 'Forbidden' }, { status: 403 });
+      clientFilter = { equals: client.id };
+    } else {
+      const clients = await prisma.client.findMany({ where: { coachId: auth.actor.id }, select: { id: true } });
+      clientFilter = { in: clients.map(client => client.id) };
     }
 
-    if (date) {
-      const startDate = new Date(date);
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 1);
-
-      whereClause.scheduledTime = {
-        gte: startDate,
-        lt: endDate,
-      };
-    }
-
-    // Get video assignments (scheduled training)
-    const videoAssignments = await prisma.videoAssignment.findMany({
-      where: {
-        ...whereClause,
-        scheduledTime: whereClause.scheduledTime || { not: null },
-      },
-      include: {
-        client: { select: { id: true, name: true, email: true } },
-        video: { select: { id: true, title: true, duration: true, difficulty: true } },
-      },
-      orderBy: { scheduledTime: 'asc' },
-    });
-
-    // Get meal assignments
-    const mealAssignments = await prisma.mealAssignment.findMany({
-      where: {
-        mealPlan: {
-          clientId: whereClause.clientId,
+    const [videoAssignments, mealAssignments] = await Promise.all([
+      prisma.videoAssignment.findMany({
+        where: {
+          scheduledTime: { not: null },
+          ...(clientFilter ? { clientId: clientFilter } : {}),
         },
-      },
-      include: {
-        meal: { select: { id: true, name: true, type: true, calories: true } },
-        mealPlan: {
-          include: {
-            client: { select: { id: true, name: true, email: true } },
-          },
+        select: {
+          id: true,
+          scheduledTime: true,
+          isCompleted: true,
+          progress: true,
+          client: { select: { id: true, name: true } },
+          video: { select: { id: true, title: true, duration: true, difficulty: true } },
         },
-      },
-    });
+        orderBy: { scheduledTime: 'asc' },
+      }),
+      prisma.mealAssignment.findMany({
+        where: {
+          mealPlan: clientFilter ? { clientId: clientFilter } : undefined,
+        },
+        select: {
+          id: true,
+          scheduledTime: true,
+          portion: true,
+          meal: { select: { id: true, name: true, type: true, calories: true } },
+          mealPlan: { select: { client: { select: { id: true, name: true } } } },
+        },
+      }),
+    ]);
 
-    // Format schedule items
+    const date = parsed.data.date;
+    const matchesDate = (value: string | null) => !date || (value ? value.startsWith(date) : false);
     const scheduleItems = [
-      ...videoAssignments.map(assignment => ({
+      ...videoAssignments.filter(assignment => matchesDate(assignment.scheduledTime)).map(assignment => ({
         id: assignment.id,
-        type: 'video',
+        type: 'video' as const,
         title: assignment.video.title,
         scheduledTime: assignment.scheduledTime,
         duration: assignment.video.duration,
@@ -104,11 +80,11 @@ export async function GET(request: NextRequest) {
           progress: assignment.progress,
         },
       })),
-      ...mealAssignments.map(assignment => ({
+      ...mealAssignments.filter(assignment => matchesDate(assignment.scheduledTime)).map(assignment => ({
         id: assignment.id,
-        type: 'meal',
+        type: 'meal' as const,
         title: `${assignment.meal.name} (${assignment.meal.type})`,
-        scheduledTime: assignment.scheduledTime ? new Date(assignment.scheduledTime) : null,
+        scheduledTime: assignment.scheduledTime,
         duration: null,
         client: assignment.mealPlan.client,
         details: {
@@ -119,17 +95,9 @@ export async function GET(request: NextRequest) {
       })),
     ];
 
-    // Sort by scheduled time
-    scheduleItems.sort((a, b) => {
-      if (!a.scheduledTime && !b.scheduledTime) return 0;
-      if (!a.scheduledTime) return 1;
-      if (!b.scheduledTime) return -1;
-      return new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime();
-    });
-
+    scheduleItems.sort((a, b) => String(a.scheduledTime ?? '').localeCompare(String(b.scheduledTime ?? '')));
     return jsonWithCache(scheduleItems);
-  } catch (error) {
-    console.error('Error fetching schedule:', error);
+  } catch {
     return jsonWithCache({ error: 'Failed to fetch schedule' }, { status: 500 });
   }
 }

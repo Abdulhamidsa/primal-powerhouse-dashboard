@@ -1,61 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireStaffActor } from '@/lib/api-auth';
+import { settingsUpdateSchema } from '@/features/settings/schemas/settings.schema';
 
 export async function GET(request: NextRequest) {
+  const auth = await requireStaffActor(request);
+  if (!auth.ok) return auth.res;
+
   try {
-    const { searchParams } = new URL(request.url);
-    const coachId = searchParams.get('coachId');
-
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [{ role: 'COACH' }, { email: { not: 'coach@example.com' } }],
-        },
-      });
-
-      if (!defaultCoach) {
-        defaultCoach = await prisma.user.upsert({
-          where: { email: 'coach@fitness.com' },
-          update: {},
-          create: {
-            email: 'coach@fitness.com',
-            name: 'Mike Johnson',
-            password: 'hashedpassword',
-            role: 'COACH',
-          },
-        });
-      }
-
-      userId = defaultCoach.id;
-    }
-
-    // Get coach details
     const coach = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      where: { id: auth.actor.id },
+      select: { id: true, name: true, email: true, role: true, createdAt: true, updatedAt: true },
     });
+    if (!coach) return NextResponse.json({ error: 'Staff member not found' }, { status: 404 });
 
-    if (!coach) {
-      return NextResponse.json({ error: 'Coach not found' }, { status: 404 });
-    }
-
-    // Get coach statistics
+    const coachScope = auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : undefined;
     const [clientCount, mealCount, videoCount] = await Promise.all([
-      prisma.client.count({ where: { coachId: userId } }),
-      prisma.meal.count({ where: { coachId: userId } }),
-      prisma.video.count(),
+      prisma.client.count({ where: coachScope }),
+      prisma.meal.count({ where: coachScope }),
+      prisma.video.count({ where: coachScope }),
     ]);
 
-    const settings = {
+    return NextResponse.json({
       profile: coach,
       statistics: {
         totalClients: clientCount,
@@ -75,60 +41,32 @@ export async function GET(request: NextRequest) {
         maxMeals: 500,
         maxVideoAssignments: 1000,
       },
-    };
-
-    return NextResponse.json(settings);
-  } catch (error) {
-    console.error('Error fetching settings:', error);
+    });
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
+  const auth = await requireStaffActor(request);
+  if (!auth.ok) return auth.res;
+
   try {
-    const body = await request.json();
-    const { coachId, profile } = body;
+    const body = await request.json().catch(() => null);
+    const parsed = settingsUpdateSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: 'Invalid settings payload' }, { status: 400 });
 
-    // Get or create default coach
-    let userId = coachId;
-    if (!userId) {
-      let defaultCoach = await prisma.user.findFirst({
-        where: {
-          AND: [{ role: 'COACH' }, { email: { not: 'coach@example.com' } }],
-        },
-      });
-
-      if (!defaultCoach) {
-        return NextResponse.json({ error: 'Coach not found' }, { status: 404 });
-      }
-
-      userId = defaultCoach.id;
-    }
-
-    // Update coach profile
     const updatedCoach = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        name: profile?.name,
-        email: profile?.email,
-        // Note: preferences would need a separate table in a real app
-        // For now, we'll just update the basic profile info
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        updatedAt: true,
-      },
+      where: { id: auth.actor.id },
+      data: parsed.data.profile,
+      select: { id: true, name: true, email: true, role: true, updatedAt: true },
     });
 
     return NextResponse.json({
       message: 'Settings updated successfully',
       profile: updatedCoach,
     });
-  } catch (error) {
-    console.error('Error updating settings:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }
