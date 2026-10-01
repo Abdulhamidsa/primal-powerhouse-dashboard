@@ -5,7 +5,10 @@ Phase 5C extends this evidence record in
 has verified local PostgreSQL backups and a passed restore drill; off-server
 disaster recovery remains unselected.
 
-This inventory records repository evidence only. Deployment configuration, provider contracts, regions, backups, and vendor retention must be confirmed operationally; unknown values are intentionally not inferred.
+This inventory records repository evidence plus explicitly verified production
+account and DPA evidence. Deployment configuration, provider contracts, regions,
+backups, and vendor retention must still be confirmed operationally where not
+marked verified; unknown values are intentionally not inferred.
 
 ## Data and retention categories
 
@@ -25,7 +28,7 @@ This inventory records repository evidence only. Deployment configuration, provi
 | --- | --- | --- | --- |
 | PostgreSQL via Prisma | `DATABASE_URL`, Prisma schema, native local PostgreSQL | Application records, including health and messages; 14 local daily custom-format backups | VPS/provider region, off-server replication, and vendor retention unknown |
 | Cloudinary | Upload/delete helpers and media routes | Avatars, check-in/progress photos, attachments, meal images; public IDs and resource types | Vendor retention/backups/region require confirmation |
-| Resend | Transactional email client | Email address, display name, verification/reset link token | Provider retention/region/DPA require confirmation |
+| Resend | Transactional email delivery for verification and password-reset flows through the verified `primalpowerhouse.com` domain; sending in Ireland (`eu-west-1`) | Email address, display name, message metadata and content, transactional links | Signed DPA identifies Plus Five Five, Inc. as processor and the United States as primary processing; Ex-EEA transfers use EU SCCs with referenced EU-U.S. DPF commitments; tracking is not configured; encryption at rest, HTTPS/TLS in transit, published subprocessors, and the DPA's stated 90-day post-termination deletion are verified; active-account retention/logging and backup/replica deletion remain unresolved |
 | Google OAuth | OAuth start/callback and identity model | OAuth code and provider identity email/name/account ID | Google processing and transfer terms require confirmation |
 | Azure OpenAI | Active chat provider; image-generation code present but production-disabled pending a verified deployment | Minimized meal, ingredient, nutrition, and prompt text | Deployment/region/log retention/DPA require confirmation; no verified image deployment is enabled for production |
 | USDA FoodData Central | Food search routes | Search terms and food filters; no intentional account identity | Provider logging/retention require confirmation |

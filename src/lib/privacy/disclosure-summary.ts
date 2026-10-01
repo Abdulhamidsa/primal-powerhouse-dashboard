@@ -1,9 +1,10 @@
 import type { PrivacyDisclosureSummary } from '@primal/contracts/privacy/types/privacy.types';
 
 /**
- * Repository-backed facts only. Provider regions, DPAs, transfers, subprocessors,
- * vendor retention, and contractual status are intentionally not represented as
- * confirmed values here.
+ * Repository-backed facts and explicitly verified production-account/DPA facts
+ * only. Provider regions, transfers, subprocessors, vendor retention, vendor
+ * deletion, and contractual status remain unconfirmed unless represented by
+ * verified evidence.
  */
 export const PRIVACY_DISCLOSURE_SUMMARY: PrivacyDisclosureSummary = {
   providers: [
@@ -33,8 +34,14 @@ export const PRIVACY_DISCLOSURE_SUMMARY: PrivacyDisclosureSummary = {
     },
     {
       name: 'Resend',
-      purpose: 'Transactional verification and password-reset email delivery.',
-      dataCategories: ['email address', 'display name', 'transactional links'],
+      purpose:
+        'Transactional verification and password-reset email delivery through the verified primalpowerhouse.com production domain. Sending region: Ireland (eu-west-1). Primary processing: United States under a signed DPA. Tracking metrics are not configured.',
+      dataCategories: [
+        'email address',
+        'display name',
+        'message metadata and content',
+        'transactional links',
+      ],
       status: 'ACTIVE_CONFIGURED',
     },
     {

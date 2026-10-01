@@ -11,6 +11,13 @@ describe('privacy disclosure summary', () => {
     expect(providers.get('Pusher')?.purpose).toContain('Web production is currently unconfigured and inactive');
     expect(providers.get('Pusher')?.purpose).toContain('polling/revalidation continue without it');
     expect(providers.get('Pusher')?.purpose).not.toContain('Realtime messaging and notification events.');
+    expect(providers.get('Resend')?.status).toBe('ACTIVE_CONFIGURED');
+    expect(providers.get('Resend')?.purpose).toContain('primalpowerhouse.com');
+    expect(providers.get('Resend')?.purpose).toContain('Ireland (eu-west-1)');
+    expect(providers.get('Resend')?.purpose).toContain('Primary processing: United States');
+    expect(providers.get('Resend')?.purpose).toContain('signed DPA');
+    expect(providers.get('Resend')?.purpose).toContain('Tracking metrics are not configured');
+    expect(providers.get('Resend')?.purpose).not.toContain('Ireland is the primary processing');
     expect(providers.get('Expo Push')?.status).toBe('CODE_ACTIVE_CONFIG_UNKNOWN');
     expect(providers.get('Open Food Facts')?.status).toBe('LEGACY_OR_INACTIVE');
   });
