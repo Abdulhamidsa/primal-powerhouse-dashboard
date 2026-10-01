@@ -85,7 +85,7 @@
 //             <ChefHat aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
 //           </div>
 //           <div>
-//             <h3 className="text-sm font-semibold">AI Meal Generator</h3>
+//             <h3 className="text-sm font-semibold">Meal Generator</h3>
 //             <p className="text-xs text-[var(--color-text-muted)]">Creative templates from DB-safe ingredients only</p>
 //           </div>
 //         </div>

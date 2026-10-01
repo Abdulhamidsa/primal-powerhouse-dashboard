@@ -10,7 +10,7 @@ export function PolicyUpdatePrompt() {
 
   if (!data?.pendingPolicyAcknowledgements.length) return null;
 
-  async function acknowledge(type: 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE', version: string) {
+  async function acknowledge(type: 'TERMS' | 'PRIVACY_POLICY', version: string) {
     setPending(`${type}:${version}`);
     try {
       await acknowledgePolicy({ type, version });
@@ -28,7 +28,7 @@ export function PolicyUpdatePrompt() {
           {data.pendingPolicyAcknowledgements.map(document => {
             const key = `${document.type}:${document.version}`;
             const type = document.type;
-            if (type !== 'TERMS' && type !== 'PRIVACY_POLICY' && type !== 'AI_DISCLOSURE') return null;
+            if (type !== 'TERMS' && type !== 'PRIVACY_POLICY') return null;
             return (
               <div key={key} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                 <a href={`/legal/${document.slug}`} className="text-primary underline-offset-4 hover:underline">{document.title} · v{document.version}</a>

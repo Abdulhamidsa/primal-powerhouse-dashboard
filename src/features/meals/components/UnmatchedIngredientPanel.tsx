@@ -117,9 +117,9 @@ export default function UnmatchedIngredientPanel({
   return (
     <section className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5">
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-amber-100">Unmatched AI Ingredients</h3>
+        <h3 className="text-base font-semibold text-amber-100">Unmatched Suggested Ingredients</h3>
         <p className="mt-1 text-sm text-amber-200/80">
-          Add the missing ingredient to the database or map the AI term to an existing ingredient alias.
+          Add the missing ingredient to the database or map the suggested term to an existing ingredient alias.
         </p>
       </div>
 

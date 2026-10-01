@@ -18,6 +18,10 @@ describe('privacy disclosure summary', () => {
     expect(providers.get('Resend')?.purpose).toContain('signed DPA');
     expect(providers.get('Resend')?.purpose).toContain('Tracking metrics are not configured');
     expect(providers.get('Resend')?.purpose).not.toContain('Ireland is the primary processing');
+    expect(providers.get('Azure OpenAI')?.status).toBe('ACTIVE_CONFIGURED');
+    expect(providers.get('Azure OpenAI')?.purpose).toContain('External provider for generating meal-related content');
+    expect(providers.get('Azure OpenAI')?.purpose).toContain('Direct account identifiers are excluded');
+    expect(providers.get('Azure OpenAI')?.purpose).not.toMatch(/model|deployment|prompt|architecture|AI/i);
     expect(providers.get('Expo Push')?.status).toBe('CODE_ACTIVE_CONFIG_UNKNOWN');
     expect(providers.get('Open Food Facts')?.status).toBe('LEGACY_OR_INACTIVE');
   });

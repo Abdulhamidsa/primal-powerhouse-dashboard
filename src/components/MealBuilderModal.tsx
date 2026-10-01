@@ -492,7 +492,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     const needsAlias = normalizeRecoveryLabel(recoveryItem.name) !== normalizeRecoveryLabel(createdFood.name);
     if (needsAlias) {
       const shouldCreateAlias = window.confirm(
-        `Create alias "${recoveryItem.name}" for "${createdFood.name}" so future AI matches resolve automatically?`,
+        `Create alias "${recoveryItem.name}" for "${createdFood.name}" so future ingredient matches resolve automatically?`,
       );
 
       if (shouldCreateAlias) {
@@ -511,7 +511,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
     await applyRematchResult(
       [recoveryItem],
       needsAlias
-        ? `Added ${createdFood.name} and refreshed the current AI meal.`
+        ? `Added ${createdFood.name} and refreshed the current meal suggestion.`
         : `Added ${createdFood.name} to the database.`,
     );
   };
@@ -655,7 +655,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
             : 'No DB ingredient matches found; add ingredients manually';
         const warningNotice =
           sideTemplate.warnings && sideTemplate.warnings.length > 0 ? ` | ${sideTemplate.warnings.join(' ')}` : '';
-        setAiNotice(`AI side ready: ${sideTemplate.type} | ${originLabel}. ${ingredientNotice}.${warningNotice}`);
+        setAiNotice(`Side suggestion ready: ${sideTemplate.type} | ${originLabel}. ${ingredientNotice}.${warningNotice}`);
         setRecentSideNames(prev => {
           const normalized = sideTemplate.name.trim();
           if (!normalized) return prev;
@@ -698,7 +698,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
             ? 'Any protein'
             : (mainProteinOptions.find(option => option.key === preferredProtein)?.label ?? preferredProtein);
         const proteinLabel = `Protein: ${selectedProteinLabel}`;
-        const baseNotice = `AI meal ready: ${template.coreDishReference} (${template.cuisineStyle}) | ${originLabel} | ${proteinLabel}`;
+        const baseNotice = `Meal suggestion ready: ${template.coreDishReference} (${template.cuisineStyle}) | ${originLabel} | ${proteinLabel}`;
         if (template.warnings.length > 0) {
           setAiNotice(`${baseNotice}. Notes: ${template.warnings.join(' ')}`);
         } else {
@@ -879,7 +879,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
 
                   <div className="sm:col-span-2">
                     <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">
-                      AI Helper (Optional)
+                      Meal Guidance (Optional)
                     </label>
                     <input
                       type="text"
@@ -889,7 +889,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       className="input-base w-full"
                     />
                     <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                      Provide guidance for AI meal generation. Leave empty to generate freely.
+                      Add preferences for your meal suggestion. Leave empty to generate freely.
                     </p>
                   </div>
 
@@ -902,29 +902,32 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                     >
                       <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
                       {aiGenerating
-                        ? 'Generating With AI...'
+                        ? 'Generating suggestion...'
                         : isSideMode
-                          ? 'Suggest Side with AI'
-                          : 'Suggest Meal with AI'}
+                          ? 'Suggest Side'
+                          : 'Suggest Meal'}
                     </button>
                     <p className="mt-2 text-xs text-[var(--color-text-muted)]">
                       {isSideMode
-                        ? 'AI suggests side naming, spices, and instructions. Add or refine ingredients and nutrition before saving.'
-                        : 'Strict mode is enabled: AI only returns meals when all ingredients match your database. If an origin is selected, generation is strict to that origin.'}
+                        ? 'Suggested side names, spices, and instructions can be refined before saving.'
+                        : 'Strict mode returns meals only when all ingredients match your database. If an origin is selected, generation is strict to that origin.'}
+                    </p>
+                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                      Meal suggestions are provided for general informational purposes and may not be suitable for every individual.
                     </p>
                   </div>
                 </div>
               </section>
               <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-medium text-[var(--color-text-muted)]">ChatGPT Image Prompt</p>
+                  <p className="text-xs font-medium text-[var(--color-text-muted)]">Meal Image Prompt</p>
                   <button
                     type="button"
                     onClick={copy}
                     disabled={!hasPrompt}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="Copy generated prompt"
-                    title="Copy prompt"
+                    aria-label="Copy generated image prompt"
+                    title="Copy meal image prompt"
                   >
                     <Copy aria-hidden="true" focusable="false" size={14} />
                   </button>
@@ -935,7 +938,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   value={
                     hasPrompt
                       ? promptText
-                      : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
+                      : 'Generate a meal image prompt to see a ready-to-copy positive and negative prompt for an external image tool.'
                   }
                   className="min-h-[140px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-2 text-xs text-[var(--color-text)]"
                 />
@@ -1159,7 +1162,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
-                  {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
+                  {hasPrompt ? 'Regenerate Image Prompt' : 'Generate Image Prompt'}
                 </button>
               </section>
             </div>

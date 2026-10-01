@@ -46,7 +46,7 @@ export const PRIVACY_DISCLOSURE_SUMMARY: PrivacyDisclosureSummary = {
     },
     {
       name: 'Azure OpenAI',
-      purpose: 'Active chat processing for meal, ingredient, and side generation. Image-generation code is present but disabled in production pending a verified image deployment.',
+      purpose: 'External provider for generating meal-related content from limited meal, ingredient, nutrition, and relevant preference context. Direct account identifiers are excluded.',
       dataCategories: ['meal and ingredient context', 'nutrition targets', 'generation prompts'],
       status: 'ACTIVE_CONFIGURED',
     },

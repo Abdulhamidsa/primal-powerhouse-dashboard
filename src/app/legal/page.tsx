@@ -6,7 +6,7 @@ export default function LegalIndexPage() {
       <section className="mx-auto max-w-3xl space-y-5">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Primal Powerhouse</p>
         <h1 className="text-3xl font-semibold tracking-tight">Legal and privacy information</h1>
-        <p className="leading-7 text-muted-foreground">Review the application’s privacy, storage, health, and AI disclosures.</p>
+        <p className="leading-7 text-muted-foreground">Review the application’s privacy, storage, health, and service terms.</p>
         <LegalLinks />
       </section>
     </main>

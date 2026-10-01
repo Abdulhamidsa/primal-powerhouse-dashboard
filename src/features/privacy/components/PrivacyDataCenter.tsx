@@ -153,7 +153,7 @@ export function PrivacyDataCenter() {
         <div className="space-y-3 px-4 py-4">
           <LegalLinks />
           <p className="text-xs leading-5 text-muted-foreground">
-            Approved documents, consent history, processor purposes, retention categories, AI-assisted features, and storage classifications are summarized in the linked documents. Vendor regions, contractual status, transfer mechanisms, and backup deletion remain deployment- and legal-review dependent.
+            Approved documents, consent history, processor purposes, retention categories, and storage classifications are summarized in the linked documents. Vendor regions, contractual status, transfer mechanisms, and backup deletion remain deployment- and legal-review dependent.
           </p>
           <div className="space-y-2 text-xs text-muted-foreground">
             <p>{data.disclosures.retention.localPostgresBackups}</p>

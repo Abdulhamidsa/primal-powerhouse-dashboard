@@ -20,7 +20,7 @@ export function usePrivacy() {
       if (next) await push.enable();
       return api.updateNotificationPreference({ coachMessagePushEnabled: next });
     }),
-    acknowledgePolicy: (input: { type: 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE'; version: string }) =>
+    acknowledgePolicy: (input: { type: 'TERMS' | 'PRIVACY_POLICY'; version: string }) =>
       action.run(async () => {
         const result = await api.acknowledgePolicy(input);
         await query.refresh();

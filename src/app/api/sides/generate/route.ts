@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      return NextResponse.json({ error: 'Empty AI response' }, { status: 502 });
+      return NextResponse.json({ error: 'Empty suggestion response' }, { status: 502 });
     }
 
     const json = JSON.parse(content);

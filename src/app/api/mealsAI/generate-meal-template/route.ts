@@ -1123,7 +1123,7 @@ export async function POST(request: NextRequest) {
 
         if (helperIgnoredByPolicy) {
           warnings.push(
-            'AI helper text was skipped due to model content filtering. Meal was generated without helper guidance.',
+            'Some meal guidance was not applied because it did not pass content-safety checks. The meal was generated without that guidance.',
           );
         }
 

@@ -29,7 +29,7 @@ export const privacyNotificationPreferenceSchema = z.object({
 });
 
 export const policyAcknowledgementSchema = z.object({
-  type: z.enum(['TERMS', 'PRIVACY_POLICY', 'AI_DISCLOSURE']),
+  type: z.enum(['TERMS', 'PRIVACY_POLICY']),
   version: z.string().trim().min(1).max(100),
 });
 

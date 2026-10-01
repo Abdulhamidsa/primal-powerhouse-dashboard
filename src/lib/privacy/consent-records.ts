@@ -7,7 +7,7 @@ import {
 } from '@/features/legal/legal-registry';
 
 export const CONSENT_RECORD_TYPES = {
-  policy: ['TERMS', 'PRIVACY_POLICY', 'AI_DISCLOSURE'],
+  policy: ['TERMS', 'PRIVACY_POLICY'],
   optional: ['ANALYTICS', 'MARKETING', 'OPTIONAL_TRACKING'],
   notification: ['COACH_MESSAGE_PUSH'],
   age: ['MINIMUM_AGE_DECLARATION'],
@@ -17,7 +17,6 @@ export function getConfiguredPolicyVersions() {
   return {
     TERMS: process.env.PRIMAL_TERMS_VERSION?.trim() || null,
     PRIVACY_POLICY: process.env.PRIMAL_PRIVACY_POLICY_VERSION?.trim() || null,
-    AI_DISCLOSURE: process.env.PRIMAL_AI_DISCLOSURE_VERSION?.trim() || null,
   } as const;
 }
 
@@ -278,7 +277,7 @@ export async function appendAgeDeclaration(input: {
 
 export async function acknowledgeConfiguredPolicy(input: {
   clientId: string;
-  type: 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE';
+  type: 'TERMS' | 'PRIVACY_POLICY';
   version: string;
   source: string;
   platform: string;
@@ -342,7 +341,7 @@ export async function recordSignupPolicyAcknowledgements(input: {
 
   const records = [];
   for (const document of documents) {
-    if (document.type !== 'TERMS' && document.type !== 'PRIVACY_POLICY' && document.type !== 'AI_DISCLOSURE') continue;
+    if (document.type !== 'TERMS' && document.type !== 'PRIVACY_POLICY') continue;
     records.push(await acknowledgeConfiguredPolicy({
       clientId: input.clientId,
       type: document.type,

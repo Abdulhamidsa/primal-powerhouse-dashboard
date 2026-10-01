@@ -2,7 +2,6 @@ const links = [
   ['Privacy Policy', '/legal/privacy'],
   ['Terms of Service', '/legal/terms'],
   ['Health disclaimer', '/legal/health-disclaimer'],
-  ['AI disclosure', '/legal/ai-disclosure'],
   ['Storage notice', '/legal/storage'],
 ] as const;
 

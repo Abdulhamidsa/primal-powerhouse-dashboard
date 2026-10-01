@@ -72,7 +72,7 @@ tracking implementation.
 
 ## Legal-document status
 
-The five registry documents remain `DRAFT`, use the draft version
+The four registry documents remain `DRAFT`, use the draft version
 `draft-2026-09-28`, have no effective date, and cannot activate mandatory
 acknowledgement. Review markers remain intentional:
 
@@ -80,9 +80,7 @@ acknowledgement. Review markers remain intentional:
   provider regions/contracts, and retention guarantees.
 - Terms: payment, refunds, jurisdiction, liability, warranties, complaints, and
   intellectual-property language.
-- Health Disclaimer: final health, medical, coaching, nutrition, and AI wording.
-- AI Disclosure: deployment region, prompt/output retention, training/service
-  improvement, contractual protections, and route-specific payload scope.
+- Health Disclaimer: final health, medical, coaching, nutrition, and generated-content wording.
 - Storage Notice: tracking status must remain conditional on deployment evidence.
 
 The registry must not be changed to `APPROVED` until legal review markers are

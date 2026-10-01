@@ -4,7 +4,7 @@ export const getPrivacy = () => httpClient.get<PrivacyCenterResponse>('/api/priv
 export const updateConsent = (input: PrivacyConsentValues) => httpClient.send('/api/privacy/consent', 'PUT', input);
 export const updateNotificationPreference = (input: { coachMessagePushEnabled: boolean }) =>
   httpClient.send('/api/privacy/notifications', 'PUT', input);
-export const acknowledgePolicy = (input: { type: 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE'; version: string }) =>
+export const acknowledgePolicy = (input: { type: 'TERMS' | 'PRIVACY_POLICY'; version: string }) =>
   httpClient.send<{ success: true }>('/api/privacy/policy', 'POST', input);
 export const requestExport = () => httpClient.send<PrivacyExportCreateResponse>('/api/privacy/export', 'POST', {});
 export const downloadExport = (path: string) => httpClient.get<unknown>(path);

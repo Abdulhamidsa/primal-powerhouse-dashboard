@@ -55,6 +55,6 @@ Browser and mobile cleanup remains best effort and is not the deletion authority
 - Minimum age and minor-account policy: `PRODUCT/LEGAL DECISION REQUIRED`.
 - Policy/terms acceptance requirements and versions: `PRODUCT/LEGAL DECISION REQUIRED`.
 - Active-account retention periods: `PRODUCT/LEGAL DECISION REQUIRED`.
-- AI disclosure or affirmative consent: `PRODUCT/LEGAL DECISION REQUIRED`.
+- Meal-content provider processing wording and feature-specific safety boundary: `PRODUCT/LEGAL DECISION REQUIRED`.
 - Analytics, marketing, and optional-tracking roadmap: `PRODUCT/LEGAL DECISION REQUIRED`.
 - Provider regions, transfers, contracts, DPAs, backups, and logs: operational/legal confirmation required.

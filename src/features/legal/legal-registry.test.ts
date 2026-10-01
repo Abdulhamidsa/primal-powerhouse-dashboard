@@ -33,6 +33,8 @@ describe('approval-safe legal registry', () => {
 
   it('keeps drafts with markers non-publishable and non-mandatory', () => {
     expect(validateLegalDocuments(LEGAL_DOCUMENTS)).toBe(true);
+    expect(LEGAL_DOCUMENTS).toHaveLength(4);
+    expect(LEGAL_DOCUMENTS.some(document => String(document.type) === 'AI_DISCLOSURE')).toBe(false);
     expect(() => validateLegalDocuments([{ ...approvedBase, publicationStatus: 'DRAFT', mandatoryAcknowledgement: true }])).toThrow('Only approved');
   });
 

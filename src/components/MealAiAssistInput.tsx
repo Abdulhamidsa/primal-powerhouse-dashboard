@@ -69,7 +69,7 @@ export default function MealAiAssistInput({ mealType, onSuggestionsAccepted, onH
       >
         <div className="flex items-center gap-2">
           <PencilSimpleIcon aria-hidden="true" focusable="false" size={16} style={{ color: 'var(--color-accent)' }} />
-          <span className="text-sm font-medium text-[var(--color-text-primary)]">AI Meal Assist (Optional)</span>
+          <span className="text-sm font-medium text-[var(--color-text-primary)]">Meal Ingredient Helper (Optional)</span>
         </div>
         <ChevronDown
           aria-hidden="true"
@@ -88,7 +88,7 @@ export default function MealAiAssistInput({ mealType, onSuggestionsAccepted, onH
           {!showResults ? (
             <>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                Describe a meal or type a meal name, and AI will suggest matching ingredients from your database.
+                Describe a meal or type a meal name, and the helper will suggest matching ingredients from your database.
               </p>
               <div className="flex items-center gap-2">
                 <label className="text-xs text-[var(--color-text-secondary)]">Mode:</label>

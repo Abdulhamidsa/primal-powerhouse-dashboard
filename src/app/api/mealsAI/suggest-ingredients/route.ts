@@ -143,7 +143,7 @@ Return ONLY valid JSON, no other text.`;
       return NextResponse.json(
         {
           success: false,
-          message: 'Failed to parse AI response',
+          message: 'Failed to parse suggestion response',
           error: e instanceof Error ? e.message : 'Unknown error',
         },
         { status: 500 },

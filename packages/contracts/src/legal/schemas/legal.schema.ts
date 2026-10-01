@@ -4,7 +4,6 @@ export const legalDocumentTypeSchema = z.enum([
   'TERMS',
   'PRIVACY_POLICY',
   'HEALTH_DISCLAIMER',
-  'AI_DISCLOSURE',
   'STORAGE',
 ]);
 

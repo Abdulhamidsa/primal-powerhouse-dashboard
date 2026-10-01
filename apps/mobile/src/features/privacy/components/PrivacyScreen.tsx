@@ -6,7 +6,6 @@ const legalLinks = [
   ['Privacy Policy', 'privacy'],
   ['Terms of Service', 'terms'],
   ['Health disclaimer', 'health-disclaimer'],
-  ['AI disclosure', 'ai-disclosure'],
   ['Storage notice', 'storage'],
 ] as const;
 
@@ -54,7 +53,7 @@ export default function PrivacyScreen() {
                   <Button
                     key={`${document.type}:${document.version}`}
                     title={`Acknowledge ${document.title}`}
-                    onPress={() => m.acknowledgePolicy({ type: document.type as 'TERMS' | 'PRIVACY_POLICY' | 'AI_DISCLOSURE', version: document.version })}
+                    onPress={() => m.acknowledgePolicy({ type: document.type as 'TERMS' | 'PRIVACY_POLICY', version: document.version })}
                     disabled={m.offline || m.action.pending}
                   />
                 ))}

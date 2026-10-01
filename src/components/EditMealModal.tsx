@@ -1294,17 +1294,17 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
               </p>
             </div>
 
-            {/* ChatGPT Prompt Generator */}
+            {/* Meal image prompt generator */}
             <div className="rounded-lg border border-zinc-700 bg-zinc-900/60 p-4">
               <div className="flex items-center justify-between gap-2 mb-3">
-                <h3 className="text-sm font-semibold text-zinc-100">ChatGPT Image Prompt</h3>
+                <h3 className="text-sm font-semibold text-zinc-100">Meal Image Prompt</h3>
                 <button
                   type="button"
                   onClick={copy}
                   disabled={!hasPrompt}
                   className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-800 p-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                  aria-label="Copy generated prompt"
-                  title="Copy prompt"
+                  aria-label="Copy generated image prompt"
+                  title="Copy meal image prompt"
                 >
                   <Copy aria-hidden="true" focusable="false" size={14} />
                 </button>
@@ -1317,7 +1317,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                 className="mb-3 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
-                {hasPrompt ? 'Regenerate ChatGPT Prompt' : 'Generate ChatGPT Prompt'}
+                {hasPrompt ? 'Regenerate Image Prompt' : 'Generate Image Prompt'}
               </button>
 
               <textarea
@@ -1325,7 +1325,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
                 value={
                   hasPrompt
                     ? promptText
-                    : 'Generate prompt to see a ready-to-copy Positive Prompt + Negative Prompt for ChatGPT image generation.'
+                    : 'Generate a meal image prompt to see a ready-to-copy positive and negative prompt for an external image tool.'
                 }
                 className="w-full min-h-[140px] rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
               />
