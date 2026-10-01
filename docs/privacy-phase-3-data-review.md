@@ -30,7 +30,7 @@ This inventory records repository evidence only. Deployment configuration, provi
 | Azure OpenAI | Active chat provider; image-generation code present but production-disabled pending a verified deployment | Minimized meal, ingredient, nutrition, and prompt text | Deployment/region/log retention/DPA require confirmation; no verified image deployment is enabled for production |
 | USDA FoodData Central | Food search routes | Search terms and food filters; no intentional account identity | Provider logging/retention require confirmation |
 | ExerciseDB/RapidAPI | Exercise routes | Exercise search/filter terms | Provider logging/retention/region require confirmation |
-| Pusher | Realtime server/client | User/client channel IDs and realtime message/notification payloads | Cluster/configuration and retention require confirmation |
+| Pusher | Optional realtime server/client code path; unconfigured and inactive in web production | No web production message or notification data is currently sent to Pusher; mobile usage remains unverified | Mobile `EXPO_PUBLIC_PUSHER_*` configuration, cluster, retention, region, and DPA require confirmation |
 | Browser push services | Web Push subscription and delivery | Endpoint/keys and notification payloads | Browser-vendor processing/retention require confirmation |
 | Expo/mobile push services | Mobile push device and delivery code | Device token and notification payloads | Provider processing/retention/region require confirmation |
 | Hosting/runtime | Verified PM2/Caddy/VPS deployment | Application traffic, logs, local storage, and local backups | VPS operator/region, log retention, alerting, and off-server recovery unknown |

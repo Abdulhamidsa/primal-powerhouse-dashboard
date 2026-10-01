@@ -51,7 +51,7 @@ export const PRIVACY_DISCLOSURE_SUMMARY: PrivacyDisclosureSummary = {
     },
     {
       name: 'Pusher',
-      purpose: 'Realtime messaging and notification events.',
+      purpose: 'Repository-present optional realtime messaging and notification integration. Web production is currently unconfigured and inactive; database persistence and polling/revalidation continue without it. Mobile Pusher configuration remains unverified.',
       dataCategories: ['channel identifiers', 'message events', 'notification payloads'],
       status: 'CODE_ACTIVE_CONFIG_UNKNOWN',
     },

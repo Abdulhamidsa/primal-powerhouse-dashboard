@@ -8,6 +8,9 @@ describe('privacy disclosure summary', () => {
     expect(providers.get('PostgreSQL')?.status).toBe('ACTIVE_CONFIGURED');
     expect(providers.get('Cloudinary')?.status).toBe('ACTIVE_CONFIGURED');
     expect(providers.get('Pusher')?.status).toBe('CODE_ACTIVE_CONFIG_UNKNOWN');
+    expect(providers.get('Pusher')?.purpose).toContain('Web production is currently unconfigured and inactive');
+    expect(providers.get('Pusher')?.purpose).toContain('polling/revalidation continue without it');
+    expect(providers.get('Pusher')?.purpose).not.toContain('Realtime messaging and notification events.');
     expect(providers.get('Expo Push')?.status).toBe('CODE_ACTIVE_CONFIG_UNKNOWN');
     expect(providers.get('Open Food Facts')?.status).toBe('LEGACY_OR_INACTIVE');
   });

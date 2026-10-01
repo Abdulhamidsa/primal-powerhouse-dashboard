@@ -20,6 +20,12 @@ vendor retention, vendor deletion, or model-training terms.
   because no verified image deployment is present; `AZURE_OPENAI_IMAGE_DEPLOYMENT`
   is optional and does not enable image generation without the explicit
   production opt-in.
+- Web production has no Pusher server or client environment variables.
+  Pusher realtime integration is present in the repository but inactive in web
+  production; chat, notifications, and command-center data continue through
+  database persistence and polling/revalidation. The web realtime message
+  notification banner does not receive its realtime events without Pusher.
+  Mobile `EXPO_PUBLIC_PUSHER_*` configuration remains unverified.
 
 ## Provider inventory
 
@@ -32,7 +38,7 @@ vendor retention, vendor deletion, or model-training terms.
 | Resend | Active and production-configured | Transactional email client and verification/reset flows | Email address, display name, transactional links | Sending region, logs, retention, DPA, subprocessors, transfers |
 | Azure OpenAI | Chat active; image-generation code present but production-disabled | Chat calls, image-provider code, and Azure configuration | Meal, ingredient, nutrition, preference context, prompts | Deployment region, prompt retention, training/service improvement, DPA, subprocessors; image deployment remains unverified |
 | ExerciseDB/RapidAPI | Active and production-configured | Exercise search/import routes and RapidAPI configuration | Exercise search/filter terms and exercise content | Upstream provider, query logs, retention, region, DPA |
-| Pusher | Code-active; production configuration unknown | Server/client realtime integrations and auth route | Channel IDs, message events, notification payloads | Production configuration, cluster, retention, logs, DPA |
+| Pusher | Repository-present; web production unconfigured/inactive; mobile configuration unresolved | Optional server/client realtime integrations and auth route | No web production Pusher processing currently; mobile data flow remains unverified | Mobile `EXPO_PUBLIC_PUSHER_*` configuration, cluster, retention, logs, DPA |
 | USDA FoodData Central | Code-active; production configuration unknown | Food search/detail routes and USDA API URL | Food queries, filters, FDC IDs | Production key/configuration, logging, retention, region, DPA |
 | Expo Push | Code-active; production usage unknown | Mobile push send/receipt calls to Expo | Device tokens, notification payloads, receipt IDs | Production usage, region, retention, DPA, subprocessors |
 | Open Food Facts | Legacy/inactive by inspected direct calls | Legacy service naming; active food routes use USDA URLs | Food abstraction only | Confirm no deployed route still calls Open Food Facts |
@@ -52,7 +58,7 @@ tracking implementation.
 | Nutrition and meals | PostgreSQL; Azure OpenAI chat for supported generation; USDA for food search; image-generation code is production-disabled pending a verified deployment | Code-verified; provider facts pending |
 | Workouts and exercise content | PostgreSQL; ExerciseDB/RapidAPI for search/import | Code-verified; provider facts pending |
 | Check-ins and photos | PostgreSQL and Cloudinary | Code-verified; vendor facts pending |
-| Messages and attachments | PostgreSQL, Pusher realtime events, Cloudinary attachments, notification providers | Code-verified; payload/retention facts pending |
+| Messages and attachments | PostgreSQL persistence, optional Pusher realtime code path, Cloudinary attachments, notification providers; web chat and notification state falls back to polling/revalidation when Pusher is unconfigured | Code-verified; no web production Pusher processing; mobile Pusher usage and provider facts pending |
 | AI prompts/context | Azure OpenAI chat calls; image-generation code is present but production-disabled; meal context boundary excludes direct account identifiers | Primary boundary tested; route-level review remains required |
 | Push tokens | PostgreSQL, Web Push/VAPID, and Expo code paths | Browser production configured; mobile production usage unknown |
 | Exports | Application-generated export files and local application storage | No off-server export provider identified |
