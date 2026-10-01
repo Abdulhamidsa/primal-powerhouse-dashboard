@@ -8,6 +8,7 @@ import { calculateMealMacros } from '@/lib/meal-macros';
 import { prisma } from '@/lib/prisma';
 import { generateMealImageWithProvider } from '@/lib/meal-image-provider';
 import { buildMealAiContext } from '@/lib/ai/data-minimization';
+import { getAzureImageGenerationAvailability } from '@/lib/azure-image-availability';
 import type {
   AiMealSuggestion,
   FoodGenerationReadyRow,
@@ -290,23 +291,35 @@ export async function generateMeals(input: GenerateMealsInput): Promise<Generate
   }
 
   if (input.generateImages) {
-    for (const meal of selectedMeals) {
-      try {
-        meal.imageUrl = await generateMealImageWithProvider({
-          provider: input.imageProvider ?? 'azure',
-          qualityProfile: input.imageQualityProfile,
-          batchMealCount: selectedMeals.length,
-          checkpoint: input.imageCheckpoint,
-          mealName: meal.name,
-          ingredients: meal.ingredients,
-        });
-      } catch (error) {
-        console.warn('Meal image generation failed for one meal', {
-          mealName: meal.name,
-          provider: input.imageProvider ?? 'azure',
-          error: error instanceof Error ? error.message : String(error),
-        });
+    const imageProvider = input.imageProvider ?? 'azure';
+    const azureImageAvailability =
+      imageProvider === 'azure' ? getAzureImageGenerationAvailability() : null;
+
+    if (azureImageAvailability && !azureImageAvailability.available) {
+      console.warn('Azure image generation unavailable; continuing without images.');
+      for (const meal of selectedMeals) {
         meal.imageUrl = null;
+      }
+    } else {
+      let imageFailureLogged = false;
+
+      for (const meal of selectedMeals) {
+        try {
+          meal.imageUrl = await generateMealImageWithProvider({
+            provider: imageProvider,
+            qualityProfile: input.imageQualityProfile,
+            batchMealCount: selectedMeals.length,
+            checkpoint: input.imageCheckpoint,
+            mealName: meal.name,
+            ingredients: meal.ingredients,
+          });
+        } catch {
+          if (!imageFailureLogged) {
+            console.warn('Meal image generation failed; continuing without images.');
+            imageFailureLogged = true;
+          }
+          meal.imageUrl = null;
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'server-only';
 
-import { azureOpenAI, AZURE_IMAGE_DEPLOYMENT } from '@/lib/azure-openai';
+import { azureOpenAI } from '@/lib/azure-openai';
+import { getAzureImageGenerationAvailability } from '@/lib/azure-image-availability';
 import type { MatchedIngredient, MealImageProvider, MealImageQualityProfile } from '@/types/meal';
 import { buildMealImagePrompt } from '@/lib/prompts';
 
@@ -102,12 +103,14 @@ async function uploadDataUriToCloudinary(dataUri: string, tags: string[]): Promi
 }
 
 async function generateAzureImage(prompt: string): Promise<string | null> {
-  if (!AZURE_IMAGE_DEPLOYMENT) {
+  const availability = getAzureImageGenerationAvailability();
+
+  if (!availability.available || !availability.deployment) {
     return null;
   }
 
   const imageResponse = await azureOpenAI.images.generate({
-    model: AZURE_IMAGE_DEPLOYMENT,
+    model: availability.deployment,
     prompt,
     size: '1024x1024',
   });

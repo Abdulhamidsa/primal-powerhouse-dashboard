@@ -15,6 +15,11 @@ vendor retention, vendor deletion, or model-training terms.
 - A restore drill has passed.
 - The first automatic daily backup timer run remains pending overnight verification.
 - No off-server disaster-recovery provider has been selected or verified.
+- Production Azure OpenAI is in Sweden Central with the verified `gpt-4o`
+  deployment (model version `2024-11-20`). Azure image generation is disabled
+  because no verified image deployment is present; `AZURE_OPENAI_IMAGE_DEPLOYMENT`
+  is optional and does not enable image generation without the explicit
+  production opt-in.
 
 ## Provider inventory
 
@@ -25,7 +30,7 @@ vendor retention, vendor deletion, or model-training terms.
 | Web Push/VAPID | Active and production-configured | `web-push`, VAPID configuration, browser subscriptions | Push endpoints/keys and notification payloads | Browser push processing, retention, region, deletion behavior |
 | Google OAuth | Active and production-configured | `google-auth-library`, OAuth start/callback, identity records | OAuth identity subject, email, name | Processing, retention, region, transfer, DPA/terms |
 | Resend | Active and production-configured | Transactional email client and verification/reset flows | Email address, display name, transactional links | Sending region, logs, retention, DPA, subprocessors, transfers |
-| Azure OpenAI | Active and production-configured | Chat/image calls and Azure configuration | Meal, ingredient, nutrition, preference context, prompts | Deployment region, prompt retention, training/service improvement, DPA, subprocessors |
+| Azure OpenAI | Chat active; image-generation code present but production-disabled | Chat calls, image-provider code, and Azure configuration | Meal, ingredient, nutrition, preference context, prompts | Deployment region, prompt retention, training/service improvement, DPA, subprocessors; image deployment remains unverified |
 | ExerciseDB/RapidAPI | Active and production-configured | Exercise search/import routes and RapidAPI configuration | Exercise search/filter terms and exercise content | Upstream provider, query logs, retention, region, DPA |
 | Pusher | Code-active; production configuration unknown | Server/client realtime integrations and auth route | Channel IDs, message events, notification payloads | Production configuration, cluster, retention, logs, DPA |
 | USDA FoodData Central | Code-active; production configuration unknown | Food search/detail routes and USDA API URL | Food queries, filters, FDC IDs | Production key/configuration, logging, retention, region, DPA |
@@ -44,11 +49,11 @@ tracking implementation.
 | Account/profile | PostgreSQL; Google OAuth identity values when Google signup is used | Code-verified; vendor terms pending |
 | Email/authentication | PostgreSQL and Resend; Google OAuth during identity exchange | Code-verified; vendor terms pending |
 | Body metrics and health | PostgreSQL; only feature-relevant minimized context may enter AI prompts | Code-verified at storage; each AI payload under review |
-| Nutrition and meals | PostgreSQL; Azure OpenAI for supported generation; USDA for food search | Code-verified; provider facts pending |
+| Nutrition and meals | PostgreSQL; Azure OpenAI chat for supported generation; USDA for food search; image-generation code is production-disabled pending a verified deployment | Code-verified; provider facts pending |
 | Workouts and exercise content | PostgreSQL; ExerciseDB/RapidAPI for search/import | Code-verified; provider facts pending |
 | Check-ins and photos | PostgreSQL and Cloudinary | Code-verified; vendor facts pending |
 | Messages and attachments | PostgreSQL, Pusher realtime events, Cloudinary attachments, notification providers | Code-verified; payload/retention facts pending |
-| AI prompts/context | Azure OpenAI chat/image calls; meal context boundary excludes direct account identifiers | Primary boundary tested; route-level review remains required |
+| AI prompts/context | Azure OpenAI chat calls; image-generation code is present but production-disabled; meal context boundary excludes direct account identifiers | Primary boundary tested; route-level review remains required |
 | Push tokens | PostgreSQL, Web Push/VAPID, and Expo code paths | Browser production configured; mobile production usage unknown |
 | Exports | Application-generated export files and local application storage | No off-server export provider identified |
 | Backups | Local PostgreSQL custom-format archives, 14-dump retention | Restore passed; off-server DR unselected |

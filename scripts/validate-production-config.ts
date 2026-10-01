@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { validateLegalDocuments, getActiveMandatoryPolicyDocuments } from '../src/features/legal/legal-registry.ts';
+import { getAzureImageGenerationAvailability } from '../src/lib/azure-image-availability.ts';
 
 const require = createRequire(import.meta.url);
 const { validatePrivacyRetentionConfig } = require('./privacy-retention-config.cjs') as {
@@ -65,6 +66,14 @@ function validateFeatureConfiguration(warnings: string[]): void {
   for (const [label, names] of groups) {
     requireCompleteGroup(names, label);
     if (!names.some(name => process.env[name]?.trim())) warnings.push(`${label} is not configured; related features remain unavailable`);
+  }
+
+  const azureImageAvailability = getAzureImageGenerationAvailability(process.env);
+  if (azureImageAvailability.explicitlyEnabled && !azureImageAvailability.hasDeployment) {
+    fail('Azure OpenAI image generation is enabled but AZURE_OPENAI_IMAGE_DEPLOYMENT is missing');
+  }
+  if (!azureImageAvailability.available) {
+    warnings.push('Azure OpenAI image generation is disabled; meal generation will continue without images');
   }
 }
 

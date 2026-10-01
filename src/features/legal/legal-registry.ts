@@ -90,7 +90,7 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
     mandatoryAcknowledgement: false,
     sections: [
       { heading: 'Status', content: 'Draft document — not approved. LEGAL REVIEW REQUIRED.' },
-      { heading: 'Where AI is used', content: 'AI-assisted functionality is used for meal and ingredient generation and related image generation. Some calculations and matching paths are local application logic rather than external AI.' },
+      { heading: 'Where AI is used', content: 'AI-assisted functionality is used for meal and ingredient generation. Related image-generation code is present but disabled in production unless a real image deployment is explicitly configured and verified. Some calculations and matching paths are local application logic rather than external AI.' },
       { heading: 'Data minimization', content: 'The primary meal-generation path applies a server-side minimization boundary for meal, ingredient, nutrition, and relevant preference context. Direct account identifiers are excluded from that boundary; route-specific prompts and provider handling remain subject to OPERATIONAL/LEGAL CONFIRMATION REQUIRED.' },
       { heading: 'Output and storage', content: 'AI output may require user or coach judgment and may be stored when a supported workflow saves it. Provider retention, training use, region, and contractual protections require OPERATIONAL/LEGAL CONFIRMATION REQUIRED.' },
     ],

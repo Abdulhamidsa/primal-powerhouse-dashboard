@@ -27,7 +27,7 @@ This inventory records repository evidence only. Deployment configuration, provi
 | Cloudinary | Upload/delete helpers and media routes | Avatars, check-in/progress photos, attachments, meal images; public IDs and resource types | Vendor retention/backups/region require confirmation |
 | Resend | Transactional email client | Email address, display name, verification/reset link token | Provider retention/region/DPA require confirmation |
 | Google OAuth | OAuth start/callback and identity model | OAuth code and provider identity email/name/account ID | Google processing and transfer terms require confirmation |
-| Azure OpenAI | Chat/image provider | Minimized meal, ingredient, nutrition, and prompt text | Deployment/region/log retention/DPA require confirmation |
+| Azure OpenAI | Active chat provider; image-generation code present but production-disabled pending a verified deployment | Minimized meal, ingredient, nutrition, and prompt text | Deployment/region/log retention/DPA require confirmation; no verified image deployment is enabled for production |
 | USDA FoodData Central | Food search routes | Search terms and food filters; no intentional account identity | Provider logging/retention require confirmation |
 | ExerciseDB/RapidAPI | Exercise routes | Exercise search/filter terms | Provider logging/retention/region require confirmation |
 | Pusher | Realtime server/client | User/client channel IDs and realtime message/notification payloads | Cluster/configuration and retention require confirmation |
