@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { InfoIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon, CheckIcon, CopyIcon, EnvelopeSimpleIcon, EyeIcon, EyeSlashIcon, GoogleLogoIcon, InfoIcon, LockKeyIcon, MagicWandIcon, UserIcon } from '@phosphor-icons/react';
 import { suggestUsernames } from '../api/auth.api';
 import { useAgePolicy, useLegalRequirements, useSignupAction } from '../hooks/useAuthForms';
 import { getPasswordStrength } from '../lib/passwordStrength';
 
 type SignupMethod = 'email' | 'username';
+
+const inputClassName = 'w-full rounded-2xl border border-border bg-background/70 px-4 py-3.5 pl-11 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10';
 
 export function SignupForm() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export function SignupForm() {
   const [legalAcknowledged, setLegalAcknowledged] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [copyLabel, setCopyLabel] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const passwordStrength = getPasswordStrength(form.password);
 
   async function makeUsername() {
@@ -50,28 +53,37 @@ export function SignupForm() {
   }
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit}>
-      <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/30 p-1" role="tablist" aria-label="Account identifier">
-        <button type="button" role="tab" aria-selected={method === 'email'} onClick={() => setMethod('email')} className={`rounded-lg px-3 py-2 text-sm transition-colors ${method === 'email' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Email</button>
-        <button type="button" role="tab" aria-selected={method === 'username'} onClick={() => setMethod('username')} className={`rounded-lg px-3 py-2 text-sm transition-colors ${method === 'username' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>Username</button>
+    <form className="space-y-5" onSubmit={onSubmit}>
+      <div className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-muted/30 p-1.5" role="tablist" aria-label="Account identifier">
+        <button type="button" role="tab" aria-selected={method === 'email'} onClick={() => setMethod('email')} className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${method === 'email' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><EnvelopeSimpleIcon size={17} aria-hidden="true" />Email</button>
+        <button type="button" role="tab" aria-selected={method === 'username'} onClick={() => setMethod('username')} className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${method === 'username' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><UserIcon size={17} aria-hidden="true" />Username</button>
       </div>
       {method === 'email' ? (
-        <input className="w-full rounded-xl border border-border bg-background px-4 py-3" placeholder="Email" type="email" value={form.email} onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))} required />
+        <div className="space-y-2">
+          <label htmlFor="signup-email" className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Email address</label>
+          <div className="relative"><EnvelopeSimpleIcon size={19} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" /><input id="signup-email" name="email" className={inputClassName} placeholder="you@example.com" type="email" autoComplete="email" value={form.email} onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))} required /></div>
+        </div>
       ) : (
         <div className="space-y-2">
+          <label htmlFor="signup-username" className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Username</label>
           <div className="flex gap-2">
-            <input className="min-w-0 flex-1 rounded-xl border border-border bg-background px-4 py-3" placeholder="Username" value={form.username} onChange={e => setForm(prev => ({ ...prev, username: e.target.value }))} required />
-            <button type="button" onClick={makeUsername} disabled={suggesting} className="rounded-xl border border-border px-3 text-xs">{suggesting ? 'Making…' : 'Make one for me'}</button>
+            <div className="relative min-w-0 flex-1"><UserIcon size={19} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" /><input id="signup-username" name="username" className={inputClassName} placeholder="Choose a username" autoComplete="username" value={form.username} onChange={e => setForm(prev => ({ ...prev, username: e.target.value }))} required /></div>
+            <button type="button" onClick={makeUsername} disabled={suggesting} className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl border border-border px-3 text-xs font-semibold text-foreground transition hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-60"><MagicWandIcon size={16} aria-hidden="true" />{suggesting ? 'Making…' : 'Suggest'}</button>
           </div>
-          {form.username ? <button type="button" onClick={copyUsername} className="text-xs text-primary">{copyLabel || 'Copy username'}</button> : null}
+          {form.username ? <button type="button" onClick={copyUsername} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">{copyLabel ? <CheckIcon size={14} aria-hidden="true" /> : <CopyIcon size={14} aria-hidden="true" />}{copyLabel || 'Copy username'}</button> : null}
         </div>
       )}
       <div className="space-y-1.5">
+        <label htmlFor="signup-password" className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Password</label>
         <div className="relative">
+          <LockKeyIcon size={19} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 pr-10"
-            placeholder="Password"
-            type="password"
+            id="signup-password"
+            name="password"
+            className={`${inputClassName} pr-20`}
+            placeholder="At least 8 characters"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
             minLength={8}
             value={form.password}
             onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
@@ -80,11 +92,14 @@ export function SignupForm() {
           />
           <span
             title="Use at least 8 characters. Longer passwords with varied characters are stronger."
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute right-11 top-1/2 -translate-y-1/2 text-muted-foreground"
           >
             <InfoIcon size={16} aria-hidden="true" focusable="false" />
             <span className="sr-only">Password guidance: use at least 8 characters. Longer passwords with varied characters are stronger.</span>
           </span>
+          <button type="button" onClick={() => setShowPassword(value => !value)} className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted/60 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+            {showPassword ? <EyeSlashIcon size={19} aria-hidden="true" /> : <EyeIcon size={19} aria-hidden="true" />}
+          </button>
         </div>
         <div className="flex min-h-1 items-center gap-2" aria-live="polite">
           <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
@@ -119,8 +134,8 @@ export function SignupForm() {
         </span>
       </div>
       {agePolicy?.enabled ? (
-        <label className="flex items-start gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" checked={ageDeclared} onChange={event => setAgeDeclared(event.target.checked)} required />
+        <label className="flex items-start gap-3 rounded-2xl border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
+          <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary accent-primary focus:ring-primary" checked={ageDeclared} onChange={event => setAgeDeclared(event.target.checked)} required />
           <span>I confirm that I meet the minimum age requirement of {agePolicy.minimumAge}.</span>
         </label>
       ) : null}
@@ -128,15 +143,15 @@ export function SignupForm() {
         By creating an account, you can review our <Link href="/legal/terms" className="text-primary underline-offset-4 hover:underline">Terms</Link> and <Link href="/legal/privacy" className="text-primary underline-offset-4 hover:underline">Privacy Policy</Link>.
       </p>
       {legalRequirements?.signupAcceptanceRequired ? (
-        <label className="flex items-start gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" checked={legalAcknowledged} onChange={event => setLegalAcknowledged(event.target.checked)} required />
+        <label className="flex items-start gap-3 rounded-2xl border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
+          <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary accent-primary focus:ring-primary" checked={legalAcknowledged} onChange={event => setLegalAcknowledged(event.target.checked)} required />
           <span>I acknowledge the current Terms and Privacy Policy.</span>
         </label>
       ) : null}
-      {error && <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
-      <button disabled={loading} className="w-full rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground disabled:opacity-60">{loading ? 'Creating account…' : method === 'username' ? 'Create account' : 'Create free account'}</button>
-      <a href={`/api/auth/google/start?${new URLSearchParams({ ...(ageDeclared ? { ageDeclared: 'true' } : {}), ...(legalRequirements?.signupAcceptanceRequired && legalAcknowledged ? { legalAcknowledged: 'true' } : {}) }).toString()}`} className="block w-full rounded-xl border border-border px-4 py-3 text-center font-medium">Continue with Google</a>
-      <p className="text-center text-sm text-muted-foreground">Already have an account? <a href="/user/login" className="text-primary">Sign in</a></p>
+      {error && <p role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
+      <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 font-semibold text-primary-foreground shadow-[0_12px_28px_rgba(196,123,89,0.2)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Creating account…' : method === 'username' ? 'Create account' : 'Create free account'}{!loading && <ArrowRightIcon size={19} aria-hidden="true" />}</button>
+      <a href={`/api/auth/google/start?${new URLSearchParams({ ...(ageDeclared ? { ageDeclared: 'true' } : {}), ...(legalRequirements?.signupAcceptanceRequired && legalAcknowledged ? { legalAcknowledged: 'true' } : {}) }).toString()}`} className="flex w-full items-center justify-center gap-3 rounded-2xl border border-border bg-background/40 px-4 py-3.5 text-center font-semibold text-foreground transition hover:border-border-strong hover:bg-muted/40"><GoogleLogoIcon size={19} weight="bold" aria-hidden="true" />Continue with Google</a>
+      <p className="text-center text-sm text-muted-foreground">Already have an account? <a href="/user/login" className="font-semibold text-primary underline-offset-4 hover:underline">Sign in</a></p>
     </form>
   );
 }
