@@ -46,7 +46,11 @@ export const videoUpdateSchema = videoWriteSchema.partial();
 export const exerciseImportSchema = z.object({
   exerciseId: z.string().trim().min(1).max(200),
   name: z.string().trim().min(1).max(200),
-  gifUrl: z.string().url().max(2_048),
+  providerId: z.string().trim().max(200).optional(),
+  slug: z.string().trim().max(255).optional(),
+  gifUrl: optionalUrl,
+  imageUrl: optionalUrl,
+  videoUrl: optionalUrl,
   targetMuscles: stringArray.optional(),
   bodyParts: stringArray.optional(),
   equipments: stringArray.optional(),

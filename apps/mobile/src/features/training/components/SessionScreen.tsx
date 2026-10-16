@@ -1,8 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
+import { Image } from 'react-native';
 import { Button, Card, Choices, Copy, Field, Label, Screen, Status } from '@/components/ui';
 import { VideoPlayer } from '@/features/media/components/VideoPlayer';
 import { useSet, useTrainingSession } from '../hooks/useTraining';
 import type { TrainingSet } from '../types/training.types';
+
+function isImageUrl(url?: string | null) {
+  return Boolean(url?.match(/\.(gif|webp|png|jpe?g|avif)(\?.*)?$/i));
+}
 function SetEditor({ sessionId, set, restSeconds }: { sessionId: string; set: TrainingSet; restSeconds: number }) {
   const m = useSet(sessionId, set, restSeconds);
   return (
@@ -64,7 +69,15 @@ export default function SessionScreen() {
         <Card key={e.id}>
           <Copy>{e.exerciseNameSnapshot}</Copy>
           <Copy muted>{e.notesSnapshot}</Copy>
-          {e.exercise?.videoUrl ? <VideoPlayer url={e.exercise.videoUrl} /> : null}
+          {e.exercise?.videoUrl && !isImageUrl(e.exercise.videoUrl) ? <VideoPlayer url={e.exercise.videoUrl} /> : null}
+          {(isImageUrl(e.exercise?.videoUrl) ? e.exercise?.videoUrl : e.exercise?.imageUrl) ? (
+            <Image
+              accessibilityLabel={`${e.exerciseNameSnapshot} demonstration`}
+              source={{ uri: (isImageUrl(e.exercise?.videoUrl) ? e.exercise?.videoUrl : e.exercise?.imageUrl)! }}
+              resizeMode="contain"
+              style={{ width: '100%', height: 220, borderRadius: 16 }}
+            />
+          ) : null}
           <Copy muted>{e.exercise?.instructions}</Copy>
           {e.sets.map(s =>
             session.status === 'IN_PROGRESS' ? (

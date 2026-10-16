@@ -3,7 +3,7 @@ import type { Exercise, ClientTrainingPlan, TrainingPlanDay } from '@prisma/clie
 import type { WorkoutTemplateWithExercises } from '@/features/training/types';
 import type {
   CreateExerciseInput,
-  ImportExerciseDbExerciseInput,
+  ImportExerciseCatalogInput,
   UpdateExerciseInput,
 } from '@/features/training/schemas/exercise.schemas';
 import type {
@@ -40,8 +40,8 @@ export async function createExercise(data: CreateExerciseInput) {
   return httpClient.post<Exercise>(COACH_EXERCISES_URL, data);
 }
 
-export async function importExerciseDbExercise(data: ImportExerciseDbExerciseInput) {
-  return httpClient.post<Exercise>(`${COACH_EXERCISES_URL}/import-exercise-db`, data);
+export async function importExerciseCatalogExercise(data: ImportExerciseCatalogInput) {
+  return httpClient.post<Exercise>(`${COACH_EXERCISES_URL}/import-exercise`, data);
 }
 
 export async function updateExercise(id: string, data: UpdateExerciseInput) {

@@ -2,9 +2,11 @@ import { prisma } from '@/lib/prisma';
 import type { CreateExerciseInput, UpdateExerciseInput } from '../schemas/exercise.schemas';
 import { Equipment, MuscleGroup, type Exercise } from '@prisma/client';
 
-type ExerciseDbImportInput = {
+type ExerciseCatalogImportInput = {
   exerciseId: string;
   name: string;
+  providerId?: string;
+  slug?: string;
   gifUrl?: string | null;
   imageUrl?: string | null;
   videoUrl?: string | null;
@@ -101,10 +103,10 @@ export const exerciseService = {
   },
 
   /**
-   * Import an ExerciseDB catalog item into the coach-owned Training Exercise table.
+   * Import a WorkoutX catalog item into the coach-owned Training Exercise table.
    * Templates and sessions require local Exercise IDs so imported catalog items can be snapshotted.
    */
-  async importExerciseDbExercise(coachId: string, input: ExerciseDbImportInput): Promise<Exercise> {
+  async importExerciseCatalogExercise(coachId: string, input: ExerciseCatalogImportInput): Promise<Exercise> {
     const name = input.name.trim();
     if (!name) throw new Error('Exercise name is required');
 
@@ -116,7 +118,7 @@ export const exerciseService = {
     const imageUrl = input.imageUrl || input.gifUrl || null;
     const videoUrl = input.videoUrl || null;
     const instructions = input.instructions?.length ? input.instructions.join('\n') : null;
-    const description = input.overview || `Imported from ExerciseDB: ${input.exerciseId}`;
+    const description = input.overview || `Imported from WorkoutX: ${input.providerId || input.exerciseId}`;
 
     const existing = await prisma.exercise.findFirst({
       where: {

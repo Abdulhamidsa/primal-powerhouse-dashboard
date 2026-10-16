@@ -12,7 +12,7 @@ const requiredProviders = [
   'Google OAuth',
   'Resend',
   'Azure OpenAI',
-  'ExerciseDB/RapidAPI',
+  'WorkoutDB',
   'Pusher',
   'USDA FoodData Central',
   'Expo Push',

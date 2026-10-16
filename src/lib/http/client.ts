@@ -1,5 +1,48 @@
 import { request } from '@/lib/request';
 
+export type ServerHttpResult<T> = {
+  data: T;
+  status: number;
+  headers: Headers;
+};
+
+export class ServerHttpError extends Error {
+  status: number;
+  headers: Headers;
+  body: unknown;
+
+  constructor(message: string, status: number, headers: Headers, body?: unknown) {
+    super(message);
+    this.name = 'ServerHttpError';
+    this.status = status;
+    this.headers = headers;
+    this.body = body;
+  }
+}
+
+export async function serverGetJson<T>(url: string, init: RequestInit = {}): Promise<ServerHttpResult<T>> {
+  const headers = new Headers(init.headers);
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+  const response = await fetch(url, {
+    ...init,
+    method: 'GET',
+    headers,
+  });
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const body = contentType.includes('application/json') ? await response.json() : await response.text();
+
+  if (!response.ok) {
+    const message =
+      typeof body === 'object' && body !== null && 'error' in body && typeof body.error === 'object'
+        ? String((body.error as { message?: unknown }).message ?? 'Upstream request failed')
+        : `Upstream request failed with status ${response.status}`;
+    throw new ServerHttpError(message, response.status, response.headers, body);
+  }
+
+  return { data: body as T, status: response.status, headers: response.headers };
+}
+
 export type OfflineMutationError = {
   message: string;
   status: 0;

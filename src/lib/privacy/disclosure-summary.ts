@@ -51,7 +51,7 @@ export const PRIVACY_DISCLOSURE_SUMMARY: PrivacyDisclosureSummary = {
       status: 'ACTIVE_CONFIGURED',
     },
     {
-      name: 'ExerciseDB/RapidAPI',
+      name: 'WorkoutX',
       purpose: 'Exercise search and import features.',
       dataCategories: ['exercise search and filter terms', 'exercise content'],
       status: 'ACTIVE_CONFIGURED',

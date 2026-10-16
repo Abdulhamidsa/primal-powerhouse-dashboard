@@ -23,22 +23,26 @@ export async function POST(request: NextRequest) {
     const existingVideo = await prisma.video.findFirst({
       where: {
         coachId: target.coachId,
-        OR: [{ videoUrl: parsed.data.gifUrl }, { title: parsed.data.name }],
+      OR: [
+        ...(parsed.data.videoUrl ? [{ videoUrl: parsed.data.videoUrl }] : []),
+        ...(parsed.data.gifUrl ? [{ videoUrl: parsed.data.gifUrl }] : []),
+        { title: parsed.data.name },
+      ],
       },
       select: { id: true },
     });
 
     const createData = {
       title: parsed.data.name,
-      description: `ExerciseDB: ${parsed.data.name}`,
+      description: `WorkoutX: ${parsed.data.name}`,
       category: VideoCategory.FUNCTIONAL,
       difficulty: DifficultyLevel.BEGINNER,
       duration: 180,
-      videoUrl: parsed.data.gifUrl,
-      thumbnailUrl: parsed.data.gifUrl,
+      videoUrl: parsed.data.videoUrl || parsed.data.gifUrl || parsed.data.imageUrl || '',
+      thumbnailUrl: parsed.data.gifUrl || parsed.data.imageUrl || null,
       equipment: JSON.stringify(parsed.data.equipments ?? []),
       muscleGroups: JSON.stringify([...(parsed.data.targetMuscles ?? []), ...(parsed.data.bodyParts ?? [])]),
-      tags: JSON.stringify(['exercise-db', `exercise-${parsed.data.exerciseId}`]),
+      tags: JSON.stringify(['workoutx', `exercise-${parsed.data.exerciseId}`]),
       instructions: JSON.stringify(parsed.data.instructions ?? []),
       tips: JSON.stringify(parsed.data.secondaryMuscles ?? []),
       isPublic: true,

@@ -10,9 +10,9 @@ import {
 } from '@phosphor-icons/react';
 import { useWorkoutPlanActions } from '../hooks/useWorkoutPlans';
 import type { WorkoutPlan } from '../types/workoutPlan.types';
-import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
-import { useRapidAPIExercises } from '@/features/exercises/hooks/useRapidAPIExercises';
-import { useRapidAPIFilterOptions } from '@/features/exercises/hooks/useRapidAPIFilterOptions';
+import type { ExerciseCatalogExercise } from '@/features/exercises/types/exerciseCatalog.types';
+import { useExerciseCatalog } from '@/features/exercises/hooks/useExerciseCatalog';
+import { useExerciseCatalogFilterOptions } from '@/features/exercises/hooks/useExerciseCatalogExercises';
 import ExerciseFilters from '@/features/exercises/components/ExerciseFilters';
 import Image from 'next/image';
 
@@ -20,6 +20,7 @@ interface ExerciseRow {
   videoId: string;
   videoTitle: string;
   gifUrl?: string | null;
+  videoUrl?: string | null;
   targetSets: number;
   minReps: number;
   maxReps: number;
@@ -36,9 +37,9 @@ interface Props {
 
 export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) {
   const { create, update } = useWorkoutPlanActions();
-  const filterOptions = useRapidAPIFilterOptions();
+  const { options: filterOptions } = useExerciseCatalogFilterOptions();
   const {
-    exercises: exerciseDbResults,
+    exercises: catalogResults,
     isLoading: isLoadingExercises,
     query: videoSearch,
     setQuery: setVideoSearch,
@@ -47,7 +48,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
     clearFilters,
     hasMore,
     loadMore,
-  } = useRapidAPIExercises();
+  } = useExerciseCatalog();
 
   const [name, setName] = useState(plan?.name ?? '');
   const [description, setDescription] = useState(plan?.description ?? '');
@@ -56,6 +57,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
       videoId: ex.videoId,
       videoTitle: ex.video.title,
       gifUrl: ex.video.thumbnailUrl ?? null,
+      videoUrl: ex.video.videoUrl ?? null,
       targetSets: ex.targetSets,
       minReps: ex.minReps,
       maxReps: ex.maxReps,
@@ -69,13 +71,14 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function addExercise(exercise: ExerciseDbExercise) {
+  function addExercise(exercise: ExerciseCatalogExercise) {
     setExercises(prev => [
       ...prev,
       {
-        videoId: exercise.exerciseId,
+        videoId: `workoutx:${exercise.providerId || exercise.exerciseId}`,
         videoTitle: exercise.name,
         gifUrl: exercise.gifUrl ?? null,
+        videoUrl: exercise.videoUrl ?? null,
         targetSets: 3,
         minReps: 8,
         maxReps: 12,
@@ -116,6 +119,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
           videoId: ex.videoId,
           videoTitle: ex.videoTitle,
           gifUrl: ex.gifUrl ?? undefined,
+          videoUrl: ex.videoUrl ?? undefined,
           targetSets: ex.targetSets,
           minReps: ex.minReps,
           maxReps: ex.maxReps,
@@ -342,8 +346,8 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
               <ExerciseFilters
                 bodyParts={filterOptions.bodyParts}
                 equipments={filterOptions.equipments}
-                targetMuscles={filterOptions.targetMuscles}
-                difficulties={filterOptions.difficulties}
+                targetMuscles={filterOptions.muscles ?? []}
+                difficulties={filterOptions.difficulties ?? []}
                 selectedFilters={filters}
                 onFilterChange={updateFilters}
                 onClear={clearFilters}
@@ -352,18 +356,27 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
 
             {/* Results */}
             <div className="overflow-y-auto flex-1 divide-y" style={{ borderColor: 'var(--color-border)' }}>
-              {isLoadingExercises && exerciseDbResults.length === 0 ? (
+              {isLoadingExercises && catalogResults.length === 0 ? (
                 <p className="p-4 text-sm text-[var(--color-text-secondary)] text-center">Loading exercises…</p>
-              ) : exerciseDbResults.length === 0 ? (
+              ) : catalogResults.length === 0 ? (
                 <p className="p-4 text-sm text-[var(--color-text-secondary)] text-center">No exercises found.</p>
               ) : (
-                exerciseDbResults.map((ex, idx) => (
+                catalogResults.map((ex, idx) => (
                   <button
                     key={`${ex.exerciseId}-${idx}`}
                     onClick={() => addExercise(ex)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-surface-hover)]"
                   >
-                    {ex.gifUrl ? (
+                    {ex.videoUrl ? (
+                      <video
+                        src={ex.videoUrl}
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                        className="w-10 h-10 rounded object-cover shrink-0"
+                      />
+                    ) : ex.gifUrl ? (
                       <Image
                         src={ex.gifUrl}
                         alt={ex.name}
@@ -395,7 +408,7 @@ export default function WorkoutPlanFormModal({ plan, onClose, onSaved }: Props) 
             </div>
 
             {/* Load more button */}
-            {hasMore && exerciseDbResults.length > 0 && (
+            {hasMore && catalogResults.length > 0 && (
               <div className="border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
                 <button
                   onClick={loadMore}

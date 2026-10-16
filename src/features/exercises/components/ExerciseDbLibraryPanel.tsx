@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
-import { useRapidAPIExercises } from '@/features/exercises/hooks/useRapidAPIExercises';
-import { useRapidAPIFilterOptions } from '@/features/exercises/hooks/useRapidAPIFilterOptions';
+import type { ExerciseCatalogExercise } from '@/features/exercises/types/exerciseCatalog.types';
+import { useExerciseCatalog } from '@/features/exercises/hooks/useExerciseCatalog';
+import { useExerciseCatalogFilterOptions } from '@/features/exercises/hooks/useExerciseCatalogExercises';
 import ExerciseFilters from './ExerciseFilters';
 
 interface ExerciseDbLibraryPanelProps {
-  onAssignExerciseAction?: (exercise: ExerciseDbExercise) => void;
+  onAssignExerciseAction?: (exercise: ExerciseCatalogExercise) => void;
   assigningExerciseId?: string | null;
 }
 
@@ -18,17 +18,27 @@ export default function ExerciseDbLibraryPanel({
   assigningExerciseId = null,
 }: ExerciseDbLibraryPanelProps) {
   const [assigningLoadingId, setAssigningLoadingId] = useState<string | null>(null);
-  const filterOptions = useRapidAPIFilterOptions();
-  const { exercises, isLoading, error, query, setQuery, filters, updateFilters, clearFilters, hasMore, loadMore } =
-    useRapidAPIExercises();
+  const { options: filterOptions } = useExerciseCatalogFilterOptions();
+  const { exercises, isLoading, error, query, setQuery, filters, updateFilters, clearFilters, hasMore, loadMore, loadAll } =
+    useExerciseCatalog();
 
   return (
     <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
         <div>
-          <h3 className="text-2xl font-bold text-zinc-100">RapidAPI ExerciseDB</h3>
-          <p className="text-zinc-400 text-sm">Search 11,000+ exercises with advanced filters</p>
-          <p className="text-zinc-500 text-xs mt-1">Powered by RapidAPI ExerciseDB V2 with rich metadata</p>
+          <h3 className="text-2xl font-bold text-zinc-100">WorkoutX Exercise Library</h3>
+          <p className="text-zinc-400 text-sm">Search the WorkoutX catalog with advanced filters</p>
+          <p className="text-zinc-500 text-xs mt-1">720p MP4 animations with poster fallbacks</p>
+          {hasMore && (
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={loadAll}
+              className="mt-3 px-4 py-2 rounded-lg border border-blue-500 bg-blue-600 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Loading all...' : 'Show all exercises'}
+            </button>
+          )}
         </div>
 
         <div className="w-full lg:w-[560px] space-y-3">
@@ -43,8 +53,8 @@ export default function ExerciseDbLibraryPanel({
           <ExerciseFilters
             bodyParts={filterOptions.bodyParts}
             equipments={filterOptions.equipments}
-            targetMuscles={filterOptions.targetMuscles}
-            difficulties={filterOptions.difficulties}
+            targetMuscles={filterOptions.muscles ?? []}
+            difficulties={filterOptions.difficulties ?? []}
             selectedFilters={filters}
             onFilterChange={updateFilters}
             onClear={clearFilters}
@@ -86,7 +96,11 @@ export default function ExerciseDbLibraryPanel({
                         muted
                         loop
                         autoPlay
+                        preload="metadata"
                         playsInline
+                        onError={event => {
+                          event.currentTarget.style.display = 'none';
+                        }}
                       />
                     ) : exercise.gifUrl ? (
                       <Image
@@ -158,7 +172,7 @@ export default function ExerciseDbLibraryPanel({
           </div>
 
           {hasMore && (
-            <div className="flex items-center justify-center">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
                 disabled={isLoading}

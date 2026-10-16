@@ -3,13 +3,13 @@ import useSWR from 'swr';
 import {
   getCoachExercises,
   createExercise,
-  importExerciseDbExercise,
+  importExerciseCatalogExercise,
   updateExercise,
   deleteExercise,
 } from '../api/coachTraining.api';
 import type {
   CreateExerciseInput,
-  ImportExerciseDbExerciseInput,
+  ImportExerciseCatalogInput,
   UpdateExerciseInput,
 } from '../schemas/exercise.schemas';
 // import type { Exercise } from '@prisma/client';
@@ -37,8 +37,8 @@ export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: 
     return newExercise;
   };
 
-  const importExerciseDbExerciseAction = async (input: ImportExerciseDbExerciseInput) => {
-    const importedExercise = await importExerciseDbExercise(input);
+  const importExerciseCatalogExerciseAction = async (input: ImportExerciseCatalogInput) => {
+    const importedExercise = await importExerciseCatalogExercise(input);
     await mutateLocal();
     return importedExercise;
   };
@@ -61,7 +61,7 @@ export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: 
     error,
     mutate: mutateLocal,
     createExercise: createExerciseAction,
-    importExerciseDbExercise: importExerciseDbExerciseAction,
+    importExerciseCatalogExercise: importExerciseCatalogExerciseAction,
     updateExercise: updateExerciseAction,
     deleteExercise: deleteExerciseAction,
   };

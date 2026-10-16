@@ -37,6 +37,8 @@ export const trainingPlanDayService = {
     const existingDays = await prisma.trainingPlanDay.findMany({
       where: { planId: input.planId },
       select: {
+        id: true,
+        date: true,
         weekday: true,
         type: true,
         workoutTemplateId: true,
@@ -45,85 +47,90 @@ export const trainingPlanDayService = {
       },
     });
 
-    const saved = await (prisma as any).$transaction(async (tx: any) => {
-      const result = [];
+    const workoutTemplateIds = [
+      ...new Set(
+        input.days
+          .filter(day => day.type === 'WORKOUT' && day.workoutTemplateId)
+          .map(day => day.workoutTemplateId as string),
+      ),
+    ];
 
-      for (const day of input.days) {
-        if (day.type === 'WORKOUT' && !day.workoutTemplateId) {
-          throw new Error('Choose a workout template for workout days');
-        }
+    for (const day of input.days) {
+      if (day.type === 'WORKOUT' && !day.workoutTemplateId) {
+        throw new Error('Choose a workout template for workout days');
+      }
+    }
 
-        if (day.type === 'WORKOUT' && day.workoutTemplateId) {
-          const template = await tx.workoutTemplate.findFirst({
-            where: {
-              id: day.workoutTemplateId,
-              coachId,
-            },
-          });
+    if (workoutTemplateIds.length > 0) {
+      const templates = await prisma.workoutTemplate.findMany({
+        where: { id: { in: workoutTemplateIds }, coachId },
+        select: { id: true },
+      });
+      const availableTemplateIds = new Set(templates.map(template => template.id));
+      const missingTemplateId = workoutTemplateIds.find(id => !availableTemplateIds.has(id));
+      if (missingTemplateId) {
+        throw new Error(`Template not found: ${missingTemplateId}`);
+      }
+    }
 
-          if (!template) {
-            throw new Error(`Template not found: ${day.workoutTemplateId}`);
-          }
-        }
+    const existingDaysByWeekday = new Map(
+      existingDays
+        .filter(day => day.weekday !== null)
+        .map(day => [day.weekday as number, day]),
+    );
+    const savedDayIds: string[] = [];
 
-        const existing = await tx.trainingPlanDay.findFirst({
-          where: {
-            planId: input.planId,
+    await (prisma as any).$transaction(
+      async (tx: any) => {
+        for (const day of input.days) {
+          const existing = existingDaysByWeekday.get(day.weekday);
+          const date = new Date(plan.startDate);
+          date.setHours(12, 0, 0, 0);
+          date.setDate(date.getDate() + day.weekday);
+
+          const data = {
             weekday: day.weekday,
-          },
-          orderBy: [{ date: 'desc' }, { updatedAt: 'desc' }],
-        });
+            type: day.type,
+            workoutTemplateId: day.type === 'WORKOUT' ? day.workoutTemplateId ?? null : null,
+            title: day.title ?? null,
+            note: day.note ?? null,
+            status: 'PENDING',
+          };
 
-        const date = new Date(plan.startDate);
-        date.setHours(12, 0, 0, 0);
-        date.setDate(date.getDate() + day.weekday);
-
-        const data = {
-          weekday: day.weekday,
-          type: day.type,
-          workoutTemplateId: day.type === 'WORKOUT' ? day.workoutTemplateId ?? null : null,
-          title: day.title ?? null,
-          note: day.note ?? null,
-          status: 'PENDING',
-        };
-
-        const savedDay = existing
-          ? await tx.trainingPlanDay.update({
+          if (existing) {
+            const savedDay = await tx.trainingPlanDay.update({
               where: { id: existing.id },
               data,
-              include: {
-                workoutTemplate: {
-                  include: {
-                    exercises: {
-                      include: { exercise: true },
-                      orderBy: { order: 'asc' },
-                    },
-                  },
-                },
-              },
-            })
-          : await tx.trainingPlanDay.create({
+            });
+            savedDayIds.push(savedDay.id);
+          } else {
+            const savedDay = await tx.trainingPlanDay.create({
               data: {
                 ...data,
                 planId: input.planId,
                 date,
               },
-              include: {
-                workoutTemplate: {
-                  include: {
-                    exercises: {
-                      include: { exercise: true },
-                      orderBy: { order: 'asc' },
-                    },
-                  },
-                },
-              },
             });
+            savedDayIds.push(savedDay.id);
+          }
+        }
+      },
+      { timeout: 15000 },
+    );
 
-        result.push(savedDay);
-      }
-
-      return result.sort((a, b) => (a.weekday ?? 0) - (b.weekday ?? 0));
+    const saved = await prisma.trainingPlanDay.findMany({
+      where: { id: { in: savedDayIds } },
+      orderBy: { weekday: 'asc' },
+      include: {
+        workoutTemplate: {
+          include: {
+            exercises: {
+              include: { exercise: true },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+      },
     });
 
     invalidateUserDashboardSummaryCaches({ clientId: plan.clientId });

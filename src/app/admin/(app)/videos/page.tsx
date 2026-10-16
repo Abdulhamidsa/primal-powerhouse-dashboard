@@ -9,7 +9,7 @@ import NewVideoDetailModal from '@/components/NewVideoDetailModal';
 // import VideoFilters from '@/components/VideoFilters';
 import AssignVideosModal from '@/components/AssignVideosModal';
 import ExerciseDbLibraryPanel from '@/features/exercises/components/ExerciseDbLibraryPanel';
-import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
+import type { ExerciseCatalogExercise } from '@/features/exercises/types/exerciseCatalog.types';
 import { useVideoCoaches } from '@/features/videos/hooks/useVideoCoaches';
 import { deleteVideo, importExerciseAsVideo } from '@/features/videos/api/video.api';
 
@@ -88,7 +88,7 @@ export default function VideosPage() {
     setIsAssignModalOpen(true);
   };
 
-  const handleAssignExercise = async (exercise: ExerciseDbExercise) => {
+  const handleAssignExercise = async (exercise: ExerciseCatalogExercise) => {
     if (!selectedCoachId) {
       alert('Select a coach before importing an exercise.');
       return;
@@ -97,7 +97,21 @@ export default function VideosPage() {
     try {
       setIsAssigningExercise(exercise.exerciseId);
 
-      const importedVideo = await importExerciseAsVideo({ ...exercise, coachId: selectedCoachId });
+      const importedVideo = await importExerciseAsVideo({
+        exerciseId: exercise.exerciseId,
+        providerId: exercise.providerId,
+        slug: exercise.slug,
+        name: exercise.name,
+        gifUrl: exercise.gifUrl || null,
+        imageUrl: exercise.imageUrl || null,
+        videoUrl: exercise.videoUrl || null,
+        targetMuscles: exercise.targetMuscles ?? [],
+        bodyParts: exercise.bodyParts ?? [],
+        equipments: exercise.equipments ?? [],
+        secondaryMuscles: exercise.secondaryMuscles ?? [],
+        instructions: exercise.instructions ?? [],
+        coachId: selectedCoachId,
+      });
       setSelectedVideos([importedVideo]);
       setIsAssignModalOpen(true);
     } catch {
@@ -200,7 +214,7 @@ export default function VideosPage() {
                 : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'
             }`}
           >
-            ExerciseDB
+            WorkoutX
           </button>
         </div>
 

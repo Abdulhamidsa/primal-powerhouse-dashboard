@@ -42,9 +42,11 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
   const [isPlaying, setIsPlaying] = useState(true);
   const [showControls, setShowControls] = useState(false);
   const [mediaLoaded, setMediaLoaded] = useState(false);
+  const [mediaFailed, setMediaFailed] = useState(false);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const mediaUrl = exercise.video.videoUrl || exercise.video.thumbnailUrl;
+  const requestedMediaUrl = exercise.video.videoUrl || exercise.video.thumbnailUrl;
+  const mediaUrl = mediaFailed ? exercise.video.thumbnailUrl : requestedMediaUrl;
   const thumbnailUrl = exercise.video.thumbnailUrl;
   const isVideo = isVideoUrl(mediaUrl);
   const isGif = isGifUrl(mediaUrl);
@@ -53,6 +55,7 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
   // Reset on exercise change
   useEffect(() => {
     setMediaLoaded(false);
+    setMediaFailed(false);
     setIsPlaying(true);
   }, [exercise.id]);
 
@@ -102,6 +105,7 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
               loop
               playsInline
               onLoadedData={() => setMediaLoaded(true)}
+              onError={() => setMediaFailed(true)}
               onClick={togglePlay}
               className="absolute inset-0 w-full h-full object-cover"
             />

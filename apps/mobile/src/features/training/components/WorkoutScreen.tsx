@@ -1,7 +1,12 @@
 import { useLocalSearchParams } from 'expo-router';
+import { Image } from 'react-native';
 import { Button, Card, Copy, Field, Label, Screen, Status } from '@/components/ui';
 import { VideoPlayer } from '@/features/media/components/VideoPlayer';
 import { useWorkout } from '../hooks/useTraining';
+
+function isImageUrl(url?: string | null) {
+  return Boolean(url?.match(/\.(gif|webp|png|jpe?g|avif)(\?.*)?$/i));
+}
 
 export default function WorkoutScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -40,7 +45,15 @@ export default function WorkoutScreen() {
             {e.targetSets} sets · {e.minReps}–{e.maxReps} reps · rest {e.restSeconds}s
           </Copy>
           <Copy muted>{e.notes}</Copy>
-          {e.video.videoUrl ? <VideoPlayer url={e.video.videoUrl} /> : null}
+          {e.video.videoUrl && !isImageUrl(e.video.videoUrl) ? <VideoPlayer url={e.video.videoUrl} /> : null}
+          {isImageUrl(e.video.videoUrl) || e.video.thumbnailUrl ? (
+            <Image
+              accessibilityLabel={`${e.video.title} demonstration`}
+              source={{ uri: (isImageUrl(e.video.videoUrl) ? e.video.videoUrl : e.video.thumbnailUrl)! }}
+              resizeMode="contain"
+              style={{ width: '100%', height: 220, borderRadius: 16 }}
+            />
+          ) : null}
           {m.draft.value.logs[e.id]?.sets.map((s, i) => (
             <Card key={i}>
               <Label>Set {i + 1}</Label>

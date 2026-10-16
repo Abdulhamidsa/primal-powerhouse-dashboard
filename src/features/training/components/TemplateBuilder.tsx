@@ -3,17 +3,17 @@
 import { useState } from 'react';
 import { useCoachExercises } from '../hooks/useCoachExercises';
 import { useCoachTemplates } from '../hooks/useCoachTemplates';
-import { useExerciseDbExercises } from '@/features/exercises/hooks/useExerciseDbExercises';
+import { useExerciseCatalogExercises } from '@/features/exercises/hooks/useExerciseCatalogExercises';
 import { createWorkoutTemplateSchema } from '../schemas/template.schemas';
 import { difficultyLevelEnum } from '../enums/training.enums';
 import type { TemplateExerciseInput, CreateWorkoutTemplateInput } from '../schemas/template.schemas';
 import type { WorkoutTemplateWithExercises } from '../types';
-import type { ExerciseDbExercise } from '@/features/exercises/types/exerciseDb.types';
+import type { ExerciseCatalogExercise } from '@/features/exercises/types/exerciseCatalog.types';
 import type { Exercise } from '@prisma/client';
 
 type ExercisePickerOption =
   | { key: string; source: 'local'; id: string; name: string; exercise: Exercise }
-  | { key: string; source: 'catalog'; id: string; name: string; exercise: ExerciseDbExercise };
+  | { key: string; source: 'catalog'; id: string; name: string; exercise: ExerciseCatalogExercise };
 
 function getOptionMedia(option: ExercisePickerOption | null): { videoUrl: string | null; imageUrl: string | null } {
   if (!option) return { videoUrl: null, imageUrl: null };
@@ -76,20 +76,21 @@ function ExerciseMediaPreview({
 }
 
 export function TemplateBuilder() {
-  const { exercises, importExerciseDbExercise } = useCoachExercises();
+  const { exercises, importExerciseCatalogExercise } = useCoachExercises();
+  const [showForm, setShowForm] = useState(false);
   const [exerciseSearch, setExerciseSearch] = useState('');
   const {
     exercises: catalogExercises,
     metadata: catalogMetadata,
     isLoading: catalogLoading,
     error: catalogError,
-  } = useExerciseDbExercises({
+  } = useExerciseCatalogExercises({
     offset: 0,
-    limit: 25,
-    query: exerciseSearch,
+    limit: 10,
+    q: exerciseSearch,
     sortBy: 'name',
     sortOrder: 'asc',
-  });
+  }, { enabled: showForm });
   const {
     templates,
     isLoading: templatesLoading,
@@ -99,7 +100,6 @@ export function TemplateBuilder() {
     deleteTemplate,
   } = useCoachTemplates();
 
-  const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
     name: string;
@@ -175,7 +175,7 @@ export function TemplateBuilder() {
       let exerciseId = selectedOption.id;
 
       if (selectedOption.source === 'catalog') {
-        const imported = await importExerciseDbExercise({
+        const imported = await importExerciseCatalogExercise({
           exerciseId: selectedOption.exercise.exerciseId,
           name: selectedOption.exercise.name,
           gifUrl: selectedOption.exercise.gifUrl || null,
@@ -403,7 +403,7 @@ export function TemplateBuilder() {
                         </optgroup>
                       ) : null}
                       {catalogPickerOptions.length > 0 ? (
-                        <optgroup label="ExerciseDB Catalog">
+                        <optgroup label="WorkoutX Catalog">
                           {catalogPickerOptions.map(option => (
                             <option key={option.key} value={option.key}>
                               {option.name}
@@ -441,7 +441,7 @@ export function TemplateBuilder() {
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-foreground">{selectedPickerOption.name}</p>
                         <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                          {selectedPickerOption.source === 'local' ? 'Training library' : 'ExerciseDB catalog'}
+                            {selectedPickerOption.source === 'local' ? 'Training library' : 'WorkoutX catalog'}
                         </p>
                         {selectedPickerOption.source === 'catalog' && selectedPickerOption.exercise.instructions?.length ? (
                           <p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">

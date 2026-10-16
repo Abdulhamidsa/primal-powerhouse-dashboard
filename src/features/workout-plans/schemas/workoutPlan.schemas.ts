@@ -4,6 +4,7 @@ const exerciseInputSchema = z.object({
   videoId: z.string().min(1),
   videoTitle: z.string().max(255).optional(),
   gifUrl: z.string().max(1000).nullable().optional(),
+  videoUrl: z.string().max(1000).nullable().optional(),
   targetSets: z.number().int().min(1).max(20).optional(),
   minReps: z.number().int().min(1).max(100).optional(),
   maxReps: z.number().int().min(1).max(100).optional(),

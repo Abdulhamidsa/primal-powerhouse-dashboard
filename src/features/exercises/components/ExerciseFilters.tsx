@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import { CaretDownIcon as ChevronDown, XIcon as X } from '@phosphor-icons/react';
-import type { RapidAPIFilters } from '@/features/exercises/types/rapidapi-filters.types';
+import type { ExerciseCatalogFilters } from '@/features/exercises/types/exerciseCatalogFilters.types';
 
 interface ExerciseFiltersProps {
   bodyParts: string[];
   equipments: string[];
   targetMuscles: string[];
   difficulties: string[];
-  selectedFilters: RapidAPIFilters;
-  onFilterChange: (filters: RapidAPIFilters) => void;
+  selectedFilters: ExerciseCatalogFilters;
+  onFilterChange: (filters: ExerciseCatalogFilters) => void;
   onClear: () => void;
 }
 
@@ -25,9 +25,7 @@ function FilterDropdown({ label, options, selectedValues, onChange }: FilterDrop
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = (option: string) => {
-    const newValues = selectedValues.includes(option)
-      ? selectedValues.filter(v => v !== option)
-      : [...selectedValues, option];
+    const newValues = selectedValues.includes(option) ? [] : [option];
     onChange(newValues);
   };
 

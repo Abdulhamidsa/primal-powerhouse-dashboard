@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       const updateData: any = {};
       if (ex.videoTitle) updateData.title = ex.videoTitle;
       if (ex.gifUrl) updateData.thumbnailUrl = ex.gifUrl;
+      if (ex.videoUrl) updateData.videoUrl = ex.videoUrl;
 
       // Use an upsert to ensure the video exists; if it exists we optionally update metadata
       upsertOps.push(
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
             category: 'STRENGTH_TRAINING',
             difficulty: 'BEGINNER',
             duration: 0,
-            videoUrl: ex.videoUrl ?? '',
+            videoUrl: ex.videoUrl ?? ex.gifUrl ?? '',
             thumbnailUrl: ex.gifUrl ?? null,
             equipment: null,
             muscleGroups: null,

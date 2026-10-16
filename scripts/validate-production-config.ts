@@ -60,7 +60,7 @@ function validateFeatureConfiguration(warnings: string[]): void {
     ['Azure OpenAI', ['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_API_KEY', 'AZURE_OPENAI_CHAT_DEPLOYMENT']],
     ['Pusher', ['PUSHER_APP_ID', 'PUSHER_KEY', 'PUSHER_SECRET', 'PUSHER_CLUSTER']],
     ['Browser push', ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_CONTACT_EMAIL', 'NEXT_PUBLIC_VAPID_PUBLIC_KEY']],
-    ['ExerciseDB/RapidAPI', ['RAPIDAPI_KEY', 'NEXT_PUBLIC_RAPIDAPI_HOST']],
+    ['WorkoutDB', ['WORKOUTDB_API_KEY', 'WORKOUTDB_API_BASE_URL']],
   ];
 
   for (const [label, names] of groups) {

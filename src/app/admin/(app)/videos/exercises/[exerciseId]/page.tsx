@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useExerciseDbExercise } from '@/features/exercises/hooks/useExerciseDbExercises';
+import { useExerciseCatalogExercise } from '@/features/exercises/hooks/useExerciseCatalogExercises';
 
 export default function ExerciseDetailsPage() {
   const params = useParams<{ exerciseId: string }>();
   const exerciseId = decodeURIComponent(params.exerciseId ?? '');
 
-  const { exercise, isLoading, error } = useExerciseDbExercise(exerciseId);
+  const { exercise, isLoading, error } = useExerciseCatalogExercise(exerciseId);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -64,7 +64,7 @@ export default function ExerciseDetailsPage() {
 
           <div className="space-y-6">
             <div>
-              <p className="text-xs uppercase tracking-wide text-zinc-500 mb-2">Exercise ID: {exercise.exerciseId}</p>
+              <p className="text-xs uppercase tracking-wide text-zinc-500 mb-2">WorkoutX ID: {exercise.exerciseId}</p>
               <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 leading-tight">{exercise.name}</h1>
             </div>
 

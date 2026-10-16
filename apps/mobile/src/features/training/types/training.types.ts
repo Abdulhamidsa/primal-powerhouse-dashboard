@@ -14,7 +14,7 @@ export type SessionExercise = {
   exerciseNameSnapshot: string;
   notesSnapshot: string | null;
   plannedRestSeconds: number;
-  exercise: { id: string; videoUrl: string | null; instructions: string | null } | null;
+  exercise: { id: string; videoUrl: string | null; imageUrl?: string | null; instructions: string | null } | null;
   sets: TrainingSet[];
 };
 export type TrainingSession = {

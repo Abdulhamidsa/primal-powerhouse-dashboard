@@ -17,9 +17,11 @@ export const createExerciseSchema = z.object({
 
 export const updateExerciseSchema = createExerciseSchema.partial();
 
-export const importExerciseDbExerciseSchema = z.object({
+export const importExerciseCatalogSchema = z.object({
   exerciseId: z.string().min(1),
   name: z.string().min(1).max(255),
+  providerId: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
   gifUrl: z.string().url().nullable().optional(),
   imageUrl: z.string().url().nullable().optional(),
   videoUrl: z.string().url().nullable().optional(),
@@ -29,8 +31,10 @@ export const importExerciseDbExerciseSchema = z.object({
   secondaryMuscles: z.array(z.string()).optional(),
   instructions: z.array(z.string()).optional(),
   overview: z.string().nullable().optional(),
+  category: z.string().optional(),
+  difficultyLevel: z.string().optional(),
 });
 
 export type CreateExerciseInput = z.infer<typeof createExerciseSchema>;
 export type UpdateExerciseInput = z.infer<typeof updateExerciseSchema>;
-export type ImportExerciseDbExerciseInput = z.infer<typeof importExerciseDbExerciseSchema>;
+export type ImportExerciseCatalogInput = z.infer<typeof importExerciseCatalogSchema>;

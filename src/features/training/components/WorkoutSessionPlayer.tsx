@@ -73,8 +73,10 @@ function ExerciseMedia({ exercise }: { exercise: TrainingSessionDTO['exercises']
   const videoUrl = media?.videoUrl?.trim() || null;
   const imageUrl = media?.imageUrl?.trim() || null;
   const instructions = media?.instructions?.trim() || null;
-  const visualUrl = videoUrl || imageUrl;
-  const shouldRenderImage = isImageUrl(videoUrl) || (!videoUrl && Boolean(imageUrl));
+  const [videoFailed, setVideoFailed] = useState(false);
+  useEffect(() => setVideoFailed(false), [videoUrl]);
+  const visualUrl = (!videoFailed && videoUrl) || imageUrl;
+  const shouldRenderImage = isImageUrl(visualUrl) || (!videoUrl && Boolean(imageUrl));
 
   return (
     <div className="overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
@@ -84,7 +86,13 @@ function ExerciseMedia({ exercise }: { exercise: TrainingSessionDTO['exercises']
             // eslint-disable-next-line @next/next/no-img-element
             <img src={visualUrl} alt={`${exercise.exerciseNameSnapshot} demo`} className="h-full w-full object-cover" />
           ) : (
-            <video src={visualUrl} controls preload="metadata" className="h-full w-full bg-black object-contain" />
+            <video
+              src={visualUrl}
+              controls
+              preload="metadata"
+              className="h-full w-full bg-black object-contain"
+              onError={() => setVideoFailed(true)}
+            />
           )
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-muted-foreground">

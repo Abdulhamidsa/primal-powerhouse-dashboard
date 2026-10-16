@@ -32,7 +32,7 @@ marked verified; unknown values are intentionally not inferred.
 | Google OAuth | OAuth start/callback and identity model | OAuth code and provider identity email/name/account ID | Google processing and transfer terms require confirmation |
 | Azure OpenAI | Active chat provider; image-generation code present but production-disabled pending a verified deployment | Minimized meal, ingredient, nutrition, and prompt text | Deployment/region/log retention/DPA require confirmation; no verified image deployment is enabled for production |
 | USDA FoodData Central | Food search routes | Search terms and food filters; no intentional account identity | Provider logging/retention require confirmation |
-| ExerciseDB/RapidAPI | Exercise routes | Exercise search/filter terms | Provider logging/retention/region require confirmation |
+| WorkoutDB | Exercise routes | Exercise search/filter terms and exercise media | Provider logging/retention/region and commercial licence require confirmation |
 | Pusher | Optional realtime server/client code path; unconfigured and inactive in web production | No web production message or notification data is currently sent to Pusher; mobile usage remains unverified | Mobile `EXPO_PUBLIC_PUSHER_*` configuration, cluster, retention, region, and DPA require confirmation |
 | Browser push services | Web Push subscription and delivery | Endpoint/keys and notification payloads | Browser-vendor processing/retention require confirmation |
 | Expo/mobile push services | Mobile push device and delivery code | Device token and notification payloads | Provider processing/retention/region require confirmation |

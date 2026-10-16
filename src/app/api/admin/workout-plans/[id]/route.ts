@@ -74,6 +74,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         const updateData: Record<string, unknown> = {};
         if (ex.videoTitle) updateData.title = ex.videoTitle;
         if (ex.gifUrl) updateData.thumbnailUrl = ex.gifUrl;
+        if (ex.videoUrl) updateData.videoUrl = ex.videoUrl;
 
         await tx.video.upsert({
           where: { id: videoId },
@@ -85,7 +86,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             category: 'STRENGTH_TRAINING',
             difficulty: 'BEGINNER',
             duration: 0,
-            videoUrl: '',
+            videoUrl: ex.videoUrl ?? ex.gifUrl ?? '',
             thumbnailUrl: ex.gifUrl ?? null,
             equipment: null,
             muscleGroups: null,
