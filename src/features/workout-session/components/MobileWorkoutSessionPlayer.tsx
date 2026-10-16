@@ -13,6 +13,7 @@ import MobileWorkoutHeader from './mobile/MobileWorkoutHeader';
 import MobileWorkoutActions from './mobile/MobileWorkoutActions';
 import MobileRestTimerOverlay from './mobile/MobileRestTimerOverlay';
 import MobileExitConfirmation from './mobile/MobileExitConfirmation';
+import MobileFinishConfirmation from './mobile/MobileFinishConfirmation';
 
 const FEEDBACK_OPTIONS: { value: ExerciseFeedbackType; label: string }[] = [
   { value: 'TOO_EASY', label: 'Too easy' },
@@ -41,15 +42,24 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
   const [lockMessage, setLockMessage] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showFinishConfirm, setShowFinishConfirm] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartRef = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const exerciseHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const previousExerciseIndexRef = useRef<number | null>(null);
 
   const currentExercise = exercises[currentIdx];
   const currentState = exerciseStates[currentIdx];
   const totalExercises = exercises.length;
-  const completedCount = exerciseStates.filter(ex => ex.done).length;
+  const currentCompletedSetCount = currentState?.sets.filter(set => set.completed).length ?? 0;
+  const currentTotalSetCount = currentState?.sets.length ?? 0;
+  const incompleteSetCount = exerciseStates.reduce(
+    (count, exercise) => count + exercise.sets.filter(set => !set.completed).length,
+    0,
+  );
 
   useEffect(() => {
     setExerciseStates(buildInitialExerciseState(exercises));
@@ -119,7 +129,7 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
           ...ex,
           sets: [
             ...ex.sets,
-            { reps: last?.reps ?? exercises[i].maxReps, weightKg: last?.weightKg ?? 0, completed: true },
+            { reps: last?.reps ?? exercises[i].maxReps, weightKg: last?.weightKg ?? 0, completed: false },
           ],
         };
       }),
@@ -133,17 +143,6 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         return { ...ex, sets: ex.sets.slice(0, -1) };
       }),
     );
-  }
-
-  function markExerciseDone(exerciseIdx: number) {
-    setExerciseStates(prev => prev.map((ex, i) => (i === exerciseIdx ? { ...ex, done: true } : ex)));
-    // Start rest timer
-    const restSecs = exercises[exerciseIdx].restSeconds;
-    if (restSecs > 0) setRestSeconds(restSecs);
-    // Advance to next exercise
-    if (exerciseIdx < exercises.length - 1) {
-      handleNavigateToExercise(exerciseIdx + 1);
-    }
   }
 
   function setFeedback(exerciseIdx: number, feedback: ExerciseFeedbackType | null) {
@@ -162,7 +161,7 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         status,
         exerciseLogs: completedExercises.map(ex => ({
           planExerciseId: ex.planExerciseId,
-          completedAt: ex.done ? new Date().toISOString() : null,
+          completedAt: ex.done || ex.sets.every(set => set.completed) ? new Date().toISOString() : null,
           feedback: ex.feedback,
           feedbackNote: ex.feedbackNote,
           sets: ex.sets,
@@ -176,6 +175,14 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
     }
   }
 
+  function requestFinish() {
+    if (incompleteSetCount > 0) {
+      setShowFinishConfirm(true);
+      return;
+    }
+    void finishSession('COMPLETED');
+  }
+
   async function handleNavigateToExercise(newIdx: number) {
     if (newIdx === currentIdx || isTransitioning) return;
     setIsTransitioning(true);
@@ -186,6 +193,16 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
 
   async function handleNext() {
     if (currentIdx < exercises.length - 1) {
+      const currentExerciseState = exerciseStates[currentIdx];
+      const currentExerciseComplete =
+        currentExerciseState.sets.length > 0 && currentExerciseState.sets.every(set => set.completed);
+      if (currentExerciseComplete) {
+        setExerciseStates(prev =>
+          prev.map((exercise, index) => (index === currentIdx ? { ...exercise, done: true } : exercise)),
+        );
+      }
+      const restSecs = exercises[currentIdx].restSeconds;
+      if (restSecs > 0) setRestSeconds(restSecs);
       await handleNavigateToExercise(currentIdx + 1);
     }
   }
@@ -195,6 +212,17 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
       await handleNavigateToExercise(currentIdx - 1);
     }
   }
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      if (previousExerciseIndexRef.current !== null) {
+        exerciseHeadingRef.current?.focus({ preventScroll: true });
+      }
+    });
+    previousExerciseIndexRef.current = currentIdx;
+    return () => window.cancelAnimationFrame(frame);
+  }, [assignment.id, currentIdx, exerciseSignature]);
 
   // Swipe gesture handling
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -219,7 +247,6 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
     touchStartRef.current = null;
   };
 
-  const allDone = exercises.length > 0 && exerciseStates.length === exercises.length && exerciseStates.every(ex => ex.done);
   const isLastExercise = currentIdx === exercises.length - 1;
 
   if (!started) {
@@ -283,17 +310,22 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         workoutName={assignment.workoutPlan.name}
         currentIdx={currentIdx}
         totalExercises={totalExercises}
-        completedCount={completedCount}
+        completedSetCount={currentCompletedSetCount}
+        totalSets={currentTotalSetCount}
         onExit={() => setShowExitConfirm(true)}
       />
 
       {/* Main scrollable area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden">
         {/* Hero Section */}
         <MobileExerciseHero exercise={currentExercise} isTransitioning={isTransitioning} />
 
         {/* Exercise Details */}
-        <MobileExerciseDetails exercise={currentExercise} isTransitioning={isTransitioning} />
+        <MobileExerciseDetails
+          exercise={currentExercise}
+          isTransitioning={isTransitioning}
+          headingRef={exerciseHeadingRef}
+        />
 
         {/* Sets Form */}
         <MobileExerciseSetsForm
@@ -303,34 +335,28 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
           onUpdateSet={updateSet}
           onAddSet={addSet}
           onRemoveSet={removeSet}
-          onMarkDone={markExerciseDone}
           isTransitioning={isTransitioning}
         />
 
         {/* Feedback Section */}
-        {currentState.done && (
-          <MobileExerciseFeedback
-            feedback={currentState.feedback}
-            feedbackNote={currentState.feedbackNote}
-            currentIdx={currentIdx}
-            onFeedbackChange={setFeedback}
-            onFeedbackNoteChange={setFeedbackNote}
-            feedbackOptions={FEEDBACK_OPTIONS}
-            isTransitioning={isTransitioning}
-          />
-        )}
+        <MobileExerciseFeedback
+          feedback={currentState.feedback}
+          feedbackNote={currentState.feedbackNote}
+          currentIdx={currentIdx}
+          onFeedbackChange={setFeedback}
+          onFeedbackNoteChange={setFeedbackNote}
+          feedbackOptions={FEEDBACK_OPTIONS}
+          isTransitioning={isTransitioning}
+        />
 
         {/* Bottom Actions with safe area */}
         <MobileWorkoutActions
-          onDone={() => markExerciseDone(currentIdx)}
           onPrev={handlePrev}
           onNext={handleNext}
-          isDone={currentState.done}
+          hasPrevious={currentIdx > 0}
           isLastExercise={isLastExercise}
           isFinishing={finishing}
-          allDone={allDone}
-          canFinish={isLastExercise}
-          onFinish={() => finishSession('COMPLETED')}
+          onFinish={requestFinish}
         />
       </div>
 
@@ -342,6 +368,18 @@ export default function MobileWorkoutSessionPlayer({ assignment, onDone }: Props
         <MobileExitConfirmation
           onContinue={() => setShowExitConfirm(false)}
           onExit={() => finishSession('ABANDONED')}
+          isLoading={finishing}
+        />
+      )}
+
+      {showFinishConfirm && (
+        <MobileFinishConfirmation
+          incompleteSetCount={incompleteSetCount}
+          onReview={() => setShowFinishConfirm(false)}
+          onFinish={() => {
+            setShowFinishConfirm(false);
+            void finishSession('COMPLETED');
+          }}
           isLoading={finishing}
         />
       )}

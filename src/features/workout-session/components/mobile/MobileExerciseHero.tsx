@@ -79,9 +79,9 @@ export default function MobileExerciseHero({ exercise, isTransitioning }: Props)
 
   return (
     <div
-      className="relative h-fit w-full bg-muted overflow-hidden transition-opacity duration-300"
+      className="relative max-h-[280px] w-full overflow-hidden bg-muted transition-opacity duration-300"
       style={{
-        aspectRatio: '4 / 4',
+        aspectRatio: '16 / 10',
         opacity: isTransitioning ? 0 : 1,
       }}
     >

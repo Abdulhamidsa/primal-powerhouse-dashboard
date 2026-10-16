@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { RefObject } from 'react';
 import { ChatTextIcon as MessageSquare, CaretDownIcon as ChevronDown } from '@phosphor-icons/react';
 import type { WorkoutPlanExercise } from '@/features/workout-plans/types/workoutPlan.types';
 
 interface Props {
   exercise: WorkoutPlanExercise;
   isTransitioning: boolean;
+  headingRef: RefObject<HTMLHeadingElement | null>;
 }
 
 function formatRest(seconds: number): string {
@@ -16,9 +18,13 @@ function formatRest(seconds: number): string {
   return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
 }
 
-export default function MobileExerciseDetails({ exercise, isTransitioning }: Props) {
+export default function MobileExerciseDetails({ exercise, isTransitioning, headingRef }: Props) {
   const [notesExpanded, setNotesExpanded] = useState(false);
   const muscleGroups = exercise.video.muscleGroups;
+
+  useEffect(() => {
+    setNotesExpanded(false);
+  }, [exercise.id]);
 
   return (
     <div
@@ -29,10 +35,16 @@ export default function MobileExerciseDetails({ exercise, isTransitioning }: Pro
       }}
     >
       {/* Title */}
-      <h2 className="text-2xl font-bold text-foreground tracking-tight leading-tight">{exercise.video.title}</h2>
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="line-clamp-2 text-xl font-bold leading-tight tracking-tight text-foreground outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        {exercise.video.title}
+      </h2>
 
       {/* Stats row */}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
         <span className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-xs font-medium text-foreground">
           {exercise.targetSets} sets
         </span>

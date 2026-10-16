@@ -37,7 +37,7 @@ export function buildInitialExerciseState(
       sets: Array.from({ length: ex.targetSets }, () => ({
         reps: ex.maxReps,
         weightKg: suggestedWeight,
-        completed: true,
+        completed: false,
       })),
       feedback: null,
       feedbackNote: null,

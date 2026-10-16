@@ -11,12 +11,12 @@ interface Props {
   onUpdateSet: (exerciseIdx: number, setIdx: number, updated: Partial<LocalSetEntry>) => void;
   onAddSet: (exerciseIdx: number) => void;
   onRemoveSet: (exerciseIdx: number) => void;
-  onMarkDone: (exerciseIdx: number) => void;
   isTransitioning: boolean;
 }
 
 export default function MobileExerciseSetsForm({
   state,
+  exercise,
   currentIdx,
   onUpdateSet,
   onAddSet,
@@ -25,7 +25,7 @@ export default function MobileExerciseSetsForm({
 }: Props) {
   return (
     <div
-      className="px-5 pb-2 transition-all duration-300"
+      className="mx-4 rounded-[28px] border border-border bg-card p-4 transition-all duration-300"
       style={{
         opacity: isTransitioning ? 0 : 1,
         transform: isTransitioning ? 'translateY(12px)' : 'translateY(0)',
@@ -40,7 +40,7 @@ export default function MobileExerciseSetsForm({
       </div>
 
       {/* Header row */}
-      <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 px-2 mb-2">
+      <div className="grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 px-1 mb-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Set</span>
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-center">
           Reps
@@ -54,7 +54,7 @@ export default function MobileExerciseSetsForm({
       </div>
 
       {/* Sets list */}
-      <div className="space-y-2">
+      <div className="divide-y divide-border">
         {state.sets.map((set, si) => (
           <SetRow key={si} index={si} set={set} onUpdate={updated => onUpdateSet(currentIdx, si, updated)} />
         ))}
@@ -63,15 +63,17 @@ export default function MobileExerciseSetsForm({
       {/* Add/remove set buttons */}
       <div className="mt-3 flex items-center gap-2">
         <button
+          type="button"
           onClick={() => onAddSet(currentIdx)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-muted/60 hover:bg-muted active:scale-[0.98] transition-all text-xs font-medium text-foreground"
+          className="min-h-11 flex-1 rounded-xl bg-muted/60 px-3 text-xs font-medium text-foreground transition-all hover:bg-muted active:scale-[0.98]"
         >
           <Plus aria-hidden="true" focusable="false" size={14} /> Add set
         </button>
-        {state.sets.length > 1 && (
+        {state.sets.length > exercise.targetSets && (
           <button
+            type="button"
             onClick={() => onRemoveSet(currentIdx)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-muted/60 hover:bg-muted active:scale-[0.98] transition-all text-xs font-medium text-muted-foreground"
+            className="min-h-11 flex-1 rounded-xl bg-muted/60 px-3 text-xs font-medium text-muted-foreground transition-all hover:bg-muted active:scale-[0.98]"
           >
             <Minus aria-hidden="true" focusable="false" size={14} /> Remove last
           </button>
@@ -92,7 +94,7 @@ function SetRow({
 }) {
   return (
     <div
-      className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-2 items-center transition-all duration-200"
+      className="grid min-h-[60px] grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] items-center gap-2 py-2 transition-all duration-200"
       style={{ opacity: set.completed ? 1 : 0.85 }}
     >
       {/* Set number */}
@@ -108,12 +110,13 @@ function SetRow({
 
       {/* Done toggle */}
       <button
+        type="button"
         onClick={() => onUpdate({ completed: !set.completed })}
-        className="flex items-center justify-center active:scale-90 transition-transform"
+        className="flex min-h-11 min-w-11 items-center justify-center transition-transform active:scale-90"
         aria-label={set.completed ? 'Mark set incomplete' : 'Mark set complete'}
       >
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+          className="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200"
           style={{
             background: set.completed ? 'var(--color-accent)' : 'transparent',
             border: `2px solid ${set.completed ? 'var(--color-accent)' : 'var(--color-border)'}`,
@@ -144,10 +147,11 @@ function Stepper({
   const formatted = decimals > 0 ? value.toFixed(value % 1 === 0 ? 0 : decimals) : value.toString();
 
   return (
-    <div className="flex items-center rounded-xl bg-muted/60 border border-transparent focus-within:border-accent transition-colors">
+    <div className="flex min-h-11 items-center rounded-xl border border-transparent bg-muted/60 transition-colors focus-within:border-accent">
       <button
+        type="button"
         onClick={() => onChange(Math.max(min, value - step))}
-        className="flex-shrink-0 w-9 h-10 flex items-center justify-center text-muted-foreground active:scale-90 transition-transform"
+        className="flex h-11 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-transform active:scale-90"
         aria-label="Decrease"
       >
         <Minus aria-hidden="true" focusable="false" size={14} />
@@ -160,11 +164,12 @@ function Stepper({
           const num = Number(e.target.value);
           if (!isNaN(num)) onChange(Math.max(min, num));
         }}
-        className="w-full min-w-0 h-10 text-center text-sm font-semibold text-foreground bg-transparent outline-none tabular-nums"
+        className="h-11 w-full min-w-0 bg-transparent text-center text-sm font-semibold tabular-nums text-foreground outline-none"
       />
       <button
+        type="button"
         onClick={() => onChange(value + step)}
-        className="flex-shrink-0 w-9 h-10 flex items-center justify-center text-muted-foreground active:scale-90 transition-transform"
+        className="flex h-11 w-10 flex-shrink-0 items-center justify-center text-muted-foreground transition-transform active:scale-90"
         aria-label="Increase"
       >
         <Plus aria-hidden="true" focusable="false" size={14} />

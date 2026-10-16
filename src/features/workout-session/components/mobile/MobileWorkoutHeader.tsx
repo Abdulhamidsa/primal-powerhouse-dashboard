@@ -6,7 +6,8 @@ interface Props {
   workoutName: string;
   currentIdx: number;
   totalExercises: number;
-  completedCount: number;
+  completedSetCount: number;
+  totalSets: number;
   onExit: () => void;
 }
 
@@ -14,7 +15,8 @@ export default function MobileWorkoutHeader({
   workoutName,
   currentIdx,
   totalExercises,
-  completedCount,
+  completedSetCount,
+  totalSets,
   onExit,
 }: Props) {
   const progressPercent = Math.round(((currentIdx + 1) / totalExercises) * 100);
@@ -26,7 +28,7 @@ export default function MobileWorkoutHeader({
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-bold text-foreground truncate">{workoutName}</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            {currentIdx + 1} of {totalExercises} • {completedCount} complete
+            Exercise {currentIdx + 1} of {totalExercises} · {completedSetCount} of {totalSets} sets complete
           </p>
         </div>
         <button
