@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { AUTH_COOKIE_NAME, CLIENT_AUTH_COOKIE_NAME, AuthService } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { requiresEmailVerification } from '@/lib/auth/client-verification';
+import { shouldShowWelcomeOnboarding } from '@/features/user-onboarding/lib/shouldShowWelcomeOnboarding';
 import UserShell from './UserShell';
 
 export default async function UserAppLayout({ children }: { children: React.ReactNode }) {
@@ -17,10 +18,18 @@ export default async function UserAppLayout({ children }: { children: React.Reac
 
   const client = await prisma.client.findUnique({
     where: { id: payload.userId },
-    select: { signupSource: true, emailVerifiedAt: true, email: true, accessMode: true },
+    select: { signupSource: true, emailVerifiedAt: true, email: true, accessMode: true, onboardingCompletedAt: true },
   });
   if (!client) redirect('/user/login');
   if (requiresEmailVerification(client) && client.email) redirect(`/user/verify-required?email=${encodeURIComponent(client.email)}`);
 
-  return <UserShell userId={payload.userId} accessMode={client.accessMode}>{children}</UserShell>;
+  return (
+    <UserShell
+      userId={payload.userId}
+      accessMode={client.accessMode}
+      showWelcomeOnboarding={shouldShowWelcomeOnboarding(client)}
+    >
+      {children}
+    </UserShell>
+  );
 }
