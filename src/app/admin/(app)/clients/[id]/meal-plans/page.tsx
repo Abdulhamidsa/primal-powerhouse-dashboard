@@ -99,7 +99,7 @@ export default function ClientMealPlansPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gray-50">
         {/* <Navigation /> */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
@@ -118,7 +118,7 @@ export default function ClientMealPlansPage() {
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gray-50">
         {/* <Navigation /> */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-16">
@@ -134,7 +134,7 @@ export default function ClientMealPlansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* <Navigation /> */}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -164,7 +164,7 @@ export default function ClientMealPlansPage() {
                 <button
                   key={plan.id}
                   onClick={() => setSelectedPlanId(plan.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200  ${selectedPlanId === plan.id ? 'bg-blue-500 text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-blue-50 border border-gray-200'}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedPlanId === plan.id ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'}`}
                 >
                   {plan.name}
                   {plan.isActive && <span className="ml-2 text-xs">●</span>}
@@ -190,7 +190,7 @@ export default function ClientMealPlansPage() {
             <>
               {/* Plan Overview */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="bg-white rounded-xl p-6 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-medium text-gray-600 mb-2">Daily Calories</h3>
@@ -204,7 +204,7 @@ export default function ClientMealPlansPage() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="bg-white rounded-xl p-6 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-medium text-gray-600 mb-2">Daily Protein</h3>
@@ -218,7 +218,7 @@ export default function ClientMealPlansPage() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="bg-white rounded-xl p-6 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-medium text-gray-600 mb-2">Daily Carbs</h3>
@@ -232,7 +232,7 @@ export default function ClientMealPlansPage() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="bg-white rounded-xl p-6 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-medium text-gray-600 mb-2">Daily Fat</h3>
@@ -248,7 +248,7 @@ export default function ClientMealPlansPage() {
               </div>
 
               {/* Weekly Schedule */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-gray-900">Weekly Meal Schedule</h3>

@@ -29,16 +29,16 @@ type MealCardProps = {
 export const MealCard = React.memo(function MealCard({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCardProps) {
   const totalTime = (Number(meal.prepTime) || 0) + (Number(meal.cookTime) || 0);
   const macros = [
-    { label: 'Calories', value: Number(meal.calories) || 0, icon: Flame, color: 'text-orange-400' },
-    { label: 'Protein', value: `${Number(meal.protein) || 0}g`, icon: Drumstick, color: 'text-emerald-400' },
-    { label: 'Carbs', value: `${Number(meal.carbs) || 0}g`, icon: Wheat, color: 'text-amber-300' },
-    { label: 'Fat', value: `${Number(meal.fat) || 0}g`, icon: Droplets, color: 'text-sky-400' },
+    { label: 'Calories', value: Number(meal.calories) || 0, icon: Flame, color: 'text-foreground' },
+    { label: 'Protein', value: `${Number(meal.protein) || 0}g`, icon: Drumstick, color: 'text-foreground' },
+    { label: 'Carbs', value: `${Number(meal.carbs) || 0}g`, icon: Wheat, color: 'text-foreground' },
+    { label: 'Fat', value: `${Number(meal.fat) || 0}g`, icon: Droplets, color: 'text-foreground' },
   ];
 
   return (
     <article
       onClick={() => onViewMeal(meal)}
-      className="group cursor-pointer overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035] transition-colors hover:border-white/15 hover:bg-white/[0.055]"
+      className="group cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] transition-colors hover:border-white/15 hover:bg-white/[0.055]"
     >
       <div className="relative h-48 w-full">
         {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
@@ -62,7 +62,7 @@ export const MealCard = React.memo(function MealCard({ meal, onViewMeal, onEditM
           </div>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-black/45" />
 
         <div className="absolute top-3 left-3">
           <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
@@ -93,7 +93,7 @@ export const MealCard = React.memo(function MealCard({ meal, onViewMeal, onEditM
           {macros.map(m => {
             const Icon = m.icon;
             return (
-              <div key={m.label} className="rounded-2xl border border-white/10 bg-black/18 px-2 py-2">
+              <div key={m.label} className="rounded-lg border border-white/10 bg-black/18 px-2 py-2">
                 <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   <Icon aria-hidden="true" focusable="false" className={`h-3 w-3 ${m.color}`} />
                   <span className="truncate">{m.label === 'Calories' ? 'Kcal' : m.label}</span>

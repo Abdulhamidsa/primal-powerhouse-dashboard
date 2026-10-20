@@ -150,10 +150,10 @@ export default function AssignVideosModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl border border-gray-200 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r text-white p-6 rounded-t-3xl">
+        <div className="sticky top-0 bg-gray-900 text-white p-6 rounded-t-xl">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">Assign Videos to Clients</h2>
@@ -164,7 +164,7 @@ export default function AssignVideosModal({
             </div>
             <button
               onClick={onCloseAction}
-              className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
+              className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
             >
               <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
@@ -193,7 +193,7 @@ export default function AssignVideosModal({
                             className="object-cover rounded-lg"
                           />
                         ) : (
-                          <div className="w-16 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+                          <div className="w-16 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                             <WarningCircleIcon
                               className="w-6 h-6 text-purple-500"
                               aria-hidden="true"
@@ -243,7 +243,7 @@ export default function AssignVideosModal({
                   placeholder="Search clients..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500 transition-colors"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export default function AssignVideosModal({
                     {filteredClients.map(client => (
                       <label
                         key={client.id}
-                        className={`cursor-pointer flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${selectedClients.includes(client.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                        className={`cursor-pointer flex items-center gap-3 p-3 rounded-lg border-2 transition-colors ${selectedClients.includes(client.id) ? 'border-gray-500 bg-gray-100' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
                       >
                         <input
                           type="checkbox"
@@ -310,7 +310,7 @@ export default function AssignVideosModal({
                               className="rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                               <span className="text-blue-600 font-semibold text-sm">
                                 {getClientDisplayName(client).charAt(0)}
                               </span>
@@ -343,7 +343,7 @@ export default function AssignVideosModal({
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500 transition-colors"
                 />
               </div>
               <div>
@@ -353,7 +353,7 @@ export default function AssignVideosModal({
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Add any special instructions or notes for clients..."
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500 transition-colors resize-none"
                 />
               </div>
             </div>
@@ -372,16 +372,16 @@ export default function AssignVideosModal({
             <div className="flex items-center gap-3">
               <button
                 onClick={onCloseAction}
-                className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium"
+                className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={selectedClients.length === 0 || isSubmitting}
-                className={`px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                className={`px-8 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
                   selectedClients.length > 0 && !isSubmitting
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg'
+                    ? 'bg-gray-900 text-white hover:bg-gray-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >

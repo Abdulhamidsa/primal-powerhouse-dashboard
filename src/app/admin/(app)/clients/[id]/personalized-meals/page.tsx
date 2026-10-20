@@ -129,7 +129,7 @@ export default function ClientPersonalizedMealsPage() {
             {meals.map(meal => (
               <div
                 key={meal.id}
-                className="bg-zinc-900 rounded-2xl shadow-lg border border-zinc-800 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden transition-colors group"
               >
                 <div className="relative h-48 w-full">
                   {meal.imageUrl ? (
@@ -141,7 +141,7 @@ export default function ClientPersonalizedMealsPage() {
                       }
                       alt={meal.name}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (

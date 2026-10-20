@@ -671,7 +671,7 @@ export default function AddClientModal({
                 ].map(level => (
                   <label
                     key={level.value}
-                    className="relative p-4 border rounded-lg cursor-pointer transition-all"
+                    className="relative p-4 border rounded-lg cursor-pointer transition-colors"
                     style={{
                       background:
                         formData.activityLevel === level.value ? 'var(--color-accent-muted)' : 'var(--color-bg-alt)',

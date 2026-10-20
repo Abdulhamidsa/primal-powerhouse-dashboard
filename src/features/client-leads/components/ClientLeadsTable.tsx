@@ -53,12 +53,12 @@ function getInitials(name: string) {
 
 function PipelineStat({ label, value, icon: Icon }: { label: string; value: string | number; icon: ElementType }) {
   return (
-    <div className="flex items-center justify-between rounded-[22px] border border-white/10 bg-white/[0.035] p-4">
+    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.035] p-4">
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
         <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
       </div>
-      <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
+      <div className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-muted-foreground">
         <Icon aria-hidden="true" focusable="false" size={18} />
       </div>
     </div>
@@ -94,7 +94,7 @@ function StatusPicker({
       </button>
 
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+0.35rem)] z-30 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/95 py-1 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+        <div className="absolute left-0 top-[calc(100%+0.35rem)] z-30 min-w-[170px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 py-1">
           {ALL_STATUSES.map(status => (
             <button
               key={status}
@@ -142,7 +142,7 @@ function LeadCard({
   return (
     <article
       onClick={onOpenAction}
-      className="group cursor-pointer rounded-[22px] border border-white/10 bg-black/18 p-4 transition-all hover:-translate-y-0.5 hover:border-white/15 hover:bg-white/[0.045]"
+      className="group cursor-pointer rounded-xl border border-white/10 bg-black/18 p-4 transition-colors hover:border-white/15 hover:bg-white/[0.045]"
     >
       <div className="flex items-start gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-sm font-bold text-[var(--color-accent)]">
@@ -308,7 +308,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
           <PipelineStat label="Converted" value={counts.CONVERTED} icon={UserCheck} />
         </section>
 
-        <div className="flex flex-col gap-3 rounded-[22px] border border-white/10 bg-white/[0.035] p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-foreground">Pipeline search</h3>
             <p className="mt-1 text-xs text-muted-foreground">Find prospects by name, email, or phone.</p>
@@ -334,7 +334,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
               <div key={status} className="space-y-3 rounded-[24px] border border-white/10 bg-white/[0.025] p-3">
                 <div className="h-5 w-1/2 animate-pulse rounded-full bg-white/[0.07]" />
                 {[0, 1, 2].map(item => (
-                  <div key={item} className="h-36 animate-pulse rounded-[22px] bg-white/[0.055]" />
+                  <div key={item} className="h-36 animate-pulse rounded-xl bg-white/[0.055]" />
                 ))}
               </div>
             ))}
@@ -360,7 +360,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
 
                 <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
                   {groupedLeads[status].length === 0 ? (
-                    <div className="flex h-40 items-center justify-center rounded-[22px] border border-dashed border-white/10 bg-black/12 px-4 text-center">
+                    <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-white/10 bg-black/12 px-4 text-center">
                       <p className="text-xs leading-5 text-muted-foreground">
                         {search ? 'No leads match this search in this stage.' : 'No leads in this stage yet.'}
                       </p>
@@ -406,7 +406,7 @@ export function ClientLeadsTable({ onConvertAction }: Props) {
 
       {confirmDeleteId && (
         <Dialog open onOpenChange={() => setConfirmDeleteId(null)}>
-          <DialogContent className="max-w-md overflow-hidden rounded-[28px] border border-red-500/20 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+          <DialogContent flat className="max-w-md overflow-hidden rounded-xl border border-red-500/20 bg-zinc-950 p-0 text-foreground">
             <div className="border-b border-white/10 px-6 py-5">
               <DialogHeader>
                 <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">
@@ -471,7 +471,7 @@ function EditLeadModal({ lead, onCloseAction, onSavedAction }: EditLeadModalProp
 
   return (
     <Dialog open onOpenChange={onCloseAction}>
-      <DialogContent className="max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+      <DialogContent flat className="max-w-lg overflow-hidden rounded-xl border border-white/10 bg-zinc-950 p-0 text-foreground">
         <div className="border-b border-white/10 px-6 py-5">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">Edit Lead</DialogTitle>
@@ -547,7 +547,7 @@ function CredentialsModal({
 
   return (
     <Dialog open onOpenChange={onCloseAction}>
-      <DialogContent className="max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+      <DialogContent flat className="max-w-md overflow-hidden rounded-xl border border-white/10 bg-zinc-950 p-0 text-foreground">
         <div className="border-b border-white/10 px-6 py-5">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold tracking-[-0.02em] text-foreground">

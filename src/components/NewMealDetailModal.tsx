@@ -79,7 +79,7 @@ export default function NewMealDetailModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onCloseAction}>
-        <DialogContent className="max-h-[92vh] max-w-4xl overflow-hidden rounded-[30px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)] sm:max-w-[820px]">
+        <DialogContent flat className="max-h-[92vh] max-w-4xl overflow-hidden rounded-xl border border-white/10 bg-zinc-950 p-0 text-foreground sm:max-w-[820px]">
           <div className="flex max-h-[92vh] flex-col overflow-hidden">
             <div className="relative shrink-0">
               {meal.images && meal.images.length > 0 && meal.images[0] && meal.images[0].trim() !== '' ? (
@@ -103,7 +103,7 @@ export default function NewMealDetailModal({
               )}
 
               <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4 sm:p-5">
-                <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]/95 px-3 py-1.5 text-xs font-medium text-[var(--color-text)] backdrop-blur">
+                <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)]">
                   <span className="inline-flex items-center gap-2">
                     {getMealTypeIcon(meal.type)}
                     {meal.type.charAt(0).toUpperCase() + meal.type.slice(1)}
@@ -124,17 +124,17 @@ export default function NewMealDetailModal({
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[var(--color-text-muted)]">
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1.5">
-                      <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
+                      <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-muted-foreground" />
                       <span>Prep: {meal.prepTime} min</span>
                     </div>
 
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1.5">
-                      <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
+                      <Clock aria-hidden="true" focusable="false" className="h-4 w-4 text-muted-foreground" />
                       <span>Cook: {meal.cookTime} min</span>
                     </div>
 
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-alt)] px-3 py-1.5">
-                      <Users aria-hidden="true" focusable="false" className="h-4 w-4 text-[var(--color-accent)]" />
+                      <Users aria-hidden="true" focusable="false" className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
                       </span>
@@ -142,7 +142,7 @@ export default function NewMealDetailModal({
                   </div>
                 </div>
 
-                <div className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.14)] sm:p-5">
+                <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                     <div className="shrink-0">
                       <p className="text-xs text-[var(--color-text-muted)]">Calories</p>
@@ -174,9 +174,9 @@ export default function NewMealDetailModal({
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+                  <section className="rounded-xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
-                      <Utensils aria-hidden="true" focusable="false" className="h-5 w-5 text-[var(--color-accent)]" />
+                      <Utensils aria-hidden="true" focusable="false" className="h-5 w-5 text-muted-foreground" />
                       <h2 className="text-lg font-semibold text-[var(--color-text)]">Ingredients</h2>
                     </div>
 
@@ -186,7 +186,7 @@ export default function NewMealDetailModal({
                           key={index}
                           className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
                         >
-                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-translucent)] text-sm font-medium text-[var(--color-accent)]">
+                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-sm font-medium text-foreground">
                             {index + 1}
                           </span>
 
@@ -200,9 +200,9 @@ export default function NewMealDetailModal({
                     </ul>
                   </section>
 
-                  <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+                  <section className="rounded-xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
-                      <Clock aria-hidden="true" focusable="false" className="h-5 w-5 text-[var(--color-accent)]" />
+                      <Clock aria-hidden="true" focusable="false" className="h-5 w-5 text-muted-foreground" />
                       <h2 className="text-lg font-semibold text-[var(--color-text)]">Instructions</h2>
                     </div>
 
@@ -212,7 +212,7 @@ export default function NewMealDetailModal({
                           key={index}
                           className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
                         >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-sm font-medium text-[var(--color-text-on-accent)]">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-sm font-medium text-black">
                             {index + 1}
                           </span>
 
@@ -226,7 +226,7 @@ export default function NewMealDetailModal({
                 </div>
 
                 {meal.tags.length > 0 && (
-                  <section className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+                  <section className="rounded-xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
                     <h3 className="mb-3 text-base font-semibold text-[var(--color-text)]">Tags</h3>
 
                     <div className="flex flex-wrap gap-2">
@@ -248,7 +248,7 @@ export default function NewMealDetailModal({
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setPersonalizeModalOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent-translucent)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent-translucent)]/80"
+                      className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-white/[0.06] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/[0.1]"
                     >
                       <PencilSimpleIcon aria-hidden="true" focusable="false" className="h-4 w-4" />
                       Personalize

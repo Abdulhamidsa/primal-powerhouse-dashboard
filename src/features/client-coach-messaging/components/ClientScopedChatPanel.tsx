@@ -92,17 +92,17 @@ export function ClientScopedChatPanel({ clientId }: { clientId: string }) {
             Loading chat...
           </p>
         ) : (
-          <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
+          <MessageList flat conversation={conversation} messages={messages} onRetryAction={retryMessage} />
         )}
         {isLoadingOlder ? (
-          <div className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-full border bg-[var(--color-surface)]/90 px-3 py-1 text-[10px] text-[var(--color-text-muted)] shadow-sm backdrop-blur">
+          <div className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-lg border bg-[var(--color-surface)] px-3 py-1 text-[10px] text-[var(--color-text-muted)]">
             Loading older messages…
           </div>
         ) : null}
       </div>
 
       <div className="border-t p-3" style={{ borderColor: 'var(--color-border)' }}>
-        <MessageComposer conversationId={conversation?.id ?? null} onSendAction={sendMessage} />
+        <MessageComposer flat conversationId={conversation?.id ?? null} onSendAction={sendMessage} />
       </div>
     </div>
   );

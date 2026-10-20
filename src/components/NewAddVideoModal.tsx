@@ -254,7 +254,7 @@ export default function NewAddVideoModal({ isOpen, onCloseAction, onVideoAddedAc
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden">
+      <DialogContent flat className="max-w-4xl p-0 overflow-hidden">
         <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>

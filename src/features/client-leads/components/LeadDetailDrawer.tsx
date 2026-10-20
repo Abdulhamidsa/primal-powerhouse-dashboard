@@ -55,11 +55,11 @@ export function LeadDetailDrawer({ lead, onCloseAction }: Props) {
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onCloseAction} />
+      <div className="fixed inset-0 z-40 bg-black/60" onClick={onCloseAction} />
 
       {/* Drawer panel */}
       <div
-        className="fixed right-0 top-0 z-50 flex h-full flex-col overflow-hidden border-l border-white/10 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
+        className="fixed right-0 top-0 z-50 flex h-full flex-col overflow-hidden border-l border-white/10 bg-zinc-950"
         style={{
           width: 'min(420px, 100vw)',
         }}

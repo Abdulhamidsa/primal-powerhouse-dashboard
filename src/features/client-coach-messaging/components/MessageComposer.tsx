@@ -31,9 +31,11 @@ function formatDuration(totalSeconds: number): string {
 export function MessageComposer({
   conversationId,
   onSendAction,
+  flat = false,
 }: {
   conversationId: string | null;
   onSendAction: (body: string, attachments: MessageAttachment[]) => Promise<void>;
+  flat?: boolean;
 }) {
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
@@ -324,7 +326,7 @@ export function MessageComposer({
       ) : null}
 
       <div
-        className="relative flex items-end gap-2 rounded-[30px] border px-2.5 py-2 shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
+        className={flat ? 'relative flex items-end gap-2 rounded-lg border px-2.5 py-2' : 'relative flex items-end gap-2 rounded-[30px] border px-2.5 py-2 shadow-[0_10px_32px_rgba(0,0,0,0.18)]'}
         style={{
           borderColor: 'var(--color-border)',
           background: 'color-mix(in srgb, var(--color-surface) 94%, var(--color-bg))',
@@ -332,10 +334,10 @@ export function MessageComposer({
       >
         {actionMenuOpen ? (
           <div
-            className="absolute bottom-[calc(100%+0.55rem)] left-2 z-30 w-64 overflow-hidden rounded-[26px] border shadow-[0_18px_55px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+            className={flat ? 'absolute bottom-[calc(100%+0.55rem)] left-2 z-30 w-64 overflow-hidden rounded-lg border' : 'absolute bottom-[calc(100%+0.55rem)] left-2 z-30 w-64 overflow-hidden rounded-[26px] border shadow-[0_18px_55px_rgba(0,0,0,0.28)] backdrop-blur-xl'}
             style={{
               borderColor: 'var(--color-border)',
-              background: 'color-mix(in srgb, var(--color-surface) 96%, transparent)',
+              background: 'var(--color-surface)',
             }}
           >
             <button

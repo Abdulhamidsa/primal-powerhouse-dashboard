@@ -306,8 +306,8 @@ export function TemplateBuilder() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-4xl space-y-4 overflow-y-auto rounded-[28px] border border-white/10 bg-[var(--color-surface)] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="max-h-[90vh] w-full max-w-4xl space-y-4 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-surface)] p-6">
             <h2 className="sticky top-0 bg-[var(--color-surface)] py-1 text-xl font-semibold text-foreground">
               {editingId ? 'Edit Template' : 'Create Template'}
             </h2>

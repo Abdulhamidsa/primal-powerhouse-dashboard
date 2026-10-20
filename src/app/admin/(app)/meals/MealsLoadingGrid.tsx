@@ -6,7 +6,7 @@ export const MealsLoadingGrid = () => {
       {[...Array(6)].map((_, index) => (
         <div
           key={index}
-          className="overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035] shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
+          className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.035]"
         >
           <div className="h-48 animate-pulse bg-white/[0.06]" />
           <div className="space-y-4 p-4">

@@ -92,17 +92,17 @@ function MetricCard({
       : tone === 'success'
         ? 'border-emerald-400/25 bg-emerald-500/10 text-emerald-100'
         : tone === 'accent'
-          ? 'border-[var(--color-accent)]/30 bg-[var(--color-accent-translucent)] text-foreground'
+          ? 'border-white/20 bg-white/[0.06] text-foreground'
           : 'border-white/10 bg-white/[0.035] text-foreground';
 
   return (
-    <div className={`rounded-[22px] border p-4 ${toneClass}`}>
+    <div className={`rounded-xl border p-4 ${toneClass}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
           <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{value}</p>
         </div>
-        <div className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-black/15 text-[var(--color-accent)]">
+        <div className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-black/15 text-muted-foreground">
           {icon}
         </div>
       </div>
@@ -131,7 +131,7 @@ function ActionLink({ href, children, muted = false }: { href: string; children:
       className={
         muted
           ? 'inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground'
-          : 'inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90'
+          : 'inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-2.5 text-xs font-semibold text-black transition-colors hover:bg-white/90'
       }
     >
       {children}
@@ -199,7 +199,7 @@ function AttentionRow({
                 onQuickMessage(item.clientId, quickMessageAction.messageTemplate || quickReplyTemplate[item.severity])
               }
               disabled={busyItemId === item.clientId}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-2.5 text-xs font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-60"
             >
               <MessageSquare aria-hidden="true" focusable="false" size={13} /> Message
             </button>
@@ -414,7 +414,7 @@ export function AdminCommandCenterView({
                               )
                             }
                             disabled={busyItemId === action.clientId}
-                            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-2.5 text-xs font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:opacity-60"
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-2.5 text-xs font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-60"
                           >
                             <MessageSquare aria-hidden="true" focusable="false" size={13} /> Message
                           </button>

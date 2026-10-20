@@ -703,16 +703,16 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-3 backdrop-blur-md sm:p-6">
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-white/10 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
-        <div className="sticky top-0 z-30 border-b border-white/10 bg-zinc-950/92 px-6 py-5 backdrop-blur-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-6">
+      <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-xl border border-white/10 bg-zinc-950">
+        <div className="sticky top-0 z-30 border-b border-white/10 bg-zinc-950 px-6 py-5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-start gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-muted-foreground">
                 <ChefHat aria-hidden="true" focusable="false" size={20} />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Meal editor
                 </p>
                 <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Edit Meal</h2>
@@ -749,7 +749,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
               </div>
             )}
 
-            <div className="sticky top-0 z-20 rounded-[22px] border border-white/10 bg-zinc-950/92 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+            <div className="sticky top-0 z-20 rounded-lg border border-white/10 bg-zinc-950 p-3">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-zinc-300">Live Totals</p>
@@ -1335,7 +1335,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
             </div>
 
             {/* Form Actions */}
-            <div className="sticky bottom-0 -mx-6 flex gap-3 border-t border-white/10 bg-zinc-950/92 px-6 py-5 backdrop-blur-xl">
+            <div className="sticky bottom-0 -mx-6 flex gap-3 border-t border-white/10 bg-zinc-950 px-6 py-5">
               <button
                 type="button"
                 onClick={() => {
@@ -1349,7 +1349,7 @@ export default function EditMealModal({ isOpen, mealId, onCloseAction, onMealUpd
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] shadow-[0_16px_36px_rgba(0,0,0,0.24)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-lg border border-white/20 bg-white px-5 py-3 text-sm font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? 'Updating...' : 'Update Meal'}
               </button>

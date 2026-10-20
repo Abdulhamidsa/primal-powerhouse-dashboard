@@ -154,8 +154,7 @@ export default function VideosPage() {
             {selectedVideos.length > 0 && (
               <button
                 onClick={handleBulkAssign}
-                className="px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-colors font-medium"
-                style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
+                className="px-6 py-3 rounded-lg flex items-center gap-2 border border-white/10 bg-white/[0.04] text-foreground transition-colors hover:bg-white/[0.08] font-medium"
               >
                 <PlusIcon className="w-5 h-5" aria-hidden="true" focusable="false" />
                 Assign ({selectedVideos.length})
@@ -164,8 +163,7 @@ export default function VideosPage() {
 
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-colors font-medium"
-              style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+              className="px-6 py-3 rounded-lg flex items-center gap-2 border border-white/20 bg-white text-black transition-colors font-medium hover:bg-white/90"
             >
               <PlusIcon className="w-5 h-5" aria-hidden="true" focusable="false" />
               Add Video
@@ -258,8 +256,7 @@ export default function VideosPage() {
             </p>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-colors font-medium"
-              style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
+              className="px-8 py-3 rounded-lg border border-white/20 bg-white text-black hover:bg-white/90 transition-colors font-medium"
             >
               Add Your First Video
             </button>

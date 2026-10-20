@@ -100,17 +100,25 @@ export function MessageList({
   conversation,
   messages,
   onRetryAction,
+  flat = false,
 }: {
   conversation: ConversationSummary | null;
   messages: ChatMessage[];
   onRetryAction?: (messageId: string) => Promise<void>;
+  flat?: boolean;
 }) {
   const pathname = usePathname();
 
   if (!messages.length) {
     return (
       <div className="flex min-h-full items-center justify-center px-6 text-center">
-        <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-5 py-6 shadow-sm backdrop-blur-xl">
+        <div
+          className={
+            flat
+              ? 'rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-6'
+              : 'rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-5 py-6 shadow-sm backdrop-blur-xl'
+          }
+        >
           <p className="text-sm font-semibold text-[var(--color-text)]">No messages yet</p>
           <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
             Start the conversation with your coach.
@@ -160,23 +168,33 @@ export function MessageList({
 
             <div className={`max-w-[78%] ${ownMessage ? 'items-end' : 'items-start'} flex flex-col`}>
               <article
-                className={`w-fit px-4 py-2.5 shadow-sm backdrop-blur-xl ${
-                  ownMessage ? 'self-end rounded-[24px] rounded-br-[9px]' : 'self-start rounded-[24px] rounded-bl-[9px]'
+                className={`w-fit px-4 py-2.5 ${flat ? '' : 'shadow-sm backdrop-blur-xl'} ${
+                  ownMessage
+                    ? flat
+                      ? 'self-end rounded-lg rounded-br-md'
+                      : 'self-end rounded-[24px] rounded-br-[9px]'
+                    : flat
+                      ? 'self-start rounded-lg rounded-bl-md'
+                      : 'self-start rounded-[24px] rounded-bl-[9px]'
                 }`}
                 style={{
                   border: `1px solid ${message.deliveryStatus === 'failed' ? 'var(--color-danger)' : 'var(--color-border)'}`,
                   background:
                     message.deliveryStatus === 'failed'
                       ? 'var(--color-danger-muted)'
-                      : ownMessage
-                        ? 'linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 70%, var(--color-surface)), color-mix(in srgb, var(--color-accent) 46%, var(--color-surface)))'
-                        : 'color-mix(in srgb, var(--color-surface) 92%, var(--color-bg))',
+                      : flat && ownMessage
+                        ? '#ffffff'
+                        : flat
+                          ? 'var(--color-surface)'
+                          : ownMessage
+                            ? 'linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 70%, var(--color-surface)), color-mix(in srgb, var(--color-accent) 46%, var(--color-surface)))'
+                            : 'color-mix(in srgb, var(--color-surface) 92%, var(--color-bg))',
                 }}
               >
                 {message.body ? (
                   <p
                     className="whitespace-pre-wrap text-[15px] leading-6"
-                    style={{ color: ownMessage ? 'var(--color-text-on-accent)' : 'var(--color-text)' }}
+                    style={{ color: flat && ownMessage ? '#111111' : ownMessage ? 'var(--color-text-on-accent)' : 'var(--color-text)' }}
                   >
                     {message.body}
                   </p>

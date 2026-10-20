@@ -105,7 +105,7 @@ export default function AssignMealModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       {!confirming ? (
         // Client Selection View
         <div className="bg-zinc-900 rounded-2xl max-w-2xl w-full max-h-[80vh] flex flex-col border border-zinc-700">
@@ -151,7 +151,7 @@ export default function AssignMealModal({
                   <button
                     key={client.id}
                     onClick={() => handleClientSelect(client)}
-                    className="w-full text-left p-4 rounded-lg border border-zinc-700 hover:border-blue-500 hover:bg-zinc-800/50 transition-all duration-200 group"
+                    className="w-full text-left p-4 rounded-lg border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50 transition-colors group"
                   >
                     <div className="flex items-start justify-between">
                       <div>

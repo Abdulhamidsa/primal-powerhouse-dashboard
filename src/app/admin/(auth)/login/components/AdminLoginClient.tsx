@@ -54,7 +54,7 @@ export default function AdminLoginClient() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        <div className="rounded-3xl border border-border bg-card/80 backdrop-blur p-6 sm:p-8 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-semibold text-foreground">Admin Portal</h1>
             <p className="text-sm text-muted-foreground">Sign in to manage your fitness business</p>

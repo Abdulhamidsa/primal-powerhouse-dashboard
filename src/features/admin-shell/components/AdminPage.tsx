@@ -23,10 +23,10 @@ export function AdminPageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-4 rounded-[28px] border border-white/10 bg-[rgba(16,16,18,0.96)] px-6 py-5 lg:flex-row lg:items-end lg:justify-between">
+    <header className="flex flex-col gap-4 rounded-xl border border-white/10 bg-[var(--color-surface)] px-6 py-5 lg:flex-row lg:items-end lg:justify-between">
       <div className="min-w-0 space-y-2">
         {eyebrow ? (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-accent)]">{eyebrow}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{eyebrow}</p>
         ) : null}
         <div>
           <h1 className="text-2xl font-semibold tracking-[-0.03em] text-foreground md:text-3xl">{title}</h1>
@@ -48,7 +48,7 @@ export function AdminPanel({
   return (
     <section
       className={cn(
-        'rounded-[24px] border border-white/10 bg-[rgba(16,16,18,0.96)]',
+        'rounded-xl border border-white/10 bg-[var(--color-surface)]',
         className,
       )}
     >
@@ -72,7 +72,7 @@ export function AdminPanelHeader({
     <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4">
       <div className="flex min-w-0 items-start gap-3">
         {icon ? (
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--color-accent)]">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-muted-foreground">
             {icon}
           </div>
         ) : null}

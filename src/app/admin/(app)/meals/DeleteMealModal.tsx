@@ -14,12 +14,12 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4 backdrop-blur-md">
-      <div className="w-full max-w-md overflow-hidden rounded-[28px] border border-red-500/20 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-zinc-950">
         <div className="border-b border-white/10 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-red-500/25 bg-red-500/10 text-red-300">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-red-500/25 bg-red-500/10 text-red-300">
                 <Trash2 aria-hidden="true" focusable="false" size={20} />
               </div>
               <div>
@@ -33,7 +33,7 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
               onClick={onCancel}
               disabled={deleting}
               aria-label="Close"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
             >
               <X aria-hidden="true" focusable="false" size={18} />
             </button>
@@ -51,7 +51,7 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
           <button
             onClick={onCancel}
             disabled={deleting}
-            className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
           </button>
@@ -59,7 +59,7 @@ export const DeleteMealModal = ({ isOpen, deleting, onCancel, onConfirm }: Delet
           <button
             onClick={onConfirm}
             disabled={deleting}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-red-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(239,68,68,0.18)] transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {deleting ? (
               <>

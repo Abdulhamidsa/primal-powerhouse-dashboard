@@ -298,9 +298,9 @@ export function ChatPanel({
                       className={
                         isAdminVariant
                           ? [
-                              'group flex w-full items-center gap-3 rounded-[20px] border p-3 text-left transition-all',
+                              'group flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors',
                               isSelected
-                                ? 'border-[var(--color-accent)]/40 bg-[var(--color-accent-translucent)] shadow-[0_18px_44px_rgba(0,0,0,0.20)]'
+                                ? 'border-white/25 bg-white/[0.07]'
                                 : 'border-white/10 bg-white/[0.025] hover:border-white/15 hover:bg-white/[0.055]',
                             ].join(' ')
                           : 'w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--color-bg-alt)]'
@@ -317,7 +317,7 @@ export function ChatPanel({
                       <div
                         className={
                           isAdminVariant
-                            ? 'grid h-11 w-11 flex-shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-sm font-bold text-[var(--color-accent)]'
+                            ? 'grid h-11 w-11 flex-shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-sm font-bold text-foreground'
                             : 'h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full text-xs font-bold'
                         }
                         style={{
@@ -385,7 +385,7 @@ export function ChatPanel({
           <div
             className={
               isAdminVariant
-                ? 'flex min-h-[78px] items-center gap-3 border-b border-white/10 bg-zinc-950/70 px-5 py-4 backdrop-blur-xl'
+                ? 'flex min-h-[78px] items-center gap-3 border-b border-white/10 bg-zinc-950 px-5 py-4'
                 : 'flex items-center gap-3 border-b px-4 py-3 backdrop-blur-xl'
             }
             style={{
@@ -412,7 +412,7 @@ export function ChatPanel({
               selectedConversation ? (
                 <div className="flex min-w-0 items-center gap-3">
                   {isAdminVariant ? (
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-sm font-bold text-[var(--color-accent)]">
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-sm font-bold text-foreground">
                       {getInitials(selectedConversation.clientName)}
                     </div>
                   ) : null}
@@ -445,7 +445,7 @@ export function ChatPanel({
                     </div>
                   </div>
                   {isAdminVariant && selectedConversation.unreadCount > 0 ? (
-                    <span className="ml-auto rounded-full bg-[var(--color-accent)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-on-accent)]">
+                    <span className="ml-auto rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-black">
                       {selectedConversation.unreadCount} unread
                     </span>
                   ) : null}
@@ -453,7 +453,7 @@ export function ChatPanel({
               ) : (
                 <div className="flex items-center gap-3 text-muted-foreground">
                   {isAdminVariant ? (
-                    <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.04]">
+                    <div className="grid h-11 w-11 place-items-center rounded-lg border border-white/10 bg-white/[0.04]">
                       <MessageSquare aria-hidden="true" focusable="false" size={18} />
                     </div>
                   ) : null}
@@ -487,13 +487,13 @@ export function ChatPanel({
             }
             style={{
               background: isAdminVariant
-                ? 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 36%), rgba(5,5,7,0.35)'
+                ? 'rgba(5,5,7,0.35)'
                 : 'radial-gradient(circle at top, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 38%), var(--color-bg)',
             }}
           >
             {!selectedConversationId && isAdminVariant ? (
               <div className="flex min-h-full items-center justify-center px-6 text-center">
-                <div className="max-w-sm rounded-[28px] border border-white/10 bg-white/[0.035] px-6 py-7 shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
+                <div className="max-w-sm rounded-xl border border-white/10 bg-white/[0.035] px-6 py-7">
                   <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--color-accent)]">
                     <UserRound aria-hidden="true" focusable="false" size={22} />
                   </div>
@@ -507,12 +507,12 @@ export function ChatPanel({
               <MessageSkeleton />
             ) : (
               <div className="min-h-full">
-                <MessageList conversation={conversation} messages={messages} onRetryAction={retryMessage} />
+                <MessageList flat={isAdminVariant} conversation={conversation} messages={messages} onRetryAction={retryMessage} />
                 <div className="h-3" />
               </div>
             )}
             {isLoadingOlder ? (
-              <div className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-full border bg-[var(--color-surface)]/90 px-3 py-1 text-[10px] text-[var(--color-text-muted)] shadow-sm backdrop-blur">
+              <div className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-lg border bg-[var(--color-surface)] px-3 py-1 text-[10px] text-[var(--color-text-muted)]">
                 Loading older messages…
               </div>
             ) : null}
@@ -521,7 +521,7 @@ export function ChatPanel({
           <div
             className={
               isAdminVariant
-                ? 'border-t border-white/10 bg-zinc-950/72 px-4 pt-3 backdrop-blur-xl'
+                ? 'border-t border-white/10 bg-zinc-950 px-4 pt-3'
                 : 'border-t px-2 pt-2'
             }
             style={{
@@ -532,7 +532,7 @@ export function ChatPanel({
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
             }}
           >
-            <MessageComposer conversationId={selectedConversationId} onSendAction={sendMessage} />
+            <MessageComposer flat={isAdminVariant} conversationId={selectedConversationId} onSendAction={sendMessage} />
           </div>
         </section>
       </div>

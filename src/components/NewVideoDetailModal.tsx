@@ -106,6 +106,7 @@ export default function NewVideoDetailModal({
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent
+        flat
         className="max-w-5xl p-0 overflow-hidden"
         style={{
           background: 'var(--color-surface)',
@@ -138,7 +139,7 @@ export default function NewVideoDetailModal({
                 href={video.videoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 px-4 py-2 rounded-lg hover:bg-opacity-30 transition-all"
+                className="mt-3 px-4 py-2 rounded-lg hover:bg-opacity-30 transition-colors"
                 style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
               >
                 Open Original Link
@@ -453,7 +454,7 @@ export default function NewVideoDetailModal({
                 <div className="flex gap-3 justify-center">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 border rounded-lg transition-all"
+                    className="px-4 py-2 border rounded-lg transition-colors"
                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
                   >
                     Cancel
@@ -461,7 +462,7 @@ export default function NewVideoDetailModal({
                   <button
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="px-4 py-2 rounded-lg transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="px-4 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
                     style={{ background: 'var(--color-accent)', color: 'var(--color-text)' }}
                   >
                     {isDeleting ? (

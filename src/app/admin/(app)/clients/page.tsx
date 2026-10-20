@@ -542,7 +542,7 @@ export default function ClientsPage() {
           <button
             type="button"
             onClick={() => setShowAddClientModal(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/20 bg-white px-3 text-sm font-semibold text-black transition-colors hover:bg-white/90"
           >
             <Users aria-hidden="true" focusable="false" size={15} />
             Add client
@@ -695,7 +695,7 @@ export default function ClientsPage() {
             onClick={() => setShowCommunicationDrawer(false)}
           >
             <aside
-              className="absolute right-0 top-0 flex h-full w-full max-w-[440px] min-h-0 flex-col border-l border-white/10 bg-[rgba(16,16,18,0.98)] shadow-2xl"
+              className="absolute right-0 top-0 flex h-full w-full max-w-[440px] min-h-0 flex-col border-l border-white/10 bg-[var(--color-bg)]"
               onClick={event => event.stopPropagation()}
             >
               <div className="border-b border-white/10 p-3">
@@ -1003,7 +1003,7 @@ export default function ClientsPage() {
           aria-modal="true"
           aria-labelledby="delete-client-title"
         >
-          <div className="w-full max-w-md rounded-3xl border border-red-400/20 bg-[rgba(22,16,18,0.98)] p-5 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl border border-red-400/20 bg-[var(--color-bg)] p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">Danger zone</p>

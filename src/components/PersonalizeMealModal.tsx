@@ -84,7 +84,7 @@ export default function PersonalizeMealModal({ meal, isOpen, onCloseAction, onSa
       className={`fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start overflow-y-auto ${isOpen ? 'block' : 'hidden'}`}
     >
       <div
-        className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl m-4 w-full max-w-4xl max-h-[calc(100vh-2rem)] overflow-y-auto p-6"
+        className="relative bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 m-4 w-full max-w-4xl max-h-[calc(100vh-2rem)] overflow-y-auto p-6"
         style={{
           background: 'var(--color-surface)',
           borderColor: 'var(--color-border)',

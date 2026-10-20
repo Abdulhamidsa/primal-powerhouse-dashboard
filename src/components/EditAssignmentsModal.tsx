@@ -193,11 +193,11 @@ export default function EditAssignmentsModal({
   const hasChanges = toAdd.length > 0 || toRemove.length > 0;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl border border-gray-200 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div
-          className={`sticky top-0 ${type === 'videos' ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600' : 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600'} text-white p-6 rounded-t-3xl`}
+          className="sticky top-0 bg-gray-900 text-white p-6 rounded-t-xl"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -215,7 +215,7 @@ export default function EditAssignmentsModal({
             </div>
             <button
               onClick={onCloseAction}
-              className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
+              className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
             >
               <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
@@ -235,7 +235,7 @@ export default function EditAssignmentsModal({
               placeholder={`Search ${type}...`}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-gray-500 focus:border-gray-500 transition-colors"
             />
           </div>
 
@@ -274,7 +274,7 @@ export default function EditAssignmentsModal({
                 return (
                   <label
                     key={item.id}
-                    className={`cursor-pointer block p-4 rounded-xl border-2 transition-all ${
+                    className={`cursor-pointer block p-4 rounded-lg border-2 transition-colors ${
                       isSelected
                         ? type === 'videos'
                           ? 'border-purple-500 bg-purple-50'
@@ -360,18 +360,18 @@ export default function EditAssignmentsModal({
             <div className="flex items-center gap-3">
               <button
                 onClick={onCloseAction}
-                className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-medium"
+                className="px-6 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveChanges}
                 disabled={!hasChanges || saving}
-                className={`px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                className={`px-8 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
                   hasChanges && !saving
                     ? type === 'videos'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg'
-                      : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-lg'
+                      ? 'bg-gray-900 text-white hover:bg-gray-800'
+                      : 'bg-gray-900 text-white hover:bg-gray-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >

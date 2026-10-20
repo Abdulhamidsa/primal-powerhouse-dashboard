@@ -255,21 +255,21 @@ export default function AssignContentModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
       style={{ background: 'rgba(0, 0, 0, 0.6)' }}
     >
       <div
-        className="rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto"
-        style={{ background: 'var(--color-surface)', boxShadow: 'var(--color-shadow)' }}
+        className="rounded-xl border border-white/10 w-full max-w-6xl max-h-[90vh] overflow-y-auto"
+        style={{ background: 'var(--color-surface)' }}
       >
-        <div className="sticky top-0 p-6 rounded-t-3xl" style={{ background: 'var(--color-accent)' }}>
+        <div className="sticky top-0 p-6 rounded-t-xl bg-black">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">
               Assign {type === 'videos' ? 'Videos' : 'Meals'} to {clientName}
             </h2>
             <button
               onClick={onCloseAction}
-              className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
+              className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
             >
               <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
             </button>
@@ -288,7 +288,7 @@ export default function AssignContentModal({
               placeholder={`Search ${type}...`}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl transition-all"
+              className="w-full pl-12 pr-4 py-3 rounded-lg transition-colors"
               style={{
                 background: 'var(--color-bg-alt)',
                 color: 'var(--color-text)',
@@ -329,7 +329,7 @@ export default function AssignContentModal({
               {filteredContent.map((item: Video | Meal) => (
                 <div
                   key={item.id}
-                  className="cursor-pointer block p-4 rounded-xl border transition-all relative group"
+                  className="cursor-pointer block p-4 rounded-lg border transition-colors relative group"
                   onClick={() => handleItemToggle(item.id)}
                   style={{
                     borderColor: selectedItems.includes(item.id) ? 'var(--color-accent)' : 'var(--color-border)',
@@ -421,7 +421,7 @@ export default function AssignContentModal({
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 rounded-xl transition-all"
+                  className="w-full px-4 py-3 rounded-lg transition-colors"
                   style={{
                     background: 'var(--color-bg-alt)',
                     color: 'var(--color-text)',
@@ -438,7 +438,7 @@ export default function AssignContentModal({
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Add any special instructions..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-lg transition-colors resize-none"
                   style={{
                     background: 'var(--color-bg-alt)',
                     color: 'var(--color-text)',
@@ -464,7 +464,7 @@ export default function AssignContentModal({
             <div className="flex items-center gap-3">
               <button
                 onClick={onCloseAction}
-                className="px-6 py-3 rounded-xl hover:bg-opacity-10 transition-all font-medium"
+                className="px-6 py-3 rounded-lg hover:bg-opacity-10 transition-colors font-medium"
                 style={{
                   color: 'var(--color-text)',
                   border: '1px solid var(--color-border)',
@@ -475,10 +475,9 @@ export default function AssignContentModal({
               <button
                 onClick={handleAssign}
                 disabled={selectedItems.length === 0 || assigning}
-                className="px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
+                className="px-8 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
                 style={{
-                  backgroundColor:
-                    selectedItems.length > 0 && !assigning ? 'var(--color-accent)' : 'var(--color-bg-alt)',
+                  backgroundColor: selectedItems.length > 0 && !assigning ? '#111111' : 'var(--color-bg-alt)',
                   color: selectedItems.length > 0 && !assigning ? 'white' : 'var(--color-text-muted)',
                   opacity: selectedItems.length > 0 && !assigning ? 1 : 0.6,
                   cursor: selectedItems.length > 0 && !assigning ? 'pointer' : 'not-allowed',
@@ -504,25 +503,24 @@ export default function AssignContentModal({
       {/* Preview Modal */}
       {showPreviewModal && previewItem && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+          className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]"
           onClick={handleClosePreview}
         >
           <div
-            className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl"
-            style={{ background: 'var(--color-surface)', boxShadow: 'var(--color-shadow)' }}
+            className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10"
+            style={{ background: 'var(--color-surface)' }}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div
-              className="sticky top-0 p-6 rounded-t-3xl flex items-center justify-between"
-              style={{ background: 'var(--color-accent)' }}
+              className="sticky top-0 p-6 rounded-t-xl flex items-center justify-between bg-black"
             >
               <h2 className="text-2xl font-bold text-white">
                 {type === 'videos' ? (previewItem as Video).title : (previewItem as Meal).name}
               </h2>
               <button
                 onClick={handleClosePreview}
-                className="text-white/80 hover:text-white hover:bg-white/20 rounded-xl p-2 transition-all"
+                className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
               >
                 <XIcon className="w-6 h-6" aria-hidden="true" focusable="false" />
               </button>
@@ -560,7 +558,7 @@ export default function AssignContentModal({
                             href={(previewItem as Video).videoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-3 px-4 py-2 rounded-lg transition-all"
+                            className="mt-3 px-4 py-2 rounded-lg transition-colors"
                             style={{ background: 'var(--color-accent-muted)', color: 'var(--color-accent)' }}
                           >
                             Open Video URL

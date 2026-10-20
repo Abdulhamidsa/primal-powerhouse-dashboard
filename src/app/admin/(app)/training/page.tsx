@@ -47,7 +47,7 @@ export default function AdminTrainingPage() {
         description="Build the library, create reusable workout templates, open client plan windows, then program the weekly pattern that clients follow."
         actions={
           <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-muted-foreground">
-            <Workflow aria-hidden="true" focusable="false" size={15} className="text-[var(--color-accent)]" />
+            <Workflow aria-hidden="true" focusable="false" size={15} className="text-muted-foreground" />
             Library → Templates → Plans → Week
           </div>
         }
@@ -63,9 +63,9 @@ export default function AdminTrainingPage() {
               type="button"
               onClick={() => setTab(t.key)}
               className={[
-                'group rounded-[22px] border p-4 text-left transition-all',
+                'group rounded-xl border p-4 text-left transition-colors',
                 active
-                  ? 'border-[var(--color-accent)]/45 bg-[var(--color-accent-translucent)] shadow-[0_20px_60px_rgba(0,0,0,0.22)]'
+                  ? 'border-white/30 bg-white/[0.07]'
                   : 'border-white/10 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.05]',
               ].join(' ')}
             >
@@ -75,9 +75,9 @@ export default function AdminTrainingPage() {
                 </span>
                 <span
                   className={[
-                    'grid h-10 w-10 place-items-center rounded-2xl border',
+                    'grid h-10 w-10 place-items-center rounded-lg border',
                     active
-                      ? 'border-[var(--color-accent)]/35 bg-[var(--color-accent-muted)] text-[var(--color-accent)]'
+                      ? 'border-white/20 bg-white/[0.08] text-foreground'
                       : 'border-white/10 bg-white/[0.04] text-muted-foreground group-hover:text-foreground',
                   ].join(' ')}
                 >
@@ -104,7 +104,7 @@ export default function AdminTrainingPage() {
                   className={[
                     'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
                     active
-                      ? 'bg-[var(--color-accent)] text-[var(--color-text-on-accent)]'
+                      ? 'bg-white text-black'
                       : 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground',
                   ].join(' ')}
                 >

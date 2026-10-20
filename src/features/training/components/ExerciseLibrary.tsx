@@ -311,8 +311,8 @@ export function ExerciseLibrary() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl space-y-4 rounded-[28px] border border-white/10 bg-[var(--color-surface)] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-2xl space-y-4 rounded-xl border border-white/10 bg-[var(--color-surface)] p-6">
             <h2 className="text-xl font-semibold text-foreground">{editingId ? 'Edit Exercise' : 'Add Exercise'}</h2>
 
             {error && <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">{error}</div>}

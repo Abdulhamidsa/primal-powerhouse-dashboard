@@ -275,8 +275,8 @@ export default function IngredientsPage() {
       <FoodForm isOpen={showForm} onCloseAction={() => setShowForm(false)} onCreatedAction={refresh} />
 
       {editingFood && (
-        <div className="fixed inset-0 z-[75] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
+        <div className="fixed inset-0 z-[75] bg-black/60 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl rounded-xl border border-zinc-700 bg-zinc-900">
             <div className="flex items-center justify-between border-b border-zinc-700 p-5">
               <h3 className="text-xl font-semibold text-zinc-100">Edit Ingredient Macros</h3>
               <button
@@ -371,8 +371,8 @@ export default function IngredientsPage() {
       )}
 
       {pendingConfirmation && (
-        <div className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6 space-y-4">
             <h3 className="text-lg font-semibold text-zinc-100">Confirm Global Refresh</h3>
             <p className="text-sm text-zinc-300">
               This will update <span className="font-semibold">{pendingConfirmation.affectedMealsCount}</span> meals

@@ -87,7 +87,7 @@ export function AddClientLeadModal({ isOpen, onCloseAction, onLeadAddedAction }:
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/95 p-0 text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+      <DialogContent flat className="max-w-lg overflow-hidden rounded-xl border border-white/10 bg-zinc-950 p-0 text-foreground">
         <div className="border-b border-white/10 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <DialogHeader>

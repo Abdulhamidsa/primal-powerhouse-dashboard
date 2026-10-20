@@ -712,17 +712,17 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/72 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 bg-black/60">
       <div className="flex min-h-full items-center justify-center p-2 sm:p-6">
-        <div className="modal-content max-h-[92vh] w-full max-w-5xl rounded-[30px] border border-white/10 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
-          <div className="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/92 px-4 py-4 backdrop-blur-xl sm:px-6">
+        <div className="modal-content max-h-[92vh] w-full max-w-5xl rounded-xl border border-white/10 bg-zinc-950">
+          <div className="sticky top-0 z-10 border-b border-white/10 bg-zinc-950 px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-start gap-3">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[var(--color-accent)]/25 bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-muted-foreground">
                   <PencilSimpleIcon aria-hidden="true" focusable="false" size={20} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                     Template builder
                   </p>
                   <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Build Meal</h2>
@@ -898,7 +898,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                       type="button"
                       onClick={handleSuggestMealWithAi}
                       disabled={loading || aiGenerating}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white px-4 py-3 text-sm font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
                       {aiGenerating
@@ -1159,7 +1159,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   type="button"
                   onClick={handleGeneratePrompt}
                   disabled={loading || !state.name.trim()}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-[var(--color-text-on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white px-4 py-3 text-sm font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ArrowsClockwiseIcon aria-hidden="true" focusable="false" size={16} />
                   {hasPrompt ? 'Regenerate Image Prompt' : 'Generate Image Prompt'}
@@ -1167,7 +1167,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
               </section>
             </div>
 
-            <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-4 backdrop-blur sm:px-6">
+            <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-6">
               <div className="flex flex-col-reverse gap-3 sm:flex-row">
                 <button type="button" onClick={onCloseAction} className="btn-secondary w-full sm:flex-1">
                   Cancel
@@ -1177,7 +1177,7 @@ export default function MealBuilderModal({ isOpen, onCloseAction, onMealCreatedA
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading || state.selectedIngredients.length === 0}
-                  className="btn-primary w-full flex-1 bg-[var(--color-accent)] text-[var(--color-text-on-accent)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full flex-1 rounded-lg border border-white/20 bg-white px-4 py-3 font-semibold text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? 'Creating...' : isSideMode ? 'Create Template Side' : 'Create Template Meal'}
                 </button>

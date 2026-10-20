@@ -94,9 +94,9 @@ export default function AddMealModal({ isOpen, onCloseAction, onMealAddedAction 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/72 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 bg-black/60">
       <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
-        <div className="modal-content max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-white/10 bg-zinc-950/95 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+        <div className="modal-content max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-xl border border-white/10 bg-zinc-950">
           <AddMealModalHeader handleClose={handleClose} />
 
           <form onSubmit={handleSubmit} className="max-h-[calc(92vh-88px)] space-y-6 overflow-y-auto px-6 pt-6">
