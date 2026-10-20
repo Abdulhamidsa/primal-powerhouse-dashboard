@@ -1,5 +1,4 @@
 // next.config.ts
-import { resolve } from 'node:path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -13,13 +12,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react'],
   },
-  turbopack: {
-    resolveAlias: {
-      '@primal/theme': resolve(process.cwd(), 'packages/theme/src/index.ts'),
-      '@primal/theme/web.css': resolve(process.cwd(), 'packages/theme/generated/themes.css'),
-    },
-  },
-
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'ui-avatars.com' },
