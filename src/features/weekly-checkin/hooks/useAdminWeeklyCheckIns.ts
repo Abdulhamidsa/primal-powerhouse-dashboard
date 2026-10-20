@@ -26,7 +26,14 @@ export function useAdminClientWeeklyCheckIns(clientId: string) {
 
   const { data, error, isLoading, mutate, isValidating } = useSWR<AdminClientWeeklyCheckInsResponse, ApiError>(
     key,
-    () => getAdminClientWeeklyCheckIns(clientId)
+    () => getAdminClientWeeklyCheckIns(clientId),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {
@@ -47,7 +54,14 @@ export function useAdminWeeklyCheckInStatuses(clientIds: string[]) {
     async () => {
       const response = await getAdminClientWeeklyCheckInStatuses(normalizedIds);
       return response.statuses;
-    }
+    },
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {

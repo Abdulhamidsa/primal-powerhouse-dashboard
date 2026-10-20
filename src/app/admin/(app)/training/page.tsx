@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   CalendarDotsIcon as CalendarDays,
   BarbellIcon as Dumbbell,
@@ -9,10 +10,10 @@ import {
   FlowArrowIcon as Workflow,
 } from '@phosphor-icons/react';
 import { AdminPage, AdminPageHeader, AdminPanel } from '@/features/admin-shell/components/AdminPage';
-import { ExerciseLibrary } from '@/features/training/components/ExerciseLibrary';
-import { TemplateBuilder } from '@/features/training/components/TemplateBuilder';
-import { PlanManager } from '@/features/training/components/PlanManager';
-import { PlanAssignmentManager } from '@/features/training/components/PlanAssignmentManager';
+const ExerciseLibrary = dynamic(() => import('@/features/training/components/ExerciseLibrary').then(module => ({ default: module.ExerciseLibrary })));
+const TemplateBuilder = dynamic(() => import('@/features/training/components/TemplateBuilder').then(module => ({ default: module.TemplateBuilder })));
+const PlanManager = dynamic(() => import('@/features/training/components/PlanManager').then(module => ({ default: module.PlanManager })));
+const PlanAssignmentManager = dynamic(() => import('@/features/training/components/PlanAssignmentManager').then(module => ({ default: module.PlanAssignmentManager })));
 
 const TABS = [
   {

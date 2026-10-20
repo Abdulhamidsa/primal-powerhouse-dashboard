@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import FoodForm from '@/features/foods/components/FoodForm';
 import { useFoods, useUpdateFood } from '@/features/foods/hooks/useFoods';
 import { useIngredientMacroRefresh } from '@/features/ingredient-macro-refresh/hooks/useIngredientMacroRefresh';
@@ -19,6 +19,7 @@ const categoryOptions: Array<FoodCategory | 'all'> = [
 
 export default function IngredientsPage() {
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [category, setCategory] = useState<FoodCategory | 'all'>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingFood, setEditingFood] = useState<FoodRecord | null>(null);
@@ -40,14 +41,19 @@ export default function IngredientsPage() {
   const { submit: updateFood } = useUpdateFood();
   const { isPreviewing, isStarting, status, error: refreshError, preview, start, reset } = useIngredientMacroRefresh();
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setDebouncedQuery(query), 250);
+    return () => window.clearTimeout(timeoutId);
+  }, [query]);
+
   const params = useMemo(
     () => ({
-      q: query.trim() || undefined,
+      q: debouncedQuery.trim() || undefined,
       category: category === 'all' ? undefined : category,
       isActive: true,
       limit: 100,
     }),
-    [query, category]
+    [debouncedQuery, category]
   );
 
   const { items, total, isLoading, error, refresh } = useFoods(params);

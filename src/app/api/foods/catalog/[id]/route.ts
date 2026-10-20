@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
+import { invalidateFoodCaches } from '@/lib/cache-tags';
 import { createFoodSchema, updateFoodSchema } from '@/features/foods/schemas/food.schema';
 
 type DbFoodState = 'RAW' | 'DRY' | 'AS_SOLD' | 'COOKED';
@@ -196,6 +197,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           : {}),
       },
     });
+    invalidateFoodCaches();
 
     return NextResponse.json(toApiFood(updated));
   } catch (error) {

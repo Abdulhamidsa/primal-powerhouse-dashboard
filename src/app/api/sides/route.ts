@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { requireStaffActor } from '@/lib/api-auth';
+import { jsonWithCache } from '@/lib/cacheHeaders';
+import { CACHE_TAGS, invalidateSideCaches } from '@/lib/cache-tags';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { prisma } from '@/lib/prisma';
 import { createSideSchema } from '@/features/sides/schemas/side.schema';
@@ -12,18 +15,23 @@ import {
 
 export async function GET() {
   try {
-    const sides = await prisma.sideItem.findMany({
-      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-    });
+    const sides = await unstable_cache(
+      () =>
+        prisma.sideItem.findMany({
+          orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+        }),
+      ['sides:list'],
+      { tags: [CACHE_TAGS.sides], revalidate: 60 },
+    )();
 
-    return NextResponse.json(sides.map(toSideResponse));
+    return jsonWithCache(sides.map(toSideResponse));
   } catch (error) {
     if (isMissingSideItemsTableError(error)) {
-      return NextResponse.json({ error: 'Side items table is not deployed yet', items: [] }, { status: 503 });
+      return jsonWithCache({ error: 'Side items table is not deployed yet', items: [] }, { status: 503 });
     }
 
     console.error('Error fetching sides:', safeErrorMessage(error));
-    return NextResponse.json({ error: 'Failed to fetch sides' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to fetch sides' }, { status: 500 });
   }
 }
 
@@ -59,16 +67,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(toSideResponse(side), { status: 201 });
+    invalidateSideCaches();
+    return jsonWithCache(toSideResponse(side), { status: 201 });
   } catch (error) {
     if (isMissingSideItemsTableError(error)) {
-      return NextResponse.json(
+      return jsonWithCache(
         { error: 'Side items table is not deployed yet. Run the side migration first.' },
         { status: 503 },
       );
     }
 
     console.error('Error creating side:', safeErrorMessage(error));
-    return NextResponse.json({ error: 'Failed to create side' }, { status: 500 });
+    return jsonWithCache({ error: 'Failed to create side' }, { status: 500 });
   }
 }

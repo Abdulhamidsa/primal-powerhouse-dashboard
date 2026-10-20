@@ -3,7 +3,9 @@ import { NextRequest } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { resolveActor } from '@/lib/chat/conversation';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { CACHE_TAGS, adminCommandCenterTag } from '@/lib/cache-tags';
 import { getClientDisplayName } from '@/lib/client-display-name';
 import { getCurrentWeekStartDateKey } from '@/features/weekly-checkin/utils/week';
 import type {
@@ -128,6 +130,7 @@ function toIso(date: Date): string {
 }
 
 export async function GET(request: NextRequest) {
+  const startedAt = performance.now();
   try {
     const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
@@ -137,7 +140,9 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ error: 'Coach access required for command center' }, { status: 403 });
     }
 
-    const now = new Date();
+    const getCommandCenter = unstable_cache(
+      async (): Promise<AdminCommandCenterResponse> => {
+      const now = new Date();
     const dayStart = new Date(now);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(dayStart.getTime() + ONE_DAY_MS);
@@ -177,7 +182,7 @@ export async function GET(request: NextRequest) {
         },
       };
 
-      return jsonWithCache(empty);
+      return empty;
     }
 
     const clientIds = clients.map(client => client.id);
@@ -741,7 +746,15 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    return jsonWithCache(response);
+      return response;
+      },
+      ['admin-command-center', actor.coachId],
+      { tags: [CACHE_TAGS.adminCommandCenter, adminCommandCenterTag(actor.coachId)], revalidate: 60 },
+    );
+
+    const response = jsonWithCache(await getCommandCenter());
+    response.headers.set('Server-Timing', `command-center;dur=${Math.round(performance.now() - startedAt)}`);
+    return response;
   } catch (error) {
     console.error('[ADMIN_COMMAND_CENTER_GET] Failed:', error);
     return jsonWithCache({ error: 'Failed to fetch command center data' }, { status: 500 });

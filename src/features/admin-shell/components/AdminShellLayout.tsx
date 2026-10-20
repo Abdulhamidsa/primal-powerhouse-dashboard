@@ -49,6 +49,7 @@ function AdminSidebarItem({ item, active }: { item: AdminNavItem; active: boolea
   return (
     <Link
       href={item.href}
+      prefetch={false}
       className={cn(
         'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-colors duration-200',
         active
@@ -86,7 +87,7 @@ export function AdminShellLayout({
   return (
     <div className="flex h-dvh overflow-hidden bg-[var(--color-bg)] text-foreground">
       <aside className="hidden w-[284px] shrink-0 border-r border-white/10 bg-[rgba(10,10,12,0.98)] px-4 py-5 lg:flex lg:flex-col">
-        <Link href="/admin/dashboard" className="mb-6 flex items-center gap-3 rounded-2xl px-2 py-1">
+        <Link href="/admin/dashboard" prefetch={false} className="mb-6 flex items-center gap-3 rounded-2xl px-2 py-1">
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.04]">
             <Image src="/logo.png" alt="Primal Power" width={26} height={26} />
           </span>

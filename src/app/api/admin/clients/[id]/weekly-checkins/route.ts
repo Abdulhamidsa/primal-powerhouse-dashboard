@@ -1,10 +1,12 @@
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { requireStaffClientAccess } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { getClientDisplayName } from '@/lib/client-display-name';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { decryptOrFallback } from '@/lib/security/field-crypto';
 import { getCurrentWeekStartDateKey } from '@/features/weekly-checkin/utils/week';
+import { adminClientDataTag } from '@/lib/cache-tags';
 
 type ProgressPhotoColumnMap = {
   progressPhotoFrontUrl: boolean;
@@ -104,17 +106,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const photoColumns = await getAvailableProgressPhotoColumns();
     const select = buildCheckInSelect(photoColumns);
 
-    const [client, checkIns] = await Promise.all([
-      prisma.client.findUnique({
-        where: { id: clientId },
-        select: { id: true, name: true },
-      }),
-      prisma.weeklyCheckIn.findMany({
-        where: { clientId },
-        orderBy: { weekStartDate: 'desc' },
-        select,
-      }),
-    ]);
+    const cachedRead = unstable_cache(
+      () =>
+        Promise.all([
+          prisma.client.findUnique({
+            where: { id: clientId },
+            select: { id: true, name: true },
+          }),
+          prisma.weeklyCheckIn.findMany({
+            where: { clientId },
+            orderBy: { weekStartDate: 'desc' },
+            select,
+          }),
+        ]),
+      ['admin-weekly-checkins', actor.role, actor.id, clientId],
+      { tags: [adminClientDataTag(clientId, 'weekly-checkins')], revalidate: 60 },
+    );
+    const [client, checkIns] = await cachedRead();
 
     if (!client) {
       return jsonWithCache({ error: 'Client not found' }, { status: 404 });

@@ -14,7 +14,14 @@ export function useClientVideoAssignments(clientId: string | null) {
   const key = clientId ? buildClientVideoAssignmentsUrl(clientId) : null;
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<VideoAssignment[], ApiError>(key, () =>
-    getClientVideoAssignments(clientId as string)
+    getClientVideoAssignments(clientId as string),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {

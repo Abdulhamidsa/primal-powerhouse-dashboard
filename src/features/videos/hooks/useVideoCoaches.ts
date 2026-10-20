@@ -9,6 +9,13 @@ export function useVideoCoaches(enabled = true) {
   const { data, error, isLoading, mutate } = useSWR<{ coaches: VideoCoachOption[] }, ApiError>(
     enabled ? VIDEO_COACHES_URL : null,
     getVideoCoachOptions,
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {

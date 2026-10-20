@@ -5,6 +5,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { adminClientDeletionSchema } from '@/features/admin-clients-dashboard/schemas/adminClientDeletion.schema';
 import { requestClientDeletion } from '@/lib/privacy/request-client-deletion';
+import { invalidateAdminClientCaches, invalidateAdminCommandCenterCaches } from '@/lib/cache-tags';
 
 function getClientIp(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
@@ -52,6 +53,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         gracePeriodDays: deletionRequest.gracePeriodDays,
       },
     });
+
+    invalidateAdminClientCaches({ clientId: id, scopeId: actor.id });
+    invalidateAdminCommandCenterCaches({ scopeId: actor.id });
 
     return NextResponse.json({
       success: true,

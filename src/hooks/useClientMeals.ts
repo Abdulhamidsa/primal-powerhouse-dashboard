@@ -121,7 +121,11 @@ export function useClientMeals(clientId: string | null) {
       };
     },
     {
+      keepPreviousData: true,
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
       shouldRetryOnError: false,
     },
   );

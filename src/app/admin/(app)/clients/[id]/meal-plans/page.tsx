@@ -3,12 +3,13 @@
 import { MoonIcon, OrangeIcon, SunHorizonIcon, SunIcon } from '@phosphor-icons/react';
 
 import { BreadIcon, CowIcon, DropIcon, FlameIcon, ForkKnifeIcon, WarningCircleIcon } from '@phosphor-icons/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { DataService, Client, MealPlan } from '@/services/dataService';
 import AssignPersonalizedMealsModal from '@/components/AssignPersonalizedMealsModal';
 import { getClientDisplayName } from '@/lib/client-display-name';
+import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
+import { useAdminClientMealPlans } from '@/features/admin-clients-dashboard/hooks/useAdminClientMealPlans';
 
 const daysOfWeek = [
   { value: 0, label: 'Sunday', short: 'Sun' },
@@ -51,45 +52,13 @@ export default function ClientMealPlansPage() {
   const params = useParams();
   const clientId = params?.id as string;
 
-  const [client, setClient] = useState<Client | null>(null);
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { client, isLoading: isClientLoading } = useSelectedClientDashboard(clientId);
+  const { mealPlans, isLoading: areMealPlansLoading } = useAdminClientMealPlans(clientId);
+  const loading = isClientLoading || areMealPlansLoading;
   const [isPersonalizeMealModalOpen, setIsPersonalizeMealModalOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchClientData = async () => {
-      try {
-        const clients = await DataService.getClients();
-        const clientData = clients.find(c => c.id === clientId);
-        setClient(clientData || null);
-      } catch (error) {
-        console.error('Error fetching client:', error);
-      }
-    };
-
-    const fetchMealPlans = async () => {
-      try {
-        setLoading(true);
-        const plans = await DataService.getMealPlans(clientId);
-        setMealPlans(plans);
-        if (plans.length > 0 && !selectedPlanId) {
-          setSelectedPlanId(plans[0].id);
-        }
-      } catch (error) {
-        console.error('Error fetching meal plans:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (clientId) {
-      fetchClientData();
-      fetchMealPlans();
-    }
-  }, [clientId, selectedPlanId]);
-
-  const selectedPlan = mealPlans.find(plan => plan.id === selectedPlanId);
+  const selectedPlan = mealPlans.find(plan => plan.id === selectedPlanId) ?? mealPlans[0];
 
   const getMealsByDay = () => {
     if (!selectedPlan) return {};
@@ -97,10 +66,12 @@ export default function ClientMealPlansPage() {
     const mealsByDay: { [key: number]: { [key: string]: any } } = {};
 
     selectedPlan.mealAssignments.forEach(assignment => {
-      if (!mealsByDay[assignment.dayOfWeek]) {
-        mealsByDay[assignment.dayOfWeek] = {};
+      const dayOfWeek = assignment.dayOfWeek ?? 0;
+      const mealType = assignment.mealType ?? 'SNACK';
+      if (!mealsByDay[dayOfWeek]) {
+        mealsByDay[dayOfWeek] = {};
       }
-      mealsByDay[assignment.dayOfWeek][assignment.mealType] = assignment;
+      mealsByDay[dayOfWeek][mealType] = assignment;
     });
 
     return mealsByDay;
@@ -113,10 +84,10 @@ export default function ClientMealPlansPage() {
       (total, assignment) => {
         const meal = assignment.meal;
         return {
-          calories: total.calories + meal.calories * assignment.portion,
-          protein: total.protein + meal.protein * assignment.portion,
-          carbs: total.carbs + meal.carbs * assignment.portion,
-          fat: total.fat + meal.fat * assignment.portion,
+          calories: total.calories + meal.calories * (assignment.portion ?? 1),
+          protein: total.protein + meal.protein * (assignment.portion ?? 1),
+          carbs: total.carbs + meal.carbs * (assignment.portion ?? 1),
+          fat: total.fat + meal.fat * (assignment.portion ?? 1),
         };
       },
       { calories: 0, protein: 0, carbs: 0, fat: 0 },

@@ -12,7 +12,13 @@ export function useSelectedClientDashboard(clientId: string | null) {
   const key = clientId ? buildClientDetailUrl(clientId) : null;
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<AdminClientDetail, ApiError>(key, () =>
-    getAdminClientDetail(clientId as string)
+    getAdminClientDetail(clientId as string), {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    }
   );
 
   return {

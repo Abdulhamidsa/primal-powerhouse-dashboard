@@ -12,6 +12,13 @@ export function useClientFeatureVisibility(clientId: string) {
   const { data, error, isLoading, isValidating, mutate } = useSWR<ClientFeatureVisibilityResponse, ApiError>(
     clientId ? buildClientFeatureVisibilityUrl(clientId) : null,
     () => getClientFeatureVisibility(clientId),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   const { mutate: globalMutate } = useSWRConfig();

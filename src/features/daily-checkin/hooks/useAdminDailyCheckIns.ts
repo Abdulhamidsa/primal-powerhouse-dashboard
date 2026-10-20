@@ -18,6 +18,13 @@ export function useAdminClientDailyCheckIns(clientId: string) {
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<AdminClientDailyCheckInsResponse, ApiError>(key, () =>
     getAdminClientDailyCheckIns(clientId),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireStaffClientAccess } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { invalidateAdminClientDataCache } from '@/lib/cache-tags';
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; checkInId: string }> }) {
   try {
@@ -25,6 +26,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await prisma.weeklyCheckIn.delete({
       where: { id: checkInId },
     });
+    invalidateAdminClientDataCache(clientId, 'weekly-checkins');
 
     return jsonWithCache({ success: true });
   } catch (error) {

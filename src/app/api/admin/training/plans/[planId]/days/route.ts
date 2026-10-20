@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { trainingPlanDayService } from '@/features/training/services';
 import { bulkCreateTrainingPlanDaysSchema, createTrainingPlanDaySchema, weeklyTrainingPatternSchema } from '@/features/training/schemas/day.schemas';
+import { invalidateAdminTrainingCaches } from '@/lib/cache-tags';
 
 type RouteContext = { params: Promise<{ planId: string }> };
 
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     try {
       const days = await trainingPlanDayService.saveWeeklyPattern(auth.user.userId, parsed.data);
+      invalidateAdminTrainingCaches();
       return NextResponse.json(days);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save weekly pattern';
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     try {
       const days = await trainingPlanDayService.bulkCreatePlanDays(auth.user.userId, parsed.data);
+      invalidateAdminTrainingCaches();
       return NextResponse.json(days, { status: 201 });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create plan days';
@@ -51,6 +54,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
   try {
     const day = await trainingPlanDayService.createPlanDay(auth.user.userId, parsed.data);
+    invalidateAdminTrainingCaches();
     return NextResponse.json(day, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create plan day';

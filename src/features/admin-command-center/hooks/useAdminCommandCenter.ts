@@ -26,6 +26,9 @@ export function useAdminCommandCenter() {
     {
       refreshInterval: COMMAND_CENTER_REFRESH_MS,
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
       keepPreviousData: true,
     }
   );

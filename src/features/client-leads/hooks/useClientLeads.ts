@@ -12,6 +12,13 @@ export function useClientLeads() {
   const { data, error, isLoading, isValidating, mutate } = useSWR<ClientLead[], ApiError>(
     buildClientLeadsUrl(),
     getClientLeads,
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   const leads = useMemo(() => data ?? [], [data]);

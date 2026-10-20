@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
+import { invalidateFoodCaches } from '@/lib/cache-tags';
 import { createFoodAliasSchema } from '@/features/foods/schemas/food.schema';
 
 function normalizeAlias(value: string): string {
@@ -89,6 +90,7 @@ export async function POST(request: NextRequest) {
         normalizedAlias,
       },
     });
+    invalidateFoodCaches();
 
     let macrosUpdated = false;
     if (parsed.data.updateMacros) {

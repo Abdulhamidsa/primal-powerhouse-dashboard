@@ -1,6 +1,16 @@
 import { revalidateTag } from 'next/cache';
 
 export const CACHE_TAGS = {
+  adminClients: 'admin-clients',
+  adminCommandCenter: 'admin-command-center',
+  adminClientDetails: 'admin-client-details',
+  adminCoaches: 'admin-coaches',
+  clientLeads: 'client-leads',
+  sides: 'sides',
+  foods: 'foods',
+  adminTrainingExercises: 'admin-training-exercises',
+  adminTrainingTemplates: 'admin-training-templates',
+  adminTrainingPlans: 'admin-training-plans',
   meals: 'meals',
   mealPlans: 'meal-plans',
   mealAssignments: 'meal-assignments',
@@ -11,6 +21,22 @@ export const CACHE_TAGS = {
   workoutPlanAssignments: 'workout-plan-assignments',
   workoutSessions: 'workout-sessions',
 } as const;
+
+export function adminClientsScopeTag(scopeId: string): string {
+  return `admin:${scopeId}:clients`;
+}
+
+export function adminCommandCenterTag(scopeId: string): string {
+  return `admin:${scopeId}:command-center`;
+}
+
+export function adminClientDetailTag(clientId: string): string {
+  return `admin:client:${clientId}:detail`;
+}
+
+export function adminClientDataTag(clientId: string, resource: string): string {
+  return `admin:client:${clientId}:${resource}`;
+}
 
 export function userDashboardSummaryTag(clientId: string): string {
   return `client:${clientId}:user-dashboard-summary`;
@@ -68,6 +94,8 @@ export function invalidateMealCaches(options?: {
 
   if (options?.clientId) {
     revalidateTag(clientMealPlansTag(options.clientId));
+    revalidateTag(adminClientDataTag(options.clientId, 'personalized-meals'));
+    revalidateTag(CACHE_TAGS.adminCommandCenter);
   }
 
   if (options?.mealAssignmentId) {
@@ -91,6 +119,7 @@ export function invalidateVideoCaches(options?: {
 
   if (options?.clientId) {
     revalidateTag(clientVideoAssignmentsTag(options.clientId));
+    revalidateTag(CACHE_TAGS.adminCommandCenter);
   }
 
   if (options?.videoAssignmentId) {
@@ -130,6 +159,7 @@ export function invalidateWorkoutCaches(options?: { planId?: string; clientId?: 
   if (options?.clientId) {
     revalidateTag(clientWorkoutPlansTag(options.clientId));
     revalidateTag(clientWorkoutSessionsTag(options.clientId));
+    revalidateTag(CACHE_TAGS.adminCommandCenter);
   }
 
   if (options?.coachId) {
@@ -141,4 +171,47 @@ export function invalidateUserDashboardSummaryCaches(options?: { clientId?: stri
   if (options?.clientId) {
     revalidateTag(userDashboardSummaryTag(options.clientId));
   }
+}
+
+export function invalidateAdminClientCaches(options?: { clientId?: string; scopeId?: string }): void {
+  revalidateTag(CACHE_TAGS.adminClients);
+
+  if (options?.scopeId) {
+    revalidateTag(adminClientsScopeTag(options.scopeId));
+  }
+
+  if (options?.clientId) {
+    revalidateTag(adminClientDetailTag(options.clientId));
+    revalidateTag(CACHE_TAGS.adminClientDetails);
+  }
+}
+
+export function invalidateAdminCommandCenterCaches(options?: { scopeId?: string }): void {
+  revalidateTag(CACHE_TAGS.adminCommandCenter);
+
+  if (options?.scopeId) {
+    revalidateTag(adminCommandCenterTag(options.scopeId));
+  }
+}
+
+export function invalidateAdminClientDataCache(clientId: string, resource: string): void {
+  revalidateTag(adminClientDataTag(clientId, resource));
+}
+
+export function invalidateSideCaches(): void {
+  revalidateTag(CACHE_TAGS.sides);
+}
+
+export function invalidateClientLeadCaches(): void {
+  revalidateTag(CACHE_TAGS.clientLeads);
+}
+
+export function invalidateFoodCaches(): void {
+  revalidateTag(CACHE_TAGS.foods);
+}
+
+export function invalidateAdminTrainingCaches(): void {
+  revalidateTag(CACHE_TAGS.adminTrainingExercises);
+  revalidateTag(CACHE_TAGS.adminTrainingTemplates);
+  revalidateTag(CACHE_TAGS.adminTrainingPlans);
 }

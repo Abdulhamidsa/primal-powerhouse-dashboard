@@ -19,8 +19,10 @@ export function useCoachPlans() {
     isLoading,
     mutate: mutateLocal,
   } = useSWR('coach-plans', getCoachPlans, {
+    keepPreviousData: true,
     revalidateOnFocus: false,
-    revalidateOnReconnect: true,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000,
   });
 
@@ -63,8 +65,10 @@ export function useCoachPlan(planId?: string) {
     isLoading,
     mutate: mutateLocal,
   } = useSWR(key, () => (planId ? getCoachPlan(planId) : null), {
+    keepPreviousData: true,
     revalidateOnFocus: false,
-    revalidateOnReconnect: true,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000,
   });
 

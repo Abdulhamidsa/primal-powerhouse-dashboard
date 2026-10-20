@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
 import { notifyWeeklyCheckInReviewed } from '@/features/notifications/services/automatic-notification.service';
+import { invalidateAdminClientCaches, invalidateAdminClientDataCache, invalidateAdminCommandCenterCaches } from '@/lib/cache-tags';
 
 const ACTION_NAME = 'WEEKLY_CHECKIN_REVIEWED';
 
@@ -70,6 +71,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         console.error('[NOTIFICATIONS] Failed to create check-in review notification:', notificationError);
       }
     }
+
+    invalidateAdminClientCaches({ clientId });
+    invalidateAdminClientDataCache(clientId, 'weekly-checkins');
+    invalidateAdminCommandCenterCaches({ scopeId: actor.id });
 
     return jsonWithCache({ success: true as const });
   } catch (error) {

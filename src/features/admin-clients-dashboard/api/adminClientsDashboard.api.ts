@@ -3,7 +3,6 @@ import type {
   AdminClientListItem,
   AdminClientDetail,
   AdminClientStatus,
-  AdminClientsListResponse,
 } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import type { VideoAssignment } from '@/types/video';
 

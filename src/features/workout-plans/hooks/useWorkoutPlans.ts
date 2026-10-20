@@ -16,7 +16,11 @@ import type { CreateWorkoutPlanInput, UpdateWorkoutPlanInput } from '../schemas/
 
 export function useWorkoutPlans() {
   const { data, error, isLoading, mutate } = useSWR('/api/admin/workout-plans', getWorkoutPlans, {
+    keepPreviousData: true,
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+    dedupingInterval: 60_000,
   });
 
   return { plans: data ?? [], error, isLoading, mutate };
@@ -26,7 +30,13 @@ export function useWorkoutPlan(id: string | null) {
   const { data, error, isLoading, mutate } = useSWR(
     id ? `/api/admin/workout-plans/${id}` : null,
     () => getWorkoutPlan(id!),
-    { revalidateOnFocus: false },
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return { plan: data ?? null, error, isLoading, mutate };
@@ -36,7 +46,13 @@ export function useClientWorkoutAssignments(clientId: string | null) {
   const { data, error, isLoading, mutate } = useSWR(
     clientId ? `/api/admin/workout-plans/assignments?clientId=${clientId}` : null,
     () => getClientWorkoutAssignments(clientId!),
-    { revalidateOnFocus: false },
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return { assignments: data ?? [], error, isLoading, mutate };

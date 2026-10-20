@@ -17,8 +17,10 @@ export function useCoachTemplates() {
     isLoading,
     mutate: mutateLocal,
   } = useSWR(key, getCoachTemplates, {
+    keepPreviousData: true,
     revalidateOnFocus: false,
-    revalidateOnReconnect: true,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000,
   });
 
@@ -57,8 +59,10 @@ export function useCoachTemplate(id: string) {
   const key = id ? ['coach-template', id] : null;
 
   const { data, error, isLoading, mutate } = useSWR(key, () => (id ? getCoachTemplate(id) : null), {
+    keepPreviousData: true,
     revalidateOnFocus: false,
-    revalidateOnReconnect: true,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000,
   });
 

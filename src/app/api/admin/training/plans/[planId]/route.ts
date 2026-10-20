@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { trainingPlanService } from '@/features/training/services';
 import { updateClientTrainingPlanSchema } from '@/features/training/schemas/plan.schemas';
+import { invalidateAdminTrainingCaches } from '@/lib/cache-tags';
 
 type RouteContext = { params: Promise<{ planId: string }> };
 
@@ -29,6 +30,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
   try {
     const plan = await trainingPlanService.updatePlan(planId, auth.user.userId, parsed.data);
+    invalidateAdminTrainingCaches();
     return NextResponse.json(plan);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update plan';

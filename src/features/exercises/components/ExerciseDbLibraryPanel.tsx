@@ -94,9 +94,8 @@ export default function ExerciseDbLibraryPanel({
                         src={exercise.videoUrl}
                         className="w-full h-full object-cover"
                         muted
-                        loop
-                        autoPlay
-                        preload="metadata"
+                        preload="none"
+                        poster={exercise.imageUrl || exercise.gifUrl || undefined}
                         playsInline
                         onError={event => {
                           event.currentTarget.style.display = 'none';

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { workoutTemplateService } from '@/features/training/services';
 import { updateWorkoutTemplateSchema } from '@/features/training/schemas/template.schemas';
+import { invalidateAdminTrainingCaches } from '@/lib/cache-tags';
 
 type RouteContext = { params: Promise<{ templateId: string }> };
 
@@ -29,6 +30,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
   try {
     const template = await workoutTemplateService.updateTemplate(templateId, auth.user.userId, parsed.data);
+    invalidateAdminTrainingCaches();
     return NextResponse.json(template);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update template';
@@ -45,6 +47,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
 
   try {
     await workoutTemplateService.deleteTemplate(templateId, auth.user.userId);
+    invalidateAdminTrainingCaches();
     return new Response(null, { status: 204 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete template';

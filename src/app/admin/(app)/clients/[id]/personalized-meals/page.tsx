@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { DataService, Client } from '@/services/dataService';
 import EditMealModal from '@/components/EditMealModal';
 import {
   ForkKnifeIcon as Utensils,
@@ -19,65 +18,19 @@ import {
 } from '@phosphor-icons/react';
 import { getOptimizedImageUrl } from '@/lib/cloudinary';
 import { getClientDisplayName } from '@/lib/client-display-name';
-
-interface PersonalizedMeal {
-  id: string;
-  name: string;
-  type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  ingredients: string[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  tags: string[];
-  imageUrl: string;
-  isPersonalized: boolean;
-  originalMealId: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
+import { useAdminPersonalizedMeals } from '@/features/admin-clients-dashboard/hooks/useAdminPersonalizedMeals';
 
 export default function ClientPersonalizedMealsPage() {
   const params = useParams();
   const router = useRouter();
   const clientId = params?.id as string;
 
-  const [client, setClient] = useState<Client | null>(null);
-  const [meals, setMeals] = useState<PersonalizedMeal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { client, isLoading: isClientLoading } = useSelectedClientDashboard(clientId);
+  const { meals, isLoading: areMealsLoading, refresh: refreshMeals } = useAdminPersonalizedMeals(clientId);
+  const loading = isClientLoading || areMealsLoading;
   const [showEditModal, setShowEditModal] = useState(false);
   const [mealToEdit, setMealToEdit] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch client data
-        const clients = await DataService.getClients();
-        const clientData = clients.find(c => c.id === clientId);
-        setClient(clientData || null);
-
-        // Fetch personalized meals for this client
-        const response = await fetch(`/api/clients/${clientId}/meals`);
-        if (response.ok) {
-          const data = await response.json();
-          setMeals(data.meals || []);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [clientId]);
 
   const handleEditMeal = (mealId: string) => {
     setMealToEdit(mealId);
@@ -85,25 +38,7 @@ export default function ClientPersonalizedMealsPage() {
   };
 
   const handleMealUpdated = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch client data
-      const clients = await DataService.getClients();
-      const clientData = clients.find(c => c.id === clientId);
-      setClient(clientData || null);
-
-      // Fetch personalized meals for this client
-      const response = await fetch(`/api/clients/${clientId}/meals`);
-      if (response.ok) {
-        const data = await response.json();
-        setMeals(data.meals || []);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
+    await refreshMeals();
   };
 
   const getMealTypeIcon = (type: string) => {

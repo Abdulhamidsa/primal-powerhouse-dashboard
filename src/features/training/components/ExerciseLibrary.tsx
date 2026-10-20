@@ -21,7 +21,7 @@ function ExerciseMediaThumb({ exercise }: { exercise: Exercise }) {
         className="h-20 w-28 rounded-2xl border border-white/10 bg-black object-cover"
         muted
         playsInline
-        preload="metadata"
+        preload="none"
       />
     );
   }

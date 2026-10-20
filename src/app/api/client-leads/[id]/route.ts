@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiAuth } from '@/lib/api-auth';
+import { invalidateClientLeadCaches } from '@/lib/cache-tags';
 import { encryptField, decryptOrFallback } from '@/lib/security/field-crypto';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { z } from 'zod';
@@ -71,6 +72,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       where: { id },
       data: updateData,
     });
+    invalidateClientLeadCaches();
 
     return NextResponse.json({
       id: updated.id,
@@ -138,6 +140,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     await (prisma as any).clientLead.delete({ where: { id } });
+    invalidateClientLeadCaches();
     return NextResponse.json({ message: 'Lead deleted' });
   } catch (error) {
     console.error('DELETE /api/client-leads/[id] error:', safeErrorMessage(error));

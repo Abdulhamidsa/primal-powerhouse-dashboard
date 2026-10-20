@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireStaffClientAccess } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { invalidateAdminClientDataCache } from '@/lib/cache-tags';
 
 type ResetBody = {
   confirmText?: string;
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const deleted = await prisma.weeklyCheckIn.deleteMany({
       where: { clientId },
     });
+    invalidateAdminClientDataCache(clientId, 'weekly-checkins');
 
     return jsonWithCache({
       success: true,

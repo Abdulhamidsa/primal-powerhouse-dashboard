@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '../../../../lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireClientResourceAccess, requireStaffActor } from '@/lib/api-auth';
@@ -7,6 +8,12 @@ import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { clientProfileReadSelect, toClientDetailResponse } from '@/lib/client-response';
 import { logAuditEvent } from '@/lib/audit';
 import { z } from 'zod';
+import {
+  adminClientDetailTag,
+  CACHE_TAGS,
+  invalidateAdminClientCaches,
+  invalidateAdminCommandCenterCaches,
+} from '@/lib/cache-tags';
 
 function isMissingFieldEncryptionKeyError(error: unknown): boolean {
   return String(error).includes('Field encryption key is not configured');
@@ -68,10 +75,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Try to find the client
-    const client = await (prisma as any).client.findUnique({
-      where: { id },
-      select: clientProfileReadSelect,
-    });
+    const cachedRead = unstable_cache(
+      () =>
+        (prisma as any).client.findUnique({
+          where: { id },
+          select: clientProfileReadSelect,
+        }),
+      ['admin-client-detail', access.actor.role, access.actor.id, id],
+      { tags: [CACHE_TAGS.adminClientDetails, adminClientDetailTag(id)], revalidate: 60 },
+    );
+    const client = await cachedRead();
 
     if (!client) {
       console.error(`API: Client not found with ID: ${id}`);
@@ -105,6 +118,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
               ),
             },
           });
+          invalidateAdminClientCaches({ clientId: id });
         } catch (error) {
           if (!isMissingFieldEncryptionKeyError(error)) {
             throw error;
@@ -254,6 +268,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       ),
     );
 
+    invalidateAdminClientCaches({ clientId: id, scopeId: auth.actor.id });
+    invalidateAdminCommandCenterCaches({ scopeId: auth.actor.id });
+
     return NextResponse.json(clientData);
   } catch (error) {
     console.error('Error updating client:', safeErrorMessage(error));
@@ -290,6 +307,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await (prisma as any).client.delete({
       where: { id },
     });
+
+    invalidateAdminClientCaches({ clientId: id, scopeId: auth.actor.id });
+    invalidateAdminCommandCenterCaches({ scopeId: auth.actor.id });
 
     return NextResponse.json({ message: 'Client deleted successfully' });
   } catch (error) {

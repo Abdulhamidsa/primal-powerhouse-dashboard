@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSWRConfig } from 'swr';
 import {
   ArchiveIcon as Archive,
   CalculatorIcon as Calculator,
@@ -20,10 +20,12 @@ import {
   UsersIcon as Users,
   XIcon as X,
 } from '@phosphor-icons/react';
-import AssignContentModal from '@/components/AssignContentModal';
-import HealthMetricsModal from '@/components/HealthMetricsModal';
-import NewAddClientModal from '@/components/NewAddClientModal';
-import { ClientProfileEditModal } from '@/features/client-profile-edit/components/ClientProfileEditModal';
+const AssignContentModal = dynamic(() => import('@/components/AssignContentModal'));
+const HealthMetricsModal = dynamic(() => import('@/components/HealthMetricsModal'));
+const NewAddClientModal = dynamic(() => import('@/components/NewAddClientModal'));
+const ClientProfileEditModal = dynamic(() =>
+  import('@/features/client-profile-edit/components/ClientProfileEditModal').then(module => ({ default: module.ClientProfileEditModal })),
+);
 import { useClientMeals } from '@/hooks/useClientMeals';
 import {
   useAdminClientDailyCheckIns,
@@ -36,10 +38,8 @@ import {
 import {
   archiveClient,
   deleteMealAssignment,
-  getClientVideoAssignments,
   unarchiveClient,
   updateClientAccessMode,
-  buildClientVideoAssignmentsUrl,
   requestAdminClientDeletion,
 } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
 import { useAdminClientsList } from '@/features/admin-clients-dashboard/hooks/useAdminClientsList';
@@ -49,12 +49,6 @@ import {
   useClientVideoAssignmentActions,
 } from '@/features/admin-clients-dashboard/hooks/useClientVideoAssignments';
 import { useClientNotes } from '@/features/admin-clients-dashboard/hooks/useClientNotes';
-import { getAdminClientDailyCheckIns } from '@/features/daily-checkin/api/adminDailyCheckIn.api';
-import { getAdminClientWeeklyCheckIns } from '@/features/weekly-checkin/api/adminWeeklyCheckIn.api';
-import {
-  buildClientFeatureVisibilityUrl,
-  getClientFeatureVisibility,
-} from '@/features/client-feature-visibility/api/clientFeatureVisibility.api';
 import { ClientListPane } from '@/features/admin-clients-dashboard/components/ClientListPane';
 import { ClientNotesPane } from '@/features/admin-clients-dashboard/components/ClientNotesPane';
 import { ClientScopedChatPanel } from '@/features/client-coach-messaging/components/ClientScopedChatPanel';
@@ -71,19 +65,7 @@ import type {
   AdminClientDetail,
   DashboardTabKey,
 } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
-import { getWorkoutPlans } from '@/features/workout-plans/api/workoutPlan.api';
-import { getAdminClientWorkoutSessions } from '@/features/workout-session/api/adminWorkoutSession.api';
-import { httpClient } from '@/lib/http/client';
 import { getClientDisplayName } from '@/lib/client-display-name';
-
-const DASHBOARD_TAB_ORDER: DashboardTabKey[] = [
-  'summary',
-  'nutrition',
-  'assignments',
-  'check-ins',
-  'training',
-  'feature-visibility',
-];
 
 type CoachRailTab = 'chat' | 'notes' | 'actions';
 
@@ -250,19 +232,13 @@ function ClientCommandHeader({
 export default function ClientsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { mutate: globalMutate } = useSWRConfig();
   const [isTabTransitionPending, startTabTransition] = useTransition();
   const leftPaneRef = useRef<HTMLElement | null>(null);
   const detailPanelRef = useRef<HTMLElement | null>(null);
-  const preloadedTabsRef = useRef<{ clientId: string | null; tabs: Set<DashboardTabKey> }>({
-    clientId: null,
-    tabs: new Set(),
-  });
 
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTabKey>('summary');
   const [activeRailTab, setActiveRailTab] = useState<CoachRailTab>('chat');
-  const [mountedTabs, setMountedTabs] = useState<DashboardTabKey[]>(['summary']);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
@@ -345,19 +321,7 @@ export default function ClientsPage() {
 
   useEffect(() => {
     setActiveTab('summary');
-    setMountedTabs(['summary']);
   }, [selectedClientId]);
-
-  useEffect(() => {
-    preloadedTabsRef.current = {
-      clientId: selectedClientId,
-      tabs: new Set(),
-    };
-  }, [selectedClientId]);
-
-  useEffect(() => {
-    setMountedTabs(prev => (prev.includes(activeTab) ? prev : [...prev, activeTab]));
-  }, [activeTab]);
 
   const summaryWeightKg = useMemo(() => {
     if (!weeklyCheckIns?.checkIns?.length) return client?.currentWeight ?? null;
@@ -385,79 +349,6 @@ export default function ClientsPage() {
     setShowHealthMetricsModal(false);
     setHealthMetricsResults(null);
   }, [selectedClientId]);
-
-  const prefetchDashboardTab = (tab: DashboardTabKey) => {
-    if (!selectedClientId) return;
-
-    const current = preloadedTabsRef.current;
-    if (current.clientId !== selectedClientId) {
-      current.clientId = selectedClientId;
-      current.tabs = new Set();
-    }
-
-    if (current.tabs.has(tab)) {
-      return;
-    }
-
-    current.tabs.add(tab);
-
-    switch (tab) {
-      case 'nutrition':
-        void globalMutate(
-          `/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`,
-          httpClient.get(`/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`),
-          { revalidate: false, populateCache: true },
-        );
-        break;
-      case 'assignments':
-        void Promise.allSettled([
-          globalMutate(buildClientVideoAssignmentsUrl(selectedClientId), getClientVideoAssignments(selectedClientId), {
-            revalidate: false,
-            populateCache: true,
-          }),
-          globalMutate(
-            `/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`,
-            httpClient.get(`/api/meal-plans?clientId=${encodeURIComponent(selectedClientId)}`),
-            { revalidate: false, populateCache: true },
-          ),
-        ]);
-        break;
-      case 'check-ins':
-        void Promise.allSettled([
-          globalMutate(
-            `/api/admin/clients/${encodeURIComponent(selectedClientId)}/weekly-checkins`,
-            getAdminClientWeeklyCheckIns(selectedClientId),
-            { revalidate: false, populateCache: true },
-          ),
-          globalMutate(
-            `/api/admin/clients/${encodeURIComponent(selectedClientId)}/daily-checkins`,
-            getAdminClientDailyCheckIns(selectedClientId),
-            { revalidate: false, populateCache: true },
-          ),
-        ]);
-        break;
-      case 'training':
-        void Promise.allSettled([
-          globalMutate(
-            `/api/admin/clients/${encodeURIComponent(selectedClientId)}/workout-sessions`,
-            getAdminClientWorkoutSessions(selectedClientId),
-            { revalidate: false, populateCache: true },
-          ),
-          globalMutate('/api/admin/workout-plans', getWorkoutPlans(), { revalidate: false, populateCache: true }),
-        ]);
-        break;
-      case 'feature-visibility':
-        void globalMutate(
-          buildClientFeatureVisibilityUrl(selectedClientId),
-          getClientFeatureVisibility(selectedClientId),
-          { revalidate: false, populateCache: true },
-        );
-        break;
-      case 'summary':
-      default:
-        break;
-    }
-  };
 
   useEffect(() => {
     if (!selectedClientId) return;
@@ -729,7 +620,6 @@ export default function ClientsPage() {
                         setActiveTab(tab);
                       });
                     }}
-                    onTabPrefetchAction={prefetchDashboardTab}
                     actions={
                       <>
                         {!client.isSystemTemplate ? (

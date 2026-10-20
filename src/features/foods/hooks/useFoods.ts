@@ -7,7 +7,13 @@ import type { CreateFoodPayload, FoodsSearchParams, UpdateFoodPayload } from '@/
 
 export function useFoods(params?: FoodsSearchParams) {
   const key = buildFoodsUrl(params);
-  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => getFoods(params));
+  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => getFoods(params), {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+    dedupingInterval: 60_000,
+  });
 
   return {
     items: data?.items ?? [],
@@ -21,7 +27,13 @@ export function useFoods(params?: FoodsSearchParams) {
 
 export function useFood(id?: string) {
   const key = id ? `/api/foods/catalog/${id}` : null;
-  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => (id ? getFoodById(id) : null));
+  const { data, error, isLoading, isValidating, mutate } = useSWR(key, () => (id ? getFoodById(id) : null), {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+    dedupingInterval: 60_000,
+  });
 
   return {
     item: data ?? null,

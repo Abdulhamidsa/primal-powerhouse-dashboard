@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import { createFoodSchema } from '@/features/foods/schemas/food.schema';
+import { CACHE_TAGS, invalidateFoodCaches } from '@/lib/cache-tags';
 
 type DbFoodState = 'RAW' | 'DRY' | 'AS_SOLD' | 'COOKED';
 type DbFoodSource = 'SYSTEM' | 'CUSTOM';
@@ -126,25 +129,30 @@ export async function GET(request: NextRequest) {
       ...(isActiveParam === '0' ? { isActive: false } : {}),
     };
 
-    const [items, total] = await Promise.all([
-      (prisma as any).food.findMany({
-        where,
-        include: {
-          aliases: {
-            select: { alias: true },
-            orderBy: { alias: 'asc' },
-          },
-        },
-        orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
-        take,
-      }),
-      (prisma as any).food.count({ where }),
-    ]);
+    const cachedRead = unstable_cache(
+      async () => {
+        const [items, total] = await Promise.all([
+          (prisma as any).food.findMany({
+            where,
+            include: {
+              aliases: {
+                select: { alias: true },
+                orderBy: { alias: 'asc' },
+              },
+            },
+            orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
+            take,
+          }),
+          (prisma as any).food.count({ where }),
+        ]);
 
-    return NextResponse.json({
-      items: items.map(toApiFood),
-      total,
-    });
+        return { items: items.map(toApiFood), total };
+      },
+      ['foods', q, category, state, isActiveParam ?? '', String(take)],
+      { tags: [CACHE_TAGS.foods], revalidate: 60 },
+    );
+
+    return jsonWithCache(await cachedRead());
   } catch (error) {
     console.error('Foods API GET failed:', error);
     return NextResponse.json({ error: 'Failed to fetch foods' }, { status: 500 });
@@ -207,6 +215,8 @@ export async function POST(request: NextRequest) {
         createdById: creator?.id ?? null,
       },
     });
+
+    invalidateFoodCaches();
 
     return NextResponse.json(toApiFood(created), { status: 201 });
   } catch (error) {

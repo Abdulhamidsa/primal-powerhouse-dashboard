@@ -24,8 +24,10 @@ export function useCoachExercises(filters?: { muscleGroup?: string; equipment?: 
     isLoading,
     mutate: mutateLocal,
   } = useSWR(key, () => getCoachExercises(filters), {
+    keepPreviousData: true,
     revalidateOnFocus: false,
-    revalidateOnReconnect: true,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000,
   });
 

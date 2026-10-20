@@ -5,6 +5,7 @@ import type {
   HealthMetricsRequestPayload,
   HealthMetricsSaveNotesResponse,
 } from '@/features/health-metrics/types/healthMetrics.types';
+import type { LatestHealthMetric } from '@/features/health-metrics/types/latestHealthMetric.types';
 
 export function buildClientHealthMetricsUrl(clientId: string): string {
   return `/api/clients/${clientId}/health-metrics`;
@@ -12,6 +13,10 @@ export function buildClientHealthMetricsUrl(clientId: string): string {
 
 export function buildClientHealthMetricsNotesUrl(clientId: string): string {
   return `/api/clients/${clientId}/health-metrics/notes`;
+}
+
+export function getLatestClientHealthMetrics(clientId: string): Promise<LatestHealthMetric[]> {
+  return httpClient.get<LatestHealthMetric[]>(`${buildClientHealthMetricsUrl(clientId)}?limit=1`);
 }
 
 export async function calculateClientHealthMetrics(

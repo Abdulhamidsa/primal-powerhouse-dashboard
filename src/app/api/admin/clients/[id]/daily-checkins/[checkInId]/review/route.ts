@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { invalidateAdminClientCaches, invalidateAdminClientDataCache, invalidateAdminCommandCenterCaches } from '@/lib/cache-tags';
 
 const ACTION_NAME = 'DAILY_CHECKIN_REVIEWED';
 
@@ -63,6 +64,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         },
       });
     }
+
+    invalidateAdminClientCaches({ clientId });
+    invalidateAdminClientDataCache(clientId, 'daily-checkins');
+    invalidateAdminCommandCenterCaches({ scopeId: actor.id });
 
     return jsonWithCache({ success: true as const });
   } catch (error) {

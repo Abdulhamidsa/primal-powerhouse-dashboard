@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { trainingPlanDayService } from '@/features/training/services';
 import { updateTrainingPlanDaySchema } from '@/features/training/schemas/day.schemas';
+import { invalidateAdminTrainingCaches } from '@/lib/cache-tags';
 
 type RouteContext = { params: Promise<{ planId: string; dayId: string }> };
 
@@ -18,6 +19,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
   try {
     const day = await trainingPlanDayService.updatePlanDay(dayId, auth.user.userId, parsed.data);
+    invalidateAdminTrainingCaches();
     return NextResponse.json(day);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update plan day';
@@ -34,6 +36,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
 
   try {
     await trainingPlanDayService.deletePlanDay(dayId, auth.user.userId);
+    invalidateAdminTrainingCaches();
     return new Response(null, { status: 204 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete plan day';

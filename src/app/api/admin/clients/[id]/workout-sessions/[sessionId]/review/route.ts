@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { invalidateAdminClientDataCache, invalidateAdminCommandCenterCaches } from '@/lib/cache-tags';
 
 const ACTION_NAME = 'WORKOUT_SESSION_REVIEWED';
 
@@ -63,6 +64,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         },
       });
     }
+
+    invalidateAdminClientDataCache(clientId, 'workout-sessions');
+    invalidateAdminCommandCenterCaches({ scopeId: actor.id });
 
     return jsonWithCache({ success: true as const });
   } catch (error) {

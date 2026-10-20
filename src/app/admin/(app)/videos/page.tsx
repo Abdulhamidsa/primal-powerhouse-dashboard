@@ -2,12 +2,13 @@
 
 import { PlusIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Video } from '@/types/video';
-import NewAddVideoModal from '@/components/NewAddVideoModal';
+const NewAddVideoModal = dynamic(() => import('@/components/NewAddVideoModal'));
 // import VideoCard from '@/components/VideoCard';
-import NewVideoDetailModal from '@/components/NewVideoDetailModal';
+const NewVideoDetailModal = dynamic(() => import('@/components/NewVideoDetailModal'));
 // import VideoFilters from '@/components/VideoFilters';
-import AssignVideosModal from '@/components/AssignVideosModal';
+const AssignVideosModal = dynamic(() => import('@/components/AssignVideosModal'));
 import ExerciseDbLibraryPanel from '@/features/exercises/components/ExerciseDbLibraryPanel';
 import type { ExerciseCatalogExercise } from '@/features/exercises/types/exerciseCatalog.types';
 import { useVideoCoaches } from '@/features/videos/hooks/useVideoCoaches';

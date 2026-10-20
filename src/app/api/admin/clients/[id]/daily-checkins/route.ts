@@ -1,10 +1,12 @@
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getClientDisplayName } from '@/lib/client-display-name';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { serializeDailyCheckIn } from '@/features/daily-checkin/lib/dailyCheckInAnalytics';
 import { addDays, getRecentDateKeys, parseDateKeyLocal, toDateKeyLocal } from '@/features/daily-checkin/utils/date';
+import { adminClientDataTag } from '@/lib/cache-tags';
 
 const HISTORY_DAYS = 14;
 const REVIEW_ACTION_NAME = 'DAILY_CHECKIN_REVIEWED';
@@ -48,44 +50,32 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const startDate = parseDateKeyLocal(startDateKey);
     const endDate = addDays(parseDateKeyLocal(endDateKey), 1);
 
-    const [client, checkIns, nutritionLogs, trainingLogs] = await Promise.all([
-      prisma.client.findUnique({
-        where: { id: clientId },
-        select: { id: true, name: true, coachId: true },
-      }),
-      prisma.dailyCheckIn.findMany({
-        where: {
-          clientId,
-          dayDate: {
-            gte: startDate,
-            lt: endDate,
-          },
-        },
-        orderBy: { dayDate: 'desc' },
-      }),
-      prisma.dailyNutritionLog.findMany({
-        where: {
-          clientId,
-          dayDate: {
-            gte: startDate,
-            lt: endDate,
-          },
-        },
-        orderBy: { dayDate: 'desc' },
-        select: { dayDate: true, status: true, submittedAt: true },
-      }),
-      prisma.dailyTrainingLog.findMany({
-        where: {
-          clientId,
-          dayDate: {
-            gte: startDate,
-            lt: endDate,
-          },
-        },
-        orderBy: { dayDate: 'desc' },
-        select: { dayDate: true, status: true, submittedAt: true },
-      }),
-    ]);
+    const cachedRead = unstable_cache(
+      () =>
+        Promise.all([
+          prisma.client.findUnique({
+            where: { id: clientId },
+            select: { id: true, name: true, coachId: true },
+          }),
+          prisma.dailyCheckIn.findMany({
+            where: { clientId, dayDate: { gte: startDate, lt: endDate } },
+            orderBy: { dayDate: 'desc' },
+          }),
+          prisma.dailyNutritionLog.findMany({
+            where: { clientId, dayDate: { gte: startDate, lt: endDate } },
+            orderBy: { dayDate: 'desc' },
+            select: { dayDate: true, status: true, submittedAt: true },
+          }),
+          prisma.dailyTrainingLog.findMany({
+            where: { clientId, dayDate: { gte: startDate, lt: endDate } },
+            orderBy: { dayDate: 'desc' },
+            select: { dayDate: true, status: true, submittedAt: true },
+          }),
+        ]),
+      ['admin-daily-checkins', actor.id, clientId, startDateKey, endDateKey],
+      { tags: [adminClientDataTag(clientId, 'daily-checkins')], revalidate: 60 },
+    );
+    const [client, checkIns, nutritionLogs, trainingLogs] = await cachedRead();
 
     if (!client) {
       return jsonWithCache({ error: 'Client not found' }, { status: 404 });

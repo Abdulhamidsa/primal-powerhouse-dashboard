@@ -1,34 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 import { requireApiAuth } from '@/lib/api-auth';
 import { addClientLeadSchema } from '@/features/client-leads/schemas/clientLead.schemas';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { CACHE_TAGS, invalidateClientLeadCaches } from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireApiAuth(request, 'admin');
     if (!auth.ok) return auth.res;
 
-    const leads = await (prisma as any).clientLead.findMany({
-      orderBy: { updatedAt: 'desc' },
-    });
+    const cachedRead = unstable_cache(
+      async () => {
+        const leads = await (prisma as any).clientLead.findMany({ orderBy: { updatedAt: 'desc' } });
+        return leads.map((lead: any) => ({
+          id: lead.id,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          status: lead.status,
+          subscriptionType: lead.subscriptionType,
+          notes: lead.notes,
+          convertedClientId: lead.convertedClientId,
+          credentialEmail: lead.credentialEmail,
+          hasCredentials: Boolean(lead.credentialEmail && lead.credentialPasswordEncrypted),
+          createdAt: lead.createdAt,
+          updatedAt: lead.updatedAt,
+        }));
+      },
+      ['client-leads', auth.user.userId],
+      { tags: [CACHE_TAGS.clientLeads], revalidate: 60 },
+    );
 
-    const shaped = leads.map((lead: any) => ({
-      id: lead.id,
-      name: lead.name,
-      email: lead.email,
-      phone: lead.phone,
-      status: lead.status,
-      subscriptionType: lead.subscriptionType,
-      notes: lead.notes,
-      convertedClientId: lead.convertedClientId,
-      credentialEmail: lead.credentialEmail,
-      hasCredentials: Boolean(lead.credentialEmail && lead.credentialPasswordEncrypted),
-      createdAt: lead.createdAt,
-      updatedAt: lead.updatedAt,
-    }));
-
-    return NextResponse.json(shaped);
+    return jsonWithCache(await cachedRead());
   } catch (error) {
     console.error('GET /api/client-leads error:', safeErrorMessage(error));
     return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
@@ -88,6 +94,8 @@ export async function POST(request: NextRequest) {
         notes: notes || null,
       },
     });
+
+    invalidateClientLeadCaches();
 
     return NextResponse.json(
       {

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireStaffClientAccess } from '@/lib/api-auth';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
+import { adminClientDataTag } from '@/lib/cache-tags';
+import { jsonWithCache } from '@/lib/cacheHeaders';
 
 function safeJsonArray(value: string | null) {
   if (!value) return [];
@@ -19,24 +22,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const access = await requireStaffClientAccess(request, clientId);
     if (!access.ok) return access.res;
 
-    // Get all personalized meals for this client
-    const personalizedMeals = await prisma.meal.findMany({
-      where: {
-        clientId: clientId,
-        isPersonalized: true,
+    const cachedRead = unstable_cache(
+      async () => {
+        const personalizedMeals = await prisma.meal.findMany({
+          where: { clientId, isPersonalized: true },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        return personalizedMeals.map(meal => ({
+          ...meal,
+          ingredients: safeJsonArray(meal.ingredients),
+          instructions: safeJsonArray(meal.instructions),
+          tags: safeJsonArray(meal.tags),
+        }));
       },
-      orderBy: { createdAt: 'desc' },
-    });
+      ['admin-personalized-meals', access.actor.role, access.actor.id, clientId],
+      { tags: [adminClientDataTag(clientId, 'personalized-meals')], revalidate: 60 },
+    );
+    const parsedMeals = await cachedRead();
 
-    // Parse JSON fields for each meal
-    const parsedMeals = personalizedMeals.map(meal => ({
-      ...meal,
-      ingredients: safeJsonArray(meal.ingredients),
-      instructions: safeJsonArray(meal.instructions),
-      tags: safeJsonArray(meal.tags),
-    }));
-
-    return NextResponse.json({
+    return jsonWithCache({
       meals: parsedMeals,
       count: parsedMeals.length,
     });

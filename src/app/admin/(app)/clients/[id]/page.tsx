@@ -5,7 +5,6 @@ import { useState, useEffect, JSX } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import AssignContentModal from '@/components/AssignContentModal';
-import { VideoAssignment } from '@/types/video';
 import {
   UsersIcon as Users,
   CaretLeftIcon as ChevronLeft,
@@ -35,6 +34,13 @@ import { ClientProfileEditModal } from '@/features/client-profile-edit/component
 import { PersonalInfoTab } from '@/components/client-profile/PersonalInfoTab';
 import { MotivationalMessageTab } from '@/features/admin-clients-dashboard/components/MotivationalMessageTab';
 import { getClientDisplayName } from '@/lib/client-display-name';
+import { useSelectedClientDashboard } from '@/features/admin-clients-dashboard/hooks/useSelectedClientDashboard';
+import {
+  useClientVideoAssignmentActions,
+  useClientVideoAssignments,
+} from '@/features/admin-clients-dashboard/hooks/useClientVideoAssignments';
+import { deleteMealAssignment } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
+import { useLatestClientHealthMetrics } from '@/features/health-metrics/hooks/useLatestClientHealthMetrics';
 import type { HealthMetricsOutput } from '@/lib/health/calculators';
 import {
   useAdminClientWeeklyCheckIns,
@@ -52,11 +58,9 @@ export default function ClientProfilePage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const [client, setClient] = useState<Client | null>(null);
-  const [videoAssignments, setVideoAssignments] = useState<VideoAssignment[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignModalType, setAssignModalType] = useState<'videos' | 'meals'>('videos');
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetText, setResetText] = useState('');
@@ -71,91 +75,67 @@ export default function ClientProfilePage() {
     error: weeklyCheckInError,
   } = useAdminClientWeeklyCheckIns(clientId);
   const { deleteCheckIn, resetAll } = useAdminWeeklyCheckInActions(clientId);
+  const { client: fetchedClient, error: clientDataError, refresh: refreshClient } = useSelectedClientDashboard(clientId);
+  const { assignments: videoAssignments, refresh: refreshVideoAssignments } = useClientVideoAssignments(clientId);
+  const { removeAssignment: removeVideoAssignment } = useClientVideoAssignmentActions(clientId);
+  const { latest: latestHealthMetric, refresh: refreshLatestHealthMetrics } = useLatestClientHealthMetrics(clientId);
+  const fetchError = clientDataError ? 'Failed to load client data' : null;
+
+  useEffect(() => {
+    if (!fetchedClient) return;
+    const nextClient = {
+      ...fetchedClient,
+      phone: fetchedClient.phone ?? undefined,
+      avatar: fetchedClient.avatar ?? undefined,
+      gender: fetchedClient.gender ?? undefined,
+      joinDate: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as unknown as Client;
+    setClient(nextClient);
+    setSelectedClient(nextClient);
+  }, [fetchedClient]);
+
+  useEffect(() => {
+    if (!latestHealthMetric) return;
+    let macros: HealthMetricsOutput['macros'] = { protein: 0, carbs: 0, fat: 0 };
+    try {
+      macros = latestHealthMetric.macros ? JSON.parse(latestHealthMetric.macros) : macros;
+    } catch {
+      // Keep the neutral fallback for legacy records with malformed macro JSON.
+    }
+    setHealthMetricsResults({
+      bmi: latestHealthMetric.bmi ?? 0,
+      bmr: latestHealthMetric.bmr ?? 0,
+      tdee: latestHealthMetric.tdee ?? 0,
+      recommendedCalories: latestHealthMetric.recommendedCals ?? 0,
+      bmiCategory: (latestHealthMetric.bmiCategory ?? 'normal') as 'underweight' | 'normal' | 'overweight' | 'obese',
+      macros,
+      notes: latestHealthMetric.notes ? latestHealthMetric.notes.split('\n').filter(Boolean) : [],
+      safetyWarnings: [],
+      requiresCoachReview: false,
+      isSafeToDeficit: latestHealthMetric.isSafeToDeficit ?? false,
+      calculationDetails: {
+        formulaUsed: 'mifflin',
+        activityLevel: 'MODERATE',
+        activityMultiplier: 1.55,
+        goal: 'maintenance',
+        goalAdjustmentCalories: 0,
+        proteinPerKg: 1.8,
+        fatFloorGrams: 0,
+      },
+    });
+  }, [latestHealthMetric]);
 
   const fetchClientData = async () => {
-    try {
-      setFetchError(null);
-      const response = await fetch(`/api/clients/${clientId}`);
-      if (response.ok) {
-        const clientData = await response.json();
-        setClient(clientData);
-        setSelectedClient(clientData);
-      } else {
-        console.error('Failed to fetch client:', response.status);
-        setFetchError(`Failed to fetch client data (${response.status})`);
-      }
-    } catch (error) {
-      console.error('Error fetching client:', error);
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        setFetchError('Server connection failed. Please restart your development server.');
-      } else {
-        setFetchError('Failed to load client data');
-      }
-    }
+    await refreshClient();
   };
 
   const fetchVideoAssignments = async () => {
-    try {
-      setFetchError(null);
-      const response = await fetch(`/api/video-assignments?clientId=${clientId}`);
-      if (response.ok) {
-        const assignments = await response.json();
-        setVideoAssignments(assignments);
-      }
-    } catch (error) {
-      console.error('Error fetching video assignments:', error);
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        setFetchError('Server connection failed. Please restart your development server.');
-      }
-    }
+    await refreshVideoAssignments();
   };
-
-  const fetchLatestHealthMetrics = async () => {
-    try {
-      const response = await fetch(`/api/clients/${clientId}/health-metrics?limit=1`);
-      if (response.ok) {
-        const metrics = await response.json();
-        if (metrics && metrics.length > 0) {
-          const latest = metrics[0];
-          setHealthMetricsResults({
-            bmi: latest.bmi,
-            bmr: latest.bmr,
-            tdee: latest.tdee,
-            recommendedCalories: latest.recommendedCals,
-            bmiCategory: latest.bmiCategory,
-            macros: JSON.parse(latest.macros),
-            notes: latest.notes ? latest.notes.split('\n').filter((n: string) => n.trim()) : [],
-            safetyWarnings: [],
-            requiresCoachReview: false,
-            isSafeToDeficit: latest.isSafeToDeficit,
-            calculationDetails: {
-              formulaUsed: 'mifflin',
-              activityLevel: 'MODERATE',
-              activityMultiplier: 1.55,
-              goal: 'maintenance',
-              goalAdjustmentCalories: 0,
-              proteinPerKg: 1.8,
-              fatFloorGrams: 0,
-            },
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching health metrics:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (clientId && !fetchError) {
-      fetchClientData();
-      fetchVideoAssignments();
-      fetchLatestHealthMetrics();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientId]); // Only run when clientId changes
 
   const handleRetry = () => {
-    setFetchError(null);
     setIsRetrying(true);
     fetchClientData();
     fetchVideoAssignments();
@@ -696,8 +676,7 @@ export default function ClientProfilePage() {
             onRemove={async assignmentId => {
               if (!confirm('Remove this video assignment?')) return;
               try {
-                await fetch(`/api/video-assignments/${assignmentId}`, { method: 'DELETE' });
-                fetchVideoAssignments();
+                await removeVideoAssignment(assignmentId);
               } catch (error) {
                 console.error('Error removing assignment:', error);
               }
@@ -718,7 +697,7 @@ export default function ClientProfilePage() {
             onRemove={async assignmentId => {
               if (!confirm('Delete this meal assignment for this client?')) return;
               try {
-                await fetch(`/api/meal-assignments/${assignmentId}`, { method: 'DELETE' });
+                await deleteMealAssignment(assignmentId);
                 await refreshMeals();
               } catch (error) {
                 console.error('Error removing meal assignment:', error);
@@ -780,20 +759,7 @@ export default function ClientProfilePage() {
             targetWeight: client.targetWeight ?? null,
           }}
           onCloseAction={() => setShowProfileEditModal(false)}
-          onSavedAction={updatedClient => {
-            setClient(prev => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                name: updatedClient.name,
-                age: updatedClient.age ?? undefined,
-                gender: updatedClient.gender ?? undefined,
-                activityLevel: updatedClient.activityLevel ?? undefined,
-                height: updatedClient.height ?? undefined,
-                currentWeight: updatedClient.currentWeight ?? undefined,
-                targetWeight: updatedClient.targetWeight ?? undefined,
-              };
-            });
+          onSavedAction={_updatedClient => {
             setShowProfileEditModal(false);
             window.alert('Profile updated successfully.');
             fetchClientData();
@@ -831,7 +797,7 @@ export default function ClientProfilePage() {
           onSuccess={metrics => {
             setHealthMetricsResults(metrics);
             fetchClientData();
-            fetchLatestHealthMetrics();
+            refreshLatestHealthMetrics();
             setShowHealthMetricsModal(false);
           }}
         />

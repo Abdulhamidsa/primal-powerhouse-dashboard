@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { azureOpenAI, AZURE_CHAT_DEPLOYMENT } from '@/lib/azure-openai';
 import { prisma } from '@/lib/prisma';
 import { requireStaffActor } from '@/lib/api-auth';
+import { invalidateSideCaches } from '@/lib/cache-tags';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import {
   generateSideSchema,
@@ -126,6 +127,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    invalidateSideCaches();
     return NextResponse.json(toSideResponse(createdSide), { status: 201 });
   } catch (error) {
     if (isMissingSideItemsTableError(error)) {

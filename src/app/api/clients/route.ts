@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jsonWithCache } from '@/lib/cacheHeaders';
+import { unstable_cache } from 'next/cache';
 import { requireStaffActor } from '@/lib/api-auth';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -13,8 +14,15 @@ import {
 } from '@/lib/client-response';
 import { safeErrorMessage } from '@/lib/security/log-redaction';
 import { assertAgeDeclaration, recordConfiguredAgeDeclaration } from '@/lib/privacy/age-policy';
+import {
+  adminClientsScopeTag,
+  CACHE_TAGS,
+  invalidateAdminClientCaches,
+  invalidateAdminCommandCenterCaches,
+} from '@/lib/cache-tags';
 
 export async function GET(request: NextRequest) {
+  const startedAt = performance.now();
   try {
     const auth = await requireStaffActor(request);
     if (!auth.ok) return auth.res;
@@ -29,38 +37,46 @@ export async function GET(request: NextRequest) {
         ? (requestedStatus as ClientStatus)
         : ClientStatus.ACTIVE;
     const statusFilter = status === ClientStatus.INACTIVE ? { in: [ClientStatus.INACTIVE, ClientStatus.PAUSED] } : status;
-    const starterClientId = process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim();
-    const clients = await prisma.client.findMany({
-      where: {
-        status: statusFilter,
-        ...(auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : {}),
-      },
-      select: clientListSelect,
-      orderBy: { createdAt: 'desc' },
-    });
+    const cachedRead = unstable_cache(
+      async () => {
+        const starterClientId = process.env.SELF_SERVICE_STARTER_CLIENT_ID?.trim();
+        const clients = await prisma.client.findMany({
+          where: {
+            status: statusFilter,
+            ...(auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : {}),
+          },
+          select: clientListSelect,
+          orderBy: { createdAt: 'desc' },
+        });
 
-    const parsedClients = clients.map(client =>
-      toClientListResponse(
-        client,
-        Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
-      ),
+        const parsedClients = clients.map(client =>
+          toClientListResponse(
+            client,
+            Boolean((starterClientId && client.id === starterClientId) || client.email === 'starter-template@primal.local'),
+          ),
+        );
+
+        if (!includeCounts) return parsedClients;
+
+        const groupedCounts = await prisma.client.groupBy({
+          by: ['status'],
+          where: auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : undefined,
+          _count: { _all: true },
+        });
+        const counts = { ACTIVE: 0, INACTIVE: 0, ARCHIVED: 0 };
+        for (const group of groupedCounts) {
+          if (group.status === 'PAUSED') counts.INACTIVE += group._count._all;
+          else if (group.status in counts) counts[group.status as keyof typeof counts] += group._count._all;
+        }
+        return { clients: parsedClients, counts };
+      },
+      ['admin-clients', auth.actor.role, auth.actor.id, status, includeCounts ? 'with-counts' : 'without-counts'],
+      { tags: [CACHE_TAGS.adminClients, adminClientsScopeTag(auth.actor.id)], revalidate: 60 },
     );
 
-    if (includeCounts) {
-      const groupedCounts = await prisma.client.groupBy({
-        by: ['status'],
-        where: auth.actor.role === 'COACH' ? { coachId: auth.actor.id } : undefined,
-        _count: { _all: true },
-      });
-      const counts = { ACTIVE: 0, INACTIVE: 0, ARCHIVED: 0 };
-      for (const group of groupedCounts) {
-        if (group.status === 'PAUSED') counts.INACTIVE += group._count._all;
-        else if (group.status in counts) counts[group.status as keyof typeof counts] += group._count._all;
-      }
-      return jsonWithCache({ clients: parsedClients, counts });
-    }
-
-    return jsonWithCache(parsedClients);
+    const response = jsonWithCache(await cachedRead());
+    response.headers.set('Server-Timing', `clients;dur=${Math.round(performance.now() - startedAt)}`);
+    return response;
   } catch (error) {
     console.error('Error fetching clients:', safeErrorMessage(error));
     return jsonWithCache({ error: 'Failed to fetch clients' }, { status: 500 });
@@ -147,6 +163,9 @@ export async function POST(request: NextRequest) {
       });
       return created;
     });
+
+    invalidateAdminClientCaches({ scopeId: auth.actor.id });
+    invalidateAdminCommandCenterCaches({ scopeId: auth.actor.id });
 
     return jsonWithCache(
       {

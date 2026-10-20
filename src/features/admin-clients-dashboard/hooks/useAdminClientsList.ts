@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import type { ApiError } from '@/lib/fetcher';
 import { httpClient } from '@/lib/http/client';
 import { buildClientsListUrl } from '@/features/admin-clients-dashboard/api/adminClientsDashboard.api';
-import type { AdminClientListItem, AdminClientStatus, AdminClientsListResponse } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
+import type { AdminClientStatus, AdminClientsListResponse } from '@/features/admin-clients-dashboard/types/adminClientsDashboard.types';
 import { getClientDisplayName } from '@/lib/client-display-name';
 
 export function useAdminClientsList() {
@@ -16,6 +16,13 @@ export function useAdminClientsList() {
   const { data: response, error, isLoading, isValidating, mutate } = useSWR<AdminClientsListResponse, ApiError>(
     buildClientsListUrl(viewMode, true),
     (url: string) => httpClient.get<AdminClientsListResponse>(url),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   const clients = useMemo(() => response?.clients ?? [], [response]);

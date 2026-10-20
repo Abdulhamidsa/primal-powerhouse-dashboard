@@ -25,6 +25,13 @@ export function useAdminClientWorkoutSessions(clientId: string) {
 
   const { data, error, isLoading, mutate, isValidating } = useSWR<AdminWorkoutSessionListResponse, ApiError>(key, () =>
     getAdminClientWorkoutSessions(clientId),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {
@@ -41,6 +48,13 @@ export function useAdminWorkoutSession(clientId: string, sessionId?: string | nu
 
   const { data, error, isLoading, mutate } = useSWR<AdminWorkoutSessionDetail, ApiError>(key, () =>
     getAdminClientWorkoutSession(clientId, sessionId ?? ''),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60_000,
+    },
   );
 
   return {

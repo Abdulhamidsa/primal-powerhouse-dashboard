@@ -1,7 +1,9 @@
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import { jsonWithCache } from '@/lib/cacheHeaders';
 import { prisma } from '@/lib/prisma';
+import { adminClientDataTag } from '@/lib/cache-tags';
 
 const ACTION_NAME = 'WORKOUT_SESSION_REVIEWED';
 
@@ -35,22 +37,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return jsonWithCache({ error: 'Client not found for this coach' }, { status: 404 });
     }
 
-    const sessions = await (prisma as any).workoutSession.findMany({
-      where: { clientId },
-      orderBy: { startedAt: 'desc' },
-      select: {
-        id: true,
-        clientId: true,
-        status: true,
-        startedAt: true,
-        completedAt: true,
-        exerciseLogs: {
+    const cachedRead = unstable_cache(
+      () =>
+        (prisma as any).workoutSession.findMany({
+          where: { clientId },
+          orderBy: { startedAt: 'desc' },
           select: {
             id: true,
+            clientId: true,
+            status: true,
+            startedAt: true,
+            completedAt: true,
+            exerciseLogs: { select: { id: true } },
           },
-        },
-      },
-    });
+        }),
+      ['admin-workout-sessions', actor.role, actor.id, clientId],
+      { tags: [adminClientDataTag(clientId, 'workout-sessions')], revalidate: 60 },
+    );
+    const sessions = await cachedRead();
 
     const reviewLogs = await prisma.auditLog.findMany({
       where: {

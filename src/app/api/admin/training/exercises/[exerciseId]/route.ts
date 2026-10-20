@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiAuth } from '@/lib/api-auth';
 import { exerciseService } from '@/features/training/services';
 import { updateExerciseSchema } from '@/features/training/schemas/exercise.schemas';
+import { invalidateAdminTrainingCaches } from '@/lib/cache-tags';
 
 type RouteContext = { params: Promise<{ exerciseId: string }> };
 
@@ -18,6 +19,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
   try {
     const exercise = await exerciseService.updateExercise(exerciseId, auth.user.userId, parsed.data);
+    invalidateAdminTrainingCaches();
     return NextResponse.json(exercise);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update exercise';
@@ -34,6 +36,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
 
   try {
     const exercise = await exerciseService.markExerciseInactive(exerciseId, auth.user.userId);
+    invalidateAdminTrainingCaches();
     return NextResponse.json(exercise);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete exercise';
