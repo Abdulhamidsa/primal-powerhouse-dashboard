@@ -16,8 +16,8 @@ type PersistedSideShape = {
   instructions: string | null;
   foodOrigin: string | null;
   mealAssignmentId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 };
 
 export function normalizeSideArray(values: string[] | undefined): string[] {
@@ -61,6 +61,10 @@ export function parseSideArray(value: string | null | undefined): string[] {
   }
 }
 
+function toIsoDate(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
 export function toSideResponse(side: PersistedSideShape) {
   return {
     id: side.id,
@@ -77,8 +81,8 @@ export function toSideResponse(side: PersistedSideShape) {
     instructions: parseSideArray(side.instructions),
     foodOrigin: side.foodOrigin,
     mealAssignmentId: side.mealAssignmentId,
-    createdAt: side.createdAt.toISOString(),
-    updatedAt: side.updatedAt.toISOString(),
+    createdAt: toIsoDate(side.createdAt),
+    updatedAt: toIsoDate(side.updatedAt),
   };
 }
 
