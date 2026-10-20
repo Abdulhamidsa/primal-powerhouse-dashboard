@@ -13,13 +13,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react'],
   },
-  webpack(config) {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@primal/theme$': resolve(process.cwd(), 'packages/theme/src/index.ts'),
-      '@primal/theme/web.css$': resolve(process.cwd(), 'packages/theme/generated/themes.css'),
-    };
-    return config;
+  turbopack: {
+    resolveAlias: {
+      '@primal/theme': resolve(process.cwd(), 'packages/theme/src/index.ts'),
+      '@primal/theme/web.css': resolve(process.cwd(), 'packages/theme/generated/themes.css'),
+    },
   },
 
   images: {

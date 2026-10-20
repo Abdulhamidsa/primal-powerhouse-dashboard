@@ -79,6 +79,7 @@
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "autoprefixer": "10.4.21",
+    "caniuse-lite": "1.0.30001817",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^11.0.0",
     "eslint": "9.37.0",
