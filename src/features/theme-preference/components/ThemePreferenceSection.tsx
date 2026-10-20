@@ -11,9 +11,10 @@ type ThemePreferenceSectionProps = {
   options: readonly ThemeOption[];
   onModeChangeAction: (mode: AppearanceMode) => void | Promise<void>;
   onAccentChangeAction: (accentTheme: AccentThemeId) => void | Promise<void>;
+  variant?: 'default' | 'admin';
 };
 
-export function ThemePreferenceSection({ mode, accentTheme, options, onModeChangeAction, onAccentChangeAction }: ThemePreferenceSectionProps) {
+export function ThemePreferenceSection({ mode, accentTheme, options, onModeChangeAction, onAccentChangeAction, variant = 'default' }: ThemePreferenceSectionProps) {
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const selected = options.find(option => option.id === accentTheme) ?? options[0];
@@ -36,19 +37,19 @@ export function ThemePreferenceSection({ mode, accentTheme, options, onModeChang
   }, [open]);
 
   return (
-    <section className="space-y-4 rounded-3xl border border-border bg-card p-4 sm:p-5">
+    <section className={cn('space-y-4 border border-border bg-card', variant === 'admin' ? 'rounded-xl p-4' : 'rounded-3xl p-4 sm:p-5')}>
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Appearance</p>
-        <p className="mt-1 text-sm text-muted-foreground">Choose how Primal Powerhouse looks.</p>
+        <p className={cn('font-semibold', variant === 'admin' ? 'text-sm text-foreground' : 'text-[11px] uppercase tracking-[0.16em] text-muted-foreground')}>Appearance</p>
+        <p className="mt-1 text-sm text-muted-foreground">{variant === 'admin' ? 'Changes save automatically.' : 'Choose how Primal Powerhouse looks.'}</p>
       </div>
 
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">Mode</p>
-        <div role="group" aria-label="Appearance mode" className="grid grid-cols-2 rounded-2xl border border-border bg-input p-1">
+        <div role="group" aria-label="Appearance mode" className={cn('grid grid-cols-2 border border-border bg-input p-1', variant === 'admin' ? 'rounded-lg' : 'rounded-2xl')}>
           {(['dark', 'light'] as const).map(option => {
             const active = mode === option;
             return (
-              <button key={option} type="button" aria-pressed={active} onClick={() => void onModeChangeAction(option)} className={cn('rounded-xl px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <button key={option} type="button" aria-pressed={active} onClick={() => void onModeChangeAction(option)} className={cn('px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', variant === 'admin' ? 'rounded-md' : 'rounded-xl', active ? cn('bg-primary text-primary-foreground', variant === 'default' && 'shadow-sm') : 'text-muted-foreground hover:text-foreground')}>
                 {option === 'dark' ? 'Dark' : 'Light'}
               </button>
             );
@@ -58,15 +59,31 @@ export function ThemePreferenceSection({ mode, accentTheme, options, onModeChang
 
       <div className="space-y-2" ref={popoverRef}>
         <p className="text-sm font-medium text-foreground">Accent</p>
-        <button type="button" aria-expanded={open} aria-haspopup="listbox" onClick={() => setOpen(value => !value)} className="flex w-full items-center gap-3 rounded-2xl border border-border bg-input px-3 py-2.5 text-left transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <span className="flex gap-1" aria-hidden="true">
-            {[activeAccent.accent, activeAccent.accentHover, activeAccent.chartSecondary].map(color => <span key={color} className="h-4 w-4 rounded-full border border-black/10" style={{ backgroundColor: color }} />)}
-          </span>
-          <span className="flex-1 text-sm font-medium text-foreground">{selected.label}</span>
-          <CaretDown aria-hidden="true" size={16} className={cn('text-muted-foreground transition-transform', open && 'rotate-180')} />
-        </button>
+        {variant === 'admin' ? (
+          <div role="listbox" aria-label="Accent theme" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {options.map(option => {
+              const accent = accentThemes[option.id];
+              const active = option.id === accentTheme;
+              return (
+                <button key={option.id} type="button" role="option" aria-selected={active} onClick={() => void onAccentChangeAction(option.id)} className={cn('flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', active ? 'border-[var(--color-accent)] bg-[var(--color-accent-muted)] text-foreground' : 'border-border text-muted-foreground hover:border-border-strong hover:text-foreground')}>
+                  <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: accent.accent }} aria-hidden="true" />
+                  <span className="min-w-0 truncate text-xs font-medium">{option.label}</span>
+                  {active ? <Check aria-hidden="true" weight="bold" size={14} className="ml-auto shrink-0 text-[var(--color-accent)]" /> : null}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <>
+          <button type="button" aria-expanded={open} aria-haspopup="listbox" onClick={() => setOpen(value => !value)} className="flex w-full items-center gap-3 rounded-2xl border border-border bg-input px-3 py-2.5 text-left transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <span className="flex gap-1" aria-hidden="true">
+              {[activeAccent.accent, activeAccent.accentHover, activeAccent.chartSecondary].map(color => <span key={color} className="h-4 w-4 rounded-full border border-black/10" style={{ backgroundColor: color }} />)}
+            </span>
+            <span className="flex-1 text-sm font-medium text-foreground">{selected.label}</span>
+            <CaretDown aria-hidden="true" size={16} className={cn('text-muted-foreground transition-transform', open && 'rotate-180')} />
+          </button>
 
-        {open ? (
+          {open ? (
           <div role="listbox" aria-label="Accent theme" className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-secondary p-2 shadow-lg sm:grid-cols-4">
             {options.map(option => {
               const tokens = composeTheme(mode, option.id);
@@ -85,7 +102,9 @@ export function ThemePreferenceSection({ mode, accentTheme, options, onModeChang
               );
             })}
           </div>
-        ) : null}
+          ) : null}
+          </>
+        )}
       </div>
     </section>
   );

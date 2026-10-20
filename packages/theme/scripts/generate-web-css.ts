@@ -53,8 +53,8 @@ function aliasSource(token: string) {
   throw new Error(`No appearance source for ${token}`);
 }
 
-function emitEffectiveAliases() {
-  const lines = [':root {'];
+function emitEffectiveAliases(selector = ':root') {
+  const lines = [`${selector} {`];
   for (const token of Object.keys(effectiveTokens)) {
     const source = aliasSource(token);
     const cssName = `--theme-${kebabCase(token)}`;
@@ -88,8 +88,9 @@ function emitEffectiveAliases() {
 const css = [
   '/* Generated from packages/theme/src/modes.ts and accents.ts. Do not edit manually. */',
   emitEffectiveAliases(),
-  ...appearanceModeIds.map(mode => emitSelector(`:root[data-mode='${mode}']`, 'mode', baseModes[mode])),
-  ...accentThemeIds.map(accent => emitSelector(`:root[data-accent='${accent}'], :root:not([data-accent])[data-theme='${accent}']`, 'accent', accentThemes[accent])),
+  emitEffectiveAliases("[data-theme-scope='admin']"),
+  ...appearanceModeIds.map(mode => emitSelector(`:root[data-mode='${mode}'], [data-theme-scope='admin'][data-mode='${mode}']`, 'mode', baseModes[mode])),
+  ...accentThemeIds.map(accent => emitSelector(`:root[data-accent='${accent}'], :root:not([data-accent])[data-theme='${accent}'], [data-theme-scope='admin'][data-accent='${accent}'], [data-theme-scope='admin']:not([data-accent])[data-theme='${accent}']`, 'accent', accentThemes[accent])),
   '',
 ].join('\n\n');
 

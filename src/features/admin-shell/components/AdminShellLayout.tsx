@@ -3,12 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { CSSProperties } from 'react';
+import { createContext, useContext } from 'react';
 import type { Icon } from '@phosphor-icons/react';
 import {
   BarbellIcon,
   ChatCircleDotsIcon,
   ForkKnifeIcon,
+  GearSixIcon,
   GaugeIcon,
   HandshakeIcon,
   ListChecksIcon,
@@ -37,7 +38,16 @@ const adminNavItems: AdminNavItem[] = [
   { name: 'Deals', href: '/admin/deals', icon: HandshakeIcon, description: 'Pipeline' },
   { name: 'Videos', href: '/admin/videos', icon: PlayCircleIcon, description: 'Exercise media' },
   { name: 'Legacy Workouts', href: '/admin/workout-plans', icon: ListChecksIcon, description: 'Old plan library' },
+  { name: 'Settings', href: '/admin/settings', icon: GearSixIcon, description: 'Appearance' },
 ];
+
+const AdminIdentityContext = createContext<string | null>(null);
+
+export function useAdminUserId(): string {
+  const userId = useContext(AdminIdentityContext);
+  if (!userId) throw new Error('useAdminUserId must be used inside AdminShellLayout');
+  return userId;
+}
 
 function isActivePath(pathname: string, href: string): boolean {
   if (pathname === href) return true;
@@ -54,8 +64,8 @@ function AdminSidebarItem({ item, active }: { item: AdminNavItem; active: boolea
       className={cn(
         'group flex items-center gap-3 rounded-lg border px-3 py-3 text-sm transition-colors',
         active
-          ? 'border-white/25 bg-white/[0.07] text-foreground'
-          : 'border-transparent text-muted-foreground hover:border-white/10 hover:bg-white/[0.04] hover:text-foreground',
+          ? 'border-[var(--color-accent)]/40 bg-[var(--color-accent-muted)] text-foreground'
+          : 'border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground',
       )}
     >
       <Icon
@@ -76,9 +86,11 @@ function AdminSidebarItem({ item, active }: { item: AdminNavItem; active: boolea
 }
 
 export function AdminShellLayout({
+  userId,
   children,
   notificationBanner,
 }: {
+  userId: string;
   children: React.ReactNode;
   notificationBanner?: React.ReactNode;
 }) {
@@ -87,19 +99,12 @@ export function AdminShellLayout({
 
   return (
     <div
-      className="flex h-dvh overflow-hidden bg-[var(--color-bg)] text-foreground"
-      style={
-        {
-          '--color-accent': 'var(--color-text)',
-          '--color-accent-muted': 'var(--color-bg-alt)',
-          '--color-accent-translucent': 'color-mix(in srgb, var(--color-text) 8%, transparent)',
-          '--color-text-on-accent': 'var(--color-bg)',
-        } as CSSProperties
-      }
+      className="flex h-dvh overflow-hidden bg-background text-foreground"
     >
-      <aside className="hidden w-[284px] shrink-0 border-r border-white/10 bg-[var(--color-bg)] px-4 py-5 lg:flex lg:flex-col">
+      <AdminIdentityContext.Provider value={userId}>
+      <aside className="hidden w-[284px] shrink-0 border-r border-border bg-background px-4 py-5 lg:flex lg:flex-col">
         <Link href="/admin/dashboard" prefetch={false} className="mb-6 flex items-center gap-3 rounded-lg px-2 py-1">
-          <span className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-white/[0.04]">
+          <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-card">
             <Image src="/logo.png" alt="Primal Power" width={26} height={26} />
           </span>
           <span>
@@ -118,7 +123,7 @@ export function AdminShellLayout({
           type="button"
           onClick={logout}
           disabled={isLoggingOut}
-          className="mt-5 flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground disabled:opacity-60"
+          className="mt-5 flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-[var(--color-surface-hover)] hover:text-foreground disabled:opacity-60"
         >
           <SignOutIcon size={17} aria-hidden="true" />
           {isLoggingOut ? 'Signing out...' : 'Sign out'}
@@ -126,9 +131,9 @@ export function AdminShellLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-[64px] shrink-0 items-center justify-between border-b border-white/10 bg-[var(--color-bg)] px-4 sm:px-6 lg:px-8">
+        <header className="flex min-h-[64px] shrink-0 items-center justify-between border-b border-border bg-background px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.04] lg:hidden">
+            <div className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card lg:hidden">
               <SidebarSimpleIcon size={18} aria-hidden="true" className="text-muted-foreground" />
             </div>
             <div className="min-w-0">
@@ -139,7 +144,7 @@ export function AdminShellLayout({
             </div>
           </div>
 
-          <div className="hidden min-w-[260px] items-center gap-2 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-muted-foreground md:flex">
+          <div className="hidden min-w-[260px] items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground md:flex">
             <MagnifyingGlassIcon size={15} aria-hidden="true" />
             <span>Use page search and filters</span>
           </div>
@@ -151,6 +156,7 @@ export function AdminShellLayout({
       </div>
 
       {notificationBanner}
+      </AdminIdentityContext.Provider>
     </div>
   );
 }

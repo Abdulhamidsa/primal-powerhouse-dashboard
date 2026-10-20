@@ -67,6 +67,9 @@ describe('composed appearance tokens', () => {
     expect(css).toContain(":root[data-mode='dark']");
     expect(css).toContain(":root[data-mode='light']");
     expect(css).toContain(":root[data-accent='ocean']");
+    expect(css).toContain("[data-theme-scope='admin'][data-mode='dark']");
+    expect(css).toContain("[data-theme-scope='admin'][data-accent='ocean']");
+    expect(css).toContain("[data-theme-scope='admin'] {\n  --theme-background");
     expect(css).toContain('--theme-accent-rgb: var(--accent-accent-rgb);');
     expect(css).toContain('--theme-background-rgb: var(--mode-background-rgb);');
   });
