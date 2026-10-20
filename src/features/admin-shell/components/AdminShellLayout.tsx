@@ -50,9 +50,9 @@ function AdminSidebarItem({ item, active }: { item: AdminNavItem; active: boolea
     <Link
       href={item.href}
       className={cn(
-        'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-all duration-200',
+        'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-colors duration-200',
         active
-          ? 'border-[var(--color-accent)]/35 bg-[var(--color-accent-translucent)] text-foreground shadow-[0_12px_32px_rgba(0,0,0,0.22)]'
+          ? 'border-[var(--color-accent)]/35 bg-[var(--color-accent-translucent)] text-foreground'
           : 'border-transparent text-muted-foreground hover:border-white/10 hover:bg-white/[0.04] hover:text-foreground',
       )}
     >
@@ -85,7 +85,7 @@ export function AdminShellLayout({
 
   return (
     <div className="flex h-dvh overflow-hidden bg-[var(--color-bg)] text-foreground">
-      <aside className="hidden w-[284px] shrink-0 border-r border-white/10 bg-[rgba(10,10,12,0.82)] px-4 py-5 backdrop-blur-xl lg:flex lg:flex-col">
+      <aside className="hidden w-[284px] shrink-0 border-r border-white/10 bg-[rgba(10,10,12,0.98)] px-4 py-5 lg:flex lg:flex-col">
         <Link href="/admin/dashboard" className="mb-6 flex items-center gap-3 rounded-2xl px-2 py-1">
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.04]">
             <Image src="/logo.png" alt="Primal Power" width={26} height={26} />
@@ -114,7 +114,7 @@ export function AdminShellLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-white/10 bg-[rgba(12,12,14,0.78)] px-4 backdrop-blur-xl sm:px-6 lg:px-8">
+        <header className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-white/10 bg-[rgba(12,12,14,0.98)] px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] lg:hidden">
               <SidebarSimpleIcon size={18} aria-hidden="true" className="text-muted-foreground" />

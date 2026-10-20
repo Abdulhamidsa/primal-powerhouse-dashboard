@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import type { ApiError } from '@/lib/fetcher';
 import {
@@ -13,54 +13,22 @@ import {
   createConversation,
   sendConversationMessage,
 } from '@/features/client-coach-messaging/api/messaging.api';
-import { useConversations } from '@/features/client-coach-messaging/hooks/useMessaging';
-import { getPusherClient } from '@/lib/realtime/pusher-client';
-import { toConversationChannel } from '@/lib/realtime/channels';
 
-const FAST_REFRESH_MS = 8000;
+const COMMAND_CENTER_REFRESH_MS = 30_000;
 
 export function useAdminCommandCenter() {
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const { conversations, refresh: refreshConversations } = useConversations();
-
   const { data, error, isLoading, isValidating, mutate } = useSWR<AdminCommandCenterResponse, ApiError>(
     buildAdminCommandCenterUrl(),
     getAdminCommandCenter,
     {
-      refreshInterval: FAST_REFRESH_MS,
-      revalidateOnFocus: true,
+      refreshInterval: COMMAND_CENTER_REFRESH_MS,
+      revalidateOnFocus: false,
       keepPreviousData: true,
     }
   );
-
-  useEffect(() => {
-    if (!conversations.length) return;
-
-    const pusher = getPusherClient();
-    if (!pusher) return;
-
-    const subscriptions = conversations.map(conversation => {
-      const channelName = toConversationChannel(conversation.id);
-      const channel = pusher.subscribe(channelName);
-
-      const handleMessageCreated = () => {
-        mutate(undefined, { revalidate: true });
-      };
-
-      channel.bind('message.created', handleMessageCreated);
-
-      return { channelName, channel, handleMessageCreated };
-    });
-
-    return () => {
-      for (const subscription of subscriptions) {
-        subscription.channel.unbind('message.created', subscription.handleMessageCreated);
-        pusher.unsubscribe(subscription.channelName);
-      }
-    };
-  }, [conversations, mutate]);
 
   const quickReplyTemplate = useMemo(() => {
     return {
@@ -77,7 +45,7 @@ export function useAdminCommandCenter() {
     try {
       const conversation = await createConversation({ clientId });
       await sendConversationMessage(conversation.id, { body: message });
-      await Promise.all([mutate(undefined, { revalidate: true }), refreshConversations()]);
+      await mutate(undefined, { revalidate: true });
     } catch (err) {
       console.error('Failed to send quick message', err);
       setActionError('Failed to send quick message. Please retry.');

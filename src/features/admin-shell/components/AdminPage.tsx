@@ -23,7 +23,7 @@ export function AdminPageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-4 rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.075),rgba(255,255,255,0.025))] px-6 py-5 shadow-[0_24px_80px_rgba(0,0,0,0.28)] lg:flex-row lg:items-end lg:justify-between">
+    <header className="flex flex-col gap-4 rounded-[28px] border border-white/10 bg-[rgba(16,16,18,0.96)] px-6 py-5 lg:flex-row lg:items-end lg:justify-between">
       <div className="min-w-0 space-y-2">
         {eyebrow ? (
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-accent)]">{eyebrow}</p>
@@ -48,7 +48,7 @@ export function AdminPanel({
   return (
     <section
       className={cn(
-        'rounded-[24px] border border-white/10 bg-[rgba(16,16,18,0.82)] shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl',
+        'rounded-[24px] border border-white/10 bg-[rgba(16,16,18,0.96)]',
         className,
       )}
     >

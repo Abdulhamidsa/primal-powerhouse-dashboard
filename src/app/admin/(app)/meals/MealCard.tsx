@@ -26,7 +26,7 @@ type MealCardProps = {
   onDeleteMeal: (mealId: string) => void;
 };
 
-export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCardProps) => {
+export const MealCard = React.memo(function MealCard({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCardProps) {
   const totalTime = (Number(meal.prepTime) || 0) + (Number(meal.cookTime) || 0);
   const macros = [
     { label: 'Calories', value: Number(meal.calories) || 0, icon: Flame, color: 'text-orange-400' },
@@ -38,7 +38,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
   return (
     <article
       onClick={() => onViewMeal(meal)}
-      className="group cursor-pointer overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035] shadow-[0_18px_50px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-0.5 hover:border-white/15 hover:bg-white/[0.055]"
+      className="group cursor-pointer overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035] transition-colors hover:border-white/15 hover:bg-white/[0.055]"
     >
       <div className="relative h-48 w-full">
         {meal.imageUrl && meal.imageUrl.trim() !== '' ? (
@@ -50,7 +50,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
             }
             alt={meal.name}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            className="object-cover"
             sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
             onError={e => {
               e.currentTarget.src = 'https://picsum.photos/800/600?food';
@@ -65,7 +65,7 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 to-transparent" />
 
         <div className="absolute top-3 left-3">
-          <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+          <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
             {meal.type === 'BREAKFAST' && (
               <Sunrise aria-hidden="true" focusable="false" className="h-3.5 w-3.5 text-[var(--color-accent)]" />
             )}
@@ -159,4 +159,4 @@ export const MealCard = ({ meal, onViewMeal, onEditMeal, onDeleteMeal }: MealCar
       </div>
     </article>
   );
-};
+});

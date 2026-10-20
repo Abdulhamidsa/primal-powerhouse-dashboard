@@ -1,11 +1,8 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChefHatIcon as ChefHat, PlusIcon as Plus, SlidersHorizontalIcon } from '@phosphor-icons/react';
-import AddMealModal from '@/components/AddMealModal';
-import MealBuilderModal from '@/components/MealBuilderModal';
-import EditMealModal from '@/components/EditMealModal';
-import NewMealDetailModal from '@/components/NewMealDetailModal';
 import { Button } from '@/components/ui/button';
 import { AdminPage, AdminPageHeader, AdminPanel, AdminPanelHeader } from '@/features/admin-shell/components/AdminPage';
 import { useSideLibrary } from '@/features/sides/hooks/useSideLibrary';
@@ -19,6 +16,13 @@ import { MealFilters, MealSmartFilter, MealSortOption } from './MealsFilter';
 import { MealsGrid } from './MealsGrid';
 import { StatsOverview } from './StatsOverview';
 // import MealGeneratorPanel from '@/features/meals/components/MealGeneratorPanel';
+
+const AddMealModal = dynamic(() => import('@/components/AddMealModal'));
+const MealBuilderModal = dynamic(() => import('@/components/MealBuilderModal'));
+const EditMealModal = dynamic(() => import('@/components/EditMealModal'));
+const NewMealDetailModal = dynamic(() => import('@/components/NewMealDetailModal'));
+
+const MEALS_PER_PAGE = 60;
 
 const getSearchableIngredientText = (meal: MealListItem) =>
   (meal.ingredients || [])
@@ -42,6 +46,7 @@ export default function MealsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<MealSortOption>('newest');
   const [smartFilters, setSmartFilters] = useState<MealSmartFilter[]>([]);
+  const [visibleMealCount, setVisibleMealCount] = useState(MEALS_PER_PAGE);
   const { meals, isLoading: loading, refreshMeals } = useMeals();
   const { sides = [], isLoading: sidesLoading, loadSides } = useSideLibrary();
 
@@ -66,6 +71,17 @@ export default function MealsPage() {
 
   const allLibraryItems = useMemo(() => [...meals, ...sideMeals], [meals, sideMeals]);
 
+  const searchTextByMealId = useMemo(
+    () =>
+      new Map(
+        allLibraryItems.map(meal => [
+          meal.id,
+          [meal.name, meal.type, ...(meal.tags || []), getSearchableIngredientText(meal)].join(' ').toLowerCase(),
+        ]),
+      ),
+    [allLibraryItems],
+  );
+
   const filteredMeals = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
     const typedMeals =
@@ -76,12 +92,7 @@ export default function MealsPage() {
           : meals.filter(meal => meal.type === selectedType);
 
     const searchedMeals = normalizedSearch
-      ? typedMeals.filter(meal => {
-          const haystack = [meal.name, meal.type, ...(meal.tags || []), getSearchableIngredientText(meal)]
-            .join(' ')
-            .toLowerCase();
-          return haystack.includes(normalizedSearch);
-        })
+      ? typedMeals.filter(meal => searchTextByMealId.get(meal.id)?.includes(normalizedSearch) ?? false)
       : typedMeals;
 
     const smartFilteredMeals = searchedMeals.filter(meal => {
@@ -110,7 +121,13 @@ export default function MealsPage() {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
     });
-  }, [allLibraryItems, meals, searchQuery, selectedType, sideMeals, smartFilters, sortBy]);
+  }, [allLibraryItems, meals, searchQuery, searchTextByMealId, selectedType, sideMeals, smartFilters, sortBy]);
+
+  useEffect(() => {
+    setVisibleMealCount(MEALS_PER_PAGE);
+  }, [searchQuery, selectedType, sortBy, smartFilters]);
+
+  const visibleMeals = filteredMeals.slice(0, visibleMealCount);
 
   const mealCounts = useMemo(
     () => ({
@@ -240,7 +257,7 @@ export default function MealsPage() {
           </div> */}
 
           <MealsGrid
-            meals={filteredMeals}
+            meals={visibleMeals}
             loading={loading || sidesLoading}
             hasActiveFilters={hasActiveFilters}
             selectedType={selectedType}
@@ -248,43 +265,66 @@ export default function MealsPage() {
             onEditMeal={handleEditMeal}
             onDeleteMeal={handleDeleteMeal}
           />
+
+          {visibleMealCount < filteredMeals.length ? (
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setVisibleMealCount(current => current + MEALS_PER_PAGE)}
+                className="rounded-xl border-white/10 bg-white/[0.05] px-5 text-sm text-foreground hover:bg-white/[0.09]"
+              >
+                Load more ({Math.min(MEALS_PER_PAGE, filteredMeals.length - visibleMealCount)})
+              </Button>
+            </div>
+          ) : null}
         </div>
       </AdminPanel>
 
-      <AddMealModal
-        isOpen={showAddModal}
-        onCloseAction={() => setShowAddModal(false)}
-        onMealAddedAction={refreshMeals}
-      />
+      {showAddModal ? (
+        <AddMealModal
+          isOpen={showAddModal}
+          onCloseAction={() => setShowAddModal(false)}
+          onMealAddedAction={refreshMeals}
+        />
+      ) : null}
 
-      <MealBuilderModal
-        isOpen={showBuilderModal}
-        onCloseAction={() => setShowBuilderModal(false)}
-        onMealCreatedAction={refreshMeals}
-      />
+      {showBuilderModal ? (
+        <MealBuilderModal
+          isOpen={showBuilderModal}
+          onCloseAction={() => setShowBuilderModal(false)}
+          onMealCreatedAction={refreshMeals}
+        />
+      ) : null}
 
-      <EditMealModal
-        isOpen={showEditModal}
-        mealId={mealToEdit}
-        onCloseAction={() => {
-          setShowEditModal(false);
-          setMealToEdit(null);
-        }}
-        onMealUpdatedAction={refreshMeals}
-      />
+      {showEditModal ? (
+        <EditMealModal
+          isOpen={showEditModal}
+          mealId={mealToEdit}
+          onCloseAction={() => {
+            setShowEditModal(false);
+            setMealToEdit(null);
+          }}
+          onMealUpdatedAction={refreshMeals}
+        />
+      ) : null}
 
-      <NewMealDetailModal
-        meal={selectedMeal}
-        isOpen={showDetailModal}
-        onCloseAction={() => setShowDetailModal(false)}
-      />
+      {showDetailModal ? (
+        <NewMealDetailModal
+          meal={selectedMeal}
+          isOpen={showDetailModal}
+          onCloseAction={() => setShowDetailModal(false)}
+        />
+      ) : null}
 
-      <DeleteMealModal
-        isOpen={!!mealToDelete}
-        deleting={deleting}
-        onCancel={() => setMealToDelete(null)}
-        onConfirm={confirmDelete}
-      />
+      {mealToDelete ? (
+        <DeleteMealModal
+          isOpen
+          deleting={deleting}
+          onCancel={() => setMealToDelete(null)}
+          onConfirm={confirmDelete}
+        />
+      ) : null}
     </AdminPage>
   );
 }
